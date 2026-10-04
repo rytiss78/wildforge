@@ -1,13 +1,13 @@
-# Wildforge — About this game (draft)
+# Wildforge
 
-Grow extra hands. Plant trouble. Become outrageously overpowered.
+Grow strange. Fight hard. Start again.
 
-Wildforge is a native 3D survival game starring 21 ridiculous painted heroes. Every run builds your power from unpredictable positive upgrades. Pick one reward from each treasure chest, carry up to three weapons, and grow a third arm when both hands are full.
+Pick a ridiculous hero, explore a bright world full of strange creatures and collect unpredictable upgrades until you become outrageously overpowered. Bring a duck, a loaf of bread, an angry granny or a florist who turns every escape route into a dangerous garden.
 
-Explore Clover Woods, Puffcap Marsh, Moon Craters, Cloud City, Candy Hell and Starfall Space. Their creatures, terrain and rewards change how you survive. Jump, double-jump and slam into a crowd, then use elite-dropped consumables when trouble gets spicy. Timed bosses guard the way between three worlds.
+Carry three weapons and grow a third arm when your hands are full. Burn, freeze, poison, haunt or squash whatever gets in your way. Every upgrade makes you stronger, and every treasure chest offers a new direction for your run.
 
-Fire, poison, frost, ghosts, armour, thorns, strange money tricks and a walking flower garden all have a place here. Florist plants flowers as you move: turn your escape route into a dangerous blooming trail.
+Wander from Clover Woods to Moon Craters, climb through Cloud City and find trouble in Candy Hell and Starfall Space. Hunt for chests, leap over enemies and face huge bosses as the clock runs down. Discover 100 achievements built around strange combinations, exploration and unexpected victories.
 
-Community Lab is part of our development plan. AI-assisted development will read player reviews and comments, help reproduce bugs, and turn selected suggestions into tested fixes and features. We will publish proposal statuses and explain what made it into each build. Suggestions are feedback, not automatic commands, and not every request will be adopted.
+Play alone or bring up to three friends. Share the fight, keep your own loot and see whose ridiculous hero survives longest. No store account is needed.
 
-The current standalone alpha stores suggestions locally. Developers can import exported feedback; the live comment-to-development workflow is not connected yet. Play solo or with up to three friends through LAN or direct IP connections, without a store account.
+Wildforge is an unfinished alpha, growing with player feedback. Tell us what broke, what made you laugh and what you want to try next. AI-assisted development helps review ideas and prepare fixes, while selected changes are tested and explained in build notes. In-game suggestions currently stay on your PC; automatic online sharing is still planned.

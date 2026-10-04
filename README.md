@@ -1,31 +1,63 @@
 # Wildforge
 
-One standalone native Godot game. Open `build/Wildforge.exe` and keep its PCK beside it. No store account or store DLLs are required. The console launcher runs the same game.
+**Grow strange. Fight hard. Start again.**
 
-Download the Windows alpha from this repository's Releases page, extract the whole ZIP and run `Wildforge.exe`. The source ZIP does not contain the executable. This is an unfinished development alpha.
+A bright 3D survival game where a duck, a loaf of bread and an angry granny are perfectly reasonable hero choices. Explore strange places, grab unpredictable upgrades and become outrageously overpowered before the monsters catch you.
 
-Build **0.7.7** removes Steam integration and keeps four-player ENet co-op. Play with friends offers Host Party, nearby-party discovery, Copy Host Address and direct IP/hostname/VPN joining. Join before the host starts. Internet hosting needs a reachable host through UDP 29736 forwarding or a shared VPN; no relay service is included. See [co-op instructions](native/docs/coop.md).
+**[Download the Windows alpha](https://github.com/rytiss78/wildforge/releases/tag/v0.7.7)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
 
-Existing achievements, scores, settings and local suggestions are preserved. The game has 21 original orb-first heroes, 36 exotic creature species, 25 weapons, 332 positive single-bonus item/perk templates, 14 timed potions, six biomes per world, three worlds and 100 illustrated achievements. Three weapons grow a third arm. Blood cores show health and blue glass shows armour/shield.
+![Two Count Ducks fighting strange creatures together in Clover Woods](docs/screenshots/co-op.png)
 
-Stronger enemies give more XP. Touching XP drops merge into larger glowing spheres; coins and XP fall with gravity. Crowds navigate obstacles, and stranded enemies can be recycled to keep nearby spawning active. The HUD labels GOLD, BOX PRICE, LEVEL and XP.
+*Two ducks are better than one. Probably.*
 
-Controls: WASD / left stick move; mouse / right stick look; Space / A jump; Shift / RT dash; Ctrl / B slam; E / X interact; B / Y inspect build; T / LB place turret; G / RB select turret; Escape / Menu pause. Weapons attack automatically; Florist plants while moving. Xbox rumble remains.
+## Your hero. Your chaos.
 
-## Edit and build
+Choose from 21 ridiculous heroes, each with their own trick. Count Duck steals life. Sir Loaf dashes with a bang. Florist turns footsteps into a dangerous blooming garden. Admiral Bubbles brings a bathtub to the battlefield.
 
-Open `native/project.godot` with Godot in `tools/godot`. Content lives in `scripts/data`. Keep the single build folder updated:
+Carry three weapons at once. When two hands aren't enough, grow a third arm. Mix guns, blades, flowers and turrets with fire, poison, frost, ghosts, thorns and strange money tricks. Every upgrade helps you grow stronger; the next chest might send your run in a completely different direction.
 
-The repository excludes local tool installations and generated caches. For a fresh clone, install Node.js and Godot **4.7.2**, open `native/project.godot`, allow the initial import and run the main scene. To use the Windows packaging script, place the console editor at `tools/godot/Godot_v4.7.2-stable_win64_console.exe` and its Windows x86-64 release template at `tools/godot/templates/windows_release_x86_64.exe`. `scripts/fetch-export-template.py` can obtain the templates. All runtime game assets are included; Python/voice models are needed only when regenerating assets.
+![Hero selection showing Admiral Bubbles, his bathtub and rocket weapon](docs/screenshots/choose-your-hero.png)
+
+*Pick someone sensible. Or bring the bathtub.*
+
+## Find trouble somewhere new
+
+Roam through Clover Woods, Puffcap Marsh, Moon Craters, Cloud City, Candy Hell and Starfall Space. Hunt for treasure, jump over trouble, squash enemies underfoot and face huge bosses as the clock ticks down.
+
+Spend your coins on a chest, choose one of three rewards and keep building your ridiculous little disaster. Chase 100 achievements built around exploration, clever combinations and unusual challenges.
+
+![Illustrated upgrade choices for the Gun, Shotgun and Ice Gun](docs/screenshots/choose-your-power.png)
+
+*One choice. More trouble for the monsters.*
+
+## Bring friends
+
+Survive solo or team up with up to three friends. Share the fight, keep your own loot and discover what happens when four questionable heroes meet the same boss.
+
+On the same Wi-Fi, host a party and let friends join from the nearby-party list. Remote friends can join by address using a shared VPN or port forwarding. [Co-op setup](native/docs/coop.md)
+
+## Jump in
+
+Download the Windows ZIP, extract the whole folder and run **Wildforge.exe**. No store account or installation is needed. Keyboard and mouse or Xbox controller both work.
+
+**This is a development alpha.** Expect rough edges and plenty of changes. Your ideas can help shape what comes next: [tell us what you loved, what broke or what would be fun](https://github.com/rytiss78/wildforge/issues). Community Lab also saves suggestions inside the game; those currently stay on your PC. Automatic online sharing is planned.
+
+<details>
+<summary><strong>For builders: source, tools and controls</strong></summary>
+
+The game uses Godot **4.7.2**. Open `native/project.godot`, allow the initial import and run the main scene. Node.js is used by the content scripts. All runtime game assets are included; local tool installations and generated caches are excluded.
+
+For Windows packaging, place the console editor at `tools/godot/Godot_v4.7.2-stable_win64_console.exe` and the release template at `tools/godot/templates/windows_release_x86_64.exe`. `scripts/fetch-export-template.py` can obtain the templates. Python and voice models are needed only when regenerating assets.
 
 ```powershell
 node scripts/native.mjs
 ./scripts/package-native.ps1
+./scripts/package-release.ps1
 ./scripts/test-coop.ps1 -Packaged -RenderedClient
-node scripts/export-achievements.mjs
-node scripts/collect-feedback.mjs --comments exported-comments.json
 ```
 
-Local saves: `%APPDATA%/Godot/app_userdata/Wildforge/career.json`. Diagnostic tests use separate profiles. `community` contains achievement artwork/definitions, asset provenance and game/community text. Suggestions stay local; automatic online sharing is planned.
+WASD / left stick moves; mouse / right stick looks; Space / A jumps; Shift / RT dashes; Ctrl / B slams; E / X interacts; B / Y opens your build; Escape / Menu pauses. Weapons attack automatically. Florist plants while moving.
 
-Offline neural voices, sound effects and arranged metal/cyberpunk music require no voice service during play. Provenance/licenses ship with the build. Meshes and illustrated artwork remain editable in `scripts` and `native/assets`. Current notes: [0.7.7](native/docs/build-0.7.7.md).
+Achievements, scores and settings save locally in `%APPDATA%/Godot/app_userdata/Wildforge/career.json`. [Build notes](native/docs/build-0.7.7.md) · [Asset origins](community/ai-content-provenance.md)
+
+</details>
