@@ -1,0 +1,10 @@
+Wildforge generated voice audio
+Kyutai Pocket TTS, MIT: https://github.com/kyutai-labs/pocket-tts
+Alba stock synthetic profile: Alba MacKenna / Kyutai, CC BY 4.0
+VCTK profiles: CSTR / University of Edinburgh, CC BY 4.0
+https://datashare.ed.ac.uk/handle/10283/3443
+https://creativecommons.org/licenses/by/4.0/
+https://huggingface.co/kyutai/tts-voices
+Marius and Javert profiles: Kyutai volunteer donations, CC0.
+Original generated dialogue; PCM conversion, silence trimming and volume normalization.
+No downloaded human voice recordings are included in the game.

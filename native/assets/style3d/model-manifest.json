@@ -1,0 +1,35 @@
+{
+  "pipeline": "authored mesh profiles / reused approved textures",
+  "assets": [
+    {
+      "asset": "count_duck",
+      "triangles": 20068,
+      "mesh_nodes": 56,
+      "bytes": 661668
+    },
+    {
+      "asset": "bottlebite",
+      "triangles": 20248,
+      "mesh_nodes": 50,
+      "bytes": 660336
+    },
+    {
+      "asset": "mint_pistol",
+      "triangles": 7096,
+      "mesh_nodes": 13,
+      "bytes": 227900
+    },
+    {
+      "asset": "storybook_tree",
+      "triangles": 7920,
+      "mesh_nodes": 29,
+      "bytes": 271028
+    },
+    {
+      "asset": "brass_bullet",
+      "triangles": 72,
+      "mesh_nodes": 1,
+      "bytes": 4184
+    }
+  ]
+}

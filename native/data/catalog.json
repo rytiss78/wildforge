@@ -1,0 +1,6604 @@
+{
+  "version": 7,
+  "heroes": [
+    {
+      "id": "wrench",
+      "name": "Wrench",
+      "title": "Certified toaster mechanic",
+      "icon": "⚙",
+      "color": "#e6c16a",
+      "shape": "engineer",
+      "quip": "“Have you tried turning the monster off and on?”",
+      "description": "Turrets hit 35% harder. Heal 2 health per second near your turret.",
+      "effects": [
+        {
+          "key": "turretDamage",
+          "amount": 0.35,
+          "mode": "multiply"
+        },
+        {
+          "key": "repair",
+          "amount": 2,
+          "mode": "add"
+        }
+      ],
+      "turret": "gun",
+      "model": "pipe_wrench",
+      "weapon": "turret",
+      "perk": "Fix It"
+    },
+    {
+      "id": "duck",
+      "name": "Count Duck",
+      "title": "A very normal duck",
+      "icon": "🦆",
+      "color": "#c0a5ff",
+      "shape": "duck",
+      "quip": "“I vant to suck your breadcrumbs.”",
+      "description": "Heal for 8% of the damage your weapons deal.",
+      "effects": [
+        {
+          "key": "lifesteal",
+          "amount": 0.08,
+          "mode": "add"
+        }
+      ],
+      "model": "rubber_duck_toy",
+      "weapon": "gun",
+      "perk": "Blood Bank"
+    },
+    {
+      "id": "broccoli",
+      "name": "Tank Potato",
+      "title": "Skipped every leg day",
+      "icon": "🥦",
+      "color": "#83d579",
+      "shape": "broccoli",
+      "quip": "“You are what you beet.”",
+      "description": "Start with 6 armour and 40% more health.",
+      "effects": [
+        {
+          "key": "armor",
+          "amount": 6,
+          "mode": "add"
+        },
+        {
+          "key": "maxHp",
+          "amount": 0.4,
+          "mode": "multiply"
+        }
+      ],
+      "model": "sweet_potato",
+      "weapon": "gun",
+      "perk": "Iron Potato"
+    },
+    {
+      "id": "grandma",
+      "name": "Stone Granny",
+      "title": "Bakes with live ammunition",
+      "icon": "👵",
+      "color": "#ed97b4",
+      "shape": "grandma",
+      "quip": "“I brought cookies. And shrapnel.”",
+      "description": "Shots splash nearby enemies. Deal 25% more damage to bosses.",
+      "effects": [
+        {
+          "key": "splash",
+          "amount": 0.45,
+          "mode": "add"
+        },
+        {
+          "key": "bossDamage",
+          "amount": 0.25,
+          "mode": "multiply"
+        }
+      ],
+      "model": "marble_bust_01",
+      "weapon": "rocket",
+      "perk": "Granny Splash"
+    },
+    {
+      "id": "goblin",
+      "name": "Tax Rat",
+      "title": "Your loot is deductible",
+      "icon": "🧾",
+      "color": "#83d9c8",
+      "shape": "goblin",
+      "quip": "“That chest is a business expense.”",
+      "description": "Boxes cost 20% less. Earn 1% interest on saved coins each minute.",
+      "effects": [
+        {
+          "key": "discount",
+          "amount": 0.2,
+          "mode": "add"
+        },
+        {
+          "key": "interest",
+          "amount": 0.01,
+          "mode": "add"
+        }
+      ],
+      "model": "street_rat",
+      "weapon": "gun",
+      "perk": "Tax Refund"
+    },
+    {
+      "id": "loaf",
+      "name": "Sir Loaf",
+      "title": "Knight of the round toaster",
+      "icon": "🍞",
+      "color": "#eeb778",
+      "shape": "loaf",
+      "quip": "“They see me rollin’. They see me toastin’.”",
+      "description": "Dashing blasts nearby enemies for 30 damage.",
+      "effects": [
+        {
+          "key": "dashBlast",
+          "amount": 30,
+          "mode": "add"
+        }
+      ],
+      "model": "hamburger_buns",
+      "weapon": "saw",
+      "perk": "Bread Rush"
+    },
+    {
+      "id": "florist",
+      "name": "Florist",
+      "title": "Petal Punk — your footsteps plant a living garden",
+      "model": "florist",
+      "weapon": "flowers",
+      "effects": [
+        {
+          "key": "flowerSeeds",
+          "amount": 1,
+          "mode": "add"
+        },
+        {
+          "key": "flowerPower",
+          "amount": 0.25,
+          "mode": "multiply"
+        },
+        {
+          "key": "flowerHeal",
+          "amount": 2,
+          "mode": "add"
+        }
+      ],
+      "perk": "Flower Power",
+      "description": "Plant an extra seed with each step patch. Blooms hit 25% harder and heal 2 extra health."
+    },
+    {
+      "id": "teapot",
+      "name": "Queen Tea",
+      "title": "Royal china. Unreasonably tough.",
+      "model": "teapot",
+      "weapon": "ice",
+      "effects": [
+        {
+          "key": "regen",
+          "amount": 2,
+          "mode": "add"
+        }
+      ],
+      "perk": "Tea Break",
+      "description": "Regenerate 2 health per second."
+    },
+    {
+      "id": "octopus",
+      "name": "Captain Eight",
+      "title": "Eight arms. Three weapons. Six complaints.",
+      "model": "octopus",
+      "weapon": "shotgun",
+      "effects": [
+        {
+          "key": "multishot",
+          "amount": 1,
+          "mode": "add"
+        }
+      ],
+      "perk": "Eight Shot",
+      "description": "Fire one extra projectile with each shot."
+    },
+    {
+      "id": "astronaut",
+      "name": "Space Cadet",
+      "title": "Lost the spaceship. Kept the laser.",
+      "model": "astronaut",
+      "weapon": "rail",
+      "effects": [
+        {
+          "key": "airJumps",
+          "amount": 1,
+          "mode": "add"
+        },
+        {
+          "key": "airDamage",
+          "amount": 0.25,
+          "mode": "add"
+        }
+      ],
+      "perk": "Moon Boots",
+      "description": "Start with a double jump. Deal 25% more weapon damage while airborne."
+    },
+    {
+      "id": "cactus",
+      "name": "Prickle Rick",
+      "title": "Hugs are a contact sport.",
+      "model": "cactus",
+      "weapon": "saw",
+      "effects": [
+        {
+          "key": "thorns",
+          "amount": 12,
+          "mode": "add"
+        }
+      ],
+      "perk": "Bad Hug",
+      "description": "Enemies touching you take 12 thorn damage twice per second."
+    },
+    {
+      "id": "book",
+      "name": "Bookworm",
+      "title": "The spellbook learned to walk.",
+      "model": "book",
+      "weapon": "lightning",
+      "effects": [
+        {
+          "key": "chain",
+          "amount": 2,
+          "mode": "add"
+        }
+      ],
+      "perk": "Chain Letter",
+      "description": "Hits chain lightning to two extra enemies."
+    },
+    {
+      "id": "snail",
+      "name": "Turbo Snail",
+      "title": "Late to everything except trouble.",
+      "model": "snail",
+      "weapon": "poison",
+      "effects": [
+        {
+          "key": "poison",
+          "amount": 8,
+          "mode": "add"
+        }
+      ],
+      "perk": "Slime Trail",
+      "description": "Weapon hits poison enemies for 8 damage per second."
+    },
+    {
+      "id": "bee",
+      "name": "Honey Hustler",
+      "title": "Buzzing all the way to the bank.",
+      "model": "bee",
+      "weapon": "gun",
+      "effects": [
+        {
+          "key": "walkGold",
+          "amount": 0.25,
+          "mode": "add"
+        },
+        {
+          "key": "coinHeal",
+          "amount": 0.5,
+          "mode": "add"
+        }
+      ],
+      "perk": "Honey Money",
+      "description": "Walking earns 0.25 coins per metre. Each coin drop heals 0.5 health."
+    },
+    {
+      "id": "sushi",
+      "name": "Roll Ronin",
+      "title": "Freshly sliced. Never defeated.",
+      "model": "sushi",
+      "weapon": "saw",
+      "effects": [
+        {
+          "key": "crit",
+          "amount": 0.2,
+          "mode": "add"
+        }
+      ],
+      "perk": "Sharp Slice",
+      "description": "20% chance for weapon hits to deal double damage."
+    },
+    {
+      "id": "mushroom",
+      "name": "Chef Cap",
+      "title": "Season the enemy. Serve hot.",
+      "model": "mushroom",
+      "weapon": "flame",
+      "effects": [
+        {
+          "key": "burn",
+          "amount": 8,
+          "mode": "add"
+        }
+      ],
+      "perk": "Hot Seasoning",
+      "description": "Weapon hits burn enemies for 8 damage per second."
+    },
+    {
+      "id": "clock",
+      "name": "Sir Snooze",
+      "title": "Five more minutes. One more run.",
+      "model": "clock",
+      "weapon": "ice",
+      "effects": [
+        {
+          "key": "slow",
+          "amount": 0.3,
+          "mode": "add"
+        }
+      ],
+      "perk": "Slow Time",
+      "description": "Weapon hits slow enemies by 30%."
+    },
+    {
+      "id": "icecream",
+      "name": "Disco Scoop",
+      "title": "Staying cool under pressure.",
+      "model": "icecream",
+      "weapon": "ice",
+      "effects": [
+        {
+          "key": "freeze",
+          "amount": 0.2,
+          "mode": "add"
+        }
+      ],
+      "perk": "Brain Freeze",
+      "description": "20% chance for weapon hits to freeze an enemy."
+    },
+    {
+      "id": "bathtub",
+      "name": "Admiral Bubbles",
+      "title": "Sailing on dry land since breakfast.",
+      "model": "bathtub",
+      "weapon": "rocket",
+      "effects": [
+        {
+          "key": "shield",
+          "amount": 25,
+          "mode": "add"
+        }
+      ],
+      "perk": "Bubble Bath",
+      "description": "Start with 25 shield. It recharges after avoiding damage."
+    },
+    {
+      "id": "peacock",
+      "name": "Fancy Pants",
+      "title": "Show off. Show them all.",
+      "model": "peacock",
+      "weapon": "ghost",
+      "effects": [
+        {
+          "key": "luck",
+          "amount": 0.25,
+          "mode": "add"
+        },
+        {
+          "key": "chestHeal",
+          "amount": 12,
+          "mode": "add"
+        }
+      ],
+      "perk": "Show Off",
+      "description": "Start with +25% luck. Opening a box heals 12 health."
+    },
+    {
+      "id": "toaster",
+      "name": "Toastmaster",
+      "title": "Breakfast comes with explosions.",
+      "model": "toaster",
+      "weapon": "flame",
+      "effects": [
+        {
+          "key": "explosion",
+          "amount": 12,
+          "mode": "add"
+        }
+      ],
+      "perk": "Pop Goes Toast",
+      "description": "Defeated enemies explode for 12 damage."
+    }
+  ],
+  "weapons": [
+    {
+      "id": "flowers",
+      "name": "Flowers",
+      "family": "Garden",
+      "damage": 1,
+      "rate": 1,
+      "range": 18,
+      "turret": false
+    },
+    {
+      "id": "gun",
+      "name": "Gun",
+      "family": "Shots",
+      "damage": 1,
+      "rate": 1,
+      "range": 24,
+      "turret": false
+    },
+    {
+      "id": "shotgun",
+      "name": "Shotgun",
+      "family": "Shots",
+      "damage": 0.6,
+      "rate": 0.65,
+      "range": 17,
+      "turret": false
+    },
+    {
+      "id": "flame",
+      "name": "Fire Gun",
+      "family": "Fire",
+      "damage": 0.65,
+      "rate": 1.3,
+      "range": 18,
+      "turret": false
+    },
+    {
+      "id": "poison",
+      "name": "Poison Gun",
+      "family": "Poison",
+      "damage": 0.7,
+      "rate": 1,
+      "range": 22,
+      "turret": false
+    },
+    {
+      "id": "ice",
+      "name": "Ice Gun",
+      "family": "Ice",
+      "damage": 0.7,
+      "rate": 1,
+      "range": 24,
+      "turret": false
+    },
+    {
+      "id": "rail",
+      "name": "Rail Gun",
+      "family": "Shots",
+      "damage": 2.4,
+      "rate": 0.5,
+      "range": 36,
+      "turret": false
+    },
+    {
+      "id": "lightning",
+      "name": "Lightning",
+      "family": "Lightning",
+      "damage": 1.1,
+      "rate": 0.8,
+      "range": 26,
+      "turret": false
+    },
+    {
+      "id": "saw",
+      "name": "Saw",
+      "family": "Thorns",
+      "damage": 1.6,
+      "rate": 1,
+      "range": 8,
+      "turret": false
+    },
+    {
+      "id": "rocket",
+      "name": "Rocket",
+      "family": "Boom",
+      "damage": 2,
+      "rate": 0.55,
+      "range": 30,
+      "turret": false
+    },
+    {
+      "id": "ghost",
+      "name": "Ghost Ball",
+      "family": "Ghost",
+      "damage": 1.1,
+      "rate": 1,
+      "range": 26,
+      "turret": false
+    },
+    {
+      "id": "turret",
+      "name": "Turret",
+      "family": "Engineering",
+      "damage": 1,
+      "rate": 1.5,
+      "range": 25,
+      "turret": true
+    },
+    {
+      "id": "fire-turret",
+      "name": "Fire Turret",
+      "family": "Fire",
+      "damage": 0.8,
+      "rate": 1.4,
+      "range": 18,
+      "turret": true
+    },
+    {
+      "id": "ice-turret",
+      "name": "Ice Turret",
+      "family": "Frost",
+      "damage": 0.8,
+      "rate": 1.1,
+      "range": 22,
+      "turret": true
+    },
+    {
+      "id": "poison-turret",
+      "name": "Poison Turret",
+      "family": "Toxic",
+      "damage": 0.8,
+      "rate": 1.1,
+      "range": 22,
+      "turret": true
+    },
+    {
+      "id": "lightning-turret",
+      "name": "Storm Turret",
+      "family": "Electric",
+      "damage": 1.2,
+      "rate": 0.9,
+      "range": 26,
+      "turret": true
+    },
+    {
+      "id": "rocket-turret",
+      "name": "Rocket Turret",
+      "family": "Explosives",
+      "damage": 2.3,
+      "rate": 0.5,
+      "range": 30,
+      "turret": true
+    },
+    {
+      "id": "boomerang",
+      "name": "Boomerang",
+      "family": "Shots",
+      "damage": 1.1,
+      "rate": 0.7,
+      "range": 25,
+      "turret": false
+    },
+    {
+      "id": "disc",
+      "name": "Disc",
+      "family": "Shots",
+      "damage": 0.8,
+      "rate": 0.8,
+      "range": 28,
+      "turret": false
+    },
+    {
+      "id": "harpoon",
+      "name": "Harpoon",
+      "family": "Shots",
+      "damage": 1.8,
+      "rate": 0.6,
+      "range": 30,
+      "turret": false
+    },
+    {
+      "id": "gravity",
+      "name": "Gravity Jar",
+      "family": "Ghost",
+      "damage": 0.7,
+      "rate": 0.65,
+      "range": 25,
+      "turret": false
+    },
+    {
+      "id": "horn",
+      "name": "Horn",
+      "family": "Magic",
+      "damage": 1.1,
+      "rate": 0.8,
+      "range": 14,
+      "turret": false
+    },
+    {
+      "id": "bubble",
+      "name": "Bubble Gun",
+      "family": "Ice",
+      "damage": 0.85,
+      "rate": 0.8,
+      "range": 24,
+      "turret": false
+    },
+    {
+      "id": "meteor",
+      "name": "Meteor Gun",
+      "family": "Fire",
+      "damage": 2.5,
+      "rate": 0.45,
+      "range": 32,
+      "turret": false
+    },
+    {
+      "id": "bomb",
+      "name": "Rolling Bomb",
+      "family": "Boom",
+      "damage": 2.2,
+      "rate": 0.5,
+      "range": 25,
+      "turret": false
+    }
+  ],
+  "weaponCap": 3,
+  "loot": [
+    {
+      "id": "needle-0",
+      "title": "Pierce",
+      "family": "Ballistics",
+      "effects": [
+        {
+          "key": "pierce",
+          "amount": 1,
+          "mode": "add"
+        }
+      ],
+      "name": "Pierce",
+      "kind": "item"
+    },
+    {
+      "id": "needle-1",
+      "title": "Fast Shots",
+      "family": "Ballistics",
+      "effects": [
+        {
+          "key": "projectileSpeed",
+          "amount": 0.12,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Fast Shots",
+      "kind": "item"
+    },
+    {
+      "id": "scatter-0",
+      "title": "More Shots",
+      "family": "Ballistics",
+      "effects": [
+        {
+          "key": "multishot",
+          "amount": 1,
+          "mode": "add"
+        }
+      ],
+      "name": "More Shots",
+      "kind": "item"
+    },
+    {
+      "id": "scatter-1",
+      "title": "Big Shots",
+      "family": "Ballistics",
+      "effects": [
+        {
+          "key": "size",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Big Shots",
+      "kind": "item"
+    },
+    {
+      "id": "detonator-0",
+      "title": "Blast",
+      "family": "Explosives",
+      "effects": [
+        {
+          "key": "splash",
+          "amount": 0.3,
+          "mode": "add"
+        }
+      ],
+      "name": "Blast",
+      "kind": "item"
+    },
+    {
+      "id": "detonator-1",
+      "title": "Power",
+      "family": "Explosives",
+      "effects": [
+        {
+          "key": "damage",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Power",
+      "kind": "item"
+    },
+    {
+      "id": "coil-0",
+      "title": "Lightning",
+      "family": "Electric",
+      "effects": [
+        {
+          "key": "chain",
+          "amount": 1,
+          "mode": "add"
+        }
+      ],
+      "name": "Lightning",
+      "kind": "item"
+    },
+    {
+      "id": "coil-1",
+      "title": "Reach",
+      "family": "Electric",
+      "effects": [
+        {
+          "key": "range",
+          "amount": 0.12,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Reach",
+      "kind": "item"
+    },
+    {
+      "id": "cinder-0",
+      "title": "Fire",
+      "family": "Fire",
+      "effects": [
+        {
+          "key": "burn",
+          "amount": 5,
+          "mode": "add"
+        }
+      ],
+      "name": "Fire",
+      "kind": "item"
+    },
+    {
+      "id": "cinder-1",
+      "title": "Speed",
+      "family": "Fire",
+      "effects": [
+        {
+          "key": "rate",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Speed",
+      "kind": "item"
+    },
+    {
+      "id": "venom-0",
+      "title": "Poison",
+      "family": "Toxic",
+      "effects": [
+        {
+          "key": "poison",
+          "amount": 4,
+          "mode": "add"
+        }
+      ],
+      "name": "Poison",
+      "kind": "item"
+    },
+    {
+      "id": "venom-1",
+      "title": "Power",
+      "family": "Toxic",
+      "effects": [
+        {
+          "key": "damage",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Power",
+      "kind": "item"
+    },
+    {
+      "id": "ice-0",
+      "title": "Ice",
+      "family": "Frost",
+      "effects": [
+        {
+          "key": "slow",
+          "amount": 0.16,
+          "mode": "add"
+        }
+      ],
+      "name": "Ice",
+      "kind": "item"
+    },
+    {
+      "id": "ice-1",
+      "title": "Reach",
+      "family": "Frost",
+      "effects": [
+        {
+          "key": "range",
+          "amount": 0.12,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Reach",
+      "kind": "item"
+    },
+    {
+      "id": "hammer-0",
+      "title": "Push",
+      "family": "Ballistics",
+      "effects": [
+        {
+          "key": "knockback",
+          "amount": 0.6,
+          "mode": "add"
+        }
+      ],
+      "name": "Push",
+      "kind": "item"
+    },
+    {
+      "id": "hammer-1",
+      "title": "Big Shots",
+      "family": "Ballistics",
+      "effects": [
+        {
+          "key": "size",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Big Shots",
+      "kind": "item"
+    },
+    {
+      "id": "guillotine-0",
+      "title": "Finish",
+      "family": "Assassin",
+      "effects": [
+        {
+          "key": "execute",
+          "amount": 0.06,
+          "mode": "add"
+        }
+      ],
+      "name": "Finish",
+      "kind": "item"
+    },
+    {
+      "id": "guillotine-1",
+      "title": "Boss Power",
+      "family": "Assassin",
+      "effects": [
+        {
+          "key": "bossDamage",
+          "amount": 0.15,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Boss Power",
+      "kind": "item"
+    },
+    {
+      "id": "fang-0",
+      "title": "Vampire",
+      "family": "Vampiric",
+      "effects": [
+        {
+          "key": "lifesteal",
+          "amount": 0.025,
+          "mode": "add"
+        }
+      ],
+      "name": "Vampire",
+      "kind": "item"
+    },
+    {
+      "id": "fang-1",
+      "title": "Power",
+      "family": "Vampiric",
+      "effects": [
+        {
+          "key": "damage",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Power",
+      "kind": "item"
+    },
+    {
+      "id": "scope-0",
+      "title": "Critical",
+      "family": "Precision",
+      "effects": [
+        {
+          "key": "crit",
+          "amount": 0.08,
+          "mode": "add"
+        }
+      ],
+      "name": "Critical",
+      "kind": "item"
+    },
+    {
+      "id": "scope-1",
+      "title": "Big Critical",
+      "family": "Precision",
+      "effects": [
+        {
+          "key": "critPower",
+          "amount": 0.25,
+          "mode": "add"
+        }
+      ],
+      "name": "Big Critical",
+      "kind": "item"
+    },
+    {
+      "id": "shrapnel-0",
+      "title": "Boom",
+      "family": "Explosives",
+      "effects": [
+        {
+          "key": "explosion",
+          "amount": 10,
+          "mode": "add"
+        }
+      ],
+      "name": "Boom",
+      "kind": "item"
+    },
+    {
+      "id": "shrapnel-1",
+      "title": "Blast",
+      "family": "Explosives",
+      "effects": [
+        {
+          "key": "splash",
+          "amount": 0.3,
+          "mode": "add"
+        }
+      ],
+      "name": "Blast",
+      "kind": "item"
+    },
+    {
+      "id": "stun-0",
+      "title": "Stun",
+      "family": "Electric",
+      "effects": [
+        {
+          "key": "stun",
+          "amount": 0.08,
+          "mode": "add"
+        }
+      ],
+      "name": "Stun",
+      "kind": "item"
+    },
+    {
+      "id": "stun-1",
+      "title": "Lightning",
+      "family": "Electric",
+      "effects": [
+        {
+          "key": "chain",
+          "amount": 1,
+          "mode": "add"
+        }
+      ],
+      "name": "Lightning",
+      "kind": "item"
+    },
+    {
+      "id": "satellite-0",
+      "title": "Orbit",
+      "family": "Orbitals",
+      "effects": [
+        {
+          "key": "auraDamage",
+          "amount": 8,
+          "mode": "add"
+        }
+      ],
+      "name": "Orbit",
+      "kind": "item"
+    },
+    {
+      "id": "satellite-1",
+      "title": "Magnet",
+      "family": "Orbitals",
+      "effects": [
+        {
+          "key": "pickup",
+          "amount": 0.12,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Magnet",
+      "kind": "item"
+    },
+    {
+      "id": "cloud-0",
+      "title": "Aura",
+      "family": "Aura",
+      "effects": [
+        {
+          "key": "auraDamage",
+          "amount": 8,
+          "mode": "add"
+        }
+      ],
+      "name": "Aura",
+      "kind": "item"
+    },
+    {
+      "id": "cloud-1",
+      "title": "Poison",
+      "family": "Aura",
+      "effects": [
+        {
+          "key": "poison",
+          "amount": 4,
+          "mode": "add"
+        }
+      ],
+      "name": "Poison",
+      "kind": "item"
+    },
+    {
+      "id": "drone-0",
+      "title": "Drone",
+      "family": "Engineering",
+      "effects": [
+        {
+          "key": "chain",
+          "amount": 1,
+          "mode": "add"
+        }
+      ],
+      "name": "Drone",
+      "kind": "item"
+    },
+    {
+      "id": "drone-1",
+      "title": "Turret Speed",
+      "family": "Engineering",
+      "effects": [
+        {
+          "key": "turretRate",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Turret Speed",
+      "kind": "item"
+    },
+    {
+      "id": "dash-charge-0",
+      "title": "Dash Blast",
+      "family": "Mobility",
+      "effects": [
+        {
+          "key": "dashBlast",
+          "amount": 12,
+          "mode": "add"
+        }
+      ],
+      "name": "Dash Blast",
+      "kind": "item"
+    },
+    {
+      "id": "dash-charge-1",
+      "title": "Quick Dash",
+      "family": "Mobility",
+      "effects": [
+        {
+          "key": "dashCooldown",
+          "amount": -0.12,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Quick Dash",
+      "kind": "item"
+    },
+    {
+      "id": "shell-0",
+      "title": "Armor",
+      "family": "Defense",
+      "effects": [
+        {
+          "key": "armor",
+          "amount": 2,
+          "mode": "add"
+        }
+      ],
+      "name": "Armor",
+      "kind": "item"
+    },
+    {
+      "id": "shell-1",
+      "title": "Health",
+      "family": "Defense",
+      "effects": [
+        {
+          "key": "maxHp",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Health",
+      "kind": "item"
+    },
+    {
+      "id": "spring-0",
+      "title": "Dodge",
+      "family": "Mobility",
+      "effects": [
+        {
+          "key": "dodge",
+          "amount": 0.05,
+          "mode": "add"
+        }
+      ],
+      "name": "Dodge",
+      "kind": "item"
+    },
+    {
+      "id": "spring-1",
+      "title": "Move",
+      "family": "Mobility",
+      "effects": [
+        {
+          "key": "speed",
+          "amount": 0.12,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Move",
+      "kind": "item"
+    },
+    {
+      "id": "briar-0",
+      "title": "Thorns",
+      "family": "Defense",
+      "effects": [
+        {
+          "key": "thorns",
+          "amount": 7,
+          "mode": "add"
+        }
+      ],
+      "name": "Thorns",
+      "kind": "item"
+    },
+    {
+      "id": "briar-1",
+      "title": "Armor",
+      "family": "Defense",
+      "effects": [
+        {
+          "key": "armor",
+          "amount": 2,
+          "mode": "add"
+        }
+      ],
+      "name": "Armor",
+      "kind": "item"
+    },
+    {
+      "id": "bandage-0",
+      "title": "Heal",
+      "family": "Recovery",
+      "effects": [
+        {
+          "key": "regen",
+          "amount": 0.7,
+          "mode": "add"
+        }
+      ],
+      "name": "Heal",
+      "kind": "item"
+    },
+    {
+      "id": "bandage-1",
+      "title": "Health",
+      "family": "Recovery",
+      "effects": [
+        {
+          "key": "maxHp",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Health",
+      "kind": "item"
+    },
+    {
+      "id": "lunch-0",
+      "title": "Health",
+      "family": "Recovery",
+      "effects": [
+        {
+          "key": "maxHp",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Health",
+      "kind": "item"
+    },
+    {
+      "id": "lunch-1",
+      "title": "Repair",
+      "family": "Recovery",
+      "effects": [
+        {
+          "key": "repair",
+          "amount": 0.5,
+          "mode": "add"
+        }
+      ],
+      "name": "Repair",
+      "kind": "item"
+    },
+    {
+      "id": "defibrillator-0",
+      "title": "Extra Life",
+      "family": "Recovery",
+      "effects": [
+        {
+          "key": "revive",
+          "amount": 1,
+          "mode": "add"
+        }
+      ],
+      "name": "Extra Life",
+      "kind": "item"
+    },
+    {
+      "id": "defibrillator-1",
+      "title": "Heal",
+      "family": "Recovery",
+      "effects": [
+        {
+          "key": "regen",
+          "amount": 0.7,
+          "mode": "add"
+        }
+      ],
+      "name": "Heal",
+      "kind": "item"
+    },
+    {
+      "id": "magnet-0",
+      "title": "Magnet",
+      "family": "Scavenging",
+      "effects": [
+        {
+          "key": "pickup",
+          "amount": 0.12,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Magnet",
+      "kind": "item"
+    },
+    {
+      "id": "magnet-1",
+      "title": "Magnet",
+      "family": "Scavenging",
+      "effects": [
+        {
+          "key": "pickup",
+          "amount": 0.12,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Magnet",
+      "kind": "item"
+    },
+    {
+      "id": "diploma-0",
+      "title": "Learn",
+      "family": "Scavenging",
+      "effects": [
+        {
+          "key": "xpGain",
+          "amount": 0.2,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Learn",
+      "kind": "item"
+    },
+    {
+      "id": "diploma-1",
+      "title": "Reach",
+      "family": "Scavenging",
+      "effects": [
+        {
+          "key": "range",
+          "amount": 0.12,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Reach",
+      "kind": "item"
+    },
+    {
+      "id": "clover-0",
+      "title": "Lucky",
+      "family": "Fortune",
+      "effects": [
+        {
+          "key": "luck",
+          "amount": 0.14,
+          "mode": "add"
+        }
+      ],
+      "name": "Lucky",
+      "kind": "item"
+    },
+    {
+      "id": "clover-1",
+      "title": "Lucky",
+      "family": "Fortune",
+      "effects": [
+        {
+          "key": "chestBonus",
+          "amount": 0.08,
+          "mode": "add"
+        }
+      ],
+      "name": "Lucky",
+      "kind": "item"
+    },
+    {
+      "id": "scrap-0",
+      "title": "Heal",
+      "family": "Engineering",
+      "effects": [
+        {
+          "key": "salvage",
+          "amount": 0.12,
+          "mode": "add"
+        }
+      ],
+      "name": "Heal",
+      "kind": "item"
+    },
+    {
+      "id": "scrap-1",
+      "title": "Turret Power",
+      "family": "Engineering",
+      "effects": [
+        {
+          "key": "turretDamage",
+          "amount": 0.2,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Turret Power",
+      "kind": "item"
+    },
+    {
+      "id": "blueprint-0",
+      "title": "Turret Power",
+      "family": "Engineering",
+      "effects": [
+        {
+          "key": "turretDamage",
+          "amount": 0.2,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Turret Power",
+      "kind": "item"
+    },
+    {
+      "id": "blueprint-1",
+      "title": "Turret Life",
+      "family": "Engineering",
+      "effects": [
+        {
+          "key": "turretDamage",
+          "amount": 0.2,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Turret Life",
+      "kind": "item"
+    },
+    {
+      "id": "servo-0",
+      "title": "Turret Speed",
+      "family": "Engineering",
+      "effects": [
+        {
+          "key": "turretRate",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Turret Speed",
+      "kind": "item"
+    },
+    {
+      "id": "servo-1",
+      "title": "Turret Reach",
+      "family": "Engineering",
+      "effects": [
+        {
+          "key": "turretRange",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Turret Reach",
+      "kind": "item"
+    },
+    {
+      "id": "wrench-0",
+      "title": "Repair",
+      "family": "Engineering",
+      "effects": [
+        {
+          "key": "repair",
+          "amount": 0.5,
+          "mode": "add"
+        }
+      ],
+      "name": "Repair",
+      "kind": "item"
+    },
+    {
+      "id": "wrench-1",
+      "title": "Turret Life",
+      "family": "Engineering",
+      "effects": [
+        {
+          "key": "turretDamage",
+          "amount": 0.2,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Turret Life",
+      "kind": "item"
+    },
+    {
+      "id": "antenna-0",
+      "title": "Turret Reach",
+      "family": "Engineering",
+      "effects": [
+        {
+          "key": "turretRange",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Turret Reach",
+      "kind": "item"
+    },
+    {
+      "id": "antenna-1",
+      "title": "Turret Power",
+      "family": "Engineering",
+      "effects": [
+        {
+          "key": "turretDamage",
+          "amount": 0.2,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Turret Power",
+      "kind": "item"
+    },
+    {
+      "id": "battery-0",
+      "title": "Turret Power",
+      "family": "Engineering",
+      "effects": [
+        {
+          "key": "turretDamage",
+          "amount": 0.2,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Turret Power",
+      "kind": "item"
+    },
+    {
+      "id": "battery-1",
+      "title": "Turret Life",
+      "family": "Engineering",
+      "effects": [
+        {
+          "key": "turretDamage",
+          "amount": 0.2,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Turret Life",
+      "kind": "item"
+    },
+    {
+      "id": "boots-0",
+      "title": "Move",
+      "family": "Mobility",
+      "effects": [
+        {
+          "key": "speed",
+          "amount": 0.12,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Move",
+      "kind": "item"
+    },
+    {
+      "id": "boots-1",
+      "title": "Quick Dash",
+      "family": "Mobility",
+      "effects": [
+        {
+          "key": "dashCooldown",
+          "amount": -0.12,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Quick Dash",
+      "kind": "item"
+    },
+    {
+      "id": "barrel-0",
+      "title": "Reach",
+      "family": "Ballistics",
+      "effects": [
+        {
+          "key": "range",
+          "amount": 0.12,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Reach",
+      "kind": "item"
+    },
+    {
+      "id": "barrel-1",
+      "title": "Fast Shots",
+      "family": "Ballistics",
+      "effects": [
+        {
+          "key": "projectileSpeed",
+          "amount": 0.12,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Fast Shots",
+      "kind": "item"
+    },
+    {
+      "id": "trigger-0",
+      "title": "Speed",
+      "family": "Ballistics",
+      "effects": [
+        {
+          "key": "rate",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Speed",
+      "kind": "item"
+    },
+    {
+      "id": "trigger-1",
+      "title": "Power",
+      "family": "Ballistics",
+      "effects": [
+        {
+          "key": "damage",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Power",
+      "kind": "item"
+    },
+    {
+      "id": "giant-0",
+      "title": "Big Shots",
+      "family": "Ballistics",
+      "effects": [
+        {
+          "key": "size",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Big Shots",
+      "kind": "item"
+    },
+    {
+      "id": "giant-1",
+      "title": "Push",
+      "family": "Ballistics",
+      "effects": [
+        {
+          "key": "knockback",
+          "amount": 0.6,
+          "mode": "add"
+        }
+      ],
+      "name": "Push",
+      "kind": "item"
+    },
+    {
+      "id": "boss-tax-0",
+      "title": "Boss Power",
+      "family": "Assassin",
+      "effects": [
+        {
+          "key": "bossDamage",
+          "amount": 0.15,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Boss Power",
+      "kind": "item"
+    },
+    {
+      "id": "boss-tax-1",
+      "title": "Critical",
+      "family": "Assassin",
+      "effects": [
+        {
+          "key": "crit",
+          "amount": 0.08,
+          "mode": "add"
+        }
+      ],
+      "name": "Critical",
+      "kind": "item"
+    },
+    {
+      "id": "comet-0",
+      "title": "Fire",
+      "family": "Explosives",
+      "effects": [
+        {
+          "key": "burn",
+          "amount": 5,
+          "mode": "add"
+        }
+      ],
+      "name": "Fire",
+      "kind": "item"
+    },
+    {
+      "id": "comet-1",
+      "title": "Boom",
+      "family": "Explosives",
+      "effects": [
+        {
+          "key": "explosion",
+          "amount": 10,
+          "mode": "add"
+        }
+      ],
+      "name": "Boom",
+      "kind": "item"
+    },
+    {
+      "id": "snowstorm-0",
+      "title": "Ice",
+      "family": "Frost",
+      "effects": [
+        {
+          "key": "slow",
+          "amount": 0.16,
+          "mode": "add"
+        }
+      ],
+      "name": "Ice",
+      "kind": "item"
+    },
+    {
+      "id": "snowstorm-1",
+      "title": "Lightning",
+      "family": "Frost",
+      "effects": [
+        {
+          "key": "chain",
+          "amount": 1,
+          "mode": "add"
+        }
+      ],
+      "name": "Lightning",
+      "kind": "item"
+    },
+    {
+      "id": "rot-0",
+      "title": "Poison",
+      "family": "Toxic",
+      "effects": [
+        {
+          "key": "poison",
+          "amount": 4,
+          "mode": "add"
+        }
+      ],
+      "name": "Poison",
+      "kind": "item"
+    },
+    {
+      "id": "rot-1",
+      "title": "Aura",
+      "family": "Toxic",
+      "effects": [
+        {
+          "key": "auraDamage",
+          "amount": 8,
+          "mode": "add"
+        }
+      ],
+      "name": "Aura",
+      "kind": "item"
+    },
+    {
+      "id": "leech-0",
+      "title": "Vampire",
+      "family": "Vampiric",
+      "effects": [
+        {
+          "key": "lifesteal",
+          "amount": 0.025,
+          "mode": "add"
+        }
+      ],
+      "name": "Vampire",
+      "kind": "item"
+    },
+    {
+      "id": "leech-1",
+      "title": "Repair",
+      "family": "Vampiric",
+      "effects": [
+        {
+          "key": "repair",
+          "amount": 0.5,
+          "mode": "add"
+        }
+      ],
+      "name": "Repair",
+      "kind": "item"
+    },
+    {
+      "id": "phase-cloak-0",
+      "title": "Ghost",
+      "family": "Spectral",
+      "effects": [
+        {
+          "key": "ghost",
+          "amount": 0.3,
+          "mode": "add"
+        }
+      ],
+      "name": "Ghost",
+      "kind": "item"
+    },
+    {
+      "id": "phase-cloak-1",
+      "title": "Dodge",
+      "family": "Spectral",
+      "effects": [
+        {
+          "key": "dodge",
+          "amount": 0.05,
+          "mode": "add"
+        }
+      ],
+      "name": "Dodge",
+      "kind": "item"
+    },
+    {
+      "id": "mole-claws-0",
+      "title": "Mole",
+      "family": "Burrowing",
+      "effects": [
+        {
+          "key": "burrow",
+          "amount": 24,
+          "mode": "add"
+        }
+      ],
+      "name": "Mole",
+      "kind": "item"
+    },
+    {
+      "id": "mole-claws-1",
+      "title": "Move",
+      "family": "Burrowing",
+      "effects": [
+        {
+          "key": "speed",
+          "amount": 0.12,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Move",
+      "kind": "item"
+    },
+    {
+      "id": "ink-0",
+      "title": "Blind",
+      "family": "Shadow",
+      "effects": [
+        {
+          "key": "blind",
+          "amount": 0.18,
+          "mode": "add"
+        }
+      ],
+      "name": "Blind",
+      "kind": "item"
+    },
+    {
+      "id": "ink-1",
+      "title": "Power",
+      "family": "Shadow",
+      "effects": [
+        {
+          "key": "damage",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Power",
+      "kind": "item"
+    },
+    {
+      "id": "absolute-zero-0",
+      "title": "Freeze",
+      "family": "Frost",
+      "effects": [
+        {
+          "key": "freeze",
+          "amount": 0.15,
+          "mode": "add"
+        }
+      ],
+      "name": "Freeze",
+      "kind": "item"
+    },
+    {
+      "id": "absolute-zero-1",
+      "title": "Ice",
+      "family": "Frost",
+      "effects": [
+        {
+          "key": "slow",
+          "amount": 0.16,
+          "mode": "add"
+        }
+      ],
+      "name": "Ice",
+      "kind": "item"
+    },
+    {
+      "id": "bubble-0",
+      "title": "Shield",
+      "family": "Defense",
+      "effects": [
+        {
+          "key": "shield",
+          "amount": 25,
+          "mode": "add"
+        }
+      ],
+      "name": "Shield",
+      "kind": "item"
+    },
+    {
+      "id": "bubble-1",
+      "title": "Armor",
+      "family": "Defense",
+      "effects": [
+        {
+          "key": "armor",
+          "amount": 2,
+          "mode": "add"
+        }
+      ],
+      "name": "Armor",
+      "kind": "item"
+    },
+    {
+      "id": "rage-0",
+      "title": "Rage",
+      "family": "Berserker",
+      "effects": [
+        {
+          "key": "berserk",
+          "amount": 0.25,
+          "mode": "add"
+        }
+      ],
+      "name": "Rage",
+      "kind": "item"
+    },
+    {
+      "id": "rage-1",
+      "title": "Speed",
+      "family": "Berserker",
+      "effects": [
+        {
+          "key": "rate",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Speed",
+      "kind": "item"
+    },
+    {
+      "id": "bounce-0",
+      "title": "Bounce",
+      "family": "Ballistics",
+      "effects": [
+        {
+          "key": "ricochet",
+          "amount": 1,
+          "mode": "add"
+        }
+      ],
+      "name": "Bounce",
+      "kind": "item"
+    },
+    {
+      "id": "bounce-1",
+      "title": "Power",
+      "family": "Ballistics",
+      "effects": [
+        {
+          "key": "damage",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Power",
+      "kind": "item"
+    },
+    {
+      "id": "storm-bottle-0",
+      "title": "Storm",
+      "family": "Storm",
+      "effects": [
+        {
+          "key": "storm",
+          "amount": 18,
+          "mode": "add"
+        }
+      ],
+      "name": "Storm",
+      "kind": "item"
+    },
+    {
+      "id": "storm-bottle-1",
+      "title": "Lightning",
+      "family": "Storm",
+      "effects": [
+        {
+          "key": "chain",
+          "amount": 1,
+          "mode": "add"
+        }
+      ],
+      "name": "Lightning",
+      "kind": "item"
+    },
+    {
+      "id": "nova-core-0",
+      "title": "Nova",
+      "family": "Arcane",
+      "effects": [
+        {
+          "key": "nova",
+          "amount": 22,
+          "mode": "add"
+        }
+      ],
+      "name": "Nova",
+      "kind": "item"
+    },
+    {
+      "id": "nova-core-1",
+      "title": "Reach",
+      "family": "Arcane",
+      "effects": [
+        {
+          "key": "range",
+          "amount": 0.12,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Reach",
+      "kind": "item"
+    },
+    {
+      "id": "mushroom-0",
+      "title": "Poison Cloud",
+      "family": "Toxic",
+      "effects": [
+        {
+          "key": "pools",
+          "amount": 8,
+          "mode": "add"
+        }
+      ],
+      "name": "Poison Cloud",
+      "kind": "item"
+    },
+    {
+      "id": "mushroom-1",
+      "title": "Poison",
+      "family": "Toxic",
+      "effects": [
+        {
+          "key": "poison",
+          "amount": 4,
+          "mode": "add"
+        }
+      ],
+      "name": "Poison",
+      "kind": "item"
+    },
+    {
+      "id": "return-0",
+      "title": "Return",
+      "family": "Ballistics",
+      "effects": [
+        {
+          "key": "boomerang",
+          "amount": 1,
+          "mode": "add"
+        }
+      ],
+      "name": "Return",
+      "kind": "item"
+    },
+    {
+      "id": "return-1",
+      "title": "Pierce",
+      "family": "Ballistics",
+      "effects": [
+        {
+          "key": "pierce",
+          "amount": 1,
+          "mode": "add"
+        }
+      ],
+      "name": "Pierce",
+      "kind": "item"
+    },
+    {
+      "id": "thorn-crown-0",
+      "title": "Thorns",
+      "family": "Nature",
+      "effects": [
+        {
+          "key": "thorns",
+          "amount": 7,
+          "mode": "add"
+        }
+      ],
+      "name": "Thorns",
+      "kind": "item"
+    },
+    {
+      "id": "thorn-crown-1",
+      "title": "Aura",
+      "family": "Nature",
+      "effects": [
+        {
+          "key": "auraDamage",
+          "amount": 8,
+          "mode": "add"
+        }
+      ],
+      "name": "Aura",
+      "kind": "item"
+    },
+    {
+      "id": "vampire-heart-0",
+      "title": "Vampire",
+      "family": "Vampiric",
+      "effects": [
+        {
+          "key": "lifesteal",
+          "amount": 0.025,
+          "mode": "add"
+        }
+      ],
+      "name": "Vampire",
+      "kind": "item"
+    },
+    {
+      "id": "vampire-heart-1",
+      "title": "Speed",
+      "family": "Vampiric",
+      "effects": [
+        {
+          "key": "rate",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Speed",
+      "kind": "item"
+    },
+    {
+      "id": "hellfire-0",
+      "title": "Fire",
+      "family": "Fire",
+      "effects": [
+        {
+          "key": "burn",
+          "amount": 5,
+          "mode": "add"
+        }
+      ],
+      "name": "Fire",
+      "kind": "item"
+    },
+    {
+      "id": "hellfire-1",
+      "title": "Boom",
+      "family": "Fire",
+      "effects": [
+        {
+          "key": "explosion",
+          "amount": 10,
+          "mode": "add"
+        }
+      ],
+      "name": "Boom",
+      "kind": "item"
+    },
+    {
+      "id": "tank-shell-0",
+      "title": "Health",
+      "family": "Defense",
+      "effects": [
+        {
+          "key": "maxHp",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Health",
+      "kind": "item"
+    },
+    {
+      "id": "tank-shell-1",
+      "title": "Shield",
+      "family": "Defense",
+      "effects": [
+        {
+          "key": "shield",
+          "amount": 25,
+          "mode": "add"
+        }
+      ],
+      "name": "Shield",
+      "kind": "item"
+    },
+    {
+      "id": "ghost-orb-0",
+      "title": "Ghost",
+      "family": "Spectral",
+      "effects": [
+        {
+          "key": "ghost",
+          "amount": 0.3,
+          "mode": "add"
+        }
+      ],
+      "name": "Ghost",
+      "kind": "item"
+    },
+    {
+      "id": "ghost-orb-1",
+      "title": "Orbit",
+      "family": "Spectral",
+      "effects": [
+        {
+          "key": "auraDamage",
+          "amount": 8,
+          "mode": "add"
+        }
+      ],
+      "name": "Orbit",
+      "kind": "item"
+    },
+    {
+      "id": "mole-drill-0",
+      "title": "Mole",
+      "family": "Burrowing",
+      "effects": [
+        {
+          "key": "burrow",
+          "amount": 24,
+          "mode": "add"
+        }
+      ],
+      "name": "Mole",
+      "kind": "item"
+    },
+    {
+      "id": "mole-drill-1",
+      "title": "Quick Dash",
+      "family": "Burrowing",
+      "effects": [
+        {
+          "key": "dashCooldown",
+          "amount": -0.12,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Quick Dash",
+      "kind": "item"
+    },
+    {
+      "id": "blindfold-0",
+      "title": "Blind",
+      "family": "Shadow",
+      "effects": [
+        {
+          "key": "blind",
+          "amount": 0.18,
+          "mode": "add"
+        }
+      ],
+      "name": "Blind",
+      "kind": "item"
+    },
+    {
+      "id": "blindfold-1",
+      "title": "Critical",
+      "family": "Shadow",
+      "effects": [
+        {
+          "key": "crit",
+          "amount": 0.08,
+          "mode": "add"
+        }
+      ],
+      "name": "Critical",
+      "kind": "item"
+    },
+    {
+      "id": "chaos-0",
+      "title": "Storm",
+      "family": "Chaos",
+      "effects": [
+        {
+          "key": "storm",
+          "amount": 18,
+          "mode": "add"
+        }
+      ],
+      "name": "Storm",
+      "kind": "item"
+    },
+    {
+      "id": "chaos-1",
+      "title": "Nova",
+      "family": "Chaos",
+      "effects": [
+        {
+          "key": "nova",
+          "amount": 22,
+          "mode": "add"
+        }
+      ],
+      "name": "Nova",
+      "kind": "item"
+    },
+    {
+      "id": "ice-heart-0",
+      "title": "Freeze",
+      "family": "Frost",
+      "effects": [
+        {
+          "key": "freeze",
+          "amount": 0.15,
+          "mode": "add"
+        }
+      ],
+      "name": "Freeze",
+      "kind": "item"
+    },
+    {
+      "id": "ice-heart-1",
+      "title": "Shield",
+      "family": "Frost",
+      "effects": [
+        {
+          "key": "shield",
+          "amount": 25,
+          "mode": "add"
+        }
+      ],
+      "name": "Shield",
+      "kind": "item"
+    },
+    {
+      "id": "union-0",
+      "title": "Turret Power",
+      "family": "Engineering",
+      "effects": [
+        {
+          "key": "turretDamage",
+          "amount": 0.2,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Turret Power",
+      "kind": "skill"
+    },
+    {
+      "id": "union-1",
+      "title": "Turret Power",
+      "family": "Engineering",
+      "effects": [
+        {
+          "key": "turretDamage",
+          "amount": 0.2,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Turret Power",
+      "kind": "skill"
+    },
+    {
+      "id": "overtime-0",
+      "title": "Turret Speed",
+      "family": "Engineering",
+      "effects": [
+        {
+          "key": "turretRate",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Turret Speed",
+      "kind": "skill"
+    },
+    {
+      "id": "overtime-1",
+      "title": "Turret Life",
+      "family": "Engineering",
+      "effects": [
+        {
+          "key": "turretDamage",
+          "amount": 0.2,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Turret Life",
+      "kind": "skill"
+    },
+    {
+      "id": "remote-0",
+      "title": "Turret Reach",
+      "family": "Engineering",
+      "effects": [
+        {
+          "key": "turretRange",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Turret Reach",
+      "kind": "skill"
+    },
+    {
+      "id": "remote-1",
+      "title": "Magnet",
+      "family": "Engineering",
+      "effects": [
+        {
+          "key": "pickup",
+          "amount": 0.12,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Magnet",
+      "kind": "skill"
+    },
+    {
+      "id": "warranty-0",
+      "title": "Turret Life",
+      "family": "Engineering",
+      "effects": [
+        {
+          "key": "turretDamage",
+          "amount": 0.2,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Turret Life",
+      "kind": "skill"
+    },
+    {
+      "id": "warranty-1",
+      "title": "Repair",
+      "family": "Engineering",
+      "effects": [
+        {
+          "key": "repair",
+          "amount": 0.5,
+          "mode": "add"
+        }
+      ],
+      "name": "Repair",
+      "kind": "skill"
+    },
+    {
+      "id": "scrapper-0",
+      "title": "Heal",
+      "family": "Engineering",
+      "effects": [
+        {
+          "key": "salvage",
+          "amount": 0.12,
+          "mode": "add"
+        }
+      ],
+      "name": "Heal",
+      "kind": "skill"
+    },
+    {
+      "id": "scrapper-1",
+      "title": "Learn",
+      "family": "Engineering",
+      "effects": [
+        {
+          "key": "xpGain",
+          "amount": 0.2,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Learn",
+      "kind": "skill"
+    },
+    {
+      "id": "interns-0",
+      "title": "Drone",
+      "family": "Engineering",
+      "effects": [
+        {
+          "key": "chain",
+          "amount": 1,
+          "mode": "add"
+        }
+      ],
+      "name": "Drone",
+      "kind": "skill"
+    },
+    {
+      "id": "interns-1",
+      "title": "Turret Power",
+      "family": "Engineering",
+      "effects": [
+        {
+          "key": "turretDamage",
+          "amount": 0.2,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Turret Power",
+      "kind": "skill"
+    },
+    {
+      "id": "field-medic-0",
+      "title": "Repair",
+      "family": "Engineering",
+      "effects": [
+        {
+          "key": "repair",
+          "amount": 0.5,
+          "mode": "add"
+        }
+      ],
+      "name": "Repair",
+      "kind": "skill"
+    },
+    {
+      "id": "field-medic-1",
+      "title": "Heal",
+      "family": "Engineering",
+      "effects": [
+        {
+          "key": "regen",
+          "amount": 0.7,
+          "mode": "add"
+        }
+      ],
+      "name": "Heal",
+      "kind": "skill"
+    },
+    {
+      "id": "automation-0",
+      "title": "Turret Speed",
+      "family": "Engineering",
+      "effects": [
+        {
+          "key": "turretRate",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Turret Speed",
+      "kind": "skill"
+    },
+    {
+      "id": "automation-1",
+      "title": "Turret Power",
+      "family": "Engineering",
+      "effects": [
+        {
+          "key": "turretDamage",
+          "amount": 0.2,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Turret Power",
+      "kind": "skill"
+    },
+    {
+      "id": "blood-0",
+      "title": "Vampire",
+      "family": "Vampiric",
+      "effects": [
+        {
+          "key": "lifesteal",
+          "amount": 0.025,
+          "mode": "add"
+        }
+      ],
+      "name": "Vampire",
+      "kind": "skill"
+    },
+    {
+      "id": "blood-1",
+      "title": "Health",
+      "family": "Vampiric",
+      "effects": [
+        {
+          "key": "maxHp",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Health",
+      "kind": "skill"
+    },
+    {
+      "id": "red-mist-0",
+      "title": "Vampire",
+      "family": "Vampiric",
+      "effects": [
+        {
+          "key": "lifesteal",
+          "amount": 0.025,
+          "mode": "add"
+        }
+      ],
+      "name": "Vampire",
+      "kind": "skill"
+    },
+    {
+      "id": "red-mist-1",
+      "title": "Boom",
+      "family": "Vampiric",
+      "effects": [
+        {
+          "key": "explosion",
+          "amount": 10,
+          "mode": "add"
+        }
+      ],
+      "name": "Boom",
+      "kind": "skill"
+    },
+    {
+      "id": "fast-0",
+      "title": "Move",
+      "family": "Mobility",
+      "effects": [
+        {
+          "key": "speed",
+          "amount": 0.12,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Move",
+      "kind": "skill"
+    },
+    {
+      "id": "fast-1",
+      "title": "Dodge",
+      "family": "Mobility",
+      "effects": [
+        {
+          "key": "dodge",
+          "amount": 0.05,
+          "mode": "add"
+        }
+      ],
+      "name": "Dodge",
+      "kind": "skill"
+    },
+    {
+      "id": "blink-0",
+      "title": "Quick Dash",
+      "family": "Mobility",
+      "effects": [
+        {
+          "key": "dashCooldown",
+          "amount": -0.12,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Quick Dash",
+      "kind": "skill"
+    },
+    {
+      "id": "blink-1",
+      "title": "Dash Blast",
+      "family": "Mobility",
+      "effects": [
+        {
+          "key": "dashBlast",
+          "amount": 12,
+          "mode": "add"
+        }
+      ],
+      "name": "Dash Blast",
+      "kind": "skill"
+    },
+    {
+      "id": "impact-0",
+      "title": "Dash Blast",
+      "family": "Mobility",
+      "effects": [
+        {
+          "key": "dashBlast",
+          "amount": 12,
+          "mode": "add"
+        }
+      ],
+      "name": "Dash Blast",
+      "kind": "skill"
+    },
+    {
+      "id": "impact-1",
+      "title": "Push",
+      "family": "Mobility",
+      "effects": [
+        {
+          "key": "knockback",
+          "amount": 0.6,
+          "mode": "add"
+        }
+      ],
+      "name": "Push",
+      "kind": "skill"
+    },
+    {
+      "id": "slippery-0",
+      "title": "Dodge",
+      "family": "Mobility",
+      "effects": [
+        {
+          "key": "dodge",
+          "amount": 0.05,
+          "mode": "add"
+        }
+      ],
+      "name": "Dodge",
+      "kind": "skill"
+    },
+    {
+      "id": "slippery-1",
+      "title": "Move",
+      "family": "Mobility",
+      "effects": [
+        {
+          "key": "speed",
+          "amount": 0.12,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Move",
+      "kind": "skill"
+    },
+    {
+      "id": "thick-0",
+      "title": "Armor",
+      "family": "Defense",
+      "effects": [
+        {
+          "key": "armor",
+          "amount": 2,
+          "mode": "add"
+        }
+      ],
+      "name": "Armor",
+      "kind": "skill"
+    },
+    {
+      "id": "thick-1",
+      "title": "Health",
+      "family": "Defense",
+      "effects": [
+        {
+          "key": "maxHp",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Health",
+      "kind": "skill"
+    },
+    {
+      "id": "spiky-0",
+      "title": "Thorns",
+      "family": "Defense",
+      "effects": [
+        {
+          "key": "thorns",
+          "amount": 7,
+          "mode": "add"
+        }
+      ],
+      "name": "Thorns",
+      "kind": "skill"
+    },
+    {
+      "id": "spiky-1",
+      "title": "Armor",
+      "family": "Defense",
+      "effects": [
+        {
+          "key": "armor",
+          "amount": 2,
+          "mode": "add"
+        }
+      ],
+      "name": "Armor",
+      "kind": "skill"
+    },
+    {
+      "id": "lunch-break-0",
+      "title": "Heal",
+      "family": "Recovery",
+      "effects": [
+        {
+          "key": "regen",
+          "amount": 0.7,
+          "mode": "add"
+        }
+      ],
+      "name": "Heal",
+      "kind": "skill"
+    },
+    {
+      "id": "lunch-break-1",
+      "title": "Health",
+      "family": "Recovery",
+      "effects": [
+        {
+          "key": "maxHp",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Health",
+      "kind": "skill"
+    },
+    {
+      "id": "second-0",
+      "title": "Health",
+      "family": "Recovery",
+      "effects": [
+        {
+          "key": "maxHp",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Health",
+      "kind": "skill"
+    },
+    {
+      "id": "second-1",
+      "title": "Repair",
+      "family": "Recovery",
+      "effects": [
+        {
+          "key": "repair",
+          "amount": 0.5,
+          "mode": "add"
+        }
+      ],
+      "name": "Repair",
+      "kind": "skill"
+    },
+    {
+      "id": "insurance-0",
+      "title": "Extra Life",
+      "family": "Recovery",
+      "effects": [
+        {
+          "key": "revive",
+          "amount": 1,
+          "mode": "add"
+        }
+      ],
+      "name": "Extra Life",
+      "kind": "skill"
+    },
+    {
+      "id": "insurance-1",
+      "title": "Health",
+      "family": "Recovery",
+      "effects": [
+        {
+          "key": "maxHp",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Health",
+      "kind": "skill"
+    },
+    {
+      "id": "critical-0",
+      "title": "Critical",
+      "family": "Precision",
+      "effects": [
+        {
+          "key": "crit",
+          "amount": 0.08,
+          "mode": "add"
+        }
+      ],
+      "name": "Critical",
+      "kind": "skill"
+    },
+    {
+      "id": "critical-1",
+      "title": "Big Critical",
+      "family": "Precision",
+      "effects": [
+        {
+          "key": "critPower",
+          "amount": 0.25,
+          "mode": "add"
+        }
+      ],
+      "name": "Big Critical",
+      "kind": "skill"
+    },
+    {
+      "id": "headhunter-0",
+      "title": "Boss Power",
+      "family": "Assassin",
+      "effects": [
+        {
+          "key": "bossDamage",
+          "amount": 0.15,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Boss Power",
+      "kind": "skill"
+    },
+    {
+      "id": "headhunter-1",
+      "title": "Finish",
+      "family": "Assassin",
+      "effects": [
+        {
+          "key": "execute",
+          "amount": 0.06,
+          "mode": "add"
+        }
+      ],
+      "name": "Finish",
+      "kind": "skill"
+    },
+    {
+      "id": "finish-0",
+      "title": "Finish",
+      "family": "Assassin",
+      "effects": [
+        {
+          "key": "execute",
+          "amount": 0.06,
+          "mode": "add"
+        }
+      ],
+      "name": "Finish",
+      "kind": "skill"
+    },
+    {
+      "id": "finish-1",
+      "title": "Power",
+      "family": "Assassin",
+      "effects": [
+        {
+          "key": "damage",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Power",
+      "kind": "skill"
+    },
+    {
+      "id": "rapid-0",
+      "title": "Speed",
+      "family": "Ballistics",
+      "effects": [
+        {
+          "key": "rate",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Speed",
+      "kind": "skill"
+    },
+    {
+      "id": "rapid-1",
+      "title": "Fast Shots",
+      "family": "Ballistics",
+      "effects": [
+        {
+          "key": "projectileSpeed",
+          "amount": 0.12,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Fast Shots",
+      "kind": "skill"
+    },
+    {
+      "id": "heavy-0",
+      "title": "Power",
+      "family": "Ballistics",
+      "effects": [
+        {
+          "key": "damage",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Power",
+      "kind": "skill"
+    },
+    {
+      "id": "heavy-1",
+      "title": "Push",
+      "family": "Ballistics",
+      "effects": [
+        {
+          "key": "knockback",
+          "amount": 0.6,
+          "mode": "add"
+        }
+      ],
+      "name": "Push",
+      "kind": "skill"
+    },
+    {
+      "id": "fan-0",
+      "title": "More Shots",
+      "family": "Ballistics",
+      "effects": [
+        {
+          "key": "multishot",
+          "amount": 1,
+          "mode": "add"
+        }
+      ],
+      "name": "More Shots",
+      "kind": "skill"
+    },
+    {
+      "id": "fan-1",
+      "title": "Reach",
+      "family": "Ballistics",
+      "effects": [
+        {
+          "key": "range",
+          "amount": 0.12,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Reach",
+      "kind": "skill"
+    },
+    {
+      "id": "piercing-0",
+      "title": "Pierce",
+      "family": "Ballistics",
+      "effects": [
+        {
+          "key": "pierce",
+          "amount": 1,
+          "mode": "add"
+        }
+      ],
+      "name": "Pierce",
+      "kind": "skill"
+    },
+    {
+      "id": "piercing-1",
+      "title": "Big Shots",
+      "family": "Ballistics",
+      "effects": [
+        {
+          "key": "size",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Big Shots",
+      "kind": "skill"
+    },
+    {
+      "id": "boom-0",
+      "title": "Blast",
+      "family": "Explosives",
+      "effects": [
+        {
+          "key": "splash",
+          "amount": 0.3,
+          "mode": "add"
+        }
+      ],
+      "name": "Blast",
+      "kind": "skill"
+    },
+    {
+      "id": "boom-1",
+      "title": "Boom",
+      "family": "Explosives",
+      "effects": [
+        {
+          "key": "explosion",
+          "amount": 10,
+          "mode": "add"
+        }
+      ],
+      "name": "Boom",
+      "kind": "skill"
+    },
+    {
+      "id": "pyro-0",
+      "title": "Fire",
+      "family": "Fire",
+      "effects": [
+        {
+          "key": "burn",
+          "amount": 5,
+          "mode": "add"
+        }
+      ],
+      "name": "Fire",
+      "kind": "skill"
+    },
+    {
+      "id": "pyro-1",
+      "title": "Power",
+      "family": "Fire",
+      "effects": [
+        {
+          "key": "damage",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Power",
+      "kind": "skill"
+    },
+    {
+      "id": "toxic-0",
+      "title": "Poison",
+      "family": "Toxic",
+      "effects": [
+        {
+          "key": "poison",
+          "amount": 4,
+          "mode": "add"
+        }
+      ],
+      "name": "Poison",
+      "kind": "skill"
+    },
+    {
+      "id": "toxic-1",
+      "title": "Aura",
+      "family": "Toxic",
+      "effects": [
+        {
+          "key": "auraDamage",
+          "amount": 8,
+          "mode": "add"
+        }
+      ],
+      "name": "Aura",
+      "kind": "skill"
+    },
+    {
+      "id": "cool-0",
+      "title": "Ice",
+      "family": "Frost",
+      "effects": [
+        {
+          "key": "slow",
+          "amount": 0.16,
+          "mode": "add"
+        }
+      ],
+      "name": "Ice",
+      "kind": "skill"
+    },
+    {
+      "id": "cool-1",
+      "title": "Stun",
+      "family": "Frost",
+      "effects": [
+        {
+          "key": "stun",
+          "amount": 0.08,
+          "mode": "add"
+        }
+      ],
+      "name": "Stun",
+      "kind": "skill"
+    },
+    {
+      "id": "electric-0",
+      "title": "Lightning",
+      "family": "Electric",
+      "effects": [
+        {
+          "key": "chain",
+          "amount": 1,
+          "mode": "add"
+        }
+      ],
+      "name": "Lightning",
+      "kind": "skill"
+    },
+    {
+      "id": "electric-1",
+      "title": "Stun",
+      "family": "Electric",
+      "effects": [
+        {
+          "key": "stun",
+          "amount": 0.08,
+          "mode": "add"
+        }
+      ],
+      "name": "Stun",
+      "kind": "skill"
+    },
+    {
+      "id": "orbit-0",
+      "title": "Orbit",
+      "family": "Orbitals",
+      "effects": [
+        {
+          "key": "auraDamage",
+          "amount": 8,
+          "mode": "add"
+        }
+      ],
+      "name": "Orbit",
+      "kind": "skill"
+    },
+    {
+      "id": "orbit-1",
+      "title": "Big Shots",
+      "family": "Orbitals",
+      "effects": [
+        {
+          "key": "size",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Big Shots",
+      "kind": "skill"
+    },
+    {
+      "id": "aura-0",
+      "title": "Aura",
+      "family": "Aura",
+      "effects": [
+        {
+          "key": "auraDamage",
+          "amount": 8,
+          "mode": "add"
+        }
+      ],
+      "name": "Aura",
+      "kind": "skill"
+    },
+    {
+      "id": "aura-1",
+      "title": "Ice",
+      "family": "Aura",
+      "effects": [
+        {
+          "key": "slow",
+          "amount": 0.16,
+          "mode": "add"
+        }
+      ],
+      "name": "Ice",
+      "kind": "skill"
+    },
+    {
+      "id": "study-0",
+      "title": "Learn",
+      "family": "Scavenging",
+      "effects": [
+        {
+          "key": "xpGain",
+          "amount": 0.2,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Learn",
+      "kind": "skill"
+    },
+    {
+      "id": "study-1",
+      "title": "Magnet",
+      "family": "Scavenging",
+      "effects": [
+        {
+          "key": "pickup",
+          "amount": 0.12,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Magnet",
+      "kind": "skill"
+    },
+    {
+      "id": "vacuum-0",
+      "title": "Magnet",
+      "family": "Scavenging",
+      "effects": [
+        {
+          "key": "pickup",
+          "amount": 0.12,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Magnet",
+      "kind": "skill"
+    },
+    {
+      "id": "vacuum-1",
+      "title": "Magnet",
+      "family": "Scavenging",
+      "effects": [
+        {
+          "key": "pickup",
+          "amount": 0.12,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Magnet",
+      "kind": "skill"
+    },
+    {
+      "id": "lucky-0",
+      "title": "Lucky",
+      "family": "Fortune",
+      "effects": [
+        {
+          "key": "luck",
+          "amount": 0.14,
+          "mode": "add"
+        }
+      ],
+      "name": "Lucky",
+      "kind": "skill"
+    },
+    {
+      "id": "lucky-1",
+      "title": "Lucky",
+      "family": "Fortune",
+      "effects": [
+        {
+          "key": "chestBonus",
+          "amount": 0.08,
+          "mode": "add"
+        }
+      ],
+      "name": "Lucky",
+      "kind": "skill"
+    },
+    {
+      "id": "hoard-0",
+      "title": "Lucky",
+      "family": "Fortune",
+      "effects": [
+        {
+          "key": "chestBonus",
+          "amount": 0.08,
+          "mode": "add"
+        }
+      ],
+      "name": "Lucky",
+      "kind": "skill"
+    },
+    {
+      "id": "hoard-1",
+      "title": "Learn",
+      "family": "Fortune",
+      "effects": [
+        {
+          "key": "xpGain",
+          "amount": 0.2,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Learn",
+      "kind": "skill"
+    },
+    {
+      "id": "sniper-0",
+      "title": "Reach",
+      "family": "Precision",
+      "effects": [
+        {
+          "key": "range",
+          "amount": 0.12,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Reach",
+      "kind": "skill"
+    },
+    {
+      "id": "sniper-1",
+      "title": "Critical",
+      "family": "Precision",
+      "effects": [
+        {
+          "key": "crit",
+          "amount": 0.08,
+          "mode": "add"
+        }
+      ],
+      "name": "Critical",
+      "kind": "skill"
+    },
+    {
+      "id": "meatball-0",
+      "title": "Big Shots",
+      "family": "Ballistics",
+      "effects": [
+        {
+          "key": "size",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Big Shots",
+      "kind": "skill"
+    },
+    {
+      "id": "meatball-1",
+      "title": "Power",
+      "family": "Ballistics",
+      "effects": [
+        {
+          "key": "damage",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Power",
+      "kind": "skill"
+    },
+    {
+      "id": "combust-0",
+      "title": "Fire",
+      "family": "Fire",
+      "effects": [
+        {
+          "key": "burn",
+          "amount": 5,
+          "mode": "add"
+        }
+      ],
+      "name": "Fire",
+      "kind": "skill"
+    },
+    {
+      "id": "combust-1",
+      "title": "Boom",
+      "family": "Fire",
+      "effects": [
+        {
+          "key": "explosion",
+          "amount": 10,
+          "mode": "add"
+        }
+      ],
+      "name": "Boom",
+      "kind": "skill"
+    },
+    {
+      "id": "ghost-perk-0",
+      "title": "Ghost",
+      "family": "Spectral",
+      "effects": [
+        {
+          "key": "ghost",
+          "amount": 0.3,
+          "mode": "add"
+        }
+      ],
+      "name": "Ghost",
+      "kind": "skill"
+    },
+    {
+      "id": "ghost-perk-1",
+      "title": "Dodge",
+      "family": "Spectral",
+      "effects": [
+        {
+          "key": "dodge",
+          "amount": 0.05,
+          "mode": "add"
+        }
+      ],
+      "name": "Dodge",
+      "kind": "skill"
+    },
+    {
+      "id": "mole-perk-0",
+      "title": "Mole",
+      "family": "Burrowing",
+      "effects": [
+        {
+          "key": "burrow",
+          "amount": 24,
+          "mode": "add"
+        }
+      ],
+      "name": "Mole",
+      "kind": "skill"
+    },
+    {
+      "id": "mole-perk-1",
+      "title": "Quick Dash",
+      "family": "Burrowing",
+      "effects": [
+        {
+          "key": "dashCooldown",
+          "amount": -0.12,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Quick Dash",
+      "kind": "skill"
+    },
+    {
+      "id": "blind-perk-0",
+      "title": "Blind",
+      "family": "Shadow",
+      "effects": [
+        {
+          "key": "blind",
+          "amount": 0.18,
+          "mode": "add"
+        }
+      ],
+      "name": "Blind",
+      "kind": "skill"
+    },
+    {
+      "id": "blind-perk-1",
+      "title": "Power",
+      "family": "Shadow",
+      "effects": [
+        {
+          "key": "damage",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Power",
+      "kind": "skill"
+    },
+    {
+      "id": "frozen-perk-0",
+      "title": "Freeze",
+      "family": "Frost",
+      "effects": [
+        {
+          "key": "freeze",
+          "amount": 0.15,
+          "mode": "add"
+        }
+      ],
+      "name": "Freeze",
+      "kind": "skill"
+    },
+    {
+      "id": "frozen-perk-1",
+      "title": "Ice",
+      "family": "Frost",
+      "effects": [
+        {
+          "key": "slow",
+          "amount": 0.16,
+          "mode": "add"
+        }
+      ],
+      "name": "Ice",
+      "kind": "skill"
+    },
+    {
+      "id": "shield-perk-0",
+      "title": "Shield",
+      "family": "Defense",
+      "effects": [
+        {
+          "key": "shield",
+          "amount": 25,
+          "mode": "add"
+        }
+      ],
+      "name": "Shield",
+      "kind": "skill"
+    },
+    {
+      "id": "shield-perk-1",
+      "title": "Heal",
+      "family": "Defense",
+      "effects": [
+        {
+          "key": "regen",
+          "amount": 0.7,
+          "mode": "add"
+        }
+      ],
+      "name": "Heal",
+      "kind": "skill"
+    },
+    {
+      "id": "berserk-perk-0",
+      "title": "Rage",
+      "family": "Berserker",
+      "effects": [
+        {
+          "key": "berserk",
+          "amount": 0.25,
+          "mode": "add"
+        }
+      ],
+      "name": "Rage",
+      "kind": "skill"
+    },
+    {
+      "id": "berserk-perk-1",
+      "title": "Vampire",
+      "family": "Berserker",
+      "effects": [
+        {
+          "key": "lifesteal",
+          "amount": 0.025,
+          "mode": "add"
+        }
+      ],
+      "name": "Vampire",
+      "kind": "skill"
+    },
+    {
+      "id": "ricochet-perk-0",
+      "title": "Bounce",
+      "family": "Ballistics",
+      "effects": [
+        {
+          "key": "ricochet",
+          "amount": 1,
+          "mode": "add"
+        }
+      ],
+      "name": "Bounce",
+      "kind": "skill"
+    },
+    {
+      "id": "ricochet-perk-1",
+      "title": "Fast Shots",
+      "family": "Ballistics",
+      "effects": [
+        {
+          "key": "projectileSpeed",
+          "amount": 0.12,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Fast Shots",
+      "kind": "skill"
+    },
+    {
+      "id": "storm-perk-0",
+      "title": "Storm",
+      "family": "Storm",
+      "effects": [
+        {
+          "key": "storm",
+          "amount": 18,
+          "mode": "add"
+        }
+      ],
+      "name": "Storm",
+      "kind": "skill"
+    },
+    {
+      "id": "storm-perk-1",
+      "title": "Boss Power",
+      "family": "Storm",
+      "effects": [
+        {
+          "key": "bossDamage",
+          "amount": 0.15,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Boss Power",
+      "kind": "skill"
+    },
+    {
+      "id": "nova-perk-0",
+      "title": "Nova",
+      "family": "Arcane",
+      "effects": [
+        {
+          "key": "nova",
+          "amount": 22,
+          "mode": "add"
+        }
+      ],
+      "name": "Nova",
+      "kind": "skill"
+    },
+    {
+      "id": "nova-perk-1",
+      "title": "Blast",
+      "family": "Arcane",
+      "effects": [
+        {
+          "key": "splash",
+          "amount": 0.3,
+          "mode": "add"
+        }
+      ],
+      "name": "Blast",
+      "kind": "skill"
+    },
+    {
+      "id": "pool-perk-0",
+      "title": "Poison Cloud",
+      "family": "Toxic",
+      "effects": [
+        {
+          "key": "pools",
+          "amount": 8,
+          "mode": "add"
+        }
+      ],
+      "name": "Poison Cloud",
+      "kind": "skill"
+    },
+    {
+      "id": "pool-perk-1",
+      "title": "Poison",
+      "family": "Toxic",
+      "effects": [
+        {
+          "key": "poison",
+          "amount": 4,
+          "mode": "add"
+        }
+      ],
+      "name": "Poison",
+      "kind": "skill"
+    },
+    {
+      "id": "return-perk-0",
+      "title": "Return",
+      "family": "Ballistics",
+      "effects": [
+        {
+          "key": "boomerang",
+          "amount": 1,
+          "mode": "add"
+        }
+      ],
+      "name": "Return",
+      "kind": "skill"
+    },
+    {
+      "id": "return-perk-1",
+      "title": "Power",
+      "family": "Ballistics",
+      "effects": [
+        {
+          "key": "damage",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Power",
+      "kind": "skill"
+    },
+    {
+      "id": "thorn-perk-0",
+      "title": "Thorns",
+      "family": "Nature",
+      "effects": [
+        {
+          "key": "thorns",
+          "amount": 7,
+          "mode": "add"
+        }
+      ],
+      "name": "Thorns",
+      "kind": "skill"
+    },
+    {
+      "id": "thorn-perk-1",
+      "title": "Armor",
+      "family": "Nature",
+      "effects": [
+        {
+          "key": "armor",
+          "amount": 2,
+          "mode": "add"
+        }
+      ],
+      "name": "Armor",
+      "kind": "skill"
+    },
+    {
+      "id": "vampire-perk-0",
+      "title": "Vampire",
+      "family": "Vampiric",
+      "effects": [
+        {
+          "key": "lifesteal",
+          "amount": 0.025,
+          "mode": "add"
+        }
+      ],
+      "name": "Vampire",
+      "kind": "skill"
+    },
+    {
+      "id": "vampire-perk-1",
+      "title": "Health",
+      "family": "Vampiric",
+      "effects": [
+        {
+          "key": "maxHp",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Health",
+      "kind": "skill"
+    },
+    {
+      "id": "fire-perk-0",
+      "title": "Fire",
+      "family": "Fire",
+      "effects": [
+        {
+          "key": "burn",
+          "amount": 5,
+          "mode": "add"
+        }
+      ],
+      "name": "Fire",
+      "kind": "skill"
+    },
+    {
+      "id": "fire-perk-1",
+      "title": "Speed",
+      "family": "Fire",
+      "effects": [
+        {
+          "key": "rate",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Speed",
+      "kind": "skill"
+    },
+    {
+      "id": "tank-perk-0",
+      "title": "Health",
+      "family": "Defense",
+      "effects": [
+        {
+          "key": "maxHp",
+          "amount": 0.1,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Health",
+      "kind": "skill"
+    },
+    {
+      "id": "tank-perk-1",
+      "title": "Armor",
+      "family": "Defense",
+      "effects": [
+        {
+          "key": "armor",
+          "amount": 2,
+          "mode": "add"
+        }
+      ],
+      "name": "Armor",
+      "kind": "skill"
+    },
+    {
+      "id": "ghost-speed-0",
+      "title": "Ghost",
+      "family": "Spectral",
+      "effects": [
+        {
+          "key": "ghost",
+          "amount": 0.3,
+          "mode": "add"
+        }
+      ],
+      "name": "Ghost",
+      "kind": "skill"
+    },
+    {
+      "id": "ghost-speed-1",
+      "title": "Move",
+      "family": "Spectral",
+      "effects": [
+        {
+          "key": "speed",
+          "amount": 0.12,
+          "mode": "multiply"
+        }
+      ],
+      "name": "Move",
+      "kind": "skill"
+    },
+    {
+      "id": "mole-impact-0",
+      "title": "Mole",
+      "family": "Burrowing",
+      "effects": [
+        {
+          "key": "burrow",
+          "amount": 24,
+          "mode": "add"
+        }
+      ],
+      "name": "Mole",
+      "kind": "skill"
+    },
+    {
+      "id": "mole-impact-1",
+      "title": "Dash Blast",
+      "family": "Burrowing",
+      "effects": [
+        {
+          "key": "dashBlast",
+          "amount": 12,
+          "mode": "add"
+        }
+      ],
+      "name": "Dash Blast",
+      "kind": "skill"
+    },
+    {
+      "id": "shadow-crit-0",
+      "title": "Blind",
+      "family": "Shadow",
+      "effects": [
+        {
+          "key": "blind",
+          "amount": 0.18,
+          "mode": "add"
+        }
+      ],
+      "name": "Blind",
+      "kind": "skill"
+    },
+    {
+      "id": "shadow-crit-1",
+      "title": "Critical",
+      "family": "Shadow",
+      "effects": [
+        {
+          "key": "crit",
+          "amount": 0.08,
+          "mode": "add"
+        }
+      ],
+      "name": "Critical",
+      "kind": "skill"
+    },
+    {
+      "id": "chaos-perk-0",
+      "title": "Nova",
+      "family": "Chaos",
+      "effects": [
+        {
+          "key": "nova",
+          "amount": 22,
+          "mode": "add"
+        }
+      ],
+      "name": "Nova",
+      "kind": "skill"
+    },
+    {
+      "id": "chaos-perk-1",
+      "title": "Storm",
+      "family": "Chaos",
+      "effects": [
+        {
+          "key": "storm",
+          "amount": 18,
+          "mode": "add"
+        }
+      ],
+      "name": "Storm",
+      "kind": "skill"
+    },
+    {
+      "id": "freeze-crit-0",
+      "title": "Freeze",
+      "family": "Frost",
+      "effects": [
+        {
+          "key": "freeze",
+          "amount": 0.15,
+          "mode": "add"
+        }
+      ],
+      "name": "Freeze",
+      "kind": "skill"
+    },
+    {
+      "id": "freeze-crit-1",
+      "title": "Big Critical",
+      "family": "Frost",
+      "effects": [
+        {
+          "key": "critPower",
+          "amount": 0.25,
+          "mode": "add"
+        }
+      ],
+      "name": "Big Critical",
+      "kind": "skill"
+    },
+    {
+      "id": "gold-glove",
+      "name": "Gold",
+      "title": "Gold",
+      "family": "Economy",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "goldGain",
+          "amount": 0.3,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "cheap-chest",
+      "name": "Sale",
+      "title": "Sale",
+      "family": "Economy",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "discount",
+          "amount": 0.12,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "free-key",
+      "name": "Key",
+      "title": "Key",
+      "family": "Economy",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "keyPower",
+          "amount": 0.1,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "gold-boots",
+      "name": "Coin Boots",
+      "title": "Coin Boots",
+      "family": "Economy",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "walkGold",
+          "amount": 0.12,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "gold-heart",
+      "name": "Gold Heart",
+      "title": "Gold Heart",
+      "family": "Economy",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "hurtGold",
+          "amount": 1,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "piggy-bank",
+      "name": "Savings",
+      "title": "Savings",
+      "family": "Economy",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "interest",
+          "amount": 0.01,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "coin-magnet",
+      "name": "Coin Magnet",
+      "title": "Coin Magnet",
+      "family": "Economy",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "coinRadius",
+          "amount": 0.5,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "pot-finder",
+      "name": "Pot Gold",
+      "title": "Pot Gold",
+      "family": "Economy",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "potGold",
+          "amount": 0.3,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "bloom-item",
+      "name": "Big Bloom",
+      "title": "Big Bloom",
+      "family": "Garden",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "flowerPower",
+          "amount": 0.35,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "bloom-skill",
+      "name": "Big Bloom",
+      "title": "Big Bloom",
+      "family": "Garden",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "flowerPower",
+          "amount": 0.35,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "roots-item",
+      "name": "Roots",
+      "title": "Roots",
+      "family": "Garden",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "flowerRoots",
+          "amount": 0.2,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "roots-skill",
+      "name": "Roots",
+      "title": "Roots",
+      "family": "Garden",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "flowerRoots",
+          "amount": 0.2,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "pollen-item",
+      "name": "Pollen",
+      "title": "Pollen",
+      "family": "Garden",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "flowerPollen",
+          "amount": 5,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "pollen-skill",
+      "name": "Pollen",
+      "title": "Pollen",
+      "family": "Garden",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "flowerPollen",
+          "amount": 5,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "nectar-item",
+      "name": "Nectar",
+      "title": "Nectar",
+      "family": "Garden",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "flowerHeal",
+          "amount": 2,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "nectar-skill",
+      "name": "Nectar",
+      "title": "Nectar",
+      "family": "Garden",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "flowerHeal",
+          "amount": 2,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "seed-item",
+      "name": "Seeds",
+      "title": "Seeds",
+      "family": "Garden",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "flowerSeeds",
+          "amount": 1,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "seed-skill",
+      "name": "Seeds",
+      "title": "Seeds",
+      "family": "Garden",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "flowerSeeds",
+          "amount": 1,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "jump-boots-item",
+      "name": "Jump Boots",
+      "title": "Jump Boots",
+      "family": "Mobility",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "jumpHeight",
+          "amount": 0.2,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "jump-boots-skill",
+      "name": "Jump Boots",
+      "title": "Jump Boots",
+      "family": "Mobility",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "jumpHeight",
+          "amount": 0.2,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "extra-hop-item",
+      "name": "Extra Hop",
+      "title": "Extra Hop",
+      "family": "Mobility",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "airJumps",
+          "amount": 1,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "extra-hop-skill",
+      "name": "Extra Hop",
+      "title": "Extra Hop",
+      "family": "Mobility",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "airJumps",
+          "amount": 1,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "feather-soles-item",
+      "name": "Feather Soles",
+      "title": "Feather Soles",
+      "family": "Mobility",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "fallGuard",
+          "amount": 0.2,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "feather-soles-skill",
+      "name": "Feather Soles",
+      "title": "Feather Soles",
+      "family": "Mobility",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "fallGuard",
+          "amount": 0.2,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "slam-stone-item",
+      "name": "Slam Stone",
+      "title": "Slam Stone",
+      "family": "Mobility",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "slamPower",
+          "amount": 0.3,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "slam-stone-skill",
+      "name": "Slam Stone",
+      "title": "Slam Stone",
+      "family": "Mobility",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "slamPower",
+          "amount": 0.3,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "wide-slam-item",
+      "name": "Wide Slam",
+      "title": "Wide Slam",
+      "family": "Mobility",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "slamRadius",
+          "amount": 0.2,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "wide-slam-skill",
+      "name": "Wide Slam",
+      "title": "Wide Slam",
+      "family": "Mobility",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "slamRadius",
+          "amount": 0.2,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "bounce-pad-item",
+      "name": "Bounce Pad",
+      "title": "Bounce Pad",
+      "family": "Mobility",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "bounceJump",
+          "amount": 0.25,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "bounce-pad-skill",
+      "name": "Bounce Pad",
+      "title": "Bounce Pad",
+      "family": "Mobility",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "bounceJump",
+          "amount": 0.25,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "boomerang-power-item",
+      "name": "Boomerang Power",
+      "title": "Boomerang Power",
+      "family": "Arcane",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "boomerangPower",
+          "amount": 0.25,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "boomerang-power-skill",
+      "name": "Boomerang Power",
+      "title": "Boomerang Power",
+      "family": "Arcane",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "boomerangPower",
+          "amount": 0.25,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "disc-power-item",
+      "name": "Disc Power",
+      "title": "Disc Power",
+      "family": "Arcane",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "discPower",
+          "amount": 0.25,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "disc-power-skill",
+      "name": "Disc Power",
+      "title": "Disc Power",
+      "family": "Arcane",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "discPower",
+          "amount": 0.25,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "harpoon-power-item",
+      "name": "Harpoon Power",
+      "title": "Harpoon Power",
+      "family": "Arcane",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "harpoonPower",
+          "amount": 0.25,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "harpoon-power-skill",
+      "name": "Harpoon Power",
+      "title": "Harpoon Power",
+      "family": "Arcane",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "harpoonPower",
+          "amount": 0.25,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "gravity-power-item",
+      "name": "Gravity Jar Power",
+      "title": "Gravity Jar Power",
+      "family": "Arcane",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "gravityPower",
+          "amount": 0.25,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "gravity-power-skill",
+      "name": "Gravity Jar Power",
+      "title": "Gravity Jar Power",
+      "family": "Arcane",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "gravityPower",
+          "amount": 0.25,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "horn-power-item",
+      "name": "Horn Power",
+      "title": "Horn Power",
+      "family": "Arcane",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "hornPower",
+          "amount": 0.25,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "horn-power-skill",
+      "name": "Horn Power",
+      "title": "Horn Power",
+      "family": "Arcane",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "hornPower",
+          "amount": 0.25,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "bubble-power-item",
+      "name": "Bubble Gun Power",
+      "title": "Bubble Gun Power",
+      "family": "Arcane",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "bubblePower",
+          "amount": 0.25,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "bubble-power-skill",
+      "name": "Bubble Gun Power",
+      "title": "Bubble Gun Power",
+      "family": "Arcane",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "bubblePower",
+          "amount": 0.25,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "meteor-power-item",
+      "name": "Meteor Gun Power",
+      "title": "Meteor Gun Power",
+      "family": "Arcane",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "meteorPower",
+          "amount": 0.25,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "meteor-power-skill",
+      "name": "Meteor Gun Power",
+      "title": "Meteor Gun Power",
+      "family": "Arcane",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "meteorPower",
+          "amount": 0.25,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "bomb-power-item",
+      "name": "Rolling Bomb Power",
+      "title": "Rolling Bomb Power",
+      "family": "Arcane",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "bombPower",
+          "amount": 0.25,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "bomb-power-skill",
+      "name": "Rolling Bomb Power",
+      "title": "Rolling Bomb Power",
+      "family": "Arcane",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "bombPower",
+          "amount": 0.25,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "disc-bounce-item",
+      "name": "Disc Bounce",
+      "title": "Disc Bounce",
+      "family": "Arcane",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "discBounces",
+          "amount": 1,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "disc-bounce-skill",
+      "name": "Disc Bounce",
+      "title": "Disc Bounce",
+      "family": "Arcane",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "discBounces",
+          "amount": 1,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "blade-pierce-item",
+      "name": "Blade Pierce",
+      "title": "Blade Pierce",
+      "family": "Arcane",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "boomerangPierce",
+          "amount": 1,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "blade-pierce-skill",
+      "name": "Blade Pierce",
+      "title": "Blade Pierce",
+      "family": "Arcane",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "boomerangPierce",
+          "amount": 1,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "harpoon-pull-item",
+      "name": "Strong Hook",
+      "title": "Strong Hook",
+      "family": "Arcane",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "harpoonPull",
+          "amount": 0.3,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "harpoon-pull-skill",
+      "name": "Strong Hook",
+      "title": "Strong Hook",
+      "family": "Arcane",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "harpoonPull",
+          "amount": 0.3,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "big-well-item",
+      "name": "Big Well",
+      "title": "Big Well",
+      "family": "Arcane",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "gravitySize",
+          "amount": 0.25,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "big-well-skill",
+      "name": "Big Well",
+      "title": "Big Well",
+      "family": "Arcane",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "gravitySize",
+          "amount": 0.25,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "loud-horn-item",
+      "name": "Loud Horn",
+      "title": "Loud Horn",
+      "family": "Arcane",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "hornStun",
+          "amount": 0.3,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "loud-horn-skill",
+      "name": "Loud Horn",
+      "title": "Loud Horn",
+      "family": "Arcane",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "hornStun",
+          "amount": 0.3,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "long-bubble-item",
+      "name": "Long Bubble",
+      "title": "Long Bubble",
+      "family": "Arcane",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "bubbleTime",
+          "amount": 0.3,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "long-bubble-skill",
+      "name": "Long Bubble",
+      "title": "Long Bubble",
+      "family": "Arcane",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "bubbleTime",
+          "amount": 0.3,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "meteor-shower-item",
+      "name": "Meteor Shower",
+      "title": "Meteor Shower",
+      "family": "Arcane",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "meteorCount",
+          "amount": 1,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "meteor-shower-skill",
+      "name": "Meteor Shower",
+      "title": "Meteor Shower",
+      "family": "Arcane",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "meteorCount",
+          "amount": 1,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "big-bomb-item",
+      "name": "Big Bomb",
+      "title": "Big Bomb",
+      "family": "Arcane",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "bombSize",
+          "amount": 0.25,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "big-bomb-skill",
+      "name": "Big Bomb",
+      "title": "Big Bomb",
+      "family": "Arcane",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "bombSize",
+          "amount": 0.25,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "air-power-item",
+      "name": "Air Power",
+      "title": "Air Power",
+      "family": "Arcane",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "airDamage",
+          "amount": 0.25,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "air-power-skill",
+      "name": "Air Power",
+      "title": "Air Power",
+      "family": "Arcane",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "airDamage",
+          "amount": 0.25,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "soft-heal-item",
+      "name": "Soft Heal",
+      "title": "Soft Heal",
+      "family": "Arcane",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "landingHeal",
+          "amount": 2,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "soft-heal-skill",
+      "name": "Soft Heal",
+      "title": "Soft Heal",
+      "family": "Arcane",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "landingHeal",
+          "amount": 2,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "slam-heal-item",
+      "name": "Slam Heal",
+      "title": "Slam Heal",
+      "family": "Arcane",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "slamHeal",
+          "amount": 3,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "slam-heal-skill",
+      "name": "Slam Heal",
+      "title": "Slam Heal",
+      "family": "Arcane",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "slamHeal",
+          "amount": 3,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "air-steer-item",
+      "name": "Air Steer",
+      "title": "Air Steer",
+      "family": "Arcane",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "airControl",
+          "amount": 0.2,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "air-steer-skill",
+      "name": "Air Steer",
+      "title": "Air Steer",
+      "family": "Arcane",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "airControl",
+          "amount": 0.2,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "safe-fall-item",
+      "name": "Safe Fall",
+      "title": "Safe Fall",
+      "family": "Arcane",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "fallThreshold",
+          "amount": 1,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "safe-fall-skill",
+      "name": "Safe Fall",
+      "title": "Safe Fall",
+      "family": "Arcane",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "fallThreshold",
+          "amount": 1,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "long-potion-item",
+      "name": "Long Potion",
+      "title": "Long Potion",
+      "family": "Fortune",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "potionDuration",
+          "amount": 0.2,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "long-potion-skill",
+      "name": "Long Potion",
+      "title": "Long Potion",
+      "family": "Fortune",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "potionDuration",
+          "amount": 0.2,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "strong-potion-item",
+      "name": "Strong Potion",
+      "title": "Strong Potion",
+      "family": "Fortune",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "potionPower",
+          "amount": 0.2,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "strong-potion-skill",
+      "name": "Strong Potion",
+      "title": "Strong Potion",
+      "family": "Fortune",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "potionPower",
+          "amount": 0.2,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "potion-luck-item",
+      "name": "Potion Luck",
+      "title": "Potion Luck",
+      "family": "Fortune",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "potionChance",
+          "amount": 0.15,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "potion-luck-skill",
+      "name": "Potion Luck",
+      "title": "Potion Luck",
+      "family": "Fortune",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "potionChance",
+          "amount": 0.15,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "jump-shield-item",
+      "name": "Jump Shield",
+      "title": "Jump Shield",
+      "family": "Arcane",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "jumpShield",
+          "amount": 2,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "jump-shield-skill",
+      "name": "Jump Shield",
+      "title": "Jump Shield",
+      "family": "Arcane",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "jumpShield",
+          "amount": 2,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "jump-blast-item",
+      "name": "Jump Blast",
+      "title": "Jump Blast",
+      "family": "Arcane",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "jumpBlast",
+          "amount": 4,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "jump-blast-skill",
+      "name": "Jump Blast",
+      "title": "Jump Blast",
+      "family": "Arcane",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "jumpBlast",
+          "amount": 4,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "slam-fire-item",
+      "name": "Slam Fire",
+      "title": "Slam Fire",
+      "family": "Arcane",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "slamFire",
+          "amount": 4,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "slam-fire-skill",
+      "name": "Slam Fire",
+      "title": "Slam Fire",
+      "family": "Arcane",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "slamFire",
+          "amount": 4,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "slam-poison-item",
+      "name": "Slam Poison",
+      "title": "Slam Poison",
+      "family": "Arcane",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "slamPoison",
+          "amount": 4,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "slam-poison-skill",
+      "name": "Slam Poison",
+      "title": "Slam Poison",
+      "family": "Arcane",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "slamPoison",
+          "amount": 4,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "coin-heal-item",
+      "name": "Coin Heal",
+      "title": "Coin Heal",
+      "family": "Arcane",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "coinHeal",
+          "amount": 0.5,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "coin-heal-skill",
+      "name": "Coin Heal",
+      "title": "Coin Heal",
+      "family": "Arcane",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "coinHeal",
+          "amount": 0.5,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "chest-heal-item",
+      "name": "Chest Heal",
+      "title": "Chest Heal",
+      "family": "Arcane",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "chestHeal",
+          "amount": 8,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "chest-heal-skill",
+      "name": "Chest Heal",
+      "title": "Chest Heal",
+      "family": "Arcane",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "chestHeal",
+          "amount": 8,
+          "mode": "add"
+        }
+      ]
+    }
+  ],
+  "stats": {
+    "damage": 15,
+    "rate": 1.65,
+    "speed": 8,
+    "maxHp": 100,
+    "pickup": 3,
+    "size": 1,
+    "range": 18,
+    "projectileSpeed": 23,
+    "armor": 0,
+    "dodge": 0,
+    "lifesteal": 0,
+    "regen": 0,
+    "crit": 0,
+    "critPower": 2,
+    "pierce": 0,
+    "splash": 0,
+    "chain": 0,
+    "multishot": 0,
+    "burn": 0,
+    "poison": 0,
+    "slow": 0,
+    "knockback": 0,
+    "execute": 0,
+    "thorns": 0,
+    "explosion": 0,
+    "xpGain": 1,
+    "luck": 0,
+    "chestBonus": 0,
+    "dashCooldown": 2.5,
+    "dashBlast": 0,
+    "orbitDamage": 0,
+    "magnetPulse": 0,
+    "turretDamage": 1,
+    "turretRate": 1,
+    "turretRange": 1,
+    "turretLife": 24,
+    "turretCount": 1,
+    "repair": 0,
+    "auraDamage": 0,
+    "stun": 0,
+    "salvage": 0,
+    "drones": 0,
+    "revive": 0,
+    "bossDamage": 1,
+    "ghost": 0,
+    "burrow": 0,
+    "blind": 0,
+    "freeze": 0,
+    "shield": 0,
+    "berserk": 0,
+    "ricochet": 0,
+    "storm": 0,
+    "nova": 0,
+    "pools": 0,
+    "boomerang": 0,
+    "goldGain": 1,
+    "discount": 0,
+    "keyPower": 0,
+    "walkGold": 0,
+    "hurtGold": 0,
+    "interest": 0,
+    "coinRadius": 4,
+    "potGold": 1,
+    "flowerPower": 1,
+    "flowerRoots": 0.25,
+    "flowerPollen": 4,
+    "flowerHeal": 1,
+    "flowerSeeds": 0,
+    "jumpHeight": 1,
+    "airJumps": 0,
+    "fallGuard": 0,
+    "slamPower": 1,
+    "slamRadius": 1,
+    "bounceJump": 0,
+    "boomerangPower": 1,
+    "discPower": 1,
+    "harpoonPower": 1,
+    "gravityPower": 1,
+    "hornPower": 1,
+    "bubblePower": 1,
+    "meteorPower": 1,
+    "bombPower": 1,
+    "discBounces": 0,
+    "boomerangPierce": 0,
+    "harpoonPull": 0,
+    "gravitySize": 1,
+    "hornStun": 0,
+    "bubbleTime": 1,
+    "meteorCount": 0,
+    "bombSize": 1,
+    "airDamage": 0,
+    "landingHeal": 0,
+    "slamHeal": 0,
+    "airControl": 0,
+    "fallThreshold": 0,
+    "potionDuration": 1,
+    "potionPower": 1,
+    "potionChance": 0,
+    "jumpShield": 0,
+    "jumpBlast": 0,
+    "slamFire": 0,
+    "slamPoison": 0,
+    "coinHeal": 0,
+    "chestHeal": 0
+  },
+  "labels": {
+    "damage": "Power",
+    "rate": "Speed",
+    "speed": "Move",
+    "maxHp": "Health",
+    "pickup": "Magnet",
+    "size": "Big Shots",
+    "range": "Reach",
+    "projectileSpeed": "Fast Shots",
+    "armor": "Armor",
+    "dodge": "Dodge",
+    "lifesteal": "Vampire",
+    "regen": "Heal",
+    "crit": "Critical",
+    "critPower": "Big Critical",
+    "pierce": "Pierce",
+    "splash": "Blast",
+    "chain": "Lightning",
+    "multishot": "More Shots",
+    "burn": "Fire",
+    "poison": "Poison",
+    "slow": "Ice",
+    "knockback": "Push",
+    "execute": "Finish",
+    "thorns": "Thorns",
+    "explosion": "Boom",
+    "xpGain": "Learn",
+    "luck": "Lucky",
+    "chestBonus": "Lucky",
+    "dashCooldown": "Quick Dash",
+    "dashBlast": "Dash Blast",
+    "orbitDamage": "Orbit",
+    "magnetPulse": "Magnet",
+    "turretDamage": "Turret Power",
+    "turretRate": "Turret Speed",
+    "turretRange": "Turret Reach",
+    "turretLife": "Turret Life",
+    "turretCount": "Turret Power",
+    "repair": "Repair",
+    "auraDamage": "Aura",
+    "stun": "Stun",
+    "salvage": "Heal",
+    "drones": "Drone",
+    "revive": "Extra Life",
+    "bossDamage": "Boss Power",
+    "ghost": "Ghost",
+    "burrow": "Mole",
+    "blind": "Blind",
+    "freeze": "Freeze",
+    "shield": "Shield",
+    "berserk": "Rage",
+    "ricochet": "Bounce",
+    "storm": "Storm",
+    "nova": "Nova",
+    "pools": "Poison Cloud",
+    "boomerang": "Return",
+    "jumpHeight": "Jump Boots",
+    "airJumps": "Extra Hop",
+    "fallGuard": "Feather Soles",
+    "slamPower": "Slam Stone",
+    "slamRadius": "Wide Slam",
+    "bounceJump": "Bounce Pad",
+    "flowerPower": "Big Bloom",
+    "flowerRoots": "Roots",
+    "flowerPollen": "Pollen",
+    "flowerHeal": "Nectar",
+    "flowerSeeds": "Seeds",
+    "boomerangPower": "Boomerang Power",
+    "discPower": "Disc Power",
+    "harpoonPower": "Harpoon Power",
+    "gravityPower": "Gravity Jar Power",
+    "hornPower": "Horn Power",
+    "bubblePower": "Bubble Gun Power",
+    "meteorPower": "Meteor Gun Power",
+    "bombPower": "Rolling Bomb Power",
+    "discBounces": "Disc Bounce",
+    "boomerangPierce": "Blade Pierce",
+    "harpoonPull": "Strong Hook",
+    "gravitySize": "Big Well",
+    "hornStun": "Loud Horn",
+    "bubbleTime": "Long Bubble",
+    "meteorCount": "Meteor Shower",
+    "bombSize": "Big Bomb",
+    "airDamage": "Air Power",
+    "landingHeal": "Soft Heal",
+    "slamHeal": "Slam Heal",
+    "airControl": "Air Steer",
+    "fallThreshold": "Safe Fall",
+    "potionDuration": "Long Potion",
+    "potionPower": "Strong Potion",
+    "potionChance": "Potion Luck",
+    "jumpShield": "Jump Shield",
+    "jumpBlast": "Jump Blast",
+    "slamFire": "Slam Fire",
+    "slamPoison": "Slam Poison",
+    "coinHeal": "Coin Heal",
+    "chestHeal": "Chest Heal"
+  },
+  "families": {
+    "Engineering": "Turret",
+    "Ballistics": "Shots",
+    "Explosives": "Boom",
+    "Fire": "Fire",
+    "Frost": "Ice",
+    "Electric": "Lightning",
+    "Toxic": "Poison",
+    "Defense": "Tank",
+    "Recovery": "Heal",
+    "Mobility": "Dash",
+    "Vampiric": "Vampire",
+    "Scavenging": "Magnet",
+    "Fortune": "Lucky",
+    "Precision": "Critical",
+    "Assassin": "Finish",
+    "Aura": "Aura",
+    "Orbitals": "Orbit",
+    "Spectral": "Ghost",
+    "Burrowing": "Mole",
+    "Shadow": "Blind",
+    "Berserker": "Rage",
+    "Storm": "Storm",
+    "Arcane": "Magic",
+    "Nature": "Thorns",
+    "Chaos": "Magic"
+  },
+  "chestPrices": [
+    30,
+    72,
+    115,
+    159,
+    206,
+    256,
+    309,
+    366,
+    427,
+    495,
+    569,
+    952,
+    1346,
+    1753,
+    2175,
+    2617,
+    3083,
+    3577,
+    4105,
+    4677,
+    5301,
+    6538,
+    7853,
+    9262,
+    10786,
+    12451,
+    14288,
+    16334,
+    18636,
+    21249,
+    24243,
+    28900,
+    34123,
+    40037,
+    46793,
+    54577,
+    63615,
+    74182,
+    86615,
+    101324,
+    118811,
+    166087,
+    193496,
+    225949,
+    264554,
+    310667,
+    365937,
+    432380,
+    512453,
+    609156,
+    726148,
+    962390,
+    1138829,
+    1352108,
+    1610332,
+    1923388,
+    2303340,
+    2764905,
+    3326037,
+    4008642,
+    4839443,
+    5851044,
+    7083220,
+    8584498,
+    10414081,
+    12644194,
+    15362957,
+    18677872,
+    22720088,
+    27649620,
+    33661668,
+    40994392,
+    49938340,
+    60847976,
+    74155752,
+    90389272,
+    110192192,
+    134349776,
+    163820048,
+    199771808
+  ],
+  "achievements": [
+    {
+      "id": "WF_PLAY_WRENCH",
+      "name": "Meet Wrench",
+      "description": "Start a run as Wrench.",
+      "key": "play_wrench",
+      "target": 1,
+      "scope": "total",
+      "group": "Adventure",
+      "hidden": false
+    },
+    {
+      "id": "WF_WIN_WRENCH",
+      "name": "Wrench Beats The Odds",
+      "description": "Win a run as Wrench.",
+      "key": "win_wrench",
+      "target": 1,
+      "scope": "total",
+      "group": "Adventure",
+      "hidden": false
+    },
+    {
+      "id": "WF_PLAY_DUCK",
+      "name": "Meet Count Duck",
+      "description": "Start a run as Count Duck.",
+      "key": "play_duck",
+      "target": 1,
+      "scope": "total",
+      "group": "Adventure",
+      "hidden": false
+    },
+    {
+      "id": "WF_WIN_DUCK",
+      "name": "Count Duck Beats The Odds",
+      "description": "Win a run as Count Duck.",
+      "key": "win_duck",
+      "target": 1,
+      "scope": "total",
+      "group": "Adventure",
+      "hidden": false
+    },
+    {
+      "id": "WF_PLAY_BROCCOLI",
+      "name": "Meet Tank Potato",
+      "description": "Start a run as Tank Potato.",
+      "key": "play_broccoli",
+      "target": 1,
+      "scope": "total",
+      "group": "Adventure",
+      "hidden": false
+    },
+    {
+      "id": "WF_WIN_BROCCOLI",
+      "name": "Tank Potato Beats The Odds",
+      "description": "Win a run as Tank Potato.",
+      "key": "win_broccoli",
+      "target": 1,
+      "scope": "total",
+      "group": "Adventure",
+      "hidden": false
+    },
+    {
+      "id": "WF_PLAY_GRANDMA",
+      "name": "Meet Stone Granny",
+      "description": "Start a run as Stone Granny.",
+      "key": "play_grandma",
+      "target": 1,
+      "scope": "total",
+      "group": "Adventure",
+      "hidden": false
+    },
+    {
+      "id": "WF_WIN_GRANDMA",
+      "name": "Stone Granny Beats The Odds",
+      "description": "Win a run as Stone Granny.",
+      "key": "win_grandma",
+      "target": 1,
+      "scope": "total",
+      "group": "Adventure",
+      "hidden": false
+    },
+    {
+      "id": "WF_PLAY_GOBLIN",
+      "name": "Meet Tax Rat",
+      "description": "Start a run as Tax Rat.",
+      "key": "play_goblin",
+      "target": 1,
+      "scope": "total",
+      "group": "Adventure",
+      "hidden": false
+    },
+    {
+      "id": "WF_WIN_GOBLIN",
+      "name": "Tax Rat Beats The Odds",
+      "description": "Win a run as Tax Rat.",
+      "key": "win_goblin",
+      "target": 1,
+      "scope": "total",
+      "group": "Adventure",
+      "hidden": false
+    },
+    {
+      "id": "WF_PLAY_LOAF",
+      "name": "Meet Sir Loaf",
+      "description": "Start a run as Sir Loaf.",
+      "key": "play_loaf",
+      "target": 1,
+      "scope": "total",
+      "group": "Adventure",
+      "hidden": false
+    },
+    {
+      "id": "WF_WIN_LOAF",
+      "name": "Sir Loaf Beats The Odds",
+      "description": "Win a run as Sir Loaf.",
+      "key": "win_loaf",
+      "target": 1,
+      "scope": "total",
+      "group": "Adventure",
+      "hidden": false
+    },
+    {
+      "id": "WF_PLAY_FLORIST",
+      "name": "Meet Florist",
+      "description": "Start a run as Florist.",
+      "key": "play_florist",
+      "target": 1,
+      "scope": "total",
+      "group": "Adventure",
+      "hidden": false
+    },
+    {
+      "id": "WF_WIN_FLORIST",
+      "name": "Florist Beats The Odds",
+      "description": "Win a run as Florist.",
+      "key": "win_florist",
+      "target": 1,
+      "scope": "total",
+      "group": "Adventure",
+      "hidden": false
+    },
+    {
+      "id": "WF_BUILD_ENGINEERING",
+      "name": "Union Approved",
+      "description": "Shape a build with five engineering upgrades.",
+      "key": "family_Engineering",
+      "target": 5,
+      "scope": "best",
+      "group": "Builds",
+      "hidden": false
+    },
+    {
+      "id": "WF_BUILD_BALLISTICS",
+      "name": "Bullet Bouquet",
+      "description": "Shape a build with five ballistics upgrades.",
+      "key": "family_Ballistics",
+      "target": 5,
+      "scope": "best",
+      "group": "Builds",
+      "hidden": false
+    },
+    {
+      "id": "WF_BUILD_EXPLOSIVES",
+      "name": "Confetti Insurance",
+      "description": "Shape a build with five explosives upgrades.",
+      "key": "family_Explosives",
+      "target": 5,
+      "scope": "best",
+      "group": "Builds",
+      "hidden": false
+    },
+    {
+      "id": "WF_BUILD_FIRE",
+      "name": "Spicy Personality",
+      "description": "Shape a build with five fire upgrades.",
+      "key": "family_Fire",
+      "target": 5,
+      "scope": "best",
+      "group": "Builds",
+      "hidden": false
+    },
+    {
+      "id": "WF_BUILD_FROST",
+      "name": "Ice Cream Emergency",
+      "description": "Shape a build with five frost upgrades.",
+      "key": "family_Frost",
+      "target": 5,
+      "scope": "best",
+      "group": "Builds",
+      "hidden": false
+    },
+    {
+      "id": "WF_BUILD_ELECTRIC",
+      "name": "Static Hair Day",
+      "description": "Shape a build with five electric upgrades.",
+      "key": "family_Electric",
+      "target": 5,
+      "scope": "best",
+      "group": "Builds",
+      "hidden": false
+    },
+    {
+      "id": "WF_BUILD_TOXIC",
+      "name": "Organic Pest Control",
+      "description": "Shape a build with five toxic upgrades.",
+      "key": "family_Toxic",
+      "target": 5,
+      "scope": "best",
+      "group": "Builds",
+      "hidden": false
+    },
+    {
+      "id": "WF_BUILD_DEFENSE",
+      "name": "Walking Fridge",
+      "description": "Shape a build with five defense upgrades.",
+      "key": "family_Defense",
+      "target": 5,
+      "scope": "best",
+      "group": "Builds",
+      "hidden": false
+    },
+    {
+      "id": "WF_BUILD_RECOVERY",
+      "name": "Doctor Yourself",
+      "description": "Shape a build with five recovery upgrades.",
+      "key": "family_Recovery",
+      "target": 5,
+      "scope": "best",
+      "group": "Builds",
+      "hidden": false
+    },
+    {
+      "id": "WF_BUILD_MOBILITY",
+      "name": "Late For Everything",
+      "description": "Shape a build with five mobility upgrades.",
+      "key": "family_Mobility",
+      "target": 5,
+      "scope": "best",
+      "group": "Builds",
+      "hidden": false
+    },
+    {
+      "id": "WF_BUILD_VAMPIRIC",
+      "name": "Dinner Is Served",
+      "description": "Shape a build with five vampiric upgrades.",
+      "key": "family_Vampiric",
+      "target": 5,
+      "scope": "best",
+      "group": "Builds",
+      "hidden": false
+    },
+    {
+      "id": "WF_BUILD_SCAVENGING",
+      "name": "Pocket Vacuum",
+      "description": "Shape a build with five scavenging upgrades.",
+      "key": "family_Scavenging",
+      "target": 5,
+      "scope": "best",
+      "group": "Builds",
+      "hidden": false
+    },
+    {
+      "id": "WF_BUILD_FORTUNE",
+      "name": "Lucky Underpants",
+      "description": "Shape a build with five fortune upgrades.",
+      "key": "family_Fortune",
+      "target": 5,
+      "scope": "best",
+      "group": "Builds",
+      "hidden": false
+    },
+    {
+      "id": "WF_BUILD_PRECISION",
+      "name": "Tiny Target, Big Ego",
+      "description": "Shape a build with five precision upgrades.",
+      "key": "family_Precision",
+      "target": 5,
+      "scope": "best",
+      "group": "Builds",
+      "hidden": false
+    },
+    {
+      "id": "WF_BUILD_ASSASSIN",
+      "name": "Early Checkout",
+      "description": "Shape a build with five assassin upgrades.",
+      "key": "family_Assassin",
+      "target": 5,
+      "scope": "best",
+      "group": "Builds",
+      "hidden": false
+    },
+    {
+      "id": "WF_BUILD_AURA",
+      "name": "Personal Space",
+      "description": "Shape a build with five aura upgrades.",
+      "key": "family_Aura",
+      "target": 5,
+      "scope": "best",
+      "group": "Builds",
+      "hidden": false
+    },
+    {
+      "id": "WF_BUILD_SPECTRAL",
+      "name": "Haunted Pajamas",
+      "description": "Shape a build with five spectral upgrades.",
+      "key": "family_Spectral",
+      "target": 5,
+      "scope": "best",
+      "group": "Builds",
+      "hidden": false
+    },
+    {
+      "id": "WF_BUILD_BURROWING",
+      "name": "Underground Celebrity",
+      "description": "Shape a build with five burrowing upgrades.",
+      "key": "family_Burrowing",
+      "target": 5,
+      "scope": "best",
+      "group": "Builds",
+      "hidden": false
+    },
+    {
+      "id": "WF_BUILD_SHADOW",
+      "name": "Who Turned Out The Sun?",
+      "description": "Shape a build with five shadow upgrades.",
+      "key": "family_Shadow",
+      "target": 5,
+      "scope": "best",
+      "group": "Builds",
+      "hidden": false
+    },
+    {
+      "id": "WF_BUILD_BERSERKER",
+      "name": "Bad Mood, Big Damage",
+      "description": "Shape a build with five berserker upgrades.",
+      "key": "family_Berserker",
+      "target": 5,
+      "scope": "best",
+      "group": "Builds",
+      "hidden": false
+    },
+    {
+      "id": "WF_BUILD_STORM",
+      "name": "Weather Complaint",
+      "description": "Shape a build with five storm upgrades.",
+      "key": "family_Storm",
+      "target": 5,
+      "scope": "best",
+      "group": "Builds",
+      "hidden": false
+    },
+    {
+      "id": "WF_BUILD_ARCANE",
+      "name": "Wizard Without A Hat",
+      "description": "Shape a build with five arcane upgrades.",
+      "key": "family_Arcane",
+      "target": 5,
+      "scope": "best",
+      "group": "Builds",
+      "hidden": false
+    },
+    {
+      "id": "WF_BUILD_NATURE",
+      "name": "Please Do Not Hug",
+      "description": "Shape a build with five nature upgrades.",
+      "key": "family_Nature",
+      "target": 5,
+      "scope": "best",
+      "group": "Builds",
+      "hidden": false
+    },
+    {
+      "id": "WF_BUILD_ECONOMY",
+      "name": "Financially Dangerous",
+      "description": "Shape a build with five economy upgrades.",
+      "key": "family_Economy",
+      "target": 5,
+      "scope": "best",
+      "group": "Builds",
+      "hidden": false
+    },
+    {
+      "id": "WF_BUILD_GARDEN",
+      "name": "Flower Power",
+      "description": "Shape a build with five garden upgrades.",
+      "key": "family_Garden",
+      "target": 5,
+      "scope": "best",
+      "group": "Builds",
+      "hidden": false
+    },
+    {
+      "id": "WF_COMBO_BURN_FREEZE",
+      "name": "Hot Ice",
+      "description": "Combine Fire and Freeze powers in one run.",
+      "key": "combo_burn_freeze",
+      "target": 1,
+      "scope": "total",
+      "group": "Combinations",
+      "hidden": false
+    },
+    {
+      "id": "WF_COMBO_POISON_LIFESTEAL",
+      "name": "Blood Salad",
+      "description": "Combine Poison and Vampire powers in one run.",
+      "key": "combo_poison_lifesteal",
+      "target": 1,
+      "scope": "total",
+      "group": "Combinations",
+      "hidden": false
+    },
+    {
+      "id": "WF_COMBO_SHIELD_THORNS",
+      "name": "Spiky Bubble",
+      "description": "Combine Shield and Thorns powers in one run.",
+      "key": "combo_shield_thorns",
+      "target": 1,
+      "scope": "total",
+      "group": "Combinations",
+      "hidden": false
+    },
+    {
+      "id": "WF_COMBO_GHOST_BURROW",
+      "name": "Haunted Basement",
+      "description": "Combine Ghost and Mole powers in one run.",
+      "key": "combo_ghost_burrow",
+      "target": 1,
+      "scope": "total",
+      "group": "Combinations",
+      "hidden": false
+    },
+    {
+      "id": "WF_COMBO_BURN_POISON",
+      "name": "Bad Soup",
+      "description": "Combine Fire and Poison powers in one run.",
+      "key": "combo_burn_poison",
+      "target": 1,
+      "scope": "total",
+      "group": "Combinations",
+      "hidden": false
+    },
+    {
+      "id": "WF_COMBO_FREEZE_BLIND",
+      "name": "Cold Shoulder",
+      "description": "Combine Freeze and Blind powers in one run.",
+      "key": "combo_freeze_blind",
+      "target": 1,
+      "scope": "total",
+      "group": "Combinations",
+      "hidden": false
+    },
+    {
+      "id": "WF_COMBO_CHAIN_RICOCHET",
+      "name": "Pinball Wizard",
+      "description": "Combine Lightning and Bounce powers in one run.",
+      "key": "combo_chain_ricochet",
+      "target": 1,
+      "scope": "total",
+      "group": "Combinations",
+      "hidden": false
+    },
+    {
+      "id": "WF_COMBO_SPLASH_PIERCE",
+      "name": "Through And Through",
+      "description": "Combine Blast and Pierce powers in one run.",
+      "key": "combo_splash_pierce",
+      "target": 1,
+      "scope": "total",
+      "group": "Combinations",
+      "hidden": false
+    },
+    {
+      "id": "WF_COMBO_REGEN_ARMOR",
+      "name": "Comfortable Tank",
+      "description": "Combine Heal and Armor powers in one run.",
+      "key": "combo_regen_armor",
+      "target": 1,
+      "scope": "total",
+      "group": "Combinations",
+      "hidden": false
+    },
+    {
+      "id": "WF_COMBO_DASHBLAST_GHOST",
+      "name": "Boo Goes Boom",
+      "description": "Combine Dash Blast and Ghost powers in one run.",
+      "key": "combo_dashBlast_ghost",
+      "target": 1,
+      "scope": "total",
+      "group": "Combinations",
+      "hidden": false
+    },
+    {
+      "id": "WF_COMBO_POOLS_SLOW",
+      "name": "Sticky Situation",
+      "description": "Combine Poison Cloud and Ice powers in one run.",
+      "key": "combo_pools_slow",
+      "target": 1,
+      "scope": "total",
+      "group": "Combinations",
+      "hidden": false
+    },
+    {
+      "id": "WF_COMBO_STORM_NOVA",
+      "name": "Very Local Weather",
+      "description": "Combine Storm and Nova powers in one run.",
+      "key": "combo_storm_nova",
+      "target": 1,
+      "scope": "total",
+      "group": "Combinations",
+      "hidden": false
+    },
+    {
+      "id": "WF_COMBO_LIFESTEAL_BERSERK",
+      "name": "Hungry When Angry",
+      "description": "Combine Vampire and Rage powers in one run.",
+      "key": "combo_lifesteal_berserk",
+      "target": 1,
+      "scope": "total",
+      "group": "Combinations",
+      "hidden": false
+    },
+    {
+      "id": "WF_COMBO_WALKGOLD_COINRADIUS",
+      "name": "Paid To Walk",
+      "description": "Combine Coin Boots and Coin Magnet powers in one run.",
+      "key": "combo_walkGold_coinRadius",
+      "target": 1,
+      "scope": "total",
+      "group": "Combinations",
+      "hidden": false
+    },
+    {
+      "id": "WF_COMBO_INTEREST_DISCOUNT",
+      "name": "Coupon Billionaire",
+      "description": "Combine Savings and Sale powers in one run.",
+      "key": "combo_interest_discount",
+      "target": 1,
+      "scope": "total",
+      "group": "Combinations",
+      "hidden": false
+    },
+    {
+      "id": "WF_COMBO_KEYPOWER_LUCK",
+      "name": "Key To Happiness",
+      "description": "Combine Key and Lucky powers in one run.",
+      "key": "combo_keyPower_luck",
+      "target": 1,
+      "scope": "total",
+      "group": "Combinations",
+      "hidden": false
+    },
+    {
+      "id": "WF_COMBO_HURTGOLD_THORNS",
+      "name": "Complaint Compensation",
+      "description": "Combine Gold Heart and Thorns powers in one run.",
+      "key": "combo_hurtGold_thorns",
+      "target": 1,
+      "scope": "total",
+      "group": "Combinations",
+      "hidden": false
+    },
+    {
+      "id": "WF_COMBO_REPAIR_TURRETDAMAGE",
+      "name": "Workshop Nurse",
+      "description": "Combine Repair and Turret Power powers in one run.",
+      "key": "combo_repair_turretDamage",
+      "target": 1,
+      "scope": "total",
+      "group": "Combinations",
+      "hidden": false
+    },
+    {
+      "id": "WF_COMBO_FLOWERPOLLEN_FLOWERROOTS",
+      "name": "No Lawn Allowed",
+      "description": "Combine Pollen and Roots powers in one run.",
+      "key": "combo_flowerPollen_flowerRoots",
+      "target": 1,
+      "scope": "total",
+      "group": "Combinations",
+      "hidden": false
+    },
+    {
+      "id": "WF_COMBO_FLOWERHEAL_FLOWERPOWER",
+      "name": "Flower Hospital",
+      "description": "Combine Nectar and Big Bloom powers in one run.",
+      "key": "combo_flowerHeal_flowerPower",
+      "target": 1,
+      "scope": "total",
+      "group": "Combinations",
+      "hidden": false
+    },
+    {
+      "id": "WF_LOCKED_GATE",
+      "name": "Wrong Door",
+      "description": "Try a gate before its bosses are defeated.",
+      "key": "event_LOCKED_GATE",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_RUINS",
+      "name": "Tourist With Teeth",
+      "description": "Visit all four ruins in one world.",
+      "key": "event_RUINS",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_HIGH_CHEST",
+      "name": "Upstairs Loot",
+      "description": "Open treasure on a raised ruin.",
+      "key": "event_HIGH_CHEST",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_THREE_REALMS",
+      "name": "Change Of Scenery",
+      "description": "Reach the third world.",
+      "key": "event_THREE_REALMS",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_LONG_WALK",
+      "name": "Scenic Route",
+      "description": "Explore the outer edge of a world.",
+      "key": "event_LONG_WALK",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_AIRTIME",
+      "name": "Frequent Flyer",
+      "description": "Jump while a boss is alive.",
+      "key": "event_AIRTIME",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_FREE_KEY",
+      "name": "On The House",
+      "description": "Open a normal chest free using a Key.",
+      "key": "event_FREE_KEY",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_LAST_COIN",
+      "name": "No Change Needed",
+      "description": "Spend your last coin on a chest.",
+      "key": "event_LAST_COIN",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_SALE",
+      "name": "Sale Of The Century",
+      "description": "Buy a chest with a discount.",
+      "key": "event_SALE",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_INTEREST",
+      "name": "Money Tree",
+      "description": "Earn interest on saved coins.",
+      "key": "event_INTEREST",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_WALK_PAY",
+      "name": "Professional Walker",
+      "description": "Earn coins by walking.",
+      "key": "event_WALK_PAY",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_HURT_PAY",
+      "name": "Paid For Pain",
+      "description": "Earn coins from taking damage.",
+      "key": "event_HURT_PAY",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_BOSS_GIFT",
+      "name": "Thank You, Boss",
+      "description": "Open a boss reward chest.",
+      "key": "event_BOSS_GIFT",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_LEGENDARY",
+      "name": "Disco In A Box",
+      "description": "Reveal legendary treasure.",
+      "key": "event_LEGENDARY",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_MIXED_BAG",
+      "name": "Shopping Without A List",
+      "description": "Own upgrades from six families in one run.",
+      "key": "event_MIXED_BAG",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_TRIPLE_WEAPON",
+      "name": "Full Hands",
+      "description": "Equip three different weapons.",
+      "key": "event_TRIPLE_WEAPON",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_REPLACE",
+      "name": "New Favourite",
+      "description": "Upgrade each of your three weapons in the same run.",
+      "key": "event_REPLACE",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_RANK_UP",
+      "name": "Old Reliable",
+      "description": "Upgrade the same weapon.",
+      "key": "event_RANK_UP",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_GARDEN",
+      "name": "Groundskeeper",
+      "description": "Plant a flower by moving.",
+      "key": "event_GARDEN",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_BLOOM_CHAIN",
+      "name": "Spring Reaction",
+      "description": "Make three neighbouring flowers bloom together.",
+      "key": "event_BLOOM_CHAIN",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_FLOWER_HEAL",
+      "name": "Emergency Bouquet",
+      "description": "Heal yourself with a flower.",
+      "key": "event_FLOWER_HEAL",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_FLOWER_BOSS",
+      "name": "Push Up Daisies",
+      "description": "Damage a boss with a bloom.",
+      "key": "event_FLOWER_BOSS",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_POLLEN",
+      "name": "Hay Fever",
+      "description": "Poison an enemy with flower pollen.",
+      "key": "event_POLLEN",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_ROOTS",
+      "name": "Please Stay On The Grass",
+      "description": "Slow an enemy with flower roots.",
+      "key": "event_ROOTS",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_GARDEN_MOVE",
+      "name": "Garden Marathon",
+      "description": "Plant in five different patches in a world.",
+      "key": "event_GARDEN_MOVE",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_HOT_COLD",
+      "name": "Thermal Confusion",
+      "description": "Burn and freeze the same enemy.",
+      "key": "event_HOT_COLD",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_TOXIC_DARK",
+      "name": "Nightshade",
+      "description": "Poison and blind the same enemy.",
+      "key": "event_TOXIC_DARK",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_BOSS_BLIND",
+      "name": "Management In The Dark",
+      "description": "Blind a boss.",
+      "key": "event_BOSS_BLIND",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_BOSS_ICE",
+      "name": "Frozen Appointment",
+      "description": "Freeze a boss.",
+      "key": "event_BOSS_ICE",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_BUBBLE",
+      "name": "Soft Landing",
+      "description": "Let your shield absorb a hit.",
+      "key": "event_BUBBLE",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_REVIVE",
+      "name": "Death Has Bad Timing",
+      "description": "Use an extra life.",
+      "key": "event_REVIVE",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_COMEBACK",
+      "name": "Still Your Problem",
+      "description": "Defeat a boss below one-quarter health.",
+      "key": "event_COMEBACK",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_PURE_GARDEN",
+      "name": "Weeding Specialist",
+      "description": "Defeat a boss using only Flowers as your weapon.",
+      "key": "event_PURE_GARDEN",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_NO_GUN",
+      "name": "Alternative Medicine",
+      "description": "Defeat a boss without a gun equipped.",
+      "key": "event_NO_GUN",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_ONE_WEAPON",
+      "name": "Travelling Light",
+      "description": "Defeat a boss with one weapon equipped.",
+      "key": "event_ONE_WEAPON",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_NO_HIT_BOSS",
+      "name": "Not A Scratch",
+      "description": "Defeat a boss without losing health during that fight.",
+      "key": "event_NO_HIT_BOSS",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_FEEDBACK",
+      "name": "Dear Developers",
+      "description": "Save a suggestion in the Community Lab.",
+      "key": "event_FEEDBACK",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_ROADMAP",
+      "name": "Crystal Ball",
+      "description": "Read the Community Lab roadmap.",
+      "key": "event_ROADMAP",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_MIX_TURRET",
+      "name": "Shared Workshop",
+      "description": "Equip a turret and another kind of weapon.",
+      "key": "event_MIX_TURRET",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_FULL_EXPLORER",
+      "name": "Cartographer In A Panic",
+      "description": "Reveal thirty map tiles in one world.",
+      "key": "event_FULL_EXPLORER",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_GHOST_DANGER",
+      "name": "Excuse Me, Coming Through",
+      "description": "Ghost dash while a boss is alive.",
+      "key": "event_GHOST_DANGER",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    }
+  ]
+}

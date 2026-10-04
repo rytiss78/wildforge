@@ -1,0 +1,14 @@
+node_modules/
+build/
+.build-staging/
+native/.godot/
+tools/
+.publish/
+dist/
+**/__pycache__/
+*.py[cod]
+*.log
+steam_appid.txt
+.env
+.env.*
+*.pending

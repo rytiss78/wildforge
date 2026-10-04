@@ -1,0 +1,14 @@
+{
+  "name": "wildforge",
+  "version": "0.7.7",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node scripts/native.mjs",
+    "test": "node --test",
+    "test:native": "node scripts/native.mjs --test",
+    "package": "powershell -NoProfile -File scripts/package-native.ps1",
+    "export:achievements": "node scripts/export-achievements.mjs",
+    "export:content": "node scripts/export-native-data.mjs"
+  }
+}

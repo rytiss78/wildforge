@@ -1,0 +1,131 @@
+{
+  "source": "Original authored profiles, UVs and articulated pivots; approved texture reuse",
+  "assets": [
+    {
+      "asset": "count_duck",
+      "triangles": 22436,
+      "mesh_nodes": 59,
+      "bytes": 1958408
+    },
+    {
+      "asset": "hero_pipe_wrench",
+      "triangles": 8564,
+      "mesh_nodes": 29,
+      "bytes": 463920
+    },
+    {
+      "asset": "hero_sweet_potato",
+      "triangles": 10764,
+      "mesh_nodes": 29,
+      "bytes": 634008
+    },
+    {
+      "asset": "hero_marble_bust_01",
+      "triangles": 11500,
+      "mesh_nodes": 34,
+      "bytes": 503320
+    },
+    {
+      "asset": "hero_street_rat",
+      "triangles": 10460,
+      "mesh_nodes": 29,
+      "bytes": 457236
+    },
+    {
+      "asset": "hero_hamburger_buns",
+      "triangles": 7488,
+      "mesh_nodes": 28,
+      "bytes": 467024
+    },
+    {
+      "asset": "hero_florist",
+      "triangles": 11832,
+      "mesh_nodes": 34,
+      "bytes": 619852
+    },
+    {
+      "asset": "hero_teapot",
+      "triangles": 9340,
+      "mesh_nodes": 31,
+      "bytes": 521760
+    },
+    {
+      "asset": "hero_octopus",
+      "triangles": 7336,
+      "mesh_nodes": 31,
+      "bytes": 347008
+    },
+    {
+      "asset": "hero_astronaut",
+      "triangles": 9192,
+      "mesh_nodes": 29,
+      "bytes": 401072
+    },
+    {
+      "asset": "hero_cactus",
+      "triangles": 9896,
+      "mesh_nodes": 44,
+      "bytes": 510560
+    },
+    {
+      "asset": "hero_book",
+      "triangles": 6772,
+      "mesh_nodes": 31,
+      "bytes": 410016
+    },
+    {
+      "asset": "hero_snail",
+      "triangles": 8800,
+      "mesh_nodes": 26,
+      "bytes": 619448
+    },
+    {
+      "asset": "hero_bee",
+      "triangles": 8608,
+      "mesh_nodes": 29,
+      "bytes": 587152
+    },
+    {
+      "asset": "hero_sushi",
+      "triangles": 9112,
+      "mesh_nodes": 37,
+      "bytes": 400840
+    },
+    {
+      "asset": "hero_mushroom",
+      "triangles": 9132,
+      "mesh_nodes": 31,
+      "bytes": 408036
+    },
+    {
+      "asset": "hero_clock",
+      "triangles": 10804,
+      "mesh_nodes": 38,
+      "bytes": 396044
+    },
+    {
+      "asset": "hero_icecream",
+      "triangles": 8576,
+      "mesh_nodes": 30,
+      "bytes": 386388
+    },
+    {
+      "asset": "hero_bathtub",
+      "triangles": 9308,
+      "mesh_nodes": 32,
+      "bytes": 680184
+    },
+    {
+      "asset": "hero_peacock",
+      "triangles": 19568,
+      "mesh_nodes": 43,
+      "bytes": 2241468
+    },
+    {
+      "asset": "hero_toaster",
+      "triangles": 7376,
+      "mesh_nodes": 33,
+      "bytes": 372912
+    }
+  ]
+}

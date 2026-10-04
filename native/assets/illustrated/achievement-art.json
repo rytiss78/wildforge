@@ -1,0 +1,702 @@
+[
+  {
+    "id": "WF_PLAY_WRENCH",
+    "tile": 0,
+    "motif": "hero",
+    "sourceTile": 11,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_WIN_WRENCH",
+    "tile": 1,
+    "motif": "win",
+    "sourceTile": 11,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_PLAY_DUCK",
+    "tile": 2,
+    "motif": "hero",
+    "sourceTile": 0,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_WIN_DUCK",
+    "tile": 3,
+    "motif": "win",
+    "sourceTile": 0,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_PLAY_BROCCOLI",
+    "tile": 4,
+    "motif": "hero",
+    "sourceTile": 16,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_WIN_BROCCOLI",
+    "tile": 5,
+    "motif": "win",
+    "sourceTile": 16,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_PLAY_GRANDMA",
+    "tile": 6,
+    "motif": "hero",
+    "sourceTile": 8,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_WIN_GRANDMA",
+    "tile": 7,
+    "motif": "win",
+    "sourceTile": 8,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_PLAY_GOBLIN",
+    "tile": 8,
+    "motif": "hero",
+    "sourceTile": 17,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_WIN_GOBLIN",
+    "tile": 9,
+    "motif": "win",
+    "sourceTile": 17,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_PLAY_LOAF",
+    "tile": 10,
+    "motif": "hero",
+    "sourceTile": 7,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_WIN_LOAF",
+    "tile": 11,
+    "motif": "win",
+    "sourceTile": 7,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_PLAY_FLORIST",
+    "tile": 12,
+    "motif": "hero",
+    "sourceTile": 10,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_WIN_FLORIST",
+    "tile": 13,
+    "motif": "win",
+    "sourceTile": 10,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_BUILD_ENGINEERING",
+    "tile": 14,
+    "motif": "build",
+    "sourceTile": 11,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_BUILD_BALLISTICS",
+    "tile": 15,
+    "motif": "build",
+    "sourceTile": 0,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_BUILD_EXPLOSIVES",
+    "tile": 16,
+    "motif": "build",
+    "sourceTile": 8,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_BUILD_FIRE",
+    "tile": 17,
+    "motif": "build",
+    "sourceTile": 12,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_BUILD_FROST",
+    "tile": 18,
+    "motif": "build",
+    "sourceTile": 14,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_BUILD_ELECTRIC",
+    "tile": 19,
+    "motif": "build",
+    "sourceTile": 6,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_BUILD_TOXIC",
+    "tile": 20,
+    "motif": "build",
+    "sourceTile": 13,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_BUILD_DEFENSE",
+    "tile": 21,
+    "motif": "build",
+    "sourceTile": 16,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_BUILD_RECOVERY",
+    "tile": 22,
+    "motif": "build",
+    "sourceTile": 15,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_BUILD_MOBILITY",
+    "tile": 23,
+    "motif": "build",
+    "sourceTile": 19,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_BUILD_VAMPIRIC",
+    "tile": 24,
+    "motif": "build",
+    "sourceTile": 15,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_BUILD_SCAVENGING",
+    "tile": 25,
+    "motif": "build",
+    "sourceTile": 20,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_BUILD_FORTUNE",
+    "tile": 26,
+    "motif": "build",
+    "sourceTile": 18,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_BUILD_PRECISION",
+    "tile": 27,
+    "motif": "build",
+    "sourceTile": 5,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_BUILD_ASSASSIN",
+    "tile": 28,
+    "motif": "build",
+    "sourceTile": 7,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_BUILD_AURA",
+    "tile": 29,
+    "motif": "build",
+    "sourceTile": 23,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_BUILD_SPECTRAL",
+    "tile": 30,
+    "motif": "build",
+    "sourceTile": 9,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_BUILD_BURROWING",
+    "tile": 31,
+    "motif": "build",
+    "sourceTile": 19,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_BUILD_SHADOW",
+    "tile": 32,
+    "motif": "build",
+    "sourceTile": 22,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_BUILD_BERSERKER",
+    "tile": 33,
+    "motif": "build",
+    "sourceTile": 7,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_BUILD_STORM",
+    "tile": 34,
+    "motif": "build",
+    "sourceTile": 6,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_BUILD_ARCANE",
+    "tile": 35,
+    "motif": "build",
+    "sourceTile": 23,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_BUILD_NATURE",
+    "tile": 36,
+    "motif": "build",
+    "sourceTile": 21,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_BUILD_ECONOMY",
+    "tile": 37,
+    "motif": "build",
+    "sourceTile": 17,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_BUILD_GARDEN",
+    "tile": 38,
+    "motif": "build",
+    "sourceTile": 10,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_COMBO_BURN_FREEZE",
+    "tile": 39,
+    "motif": "combo",
+    "sourceTile": 12,
+    "secondaryTile": 14
+  },
+  {
+    "id": "WF_COMBO_POISON_LIFESTEAL",
+    "tile": 40,
+    "motif": "combo",
+    "sourceTile": 13,
+    "secondaryTile": 15
+  },
+  {
+    "id": "WF_COMBO_SHIELD_THORNS",
+    "tile": 41,
+    "motif": "combo",
+    "sourceTile": 16,
+    "secondaryTile": 21
+  },
+  {
+    "id": "WF_COMBO_GHOST_BURROW",
+    "tile": 42,
+    "motif": "combo",
+    "sourceTile": 9,
+    "secondaryTile": 19
+  },
+  {
+    "id": "WF_COMBO_BURN_POISON",
+    "tile": 43,
+    "motif": "combo",
+    "sourceTile": 12,
+    "secondaryTile": 13
+  },
+  {
+    "id": "WF_COMBO_FREEZE_BLIND",
+    "tile": 44,
+    "motif": "combo",
+    "sourceTile": 14,
+    "secondaryTile": 22
+  },
+  {
+    "id": "WF_COMBO_CHAIN_RICOCHET",
+    "tile": 45,
+    "motif": "combo",
+    "sourceTile": 6,
+    "secondaryTile": 6
+  },
+  {
+    "id": "WF_COMBO_SPLASH_PIERCE",
+    "tile": 46,
+    "motif": "combo",
+    "sourceTile": 12,
+    "secondaryTile": 5
+  },
+  {
+    "id": "WF_COMBO_REGEN_ARMOR",
+    "tile": 47,
+    "motif": "combo",
+    "sourceTile": 15,
+    "secondaryTile": 16
+  },
+  {
+    "id": "WF_COMBO_DASHBLAST_GHOST",
+    "tile": 48,
+    "motif": "combo",
+    "sourceTile": 12,
+    "secondaryTile": 9
+  },
+  {
+    "id": "WF_COMBO_POOLS_SLOW",
+    "tile": 49,
+    "motif": "combo",
+    "sourceTile": 13,
+    "secondaryTile": 14
+  },
+  {
+    "id": "WF_COMBO_STORM_NOVA",
+    "tile": 50,
+    "motif": "combo",
+    "sourceTile": 6,
+    "secondaryTile": 23
+  },
+  {
+    "id": "WF_COMBO_LIFESTEAL_BERSERK",
+    "tile": 51,
+    "motif": "combo",
+    "sourceTile": 15,
+    "secondaryTile": 7
+  },
+  {
+    "id": "WF_COMBO_WALKGOLD_COINRADIUS",
+    "tile": 52,
+    "motif": "combo",
+    "sourceTile": 19,
+    "secondaryTile": 17
+  },
+  {
+    "id": "WF_COMBO_INTEREST_DISCOUNT",
+    "tile": 53,
+    "motif": "combo",
+    "sourceTile": 17,
+    "secondaryTile": 17
+  },
+  {
+    "id": "WF_COMBO_KEYPOWER_LUCK",
+    "tile": 54,
+    "motif": "combo",
+    "sourceTile": 18,
+    "secondaryTile": 23
+  },
+  {
+    "id": "WF_COMBO_HURTGOLD_THORNS",
+    "tile": 55,
+    "motif": "combo",
+    "sourceTile": 15,
+    "secondaryTile": 21
+  },
+  {
+    "id": "WF_COMBO_REPAIR_TURRETDAMAGE",
+    "tile": 56,
+    "motif": "combo",
+    "sourceTile": 15,
+    "secondaryTile": 11
+  },
+  {
+    "id": "WF_COMBO_FLOWERPOLLEN_FLOWERROOTS",
+    "tile": 57,
+    "motif": "combo",
+    "sourceTile": 13,
+    "secondaryTile": 10
+  },
+  {
+    "id": "WF_COMBO_FLOWERHEAL_FLOWERPOWER",
+    "tile": 58,
+    "motif": "combo",
+    "sourceTile": 15,
+    "secondaryTile": 10
+  },
+  {
+    "id": "WF_LOCKED_GATE",
+    "tile": 59,
+    "motif": "badge",
+    "sourceTile": 18,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_RUINS",
+    "tile": 60,
+    "motif": "explore",
+    "sourceTile": 16,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_HIGH_CHEST",
+    "tile": 61,
+    "motif": "explore",
+    "sourceTile": 18,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_THREE_REALMS",
+    "tile": 62,
+    "motif": "explore",
+    "sourceTile": 23,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_LONG_WALK",
+    "tile": 63,
+    "motif": "explore",
+    "sourceTile": 19,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_AIRTIME",
+    "tile": 64,
+    "motif": "explore",
+    "sourceTile": 19,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_FREE_KEY",
+    "tile": 65,
+    "motif": "badge",
+    "sourceTile": 18,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_LAST_COIN",
+    "tile": 66,
+    "motif": "badge",
+    "sourceTile": 17,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_SALE",
+    "tile": 67,
+    "motif": "badge",
+    "sourceTile": 17,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_INTEREST",
+    "tile": 68,
+    "motif": "badge",
+    "sourceTile": 17,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_WALK_PAY",
+    "tile": 69,
+    "motif": "badge",
+    "sourceTile": 19,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_HURT_PAY",
+    "tile": 70,
+    "motif": "badge",
+    "sourceTile": 15,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_BOSS_GIFT",
+    "tile": 71,
+    "motif": "boss",
+    "sourceTile": 18,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_LEGENDARY",
+    "tile": 72,
+    "motif": "badge",
+    "sourceTile": 23,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_MIXED_BAG",
+    "tile": 73,
+    "motif": "badge",
+    "sourceTile": 20,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_TRIPLE_WEAPON",
+    "tile": 74,
+    "motif": "badge",
+    "sourceTile": 0,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_REPLACE",
+    "tile": 75,
+    "motif": "badge",
+    "sourceTile": 1,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_RANK_UP",
+    "tile": 76,
+    "motif": "badge",
+    "sourceTile": 5,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_GARDEN",
+    "tile": 77,
+    "motif": "badge",
+    "sourceTile": 10,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_BLOOM_CHAIN",
+    "tile": 78,
+    "motif": "badge",
+    "sourceTile": 10,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_FLOWER_HEAL",
+    "tile": 79,
+    "motif": "badge",
+    "sourceTile": 10,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_FLOWER_BOSS",
+    "tile": 80,
+    "motif": "boss",
+    "sourceTile": 10,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_POLLEN",
+    "tile": 81,
+    "motif": "badge",
+    "sourceTile": 13,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_ROOTS",
+    "tile": 82,
+    "motif": "badge",
+    "sourceTile": 21,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_GARDEN_MOVE",
+    "tile": 83,
+    "motif": "explore",
+    "sourceTile": 10,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_HOT_COLD",
+    "tile": 84,
+    "motif": "badge",
+    "sourceTile": 12,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_TOXIC_DARK",
+    "tile": 85,
+    "motif": "badge",
+    "sourceTile": 13,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_BOSS_BLIND",
+    "tile": 86,
+    "motif": "boss",
+    "sourceTile": 22,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_BOSS_ICE",
+    "tile": 87,
+    "motif": "boss",
+    "sourceTile": 14,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_BUBBLE",
+    "tile": 88,
+    "motif": "badge",
+    "sourceTile": 16,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_REVIVE",
+    "tile": 89,
+    "motif": "badge",
+    "sourceTile": 15,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_COMEBACK",
+    "tile": 90,
+    "motif": "boss",
+    "sourceTile": 15,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_PURE_GARDEN",
+    "tile": 91,
+    "motif": "boss",
+    "sourceTile": 10,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_NO_GUN",
+    "tile": 92,
+    "motif": "boss",
+    "sourceTile": 7,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_ONE_WEAPON",
+    "tile": 93,
+    "motif": "boss",
+    "sourceTile": 0,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_NO_HIT_BOSS",
+    "tile": 94,
+    "motif": "boss",
+    "sourceTile": 16,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_FEEDBACK",
+    "tile": 95,
+    "motif": "badge",
+    "sourceTile": 20,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_ROADMAP",
+    "tile": 96,
+    "motif": "badge",
+    "sourceTile": 23,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_MIX_TURRET",
+    "tile": 97,
+    "motif": "badge",
+    "sourceTile": 11,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_FULL_EXPLORER",
+    "tile": 98,
+    "motif": "explore",
+    "sourceTile": 19,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_GHOST_DANGER",
+    "tile": 99,
+    "motif": "badge",
+    "sourceTile": 23,
+    "secondaryTile": null
+  }
+]

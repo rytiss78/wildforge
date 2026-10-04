@@ -1,0 +1,1306 @@
+{
+  "schemaVersion": 1,
+  "count": 100,
+  "achievements": [
+    {
+      "apiName": "WF_PLAY_WRENCH",
+      "displayName": "Meet Wrench",
+      "description": "Start a run as Wrench.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_play_wrench-unlocked.png",
+      "iconLocked": "achievement-icons/wf_play_wrench-locked.png",
+      "condition": {
+        "key": "play_wrench",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_WIN_WRENCH",
+      "displayName": "Wrench Beats The Odds",
+      "description": "Win a run as Wrench.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_win_wrench-unlocked.png",
+      "iconLocked": "achievement-icons/wf_win_wrench-locked.png",
+      "condition": {
+        "key": "win_wrench",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_PLAY_DUCK",
+      "displayName": "Meet Count Duck",
+      "description": "Start a run as Count Duck.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_play_duck-unlocked.png",
+      "iconLocked": "achievement-icons/wf_play_duck-locked.png",
+      "condition": {
+        "key": "play_duck",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_WIN_DUCK",
+      "displayName": "Count Duck Beats The Odds",
+      "description": "Win a run as Count Duck.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_win_duck-unlocked.png",
+      "iconLocked": "achievement-icons/wf_win_duck-locked.png",
+      "condition": {
+        "key": "win_duck",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_PLAY_BROCCOLI",
+      "displayName": "Meet Tank Potato",
+      "description": "Start a run as Tank Potato.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_play_broccoli-unlocked.png",
+      "iconLocked": "achievement-icons/wf_play_broccoli-locked.png",
+      "condition": {
+        "key": "play_broccoli",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_WIN_BROCCOLI",
+      "displayName": "Tank Potato Beats The Odds",
+      "description": "Win a run as Tank Potato.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_win_broccoli-unlocked.png",
+      "iconLocked": "achievement-icons/wf_win_broccoli-locked.png",
+      "condition": {
+        "key": "win_broccoli",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_PLAY_GRANDMA",
+      "displayName": "Meet Stone Granny",
+      "description": "Start a run as Stone Granny.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_play_grandma-unlocked.png",
+      "iconLocked": "achievement-icons/wf_play_grandma-locked.png",
+      "condition": {
+        "key": "play_grandma",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_WIN_GRANDMA",
+      "displayName": "Stone Granny Beats The Odds",
+      "description": "Win a run as Stone Granny.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_win_grandma-unlocked.png",
+      "iconLocked": "achievement-icons/wf_win_grandma-locked.png",
+      "condition": {
+        "key": "win_grandma",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_PLAY_GOBLIN",
+      "displayName": "Meet Tax Rat",
+      "description": "Start a run as Tax Rat.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_play_goblin-unlocked.png",
+      "iconLocked": "achievement-icons/wf_play_goblin-locked.png",
+      "condition": {
+        "key": "play_goblin",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_WIN_GOBLIN",
+      "displayName": "Tax Rat Beats The Odds",
+      "description": "Win a run as Tax Rat.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_win_goblin-unlocked.png",
+      "iconLocked": "achievement-icons/wf_win_goblin-locked.png",
+      "condition": {
+        "key": "win_goblin",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_PLAY_LOAF",
+      "displayName": "Meet Sir Loaf",
+      "description": "Start a run as Sir Loaf.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_play_loaf-unlocked.png",
+      "iconLocked": "achievement-icons/wf_play_loaf-locked.png",
+      "condition": {
+        "key": "play_loaf",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_WIN_LOAF",
+      "displayName": "Sir Loaf Beats The Odds",
+      "description": "Win a run as Sir Loaf.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_win_loaf-unlocked.png",
+      "iconLocked": "achievement-icons/wf_win_loaf-locked.png",
+      "condition": {
+        "key": "win_loaf",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_PLAY_FLORIST",
+      "displayName": "Meet Florist",
+      "description": "Start a run as Florist.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_play_florist-unlocked.png",
+      "iconLocked": "achievement-icons/wf_play_florist-locked.png",
+      "condition": {
+        "key": "play_florist",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_WIN_FLORIST",
+      "displayName": "Florist Beats The Odds",
+      "description": "Win a run as Florist.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_win_florist-unlocked.png",
+      "iconLocked": "achievement-icons/wf_win_florist-locked.png",
+      "condition": {
+        "key": "win_florist",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_BUILD_ENGINEERING",
+      "displayName": "Union Approved",
+      "description": "Shape a build with five engineering upgrades.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_build_engineering-unlocked.png",
+      "iconLocked": "achievement-icons/wf_build_engineering-locked.png",
+      "condition": {
+        "key": "family_Engineering",
+        "target": 5,
+        "scope": "best"
+      }
+    },
+    {
+      "apiName": "WF_BUILD_BALLISTICS",
+      "displayName": "Bullet Bouquet",
+      "description": "Shape a build with five ballistics upgrades.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_build_ballistics-unlocked.png",
+      "iconLocked": "achievement-icons/wf_build_ballistics-locked.png",
+      "condition": {
+        "key": "family_Ballistics",
+        "target": 5,
+        "scope": "best"
+      }
+    },
+    {
+      "apiName": "WF_BUILD_EXPLOSIVES",
+      "displayName": "Confetti Insurance",
+      "description": "Shape a build with five explosives upgrades.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_build_explosives-unlocked.png",
+      "iconLocked": "achievement-icons/wf_build_explosives-locked.png",
+      "condition": {
+        "key": "family_Explosives",
+        "target": 5,
+        "scope": "best"
+      }
+    },
+    {
+      "apiName": "WF_BUILD_FIRE",
+      "displayName": "Spicy Personality",
+      "description": "Shape a build with five fire upgrades.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_build_fire-unlocked.png",
+      "iconLocked": "achievement-icons/wf_build_fire-locked.png",
+      "condition": {
+        "key": "family_Fire",
+        "target": 5,
+        "scope": "best"
+      }
+    },
+    {
+      "apiName": "WF_BUILD_FROST",
+      "displayName": "Ice Cream Emergency",
+      "description": "Shape a build with five frost upgrades.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_build_frost-unlocked.png",
+      "iconLocked": "achievement-icons/wf_build_frost-locked.png",
+      "condition": {
+        "key": "family_Frost",
+        "target": 5,
+        "scope": "best"
+      }
+    },
+    {
+      "apiName": "WF_BUILD_ELECTRIC",
+      "displayName": "Static Hair Day",
+      "description": "Shape a build with five electric upgrades.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_build_electric-unlocked.png",
+      "iconLocked": "achievement-icons/wf_build_electric-locked.png",
+      "condition": {
+        "key": "family_Electric",
+        "target": 5,
+        "scope": "best"
+      }
+    },
+    {
+      "apiName": "WF_BUILD_TOXIC",
+      "displayName": "Organic Pest Control",
+      "description": "Shape a build with five toxic upgrades.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_build_toxic-unlocked.png",
+      "iconLocked": "achievement-icons/wf_build_toxic-locked.png",
+      "condition": {
+        "key": "family_Toxic",
+        "target": 5,
+        "scope": "best"
+      }
+    },
+    {
+      "apiName": "WF_BUILD_DEFENSE",
+      "displayName": "Walking Fridge",
+      "description": "Shape a build with five defense upgrades.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_build_defense-unlocked.png",
+      "iconLocked": "achievement-icons/wf_build_defense-locked.png",
+      "condition": {
+        "key": "family_Defense",
+        "target": 5,
+        "scope": "best"
+      }
+    },
+    {
+      "apiName": "WF_BUILD_RECOVERY",
+      "displayName": "Doctor Yourself",
+      "description": "Shape a build with five recovery upgrades.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_build_recovery-unlocked.png",
+      "iconLocked": "achievement-icons/wf_build_recovery-locked.png",
+      "condition": {
+        "key": "family_Recovery",
+        "target": 5,
+        "scope": "best"
+      }
+    },
+    {
+      "apiName": "WF_BUILD_MOBILITY",
+      "displayName": "Late For Everything",
+      "description": "Shape a build with five mobility upgrades.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_build_mobility-unlocked.png",
+      "iconLocked": "achievement-icons/wf_build_mobility-locked.png",
+      "condition": {
+        "key": "family_Mobility",
+        "target": 5,
+        "scope": "best"
+      }
+    },
+    {
+      "apiName": "WF_BUILD_VAMPIRIC",
+      "displayName": "Dinner Is Served",
+      "description": "Shape a build with five vampiric upgrades.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_build_vampiric-unlocked.png",
+      "iconLocked": "achievement-icons/wf_build_vampiric-locked.png",
+      "condition": {
+        "key": "family_Vampiric",
+        "target": 5,
+        "scope": "best"
+      }
+    },
+    {
+      "apiName": "WF_BUILD_SCAVENGING",
+      "displayName": "Pocket Vacuum",
+      "description": "Shape a build with five scavenging upgrades.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_build_scavenging-unlocked.png",
+      "iconLocked": "achievement-icons/wf_build_scavenging-locked.png",
+      "condition": {
+        "key": "family_Scavenging",
+        "target": 5,
+        "scope": "best"
+      }
+    },
+    {
+      "apiName": "WF_BUILD_FORTUNE",
+      "displayName": "Lucky Underpants",
+      "description": "Shape a build with five fortune upgrades.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_build_fortune-unlocked.png",
+      "iconLocked": "achievement-icons/wf_build_fortune-locked.png",
+      "condition": {
+        "key": "family_Fortune",
+        "target": 5,
+        "scope": "best"
+      }
+    },
+    {
+      "apiName": "WF_BUILD_PRECISION",
+      "displayName": "Tiny Target, Big Ego",
+      "description": "Shape a build with five precision upgrades.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_build_precision-unlocked.png",
+      "iconLocked": "achievement-icons/wf_build_precision-locked.png",
+      "condition": {
+        "key": "family_Precision",
+        "target": 5,
+        "scope": "best"
+      }
+    },
+    {
+      "apiName": "WF_BUILD_ASSASSIN",
+      "displayName": "Early Checkout",
+      "description": "Shape a build with five assassin upgrades.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_build_assassin-unlocked.png",
+      "iconLocked": "achievement-icons/wf_build_assassin-locked.png",
+      "condition": {
+        "key": "family_Assassin",
+        "target": 5,
+        "scope": "best"
+      }
+    },
+    {
+      "apiName": "WF_BUILD_AURA",
+      "displayName": "Personal Space",
+      "description": "Shape a build with five aura upgrades.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_build_aura-unlocked.png",
+      "iconLocked": "achievement-icons/wf_build_aura-locked.png",
+      "condition": {
+        "key": "family_Aura",
+        "target": 5,
+        "scope": "best"
+      }
+    },
+    {
+      "apiName": "WF_BUILD_SPECTRAL",
+      "displayName": "Haunted Pajamas",
+      "description": "Shape a build with five spectral upgrades.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_build_spectral-unlocked.png",
+      "iconLocked": "achievement-icons/wf_build_spectral-locked.png",
+      "condition": {
+        "key": "family_Spectral",
+        "target": 5,
+        "scope": "best"
+      }
+    },
+    {
+      "apiName": "WF_BUILD_BURROWING",
+      "displayName": "Underground Celebrity",
+      "description": "Shape a build with five burrowing upgrades.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_build_burrowing-unlocked.png",
+      "iconLocked": "achievement-icons/wf_build_burrowing-locked.png",
+      "condition": {
+        "key": "family_Burrowing",
+        "target": 5,
+        "scope": "best"
+      }
+    },
+    {
+      "apiName": "WF_BUILD_SHADOW",
+      "displayName": "Who Turned Out The Sun?",
+      "description": "Shape a build with five shadow upgrades.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_build_shadow-unlocked.png",
+      "iconLocked": "achievement-icons/wf_build_shadow-locked.png",
+      "condition": {
+        "key": "family_Shadow",
+        "target": 5,
+        "scope": "best"
+      }
+    },
+    {
+      "apiName": "WF_BUILD_BERSERKER",
+      "displayName": "Bad Mood, Big Damage",
+      "description": "Shape a build with five berserker upgrades.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_build_berserker-unlocked.png",
+      "iconLocked": "achievement-icons/wf_build_berserker-locked.png",
+      "condition": {
+        "key": "family_Berserker",
+        "target": 5,
+        "scope": "best"
+      }
+    },
+    {
+      "apiName": "WF_BUILD_STORM",
+      "displayName": "Weather Complaint",
+      "description": "Shape a build with five storm upgrades.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_build_storm-unlocked.png",
+      "iconLocked": "achievement-icons/wf_build_storm-locked.png",
+      "condition": {
+        "key": "family_Storm",
+        "target": 5,
+        "scope": "best"
+      }
+    },
+    {
+      "apiName": "WF_BUILD_ARCANE",
+      "displayName": "Wizard Without A Hat",
+      "description": "Shape a build with five arcane upgrades.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_build_arcane-unlocked.png",
+      "iconLocked": "achievement-icons/wf_build_arcane-locked.png",
+      "condition": {
+        "key": "family_Arcane",
+        "target": 5,
+        "scope": "best"
+      }
+    },
+    {
+      "apiName": "WF_BUILD_NATURE",
+      "displayName": "Please Do Not Hug",
+      "description": "Shape a build with five nature upgrades.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_build_nature-unlocked.png",
+      "iconLocked": "achievement-icons/wf_build_nature-locked.png",
+      "condition": {
+        "key": "family_Nature",
+        "target": 5,
+        "scope": "best"
+      }
+    },
+    {
+      "apiName": "WF_BUILD_ECONOMY",
+      "displayName": "Financially Dangerous",
+      "description": "Shape a build with five economy upgrades.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_build_economy-unlocked.png",
+      "iconLocked": "achievement-icons/wf_build_economy-locked.png",
+      "condition": {
+        "key": "family_Economy",
+        "target": 5,
+        "scope": "best"
+      }
+    },
+    {
+      "apiName": "WF_BUILD_GARDEN",
+      "displayName": "Flower Power",
+      "description": "Shape a build with five garden upgrades.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_build_garden-unlocked.png",
+      "iconLocked": "achievement-icons/wf_build_garden-locked.png",
+      "condition": {
+        "key": "family_Garden",
+        "target": 5,
+        "scope": "best"
+      }
+    },
+    {
+      "apiName": "WF_COMBO_BURN_FREEZE",
+      "displayName": "Hot Ice",
+      "description": "Combine Fire and Freeze powers in one run.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_combo_burn_freeze-unlocked.png",
+      "iconLocked": "achievement-icons/wf_combo_burn_freeze-locked.png",
+      "condition": {
+        "key": "combo_burn_freeze",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_COMBO_POISON_LIFESTEAL",
+      "displayName": "Blood Salad",
+      "description": "Combine Poison and Vampire powers in one run.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_combo_poison_lifesteal-unlocked.png",
+      "iconLocked": "achievement-icons/wf_combo_poison_lifesteal-locked.png",
+      "condition": {
+        "key": "combo_poison_lifesteal",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_COMBO_SHIELD_THORNS",
+      "displayName": "Spiky Bubble",
+      "description": "Combine Shield and Thorns powers in one run.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_combo_shield_thorns-unlocked.png",
+      "iconLocked": "achievement-icons/wf_combo_shield_thorns-locked.png",
+      "condition": {
+        "key": "combo_shield_thorns",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_COMBO_GHOST_BURROW",
+      "displayName": "Haunted Basement",
+      "description": "Combine Ghost and Mole powers in one run.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_combo_ghost_burrow-unlocked.png",
+      "iconLocked": "achievement-icons/wf_combo_ghost_burrow-locked.png",
+      "condition": {
+        "key": "combo_ghost_burrow",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_COMBO_BURN_POISON",
+      "displayName": "Bad Soup",
+      "description": "Combine Fire and Poison powers in one run.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_combo_burn_poison-unlocked.png",
+      "iconLocked": "achievement-icons/wf_combo_burn_poison-locked.png",
+      "condition": {
+        "key": "combo_burn_poison",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_COMBO_FREEZE_BLIND",
+      "displayName": "Cold Shoulder",
+      "description": "Combine Freeze and Blind powers in one run.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_combo_freeze_blind-unlocked.png",
+      "iconLocked": "achievement-icons/wf_combo_freeze_blind-locked.png",
+      "condition": {
+        "key": "combo_freeze_blind",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_COMBO_CHAIN_RICOCHET",
+      "displayName": "Pinball Wizard",
+      "description": "Combine Lightning and Bounce powers in one run.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_combo_chain_ricochet-unlocked.png",
+      "iconLocked": "achievement-icons/wf_combo_chain_ricochet-locked.png",
+      "condition": {
+        "key": "combo_chain_ricochet",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_COMBO_SPLASH_PIERCE",
+      "displayName": "Through And Through",
+      "description": "Combine Blast and Pierce powers in one run.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_combo_splash_pierce-unlocked.png",
+      "iconLocked": "achievement-icons/wf_combo_splash_pierce-locked.png",
+      "condition": {
+        "key": "combo_splash_pierce",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_COMBO_REGEN_ARMOR",
+      "displayName": "Comfortable Tank",
+      "description": "Combine Heal and Armor powers in one run.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_combo_regen_armor-unlocked.png",
+      "iconLocked": "achievement-icons/wf_combo_regen_armor-locked.png",
+      "condition": {
+        "key": "combo_regen_armor",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_COMBO_DASHBLAST_GHOST",
+      "displayName": "Boo Goes Boom",
+      "description": "Combine Dash Blast and Ghost powers in one run.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_combo_dashblast_ghost-unlocked.png",
+      "iconLocked": "achievement-icons/wf_combo_dashblast_ghost-locked.png",
+      "condition": {
+        "key": "combo_dashBlast_ghost",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_COMBO_POOLS_SLOW",
+      "displayName": "Sticky Situation",
+      "description": "Combine Poison Cloud and Ice powers in one run.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_combo_pools_slow-unlocked.png",
+      "iconLocked": "achievement-icons/wf_combo_pools_slow-locked.png",
+      "condition": {
+        "key": "combo_pools_slow",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_COMBO_STORM_NOVA",
+      "displayName": "Very Local Weather",
+      "description": "Combine Storm and Nova powers in one run.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_combo_storm_nova-unlocked.png",
+      "iconLocked": "achievement-icons/wf_combo_storm_nova-locked.png",
+      "condition": {
+        "key": "combo_storm_nova",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_COMBO_LIFESTEAL_BERSERK",
+      "displayName": "Hungry When Angry",
+      "description": "Combine Vampire and Rage powers in one run.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_combo_lifesteal_berserk-unlocked.png",
+      "iconLocked": "achievement-icons/wf_combo_lifesteal_berserk-locked.png",
+      "condition": {
+        "key": "combo_lifesteal_berserk",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_COMBO_WALKGOLD_COINRADIUS",
+      "displayName": "Paid To Walk",
+      "description": "Combine Coin Boots and Coin Magnet powers in one run.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_combo_walkgold_coinradius-unlocked.png",
+      "iconLocked": "achievement-icons/wf_combo_walkgold_coinradius-locked.png",
+      "condition": {
+        "key": "combo_walkGold_coinRadius",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_COMBO_INTEREST_DISCOUNT",
+      "displayName": "Coupon Billionaire",
+      "description": "Combine Savings and Sale powers in one run.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_combo_interest_discount-unlocked.png",
+      "iconLocked": "achievement-icons/wf_combo_interest_discount-locked.png",
+      "condition": {
+        "key": "combo_interest_discount",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_COMBO_KEYPOWER_LUCK",
+      "displayName": "Key To Happiness",
+      "description": "Combine Key and Lucky powers in one run.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_combo_keypower_luck-unlocked.png",
+      "iconLocked": "achievement-icons/wf_combo_keypower_luck-locked.png",
+      "condition": {
+        "key": "combo_keyPower_luck",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_COMBO_HURTGOLD_THORNS",
+      "displayName": "Complaint Compensation",
+      "description": "Combine Gold Heart and Thorns powers in one run.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_combo_hurtgold_thorns-unlocked.png",
+      "iconLocked": "achievement-icons/wf_combo_hurtgold_thorns-locked.png",
+      "condition": {
+        "key": "combo_hurtGold_thorns",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_COMBO_REPAIR_TURRETDAMAGE",
+      "displayName": "Workshop Nurse",
+      "description": "Combine Repair and Turret Power powers in one run.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_combo_repair_turretdamage-unlocked.png",
+      "iconLocked": "achievement-icons/wf_combo_repair_turretdamage-locked.png",
+      "condition": {
+        "key": "combo_repair_turretDamage",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_COMBO_FLOWERPOLLEN_FLOWERROOTS",
+      "displayName": "No Lawn Allowed",
+      "description": "Combine Pollen and Roots powers in one run.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_combo_flowerpollen_flowerroots-unlocked.png",
+      "iconLocked": "achievement-icons/wf_combo_flowerpollen_flowerroots-locked.png",
+      "condition": {
+        "key": "combo_flowerPollen_flowerRoots",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_COMBO_FLOWERHEAL_FLOWERPOWER",
+      "displayName": "Flower Hospital",
+      "description": "Combine Nectar and Big Bloom powers in one run.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_combo_flowerheal_flowerpower-unlocked.png",
+      "iconLocked": "achievement-icons/wf_combo_flowerheal_flowerpower-locked.png",
+      "condition": {
+        "key": "combo_flowerHeal_flowerPower",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_LOCKED_GATE",
+      "displayName": "Wrong Door",
+      "description": "Try a gate before its bosses are defeated.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_locked_gate-unlocked.png",
+      "iconLocked": "achievement-icons/wf_locked_gate-locked.png",
+      "condition": {
+        "key": "event_LOCKED_GATE",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_RUINS",
+      "displayName": "Tourist With Teeth",
+      "description": "Visit all four ruins in one world.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_ruins-unlocked.png",
+      "iconLocked": "achievement-icons/wf_ruins-locked.png",
+      "condition": {
+        "key": "event_RUINS",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_HIGH_CHEST",
+      "displayName": "Upstairs Loot",
+      "description": "Open treasure on a raised ruin.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_high_chest-unlocked.png",
+      "iconLocked": "achievement-icons/wf_high_chest-locked.png",
+      "condition": {
+        "key": "event_HIGH_CHEST",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_THREE_REALMS",
+      "displayName": "Change Of Scenery",
+      "description": "Reach the third world.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_three_realms-unlocked.png",
+      "iconLocked": "achievement-icons/wf_three_realms-locked.png",
+      "condition": {
+        "key": "event_THREE_REALMS",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_LONG_WALK",
+      "displayName": "Scenic Route",
+      "description": "Explore the outer edge of a world.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_long_walk-unlocked.png",
+      "iconLocked": "achievement-icons/wf_long_walk-locked.png",
+      "condition": {
+        "key": "event_LONG_WALK",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_AIRTIME",
+      "displayName": "Frequent Flyer",
+      "description": "Jump while a boss is alive.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_airtime-unlocked.png",
+      "iconLocked": "achievement-icons/wf_airtime-locked.png",
+      "condition": {
+        "key": "event_AIRTIME",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_FREE_KEY",
+      "displayName": "On The House",
+      "description": "Open a normal chest free using a Key.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_free_key-unlocked.png",
+      "iconLocked": "achievement-icons/wf_free_key-locked.png",
+      "condition": {
+        "key": "event_FREE_KEY",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_LAST_COIN",
+      "displayName": "No Change Needed",
+      "description": "Spend your last coin on a chest.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_last_coin-unlocked.png",
+      "iconLocked": "achievement-icons/wf_last_coin-locked.png",
+      "condition": {
+        "key": "event_LAST_COIN",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_SALE",
+      "displayName": "Sale Of The Century",
+      "description": "Buy a chest with a discount.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_sale-unlocked.png",
+      "iconLocked": "achievement-icons/wf_sale-locked.png",
+      "condition": {
+        "key": "event_SALE",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_INTEREST",
+      "displayName": "Money Tree",
+      "description": "Earn interest on saved coins.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_interest-unlocked.png",
+      "iconLocked": "achievement-icons/wf_interest-locked.png",
+      "condition": {
+        "key": "event_INTEREST",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_WALK_PAY",
+      "displayName": "Professional Walker",
+      "description": "Earn coins by walking.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_walk_pay-unlocked.png",
+      "iconLocked": "achievement-icons/wf_walk_pay-locked.png",
+      "condition": {
+        "key": "event_WALK_PAY",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_HURT_PAY",
+      "displayName": "Paid For Pain",
+      "description": "Earn coins from taking damage.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_hurt_pay-unlocked.png",
+      "iconLocked": "achievement-icons/wf_hurt_pay-locked.png",
+      "condition": {
+        "key": "event_HURT_PAY",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_BOSS_GIFT",
+      "displayName": "Thank You, Boss",
+      "description": "Open a boss reward chest.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_boss_gift-unlocked.png",
+      "iconLocked": "achievement-icons/wf_boss_gift-locked.png",
+      "condition": {
+        "key": "event_BOSS_GIFT",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_LEGENDARY",
+      "displayName": "Disco In A Box",
+      "description": "Reveal legendary treasure.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_legendary-unlocked.png",
+      "iconLocked": "achievement-icons/wf_legendary-locked.png",
+      "condition": {
+        "key": "event_LEGENDARY",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_MIXED_BAG",
+      "displayName": "Shopping Without A List",
+      "description": "Own upgrades from six families in one run.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_mixed_bag-unlocked.png",
+      "iconLocked": "achievement-icons/wf_mixed_bag-locked.png",
+      "condition": {
+        "key": "event_MIXED_BAG",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_TRIPLE_WEAPON",
+      "displayName": "Full Hands",
+      "description": "Equip three different weapons.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_triple_weapon-unlocked.png",
+      "iconLocked": "achievement-icons/wf_triple_weapon-locked.png",
+      "condition": {
+        "key": "event_TRIPLE_WEAPON",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_REPLACE",
+      "displayName": "New Favourite",
+      "description": "Upgrade each of your three weapons in the same run.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_replace-unlocked.png",
+      "iconLocked": "achievement-icons/wf_replace-locked.png",
+      "condition": {
+        "key": "event_REPLACE",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_RANK_UP",
+      "displayName": "Old Reliable",
+      "description": "Upgrade the same weapon.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_rank_up-unlocked.png",
+      "iconLocked": "achievement-icons/wf_rank_up-locked.png",
+      "condition": {
+        "key": "event_RANK_UP",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_GARDEN",
+      "displayName": "Groundskeeper",
+      "description": "Plant a flower by moving.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_garden-unlocked.png",
+      "iconLocked": "achievement-icons/wf_garden-locked.png",
+      "condition": {
+        "key": "event_GARDEN",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_BLOOM_CHAIN",
+      "displayName": "Spring Reaction",
+      "description": "Make three neighbouring flowers bloom together.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_bloom_chain-unlocked.png",
+      "iconLocked": "achievement-icons/wf_bloom_chain-locked.png",
+      "condition": {
+        "key": "event_BLOOM_CHAIN",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_FLOWER_HEAL",
+      "displayName": "Emergency Bouquet",
+      "description": "Heal yourself with a flower.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_flower_heal-unlocked.png",
+      "iconLocked": "achievement-icons/wf_flower_heal-locked.png",
+      "condition": {
+        "key": "event_FLOWER_HEAL",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_FLOWER_BOSS",
+      "displayName": "Push Up Daisies",
+      "description": "Damage a boss with a bloom.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_flower_boss-unlocked.png",
+      "iconLocked": "achievement-icons/wf_flower_boss-locked.png",
+      "condition": {
+        "key": "event_FLOWER_BOSS",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_POLLEN",
+      "displayName": "Hay Fever",
+      "description": "Poison an enemy with flower pollen.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_pollen-unlocked.png",
+      "iconLocked": "achievement-icons/wf_pollen-locked.png",
+      "condition": {
+        "key": "event_POLLEN",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_ROOTS",
+      "displayName": "Please Stay On The Grass",
+      "description": "Slow an enemy with flower roots.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_roots-unlocked.png",
+      "iconLocked": "achievement-icons/wf_roots-locked.png",
+      "condition": {
+        "key": "event_ROOTS",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_GARDEN_MOVE",
+      "displayName": "Garden Marathon",
+      "description": "Plant in five different patches in a world.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_garden_move-unlocked.png",
+      "iconLocked": "achievement-icons/wf_garden_move-locked.png",
+      "condition": {
+        "key": "event_GARDEN_MOVE",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_HOT_COLD",
+      "displayName": "Thermal Confusion",
+      "description": "Burn and freeze the same enemy.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_hot_cold-unlocked.png",
+      "iconLocked": "achievement-icons/wf_hot_cold-locked.png",
+      "condition": {
+        "key": "event_HOT_COLD",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_TOXIC_DARK",
+      "displayName": "Nightshade",
+      "description": "Poison and blind the same enemy.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_toxic_dark-unlocked.png",
+      "iconLocked": "achievement-icons/wf_toxic_dark-locked.png",
+      "condition": {
+        "key": "event_TOXIC_DARK",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_BOSS_BLIND",
+      "displayName": "Management In The Dark",
+      "description": "Blind a boss.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_boss_blind-unlocked.png",
+      "iconLocked": "achievement-icons/wf_boss_blind-locked.png",
+      "condition": {
+        "key": "event_BOSS_BLIND",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_BOSS_ICE",
+      "displayName": "Frozen Appointment",
+      "description": "Freeze a boss.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_boss_ice-unlocked.png",
+      "iconLocked": "achievement-icons/wf_boss_ice-locked.png",
+      "condition": {
+        "key": "event_BOSS_ICE",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_BUBBLE",
+      "displayName": "Soft Landing",
+      "description": "Let your shield absorb a hit.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_bubble-unlocked.png",
+      "iconLocked": "achievement-icons/wf_bubble-locked.png",
+      "condition": {
+        "key": "event_BUBBLE",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_REVIVE",
+      "displayName": "Death Has Bad Timing",
+      "description": "Use an extra life.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_revive-unlocked.png",
+      "iconLocked": "achievement-icons/wf_revive-locked.png",
+      "condition": {
+        "key": "event_REVIVE",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_COMEBACK",
+      "displayName": "Still Your Problem",
+      "description": "Defeat a boss below one-quarter health.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_comeback-unlocked.png",
+      "iconLocked": "achievement-icons/wf_comeback-locked.png",
+      "condition": {
+        "key": "event_COMEBACK",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_PURE_GARDEN",
+      "displayName": "Weeding Specialist",
+      "description": "Defeat a boss using only Flowers as your weapon.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_pure_garden-unlocked.png",
+      "iconLocked": "achievement-icons/wf_pure_garden-locked.png",
+      "condition": {
+        "key": "event_PURE_GARDEN",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_NO_GUN",
+      "displayName": "Alternative Medicine",
+      "description": "Defeat a boss without a gun equipped.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_no_gun-unlocked.png",
+      "iconLocked": "achievement-icons/wf_no_gun-locked.png",
+      "condition": {
+        "key": "event_NO_GUN",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_ONE_WEAPON",
+      "displayName": "Travelling Light",
+      "description": "Defeat a boss with one weapon equipped.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_one_weapon-unlocked.png",
+      "iconLocked": "achievement-icons/wf_one_weapon-locked.png",
+      "condition": {
+        "key": "event_ONE_WEAPON",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_NO_HIT_BOSS",
+      "displayName": "Not A Scratch",
+      "description": "Defeat a boss without losing health during that fight.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_no_hit_boss-unlocked.png",
+      "iconLocked": "achievement-icons/wf_no_hit_boss-locked.png",
+      "condition": {
+        "key": "event_NO_HIT_BOSS",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_FEEDBACK",
+      "displayName": "Dear Developers",
+      "description": "Save a suggestion in the Community Lab.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_feedback-unlocked.png",
+      "iconLocked": "achievement-icons/wf_feedback-locked.png",
+      "condition": {
+        "key": "event_FEEDBACK",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_ROADMAP",
+      "displayName": "Crystal Ball",
+      "description": "Read the Community Lab roadmap.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_roadmap-unlocked.png",
+      "iconLocked": "achievement-icons/wf_roadmap-locked.png",
+      "condition": {
+        "key": "event_ROADMAP",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_MIX_TURRET",
+      "displayName": "Shared Workshop",
+      "description": "Equip a turret and another kind of weapon.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_mix_turret-unlocked.png",
+      "iconLocked": "achievement-icons/wf_mix_turret-locked.png",
+      "condition": {
+        "key": "event_MIX_TURRET",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_FULL_EXPLORER",
+      "displayName": "Cartographer In A Panic",
+      "description": "Reveal thirty map tiles in one world.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_full_explorer-unlocked.png",
+      "iconLocked": "achievement-icons/wf_full_explorer-locked.png",
+      "condition": {
+        "key": "event_FULL_EXPLORER",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_GHOST_DANGER",
+      "displayName": "Excuse Me, Coming Through",
+      "description": "Ghost dash while a boss is alive.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_ghost_danger-unlocked.png",
+      "iconLocked": "achievement-icons/wf_ghost_danger-locked.png",
+      "condition": {
+        "key": "event_GHOST_DANGER",
+        "target": 1,
+        "scope": "total"
+      }
+    }
+  ]
+}

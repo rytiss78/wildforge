@@ -1,0 +1,17 @@
+{
+	"arena_view": true,
+	"controller_heal": true,
+	"core_states": true,
+	"draining_core": true,
+	"empty_core": true,
+	"ground": true,
+	"healing_core": true,
+	"held_weapon": true,
+	"jump": true,
+	"model_view": true,
+	"mouse_orbit": true,
+	"no_character_billboards": true,
+	"opaque_ui": true,
+	"real_meshes": true,
+	"shooting": true
+}

@@ -1,0 +1,350 @@
+{
+  "engine": "Kyutai Pocket TTS 3.3.0, CPU offline rendering",
+  "type": "Original lines generated with stock synthetic voice profiles. No human recordings are shipped.",
+  "source": "https://github.com/kyutai-labs/pocket-tts",
+  "modelLicense": "MIT",
+  "voiceLicenses": {
+    "alba": "CC BY 4.0, Alba MacKenna / Kyutai stock profile",
+    "marius, javert": "CC0, Kyutai volunteer stock profiles",
+    "charles, fantine, anna, eponine, azelma": "CC BY 4.0, CSTR VCTK / University of Edinburgh stock profiles"
+  },
+  "voiceLicenseSource": "https://huggingface.co/kyutai/tts-voices/blob/main/README.md",
+  "lines": [
+    {
+      "hero": "duck",
+      "id": "hurt_duck_0",
+      "text": "Ow!",
+      "voice": "marius",
+      "duration": 0.493,
+      "sha256": "d1af1f47d24050b370f4132b3d3aaafaffd2b7d521c8859b207a5f4463776755"
+    },
+    {
+      "hero": "duck",
+      "id": "hurt_duck_1",
+      "text": "Watch the feathers!",
+      "voice": "marius",
+      "duration": 0.93,
+      "sha256": "f501579368c5564939a636ead7d9cf6c8825af2299d87a1a455a00dd3df3bd4c"
+    },
+    {
+      "hero": "wrench",
+      "id": "hurt_wrench_0",
+      "text": "Ouch!",
+      "voice": "charles",
+      "duration": 0.95,
+      "sha256": "2df04ae8bb585e449d367e3ee697ec8efc8857db17b12d5079e6338d9d1f8446"
+    },
+    {
+      "hero": "wrench",
+      "id": "hurt_wrench_1",
+      "text": "That stings!",
+      "voice": "charles",
+      "duration": 1.478,
+      "sha256": "7ae3c6a13e3b1e917c9af47fc07447bd06f0926dc5d294d0b13814d5e48e0d2b"
+    },
+    {
+      "hero": "broccoli",
+      "id": "hurt_broccoli_0",
+      "text": "Ugh!",
+      "voice": "javert",
+      "duration": 1.04,
+      "sha256": "69d92c63bad31e8bd02a60789c62cd507dc9746894516c59ae48d1f6d54bc8e9"
+    },
+    {
+      "hero": "broccoli",
+      "id": "hurt_broccoli_1",
+      "text": "My roots!",
+      "voice": "javert",
+      "duration": 1.49,
+      "sha256": "e67e9d43bcfd450165b2b16f3f375e36951dd45ec5508fd866122819a676aa98"
+    },
+    {
+      "hero": "grandma",
+      "id": "hurt_grandma_0",
+      "text": "Oh!",
+      "voice": "fantine",
+      "duration": 1.2,
+      "sha256": "3f144b2512659d4a4191d6c7f98c6105cca5e0a108567059887c73ae8d846b3f"
+    },
+    {
+      "hero": "grandma",
+      "id": "hurt_grandma_1",
+      "text": "You little rascal!",
+      "voice": "fantine",
+      "duration": 1.917,
+      "sha256": "e8d145f29b17816be64e65651bf05a8ad25100b825aa0852133e77900c6431ab"
+    },
+    {
+      "hero": "goblin",
+      "id": "hurt_goblin_0",
+      "text": "Ack!",
+      "voice": "marius",
+      "duration": 0.313,
+      "sha256": "e1517f6eae8e9daa2ca0a3807cae9c5c73bbd487ec5f7d513e2f5c000deccdbc"
+    },
+    {
+      "hero": "goblin",
+      "id": "hurt_goblin_1",
+      "text": "My wallet!",
+      "voice": "marius",
+      "duration": 0.852,
+      "sha256": "2220bb03f60a39174cab529c0d5dbf5476d9ddb2eecd5d08974b5615e2e0f688"
+    },
+    {
+      "hero": "loaf",
+      "id": "hurt_loaf_0",
+      "text": "Ow!",
+      "voice": "charles",
+      "duration": 0.88,
+      "sha256": "3145ef7f49f35cf1f96808e43d945e94a74f3e63f49278c8b700535907d4b59a"
+    },
+    {
+      "hero": "loaf",
+      "id": "hurt_loaf_1",
+      "text": "My crust!",
+      "voice": "charles",
+      "duration": 1.278,
+      "sha256": "6e820a14c1ca161aa6df5185468b22add73317b3a70e479e4f28040f75bd4c82"
+    },
+    {
+      "hero": "florist",
+      "id": "hurt_florist_0",
+      "text": "Ah!",
+      "voice": "anna",
+      "duration": 1.2,
+      "sha256": "924f1d6a6ac3da810d9bbfd3046cebaf136396ff6bc17fc2567a56549c56a2da"
+    },
+    {
+      "hero": "florist",
+      "id": "hurt_florist_1",
+      "text": "Watch the flowers!",
+      "voice": "anna",
+      "duration": 1.879,
+      "sha256": "4dfc41779218c93142a8e81d4b2d0a4a704a4c658bf82394de9b135281c96c8c"
+    },
+    {
+      "hero": "teapot",
+      "id": "hurt_teapot_0",
+      "text": "Ooh!",
+      "voice": "alba",
+      "duration": 0.62,
+      "sha256": "43c1d2eefb4b9fa55ca4068e632c843fd31c1a4da0ee16194b6315be469feca1"
+    },
+    {
+      "hero": "teapot",
+      "id": "hurt_teapot_1",
+      "text": "My porcelain!",
+      "voice": "alba",
+      "duration": 0.937,
+      "sha256": "cc9bf38a933d0c84779bbb59e79c5dc03ea0b42fb1d9e3c36a02a5d7df47ee3d"
+    },
+    {
+      "hero": "octopus",
+      "id": "hurt_octopus_0",
+      "text": "Argh!",
+      "voice": "javert",
+      "duration": 1.402,
+      "sha256": "f4f5e4becda66d2cc03fcecb54818b470a6a0f00ee6218f3aa9d8d77d4136e48"
+    },
+    {
+      "hero": "octopus",
+      "id": "hurt_octopus_1",
+      "text": "My tentacles!",
+      "voice": "javert",
+      "duration": 1.751,
+      "sha256": "5b50ba2d138f6e98ba427bfbf693ed758a4df604360fb107feb3843f215c3535"
+    },
+    {
+      "hero": "astronaut",
+      "id": "hurt_astronaut_0",
+      "text": "Whoa!",
+      "voice": "charles",
+      "duration": 0.88,
+      "sha256": "faf3188a0c17506a555173f4be3abe3429bb0b7de8487725e93a72deab0c4717"
+    },
+    {
+      "hero": "astronaut",
+      "id": "hurt_astronaut_1",
+      "text": "Suit breach!",
+      "voice": "charles",
+      "duration": 1.129,
+      "sha256": "f201e1098bb92bba6351d4b381a66417cfcb7dfa024aef9605b1bf2a54ea62b3"
+    },
+    {
+      "hero": "cactus",
+      "id": "hurt_cactus_0",
+      "text": "Ow!",
+      "voice": "marius",
+      "duration": 0.348,
+      "sha256": "9afbe930a731c80241d929b5fb212bd5beae5c93d51369eef56075d41a1d8af8"
+    },
+    {
+      "hero": "cactus",
+      "id": "hurt_cactus_1",
+      "text": "That was sharp!",
+      "voice": "marius",
+      "duration": 1.064,
+      "sha256": "989050c1fa4fe729faff04a2af6afb0d74fe766cbdd060e7280763a40d9b141f"
+    },
+    {
+      "hero": "book",
+      "id": "hurt_book_0",
+      "text": "Ah!",
+      "voice": "fantine",
+      "duration": 0.88,
+      "sha256": "4ceb1f8b43cfbb11b463ae1a8c9d55fd46289ab21b08643a2aad0eb7128cc820"
+    },
+    {
+      "hero": "book",
+      "id": "hurt_book_1",
+      "text": "My pages!",
+      "voice": "fantine",
+      "duration": 1.375,
+      "sha256": "67296bab83ce8b7e3982f724785133dd3e57da74ab6e65a096337a1bfe660f7a"
+    },
+    {
+      "hero": "snail",
+      "id": "hurt_snail_0",
+      "text": "Oof!",
+      "voice": "javert",
+      "duration": 0.96,
+      "sha256": "a2a4ca395bd8cdeb60c4f70b55d0ea0a179ada1e6c7011a57c2cebe459acf6ac"
+    },
+    {
+      "hero": "snail",
+      "id": "hurt_snail_1",
+      "text": "My shell!",
+      "voice": "javert",
+      "duration": 1.629,
+      "sha256": "cc9ed68117653a24d2eb9f1b1323a2530b5bc25637c4eb9ed4a9ca4ef9fd6264"
+    },
+    {
+      "hero": "bee",
+      "id": "hurt_bee_0",
+      "text": "Eek!",
+      "voice": "eponine",
+      "duration": 0.815,
+      "sha256": "0f187d57515d314b261bad100eef57e9d4fd3a7f39bdf96ad54053e0207f007b"
+    },
+    {
+      "hero": "bee",
+      "id": "hurt_bee_1",
+      "text": "Not the wings!",
+      "voice": "eponine",
+      "duration": 1.657,
+      "sha256": "426c57f032d033a171922c2aa8f53f87f5d2a2e88b226b7fdc423815702884b1"
+    },
+    {
+      "hero": "sushi",
+      "id": "hurt_sushi_0",
+      "text": "Hah!",
+      "voice": "marius",
+      "duration": 0.485,
+      "sha256": "a3cf94e1612afcc138a0b33bb2f7b7612b65af7a428f130514131cd0a43de746"
+    },
+    {
+      "hero": "sushi",
+      "id": "hurt_sushi_1",
+      "text": "Too close!",
+      "voice": "marius",
+      "duration": 0.732,
+      "sha256": "48245ee4b1b213dc17b36003ad5f147caad1957faff8731a62c4951c5d844cad"
+    },
+    {
+      "hero": "mushroom",
+      "id": "hurt_mushroom_0",
+      "text": "Ouch!",
+      "voice": "charles",
+      "duration": 0.935,
+      "sha256": "b847f63e6a1d6d2125c6564d3db1c422bdfe9bdbfefff986883d8dd4c90c3049"
+    },
+    {
+      "hero": "mushroom",
+      "id": "hurt_mushroom_1",
+      "text": "Hot pan!",
+      "voice": "charles",
+      "duration": 0.909,
+      "sha256": "83e081e9f32f39579f6210b2b25351a0cb714070df530b7eb5fb7d8b10df65b8"
+    },
+    {
+      "hero": "clock",
+      "id": "hurt_clock_0",
+      "text": "Agh!",
+      "voice": "javert",
+      "duration": 1.04,
+      "sha256": "64a154adcdb9801e660cb2fc958450c8050ddc5746b6b40b4da24f52d7925c56"
+    },
+    {
+      "hero": "clock",
+      "id": "hurt_clock_1",
+      "text": "Bad timing!",
+      "voice": "javert",
+      "duration": 1.834,
+      "sha256": "4ec26dc058b122f765de5ae8698c0b51c7b433b8dd14de65f7c0d55c8062daa1"
+    },
+    {
+      "hero": "icecream",
+      "id": "hurt_icecream_0",
+      "text": "Oh!",
+      "voice": "azelma",
+      "duration": 1.212,
+      "sha256": "d182475172e3587b0268170cddd58fec1f69ee4213b1837155e5936fb5bac583"
+    },
+    {
+      "hero": "icecream",
+      "id": "hurt_icecream_1",
+      "text": "Brain freeze!",
+      "voice": "azelma",
+      "duration": 1.738,
+      "sha256": "31ce13d83effae0d8b7ac40c8ee4002c787a4941fce9d22686861a72e22ea5ec"
+    },
+    {
+      "hero": "bathtub",
+      "id": "hurt_bathtub_0",
+      "text": "Argh!",
+      "voice": "javert",
+      "duration": 1.535,
+      "sha256": "58554e9b213dd7808a4ca94481552ae32a05befaabdd811de3e5b557e5153376"
+    },
+    {
+      "hero": "bathtub",
+      "id": "hurt_bathtub_1",
+      "text": "Man overboard!",
+      "voice": "javert",
+      "duration": 1.918,
+      "sha256": "166021c9614b555769f2c5a260eb1779837f22412d34e4753127ce127fd3a9ab"
+    },
+    {
+      "hero": "peacock",
+      "id": "hurt_peacock_0",
+      "text": "Ah!",
+      "voice": "eponine",
+      "duration": 0.958,
+      "sha256": "b0424163a192be461a5e61889cc4181c671d1feb0a01616d15072446102f5a03"
+    },
+    {
+      "hero": "peacock",
+      "id": "hurt_peacock_1",
+      "text": "My beautiful tail!",
+      "voice": "eponine",
+      "duration": 1.944,
+      "sha256": "0853c85131b4d5c0c213e9ff316c8101a814ac58f19226854bc4a79d9f8c1c81"
+    },
+    {
+      "hero": "toaster",
+      "id": "hurt_toaster_0",
+      "text": "Ow!",
+      "voice": "marius",
+      "duration": 0.349,
+      "sha256": "c85a51174d062318dfa2ada126ad0cc980ab179b0c503f822e3e9f92b88e2251"
+    },
+    {
+      "hero": "toaster",
+      "id": "hurt_toaster_1",
+      "text": "Burnt toast!",
+      "voice": "marius",
+      "duration": 0.673,
+      "sha256": "d341d5187221ee8402ce83dbaa09495e780afc4bf58e82989c88598fd5827ad1"
+    }
+  ]
+}
