@@ -1,0 +1,9 @@
+{
+  "description": "Wildforge meets Megabonk: 21 heroes and perks, 694 cards, 65 weapons, 54 enemy forms and 875 icons. Compatible skills and orb HP. Development alpha.",
+  "version_number": "0.3.0",
+  "dependencies": [
+    "BepInEx-BepInExPack_IL2CPP-6.0.738"
+  ],
+  "name": "Megabonk_Wildforge_Mod",
+  "website_url": "https://github.com/rytiss78/wildforge/tree/main/mods/megabonk-wildforge"
+}

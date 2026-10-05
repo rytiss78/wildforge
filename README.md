@@ -16,7 +16,7 @@ The current build is 0.8.2. See [release and validation notes](native/docs/build
 
 Bring Wildforge's strange heroes and upgrades into Megabonk: **21 heroes and perks, 694 cards, 65 weapons, 54 enemy forms and 875 icons**. Mix both rosters and upgrade pools. Wildforge actors show HP inside their model orbs; native Megabonk actors keep their original indicators.
 
-[Mod installation and compatibility](mods/megabonk-wildforge/README.md) · [Source and merge plan](mods/megabonk-wildforge/PLAN.md) · [Validation evidence](mods/megabonk-wildforge/VERIFICATION.md)
+[Download mod 0.3.0](https://github.com/rytiss78/wildforge/releases/tag/megabonk-wildforge-v0.3.0) · [Mod installation and compatibility](mods/megabonk-wildforge/README.md) · [Source and merge plan](mods/megabonk-wildforge/PLAN.md) · [Validation evidence](mods/megabonk-wildforge/VERIFICATION.md)
 
 ![Wildforge heroes alongside native heroes in Megabonk](mods/megabonk-wildforge/docs/screenshots/hero-roster.png)
 

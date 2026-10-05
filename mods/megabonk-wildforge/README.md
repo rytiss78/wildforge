@@ -12,6 +12,8 @@ All 342 skills pass native acquisition, two-stack effect resolution and removal 
 
 Compatibility changes include weapon-specific power/bounce/quantity/area effects on matching native archetypes, real timed slowing, coin-only healing and attraction, native regeneration units, dash windows, deliberate slam triggers, Wrench's turret and localized kill pools. Kill explosions stop recursive explosion chains. Modifier updates run when values change, and enemy snapshots are shared within a frame.
 
+[Download mod 0.3.0 and checksums](https://github.com/rytiss78/wildforge/releases/tag/megabonk-wildforge-v0.3.0)
+
 ## Install and disable
 
 Requires Windows x64 Megabonk 1.0.69 (Unity 2023.2.22f1) and BepInEx 6 IL2CPP x64, pinned to build 6.0.738. Launch once with BepInEx, close the game, then extract the package into the Megabonk folder, merging `BepInEx/plugins/Wildforge`. Alternatively run `scripts/install.ps1 -GameDir '<your Megabonk folder>'`.
