@@ -10,6 +10,7 @@ const COLORS=[Color("9cb88c"),Color("91b3ab"),Color("b4c5df"),Color("d9eaed"),Co
 var realm=0
 var seed_value=0
 var noise=FastNoiseLite.new()
+var height_vertices={}
 var rng=RandomNumberGenerator.new()
 var landmarks=[]
 var chunks={}
@@ -79,6 +80,14 @@ func height_at(x: float,z: float) -> float:
 	return d+(c-d)*(1-fx)+(b-d)*(1-fz)
 
 func raw_height_at(x: float,z: float) -> float:
+	# Physics, drops and terrain all share these immutable grid vertices.
+	var key=Vector2(x,z)
+	if height_vertices.has(key): return height_vertices[key]
+	var value=compute_height_at(x,z)
+	height_vertices[key]=value
+	return value
+
+func compute_height_at(x: float,z: float) -> float:
 	var p=Vector3(x,0,z)
 	var biome=biome_at(p)
 	var angle=fposmod(atan2(z,x)+float(seed_value%23)*.03+realm*.4,TAU)/(TAU/6)
@@ -100,6 +109,7 @@ func model(name: String,height: float) -> Node3D:
 	return ToonArt.make(name,height)
 
 func build(index: int,world_seed: int):
+	height_vertices.clear()
 	realm=index;seed_value=world_seed;rng.seed=world_seed+index*763
 	noise.seed=world_seed%2147483647;noise.frequency=.014;noise.fractal_octaves=3;noise.fractal_gain=.4
 	for child in get_children():

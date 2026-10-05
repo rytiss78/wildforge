@@ -108,6 +108,7 @@ var player_chill=0.0
 var player_blind=0.0
 var status_tick=0.0
 var enemy_step=0.0
+var pickup_merge_clock=0.0
 var knock_velocity=Vector3.ZERO
 var hit_shake=0.0
 var menu_repeat=0.0
@@ -130,6 +131,7 @@ func _ready():
 	smoke=smoke or OS.get_cmdline_user_args().has("--pickup-check")
 	smoke=smoke or OS.get_cmdline_user_args().has("--hero-check")
 	smoke=smoke or OS.get_cmdline_user_args().has("--crowd-xp-check")
+	smoke=smoke or OS.get_cmdline_user_args().has("--combat-check")
 	if OS.get_cmdline_user_args().has("--coop-host-test"): network_test_role="host";smoke=true
 	if OS.get_cmdline_user_args().has("--coop-client-test"): network_test_role="client";smoke=true
 	career = ProfileScript.new(rules.data,smoke)
@@ -185,7 +187,8 @@ func _ready():
 	)
 	if OS.get_cmdline_user_args().has("--presentation-check"): preload("res://scripts/presentation_checks.gd").run.call_deferred(self)
 	if OS.get_cmdline_user_args().has("--hero-check"): preload("res://scripts/hero_checks.gd").run.call_deferred(self)
-	if OS.get_cmdline_user_args().has("--crowd-xp-check"): preload("res://scripts/crowd_xp_checks.gd").run.call_deferred(self)
+	if OS.get_cmdline_user_args().has("--combat-check"): preload("res://scripts/combat_checks.gd").run.call_deferred(self)
+	elif OS.get_cmdline_user_args().has("--crowd-xp-check"): preload("res://scripts/crowd_xp_checks.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--pickup-check"): preload("res://scripts/pickup_checks.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--melee-check"): preload("res://scripts/melee_checks.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--update-check"): preload("res://scripts/update_checks.gd").run.call_deferred(self)
@@ -255,6 +258,7 @@ func select_hero(item: Dictionary):
 	player.add_child(avatar)
 
 func clear_entities():
+	pickup_merge_clock=0;enemy_step=0;crowd.clear()
 	melee_attacks.clear()
 	if is_instance_valid(avatar): avatar.finish_melee()
 	for id in sound.weapon_loops: sound.weapon_loop(id,false,player.position)
@@ -760,24 +764,62 @@ func make_spawn_room() -> bool:
 	farthest.dead=true;farthest.node.queue_free();enemies.erase(farthest)
 	return true
 
-func steer_enemy(enemy: Dictionary,aim: Vector3) -> Vector3:
+func enemy_path_normal(body: CharacterBody3D,motion: Vector3,enemy: Dictionary={}) -> Vector3:
+	var collision=KinematicCollision3D.new()
+	var probe_transform=body.global_transform
+	probe_transform.origin.y+=.4
+	if not body.test_move(probe_transform,motion,collision): return Vector3.ZERO
+	# A horizontal capsule sweep also touches sloping ground. Ground is walkable,
+	# not a wall to circle around; move_and_slide handles the actual floor motion.
+	var normal=collision.get_normal()
+	if normal.y>=cos(body.floor_max_angle): return Vector3.ZERO
+	normal.y=0
+	normal=normal.normalized()
+	var obstacle=collision.get_collider()
+	if not enemy.is_empty() and obstacle is Node3D and enemy.get("wall_id",0)!=obstacle.get_instance_id():
+		# Neighbours on the same side take the same route instead of pushing
+		# through one another to reach randomly assigned opposite routes.
+		enemy.wall_id=obstacle.get_instance_id()
+		enemy.avoid_side=1.0 if normal.cross(Vector3.UP).dot(body.global_position-obstacle.global_position)>=0 else -1.0
+	return normal
+
+func steer_enemy(enemy: Dictionary,aim: Vector3,delta: float=1.0/30.0) -> Vector3:
 	if enemy.flying or aim.length()<.01: return aim
+	enemy.steer_clock=maxf(0,enemy.get("steer_clock",0.0)-delta)
+	if enemy.steer_clock>0:
+		var cached: Vector3=enemy.get("steer_direction",Vector3.ZERO)
+		return cached if cached.length_squared()>.01 else aim
+	enemy.steer_clock=.12
 	var body: CharacterBody3D=enemy.node
 	var reach=maxf(1.2,enemy.speed*.65)
+	# Avoid scenery, not the hero we are trying to attack. Actual movement still
+	# collides with heroes. Probe eight times a second instead of every step.
+	var movement_mask=body.collision_mask
+	body.collision_mask=1
+	var normal=enemy_path_normal(body,aim*reach,enemy)
 	var side=float(enemy.get("avoid_side",1 if enemy.net_id%2==0 else -1))
-	if not body.test_move(body.global_transform,aim*reach): return aim
-	for angle in [.55,1.1,1.65,2.2]:
-		for turn in [side,-side]:
+	if normal.length_squared()<.01:
+		body.collision_mask=movement_mask;enemy.steer_direction=Vector3.ZERO;return aim
+	# Follow the actual wall tangent instead of oscillating relative to the hero.
+	for turn in [side,-side]:
+		var tangent=(normal.cross(Vector3.UP)*turn+normal*.25).normalized()
+		if enemy_path_normal(body,tangent*reach).length_squared()<.01:
+			body.collision_mask=movement_mask;enemy.avoid_side=turn;enemy.steer_direction=tangent;return tangent
+	# Keep one side of a wall until it is clear. Alternating left and right at
+	# each shallower angle makes a crowd oscillate in front of long obstacles.
+	for turn in [side,-side]:
+		for angle in [.55,1.1,1.65,2.2]:
 			var candidate=aim.rotated(Vector3.UP,angle*turn)
-			if not body.test_move(body.global_transform,candidate*reach):
-				enemy.avoid_side=turn;return candidate
-	return aim.rotated(Vector3.UP,side*PI*.5)
+			if enemy_path_normal(body,candidate*reach).length_squared()<.01:
+				body.collision_mask=movement_mask;enemy.avoid_side=turn;enemy.steer_direction=candidate;return candidate
+	body.collision_mask=movement_mask;enemy.steer_direction=normal
+	return normal
 
 func nearest_enemy(origin: Vector3, distance_value: float, excluded: Array = []) -> Dictionary:
 	var result = {}
 	var best_distance = distance_value*distance_value
 	for enemy in enemies:
-		if enemy.dead or excluded.has(enemy): continue
+		if enemy.dead or excluded.has(enemy.net_id): continue
 		var distance = origin.distance_squared_to(enemy_center(enemy))
 		if distance < best_distance: best_distance=distance;result=enemy
 	return result
@@ -980,12 +1022,12 @@ func hit_enemy(enemy: Dictionary, shot: Dictionary,cause: String="hit"):
 	if stats.splash>0 or kind.contains("rocket"):
 		damage_area(enemy.node.position,2.2,damage*maxf(stats.splash,0.75 if kind.contains("rocket") else 0),"explosion",enemy)
 	var chains = mini(8,int(stats.chain)+(2 if kind.contains("lightning") else 0))
-	var excluded = [enemy]
+	var excluded = [enemy.net_id]
 	var origin = enemy.node.position
 	for i in range(chains):
 		var next = nearest_enemy(origin,8,excluded)
 		if next.is_empty(): break
-		excluded.append(next)
+		excluded.append(next.net_id)
 		beam(origin+Vector3.UP,next.node.position+Vector3.UP,Color("b2e0f4"))
 		hurt_enemy(next,damage*.6,"lightning")
 		origin = next.node.position
@@ -1118,7 +1160,7 @@ func spawn_pickup(p: Vector3, kind: String, value: float):
 		# Merge far drops rather than losing earned gold/XP at the effect cap.
 		var old = pickups[0]
 		for item in pickups:
-			if item != old and item.kind == old.kind:
+			if item.node != old.node and item.kind == old.kind:
 				item.value+=old.value;resize_xp(item);old.node.queue_free();pickups.pop_front();break
 
 func resize_xp(pickup: Dictionary,instant: bool=false):
@@ -1144,10 +1186,10 @@ func merge_xp_orbs():
 				for z in range(-1,2):
 					for other in cells.get(cell+Vector3i(x,y,z),[]):
 						if pickup.age<0: break
-						if other==pickup or other.age<0: continue
+						if other.node==pickup.node or other.age<0: continue
 						if pickup.node.position.distance_to(other.node.position)>pickup.radius+other.radius+.035: continue
 						var big=pickup if pickup.value>=other.value else other
-						var small=other if big==pickup else pickup
+						var small=other if big.node==pickup.node else pickup
 						big.value+=small.value;big.merge_pulse=.22;big.attracted=big.attracted or small.attracted;resize_xp(big)
 						small.age=-1
 						var blob=small.node;var target=big.node
@@ -1158,7 +1200,9 @@ func merge_xp_orbs():
 	pickups=pickups.filter(func(pickup):return pickup.age>=0)
 
 func update_pickups(delta: float):
-	merge_xp_orbs()
+	pickup_merge_clock-=delta
+	if pickup_merge_clock<=0:
+		merge_xp_orbs();pickup_merge_clock=.1
 	for pickup in pickups:
 		if pickup.age<0: continue
 		pickup.age+=delta
@@ -1166,7 +1210,7 @@ func update_pickups(delta: float):
 			pickup.merge_pulse=maxf(0,pickup.merge_pulse-delta)
 			var size_value=pickup.radius/.12*(1+sin(pickup.merge_pulse/.22*PI)*.12)
 			pickup.node.scale=pickup.node.scale.lerp(Vector3.ONE*size_value,minf(1,delta*18))
-			if pickup.settled and not pickup.attracted: pickup.node.position.y=world.height_at(pickup.node.position.x,pickup.node.position.z)+pickup.radius+.01
+			if pickup.settled and not pickup.attracted: pickup.node.position.y=pickup.base_y+pickup.radius+.01
 		var distance=player.position.distance_to(pickup.node.position)
 		var radius=stats.coinRadius if pickup.kind=="gold" else stat("pickup")
 		if distance<radius: pickup.attracted=true
@@ -1180,6 +1224,7 @@ func update_pickups(delta: float):
 				var floor_y=world.height_at(p.x,p.z)+(.27 if pickup.kind=="gold" else pickup.radius+.01)
 				if p.y<=floor_y:
 					pickup.node.position.y=floor_y
+					pickup.base_y=floor_y-(.27 if pickup.kind=="gold" else pickup.radius+.01)
 					if not pickup.bounced and pickup.velocity.y< -3:
 						pickup.velocity.y=absf(pickup.velocity.y)*.22;pickup.velocity.x*=.35;pickup.velocity.z*=.35;pickup.bounced=true
 					else: pickup.velocity=Vector3.ZERO;pickup.settled=true
@@ -1245,12 +1290,13 @@ func update_combat(delta: float):
 		var count = 2+realm+(3 if swarm or realm_time>600 else 0)
 		for i in range(count): spawn_enemy(randf_range(18,25))
 		spawn_clock = maxf(.4,.95-realm_time*.0005)/(1.35 if swarm else 1.0)
-	crowd.clear()
-	for enemy in enemies:
-		if enemy.dead: continue
-		var cell=Vector2i(floori(enemy.node.position.x/3),floori(enemy.node.position.z/3))
-		if not crowd.has(cell): crowd[cell]=[]
-		crowd[cell].append(enemy)
+	if update_enemies:
+		crowd.clear()
+		for enemy in enemies:
+			if enemy.dead: continue
+			var cell=Vector2i(floori(enemy.node.position.x/3),floori(enemy.node.position.z/3))
+			if not crowd.has(cell): crowd[cell]=[]
+			crowd[cell].append(enemy)
 	update_garden(delta)
 	for weapon in equipped:
 		if weapon.id=="flowers": continue
@@ -1301,14 +1347,14 @@ func update_combat(delta: float):
 					warn_at(target_player.position,1.6,.9,12*enemy.damage,"toxic")
 					coop.broadcast({"type":"hazard","realm":realm,"position":coop.array(target_player.position),"radius":1.6,"delay":.9,"damage":12*enemy.damage,"style":"toxic"})
 				if distance<7: aim=-aim*.6
-		aim=steer_enemy(enemy,aim)
+		if enemy.freeze<=0: aim=steer_enemy(enemy,aim,enemy_delta)
 		var cell=Vector2i(floori(enemy.node.position.x/3),floori(enemy.node.position.z/3))
 		var separation=Vector3.ZERO
 		var neighbors=ceili((enemy.radius+1.5)/3.0)
 		for x in range(-neighbors,neighbors+1):
 			for z in range(-neighbors,neighbors+1):
 				for other in crowd.get(cell+Vector2i(x,z),[]):
-					if other==enemy or other.dead: continue
+					if other.net_id==enemy.net_id or other.dead: continue
 					var away=enemy.node.position-other.node.position;away.y=0
 					var spacing=enemy.radius+other.get("radius",.53)+.2
 					if absf(enemy.node.position.y-other.node.position.y)<minf(enemy.height,other.get("height",1.7)) and away.length_squared()<spacing*spacing:
@@ -1336,7 +1382,7 @@ func update_combat(delta: float):
 		for x in range(-neighbors,neighbors+1):
 			for z in range(-neighbors,neighbors+1):
 				for other in crowd.get(cell+Vector2i(x,z),[]):
-					if other==enemy or other.dead: continue
+					if other.net_id==enemy.net_id or other.dead: continue
 					if absf(body.position.y-other.node.position.y)>=minf(enemy.height,other.get("height",1.7)): continue
 					var offset: Vector3=corrected-other.node.position;offset.y=0
 					var gap: float=offset.length();var required: float=enemy.radius+other.get("radius",.53)
@@ -1359,7 +1405,8 @@ func update_combat(delta: float):
 			rig.animate(enemy_delta,body.velocity,body.is_on_floor())
 			rig.statuses(enemy.fire>0,enemy.poison>0,enemy.freeze>0,enemy.blind>0)
 		enemy.contact=maxf(0,enemy.get("contact",0)-enemy_delta)
-		if distance < enemy.radius+.85 and absf(target_player.position.y-enemy.node.position.y)<2.2 and enemy.contact<=0:
+		var contact_offset=target_player.position-body.position
+		if Vector2(contact_offset.x,contact_offset.z).length_squared()<pow(enemy.radius+.85,2) and absf(contact_offset.y)<2.2 and enemy.contact<=0 and enemy.freeze<=0:
 			enemy.contact=.7
 			enemy.node.get_meta("rig").attack=.25
 			coop.damage_player(target_player.id,(18+realm*5 if enemy.boss else 11+realm*4)*enemy.damage*(1+enemy.get("biome",0)*.12),enemy.node.position,enemy.sound)
@@ -1390,9 +1437,9 @@ func update_combat(delta: float):
 			if shot.kind=="bomb": damage_area(shot.node.position,3.5*stats.bombSize,shot.damage,"explosion")
 			continue
 		for enemy in enemies:
-			if enemy.dead or shot.hit.has(enemy): continue
+			if enemy.dead or shot.hit.has(enemy.net_id): continue
 			if shot.node.position.distance_to(enemy_center(enemy)) < maxf(enemy.get("radius",.7),enemy.get("height",1.7)*.35):
-				shot.hit.append(enemy)
+				shot.hit.append(enemy.net_id)
 				hit_enemy(enemy,shot)
 				if shot.bounce>0:
 					var target=nearest_enemy(shot.node.position,12,shot.hit)
@@ -2179,7 +2226,7 @@ func run_soak():
 		if int(seconds*10)%10==0:
 			for a in enemies:
 				for b in enemies:
-					if a==b or a.dead or b.dead or absf(a.node.position.y-b.node.position.y)>=minf(a.height,b.height): continue
+					if a.net_id==b.net_id or a.dead or b.dead or absf(a.node.position.y-b.node.position.y)>=minf(a.height,b.height): continue
 					crowd_min=minf(crowd_min,Vector2(a.node.position.x-b.node.position.x,a.node.position.z-b.node.position.z).length()/(a.radius+b.radius))
 	Input.action_release("move_forward")
 	frame_times.sort()
