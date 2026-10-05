@@ -12,7 +12,7 @@ All 342 skills pass native acquisition, two-stack effect resolution and removal 
 
 Compatibility changes include weapon-specific power/bounce/quantity/area effects on matching native archetypes, real timed slowing, coin-only healing and attraction, native regeneration units, dash windows, deliberate slam triggers, Wrench's turret and localized kill pools. Kill explosions stop recursive explosion chains. Modifier updates run when values change, and enemy snapshots are shared within a frame.
 
-[Download mod 0.3.0 and checksums](https://github.com/rytiss78/wildforge/releases/tag/megabonk-wildforge-v0.3.0)
+[Download mod 0.3.0 and checksums](https://github.com/rytiss78/wildforge/releases/tag/megabonk-wildforge-v0.3.0) · [Nexus Mods](https://www.nexusmods.com/megabonk/mods/188)
 
 ## Install and disable
 
