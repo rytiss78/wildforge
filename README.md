@@ -12,6 +12,15 @@ The current build is 0.8.2. See [release and validation notes](native/docs/build
 
 *Two ducks are better than one. Probably.*
 
+## Megabonk Wildforge Mod
+
+Bring Wildforge's strange heroes and upgrades into Megabonk: **21 heroes and perks, 694 cards, 65 weapons, 54 enemy forms and 875 icons**. Mix both rosters and upgrade pools. Wildforge actors show HP inside their model orbs; native Megabonk actors keep their original indicators.
+
+[Mod installation and compatibility](mods/megabonk-wildforge/README.md) · [Source and merge plan](mods/megabonk-wildforge/PLAN.md) · [Validation evidence](mods/megabonk-wildforge/VERIFICATION.md)
+
+![Wildforge heroes alongside native heroes in Megabonk](mods/megabonk-wildforge/docs/screenshots/hero-roster.png)
+
+*Actual Megabonk roster with the Wildforge plugin installed. Version 0.3.0 is a development alpha: weapons and enemy AI use native adapters, and full-run balance is still being refined.*
 ## Your hero. Your chaos.
 
 Choose from 21 ridiculous heroes, each with their own trick. Count Duck steals life. Sir Loaf dashes with a bang. Florist turns footsteps into a dangerous blooming garden. Admiral Bubbles brings a bathtub to the battlefield.
