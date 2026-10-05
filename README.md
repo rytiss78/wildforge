@@ -4,7 +4,7 @@
 
 A bright 3D survival game where a duck, a loaf of bread and an angry granny are perfectly reasonable hero choices. Explore strange places, grab unpredictable upgrades and become outrageously overpowered before the monsters catch you.
 
-**[Download the Windows alpha](https://github.com/rytiss78/wildforge/releases/tag/v0.7.8)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
+**[Download the Windows alpha](https://github.com/rytiss78/wildforge/releases/tag/v0.7.9)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
 
 ![Two Count Ducks fighting strange creatures together in Clover Woods](docs/screenshots/co-op.png)
 
@@ -26,7 +26,7 @@ Roam through Clover Woods, Puffcap Marsh, Moon Craters, Cloud City, Candy Hell a
 
 Spend your coins on a chest, choose one of three rewards and keep building your ridiculous little disaster. Chase 100 achievements built around exploration, clever combinations and unusual challenges.
 
-![Illustrated upgrade choices for the Gun, Shotgun and Ice Gun](docs/screenshots/choose-your-power.png)
+![Detailed skill cards with paid rerolls](docs/screenshots/skill-cards.png)
 
 *One choice. More trouble for the monsters.*
 
@@ -58,6 +58,6 @@ node scripts/native.mjs
 
 WASD / left stick moves; mouse / right stick looks; Space / A jumps; Shift / RT dashes; Ctrl / B slams; E / X interacts; B / Y opens your build; Escape / Menu pauses. Weapons attack automatically. Florist plants while moving.
 
-Achievements, scores and settings save locally in `%APPDATA%/Godot/app_userdata/Wildforge/career.json`. [Build notes](native/docs/build-0.7.8.md) · [Asset origins](community/ai-content-provenance.md)
+Achievements, scores and settings save locally in `%APPDATA%/Godot/app_userdata/Wildforge/career.json`. [Build notes](native/docs/build-0.7.9.md) · [Asset origins](community/ai-content-provenance.md)
 
 </details>

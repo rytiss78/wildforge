@@ -78,6 +78,9 @@ var visited_ruins = {}
 var last_plant = Vector3(9999,0,9999)
 var offers = []
 var offer_source = ""
+var offer_kind="skill"
+var offer_elite=false
+var offer_rerolls=0
 var families = {}
 var events = {}
 var reveal_clock = 0.0
@@ -132,6 +135,7 @@ func _ready():
 	smoke=smoke or OS.get_cmdline_user_args().has("--hero-check")
 	smoke=smoke or OS.get_cmdline_user_args().has("--crowd-xp-check")
 	smoke=smoke or OS.get_cmdline_user_args().has("--combat-check")
+	smoke=smoke or OS.get_cmdline_user_args().has("--visual-update-check")
 	if OS.get_cmdline_user_args().has("--coop-host-test"): network_test_role="host";smoke=true
 	if OS.get_cmdline_user_args().has("--coop-client-test"): network_test_role="client";smoke=true
 	career = ProfileScript.new(rules.data,smoke)
@@ -187,7 +191,8 @@ func _ready():
 	)
 	if OS.get_cmdline_user_args().has("--presentation-check"): preload("res://scripts/presentation_checks.gd").run.call_deferred(self)
 	if OS.get_cmdline_user_args().has("--hero-check"): preload("res://scripts/hero_checks.gd").run.call_deferred(self)
-	if OS.get_cmdline_user_args().has("--combat-check"): preload("res://scripts/combat_checks.gd").run.call_deferred(self)
+	if OS.get_cmdline_user_args().has("--visual-update-check"): preload("res://scripts/visual_update_checks.gd").run.call_deferred(self)
+	elif OS.get_cmdline_user_args().has("--combat-check"): preload("res://scripts/combat_checks.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--crowd-xp-check"): preload("res://scripts/crowd_xp_checks.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--pickup-check"): preload("res://scripts/pickup_checks.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--melee-check"): preload("res://scripts/melee_checks.gd").run.call_deferred(self)
@@ -366,7 +371,7 @@ func make_chests():
 		var radius = rules.rng.randf_range(80,450)
 		var p = Vector3(cos(angle)*radius,0,sin(angle)*radius)
 		p.y = world.height_at(p.x,p.z)
-		if i == 5: p = world.landmarks[rules.rng.randi_range(0,3)] + Vector3(0,1.8,0)
+		if i == 5: p = world.landmarks[rules.rng.randi_range(0,world.landmarks.size()-1)] + Vector3(0,1.8,0)
 		make_chest(p,false)
 
 func make_chest(p: Vector3, elite: bool):
@@ -392,7 +397,7 @@ func make_pots():
 		pots.append({"node":node})
 
 func make_gate():
-	gate_position = world.landmarks[(realm+1)%4]+Vector3(0,1.8,0)
+	gate_position = world.landmarks[(realm+1)%world.landmarks.size()]+Vector3(0,1.8,0)
 	gate = Node3D.new()
 	gate.position = gate_position
 	add_child(gate)
@@ -463,12 +468,17 @@ func buy_chest(chest: Dictionary):
 	gold -= price
 	if price > 0: paid_chests += 1
 	chest.opened = true
+	# A tiny, collectible sneeze bonus; the box is still paid for exactly once.
+	sound.effect("sneeze",chest.node.position)
+	for coin in range(4): spawn_pickup(chest.node.position+Vector3.UP*.8,"gold",1)
+	var squish=chest.node.create_tween();squish.tween_property(chest.node,"scale",Vector3(1.12,.8,1.12),.12);squish.tween_property(chest.node,"scale",Vector3.ONE,.18).set_trans(Tween.TRANS_BACK)
 	if chest.node.has_meta("lid"): create_tween().tween_property(chest.node.get_meta("lid"),"rotation:x",-1.5,.5).set_trans(Tween.TRANS_BACK)
 	var disappear=create_tween();disappear.tween_interval(.5);disappear.tween_callback(func():if is_instance_valid(chest.node): chest.node.visible=false)
 	run_chests += 1
 	career.bump("chests")
-	if stats.chestBonus > 0: career.best("chestRewards",5 if rules.rng.randf()<stats.chestBonus else 3)
+	career.best("chestRewards",3)
 	offers = rules.offers("item",stats.luck+stats.chestBonus*.2,chest.elite,stats,equipped)
+	offer_kind="item";offer_elite=chest.elite;offer_rerolls=0
 	heal(stats.chestHeal)
 	offer_source = "chest"
 	reveal_tier = offers.map(func(item):return item.tier).max()
@@ -492,6 +502,7 @@ func level_up():
 	heal(stats.maxHp*.15)
 	shield_hp = stats.shield
 	var kind = "weapon" if level == 2 or level%3 == 0 else "skill"
+	offer_kind=kind;offer_elite=false;offer_rerolls=0
 	offers = rules.offers(kind,stats.luck,false,stats,equipped)
 	offer_source = "level"
 	mode = "level_reveal"
@@ -505,6 +516,8 @@ func level_up():
 func choose_offer(index: int):
 	if mode != "offer" or index < 0 or index >= offers.size(): return
 	var item = offers[index]
+	var weapon_sounds={"flame":"burn","fire-turret":"burn","poison":"poison","poison-turret":"poison","ice":"freeze","ice-turret":"freeze","lightning":"chain","lightning-turret":"chain","flowers":"flowerPower","ghost":"ghost","rocket":"explosion","rocket-turret":"explosion","turret":"turretDamage"}
+	sound.choose_power(weapon_sounds.get(item.id,"damage") if item.kind=="weapon" else item.effects[0].key)
 	if item.kind == "weapon":
 		if not rules.can_weapon(equipped,item.id):
 			offers=rules.offers("weapon",stats.luck,false,stats,equipped)
@@ -523,6 +536,19 @@ func choose_offer(index: int):
 	hud.tell("+  " + item.name)
 	hud.close()
 	if xp >= xp_target: level_up()
+
+func reroll_price() -> int:
+	return maxi(10,level*4)*int(pow(2,mini(offer_rerolls,16)))
+
+func reroll_offers():
+	if mode!="offer": return
+	var price=reroll_price()
+	if gold<price: return
+	var excluded=offers.map(func(item):return item.id)
+	var new_offers=rules.offers(offer_kind,stats.luck+(stats.chestBonus*.2 if offer_source=="chest" else 0),offer_elite,stats,equipped,excluded)
+	if new_offers.is_empty(): return
+	gold-=price;offer_rerolls+=1;offers=new_offers
+	sound.ui_effect("reroll");hud.show_offers(offers,offer_source)
 
 func skip_offer():
 	if mode!="offer" or not offers.any(func(item):return item.kind=="weapon"): return
@@ -622,6 +648,7 @@ func _input(event):
 			if event.pressed:
 				controller_id=event.device
 				if event.button_index==JOY_BUTTON_A: hud.controller_accept()
+				elif event.button_index==JOY_BUTTON_Y and mode=="offer": reroll_offers()
 				elif event.button_index in [JOY_BUTTON_DPAD_UP,JOY_BUTTON_DPAD_DOWN,JOY_BUTTON_DPAD_LEFT,JOY_BUTTON_DPAD_RIGHT]:
 					hud.controller_move({JOY_BUTTON_DPAD_UP:Vector2.UP,JOY_BUTTON_DPAD_DOWN:Vector2.DOWN,JOY_BUTTON_DPAD_LEFT:Vector2.LEFT,JOY_BUTTON_DPAD_RIGHT:Vector2.RIGHT}[event.button_index])
 			if event.button_index!=JOY_BUTTON_B and event.button_index!=JOY_BUTTON_START:
@@ -647,6 +674,7 @@ func _input(event):
 		elif mode in ["settings","career","build","community","coop"]: hud.start_menu() if not run_active else hud.pause_menu(run_recorded)
 		get_viewport().set_input_as_handled()
 	if mode == "offer" and event is InputEventKey and event.pressed:
+		if event.physical_keycode==KEY_R and not event.echo: reroll_offers();get_viewport().set_input_as_handled();return
 		var index = int(event.physical_keycode)-KEY_1
 		if index >= 0 and index < 3: choose_offer(index)
 	if mode == "reveal" and (event.is_action_pressed("jump") or event.is_action_pressed("interact")):
@@ -911,7 +939,8 @@ func fire(weapon: Dictionary, origin: Vector3):
 		avatar.begin_melee("saw",contact,duration);sound.effect("slash",origin);coop.shot("saw",origin,contact,duration)
 		melee_attacks.append({"origin":origin,"target":contact,"aim":(contact-origin).normalized(),"reach":reach,"damage":stat("damage")*weapon.damage*weapon.power*(1+stats.get("airDamage",0.0) if not player.is_on_floor() else 1.0),"delay":duration*.5})
 		return
-	var target = nearest_enemy(origin,weapon.range*stat("range")/18.0*(stats.turretRange if weapon.turret else 1.0))
+	var effective_range=weapon.range*stat("range")/18.0*(stats.turretRange if weapon.turret else 1.0)
+	var target = nearest_enemy(origin,effective_range)
 	if target.is_empty(): return
 	avatar.shot(weapon.id)
 	if weapon.id not in ["saw","flame","fire-turret"]: sound.effect(weapon.id,origin)
@@ -925,10 +954,10 @@ func fire(weapon: Dictionary, origin: Vector3):
 	if weapon.id=="horn":
 		for enemy in enemies:
 			var offset=enemy_center(enemy)-origin
-			if not enemy.dead and offset.length()<weapon.range and offset.normalized().dot(aim)>.55:
+			if not enemy.dead and offset.length()<effective_range and offset.normalized().dot(aim)>.55:
 				hurt_enemy(enemy,base_damage,"sonic","horn");enemy.freeze=maxf(enemy.freeze,.35+stats.hornStun)
 				if not enemy.boss: enemy.node.move_and_collide(aim*1.5)
-		beam(origin,origin+aim*weapon.range,Color("e5cb98"));burst(origin+aim*3,Color("e5cb98"),8);return
+		beam(origin,origin+aim*effective_range,Color("e5cb98"));burst(origin+aim*3,Color("e5cb98"),8);return
 	if weapon.id=="gravity":
 		var radius_value=3.0*stats.gravitySize
 		var disk=CylinderMesh.new();disk.top_radius=radius_value;disk.bottom_radius=radius_value;disk.height=.08
@@ -962,7 +991,7 @@ func fire(weapon: Dictionary, origin: Vector3):
 		if critical: career.bump("crits")
 		var rage = 1+stats.berserk*(1-hp/stats.maxHp)
 		var damage = base_damage*(stats.turretDamage if weapon.turret else 1.0)*rage*(stats.critPower if critical else 1.0)
-		projectiles.append({"node":node,"velocity":aim.rotated(Vector3.UP,spread)*stats.projectileSpeed,"damage":damage,"life":2.0 if weapon.id=="boomerang" else 1.0 if weapon.id=="bomb" else weapon.range/stats.projectileSpeed+0.25,"kind":weapon.id,"hit":[],"pierce":int(stats.pierce)+(8 if weapon.id=="rail" else 3 if weapon.id=="harpoon" else 2+int(stats.boomerangPierce) if weapon.id=="boomerang" else 0),"bounce":int(stats.ricochet)+(3+int(stats.discBounces) if weapon.id=="disc" else 0),"return":stats.boomerang>0 or weapon.id=="boomerang","return_clock":.55})
+		projectiles.append({"node":node,"velocity":aim.rotated(Vector3.UP,spread)*stats.projectileSpeed,"damage":damage,"life":2.0 if weapon.id=="boomerang" else 1.0 if weapon.id=="bomb" else effective_range/stats.projectileSpeed+0.25,"kind":weapon.id,"hit":[],"hit_radius":.1*minf(2.5,stats.size),"pierce":int(stats.pierce)+(8 if weapon.id=="rail" else 3 if weapon.id=="harpoon" else 2+int(stats.boomerangPierce) if weapon.id=="boomerang" else 0),"bounce":int(stats.ricochet)+(3+int(stats.discBounces) if weapon.id=="disc" else 0),"return":stats.boomerang>0 or weapon.id=="boomerang","return_clock":.55})
 	if projectiles.size() > 140:
 		for i in range(projectiles.size()-140): projectiles[0].node.queue_free();projectiles.pop_front()
 
@@ -1321,6 +1350,10 @@ func update_combat(delta: float):
 			var previous=enemy.node.position
 			enemy.node.position=enemy.node.position.lerp(enemy.get("target_position",previous),1-exp(-enemy_delta*16))
 			var rig=enemy.node.get_meta("rig");rig.set_health(enemy.hp/enemy.maxHp,enemy.boss or enemy.health>=1.8);rig.animate(enemy_delta,(enemy.node.position-previous)/enemy_delta,true);rig.statuses(enemy.fire>0,enemy.poison>0,enemy.freeze>0,enemy.blind>0)
+			enemy.thorn_clock=maxf(0,enemy.get("thorn_clock",0)-enemy_delta)
+			var thorn_offset=player.position-enemy.node.position
+			if stats.thorns>0 and enemy.thorn_clock<=0 and Vector2(thorn_offset.x,thorn_offset.z).length_squared()<pow(enemy.radius+.85,2) and absf(thorn_offset.y)<2.2:
+				enemy.thorn_clock=.5;hurt_enemy(enemy,stats.thorns,"thorn")
 			if enemy.boss: enemy.label.text="%s  %d%%" % [boss_name,enemy.hp/enemy.maxHp*100]
 			continue
 		enemy.freeze = maxf(0,enemy.freeze-enemy_delta)
@@ -1342,7 +1375,7 @@ func update_combat(delta: float):
 			if enemy.behavior=="skitter": aim=aim.rotated(Vector3.UP,sin(elapsed*6+distance)*.8)
 			if enemy.behavior=="spit":
 				enemy.attack-=enemy_delta
-				if distance<14 and enemy.attack<=0:
+				if distance<14 and enemy.attack<=0 and enemy.freeze<=0 and enemy.blind<=0:
 					enemy.attack=4.5;enemy.node.get_meta("rig").attack=.4
 					warn_at(target_player.position,1.6,.9,12*enemy.damage,"toxic")
 					coop.broadcast({"type":"hazard","realm":realm,"position":coop.array(target_player.position),"radius":1.6,"delay":.9,"damage":12*enemy.damage,"style":"toxic"})
@@ -1362,7 +1395,7 @@ func update_combat(delta: float):
 						separation+=apart*(spacing-away.length())*3
 		if not enemy.boss and enemy.behavior=="charge":
 			enemy.attack-=enemy_delta
-			if enemy.attack<0 and distance<9: enemy.charge=.55;enemy.attack=4;enemy.node.get_meta("rig").attack=.55
+			if enemy.attack<0 and distance<9 and enemy.freeze<=0 and enemy.blind<=0: enemy.charge=.55;enemy.attack=4;enemy.node.get_meta("rig").attack=.55
 			enemy.charge=maxf(0,enemy.get("charge",0)-enemy_delta)
 		var velocity=(aim*enemy.speed*(2 if enemy.get("charge",0)>0 else 1)*(1-minf(.7,enemy.slow))+separation) if enemy.freeze<=0 else Vector3.ZERO
 		var body: CharacterBody3D=enemy.node
@@ -1406,7 +1439,12 @@ func update_combat(delta: float):
 			rig.statuses(enemy.fire>0,enemy.poison>0,enemy.freeze>0,enemy.blind>0)
 		enemy.contact=maxf(0,enemy.get("contact",0)-enemy_delta)
 		var contact_offset=target_player.position-body.position
-		if Vector2(contact_offset.x,contact_offset.z).length_squared()<pow(enemy.radius+.85,2) and absf(contact_offset.y)<2.2 and enemy.contact<=0 and enemy.freeze<=0:
+		var touching=Vector2(contact_offset.x,contact_offset.z).length_squared()<pow(enemy.radius+.85,2) and absf(contact_offset.y)<2.2
+		enemy.thorn_clock=maxf(0,enemy.get("thorn_clock",0)-enemy_delta)
+		if touching and target_player.id==coop.local_id and stats.thorns>0 and enemy.thorn_clock<=0:
+			enemy.thorn_clock=.5;hurt_enemy(enemy,stats.thorns,"thorn")
+			if enemy.dead: continue
+		if touching and enemy.contact<=0 and enemy.freeze<=0:
 			enemy.contact=.7
 			enemy.node.get_meta("rig").attack=.25
 			coop.damage_player(target_player.id,(18+realm*5 if enemy.boss else 11+realm*4)*enemy.damage*(1+enemy.get("biome",0)*.12),enemy.node.position,enemy.sound)
@@ -1415,12 +1453,11 @@ func update_combat(delta: float):
 				if enemy.get("biome",0)==4 and not buffs.has("fire"): player_fire=3
 				if enemy.get("biome",0)==3: player_chill=2
 				if enemy.get("biome",0)==5: player_blind=2
-				if stats.thorns>0: hurt_enemy(enemy,stats.thorns*enemy_delta*2,"thorn")
 		if enemy.boss:
 			enemy.phase = 2 if enemy.hp<enemy.maxHp*.5 else 1
 			enemy.label.text = "%s  %d%%" % [boss_name,enemy.hp/enemy.maxHp*100]
 			enemy.attack -= enemy_delta
-			if enemy.attack<=0 and enemy.blind<=0: telegraph(enemy);enemy.attack=2.7 if enemy.phase==2 else 4
+			if enemy.attack<=0 and enemy.blind<=0 and enemy.freeze<=0: telegraph(enemy);enemy.attack=2.7 if enemy.phase==2 else 4
 		if stats.auraDamage>0 and distance<4: hurt_enemy(enemy,stats.auraDamage*enemy_delta,"aura")
 	for shot in projectiles:
 		shot.life -= delta
@@ -1429,6 +1466,7 @@ func update_combat(delta: float):
 			if not shot.get("returning",false): shot.hit.clear();shot.returning=true
 			shot.velocity = (player.position+Vector3.UP*.9-shot.node.position).normalized()*stats.projectileSpeed
 			if shot.node.position.distance_to(player.position+Vector3.UP*.9)<.6: shot.life=0
+		var shot_start: Vector3=shot.node.position
 		shot.node.position += shot.velocity*delta
 		if shot.kind in ["boomerang","disc"]: shot.node.rotation.y+=delta*18
 		if shot.kind=="bomb":
@@ -1438,7 +1476,9 @@ func update_combat(delta: float):
 			continue
 		for enemy in enemies:
 			if enemy.dead or shot.hit.has(enemy.net_id): continue
-			if shot.node.position.distance_to(enemy_center(enemy)) < maxf(enemy.get("radius",.7),enemy.get("height",1.7)*.35):
+			var center=enemy_center(enemy)
+			var closest=Geometry3D.get_closest_point_to_segment(center,shot_start,shot.node.position)
+			if closest.distance_squared_to(center) < pow(maxf(enemy.get("radius",.7),enemy.get("height",1.7)*.35)+shot.get("hit_radius",.1),2):
 				shot.hit.append(enemy.net_id)
 				hit_enemy(enemy,shot)
 				if shot.bounce>0:

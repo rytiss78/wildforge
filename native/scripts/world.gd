@@ -57,7 +57,8 @@ func weather_tick(delta: float,p: Vector3):
 	for pair in [["moon_strength",biome==2],["space_strength",biome==5],["fire_strength",biome==4]]:
 		var parameter=sky_paint.get_shader_parameter(pair[0]);var previous=float(parameter) if parameter!=null else 0.0;sky_paint.set_shader_parameter(pair[0],lerpf(previous,1.0 if pair[1] else 0.0,1-exp(-delta*.6)))
 	environment.fog_light_color=sky_horizon
-	environment.fog_density=lerpf(environment.fog_density,.013 if biome in [1,3] else .007,1-exp(-delta*.6))
+	environment.fog_depth_begin=lerpf(environment.fog_depth_begin,35.0 if biome in [1,3] else 45.0,1-exp(-delta*.6))
+	environment.fog_depth_end=lerpf(environment.fog_depth_end,140.0 if biome in [1,3] else 165.0,1-exp(-delta*.6))
 	edge_near=false
 	for index in range(border_steam.size()):
 		var axis=0 if index==0 else 2;var distance_value=absf(p[axis])
@@ -276,13 +277,15 @@ func make_boundaries():
 func make_environment():
 	var env=Environment.new();env.background_mode=Environment.BG_SKY
 	var sky=Sky.new();var gradient=ShaderMaterial.new();gradient.shader=load("res://shaders/biome_sky.gdshader");gradient.set_shader_parameter("paint",load("res://assets/illustrated/terrain-2.png"));sky.sky_material=gradient;sky.process_mode=Sky.PROCESS_MODE_REALTIME;env.sky=sky
-	env.ambient_light_source=Environment.AMBIENT_SOURCE_COLOR;env.ambient_light_color=Color("fff0d8");env.ambient_light_energy=.45
-	env.fog_enabled=true;env.fog_light_color=sky_horizon;env.fog_density=.008;env.fog_sky_affect=0
+	env.ambient_light_source=Environment.AMBIENT_SOURCE_COLOR;env.ambient_light_color=Color("e6efff");env.ambient_light_energy=.36
+	env.adjustment_enabled=true;env.adjustment_saturation=1.22;env.adjustment_contrast=1.08
+	# Keep the playable foreground crisp; distant scenery still fades out.
+	env.fog_enabled=true;env.fog_mode=Environment.FOG_MODE_DEPTH;env.fog_light_color=sky_horizon;env.fog_density=1.0;env.fog_depth_begin=35;env.fog_depth_end=155;env.fog_sky_affect=0
 	var world_env=WorldEnvironment.new();world_env.environment=env;add_child(world_env)
 	sky_paint=gradient;environment=env;active_biome=-1
 	weather=GPUParticles3D.new();weather.amount=180;weather.lifetime=4;weather.visibility_aabb=AABB(Vector3(-25,-15,-25),Vector3(50,40,50));add_child(weather)
 	var particles=ParticleProcessMaterial.new();particles.emission_shape=ParticleProcessMaterial.EMISSION_SHAPE_BOX;particles.emission_box_extents=Vector3(14,4,14);particles.direction=Vector3.DOWN;particles.spread=35;weather.process_material=particles
-	var sun=DirectionalLight3D.new();sun.rotation_degrees=Vector3(-42,-35,0);sun.light_energy=.9;sun.light_color=Color("ffedd5");sun.shadow_enabled=true;sun.directional_shadow_max_distance=65;add_child(sun)
+	var sun=DirectionalLight3D.new();sun.rotation_degrees=Vector3(-42,-35,0);sun.light_energy=.85;sun.light_color=Color("fff8ef");sun.shadow_enabled=true;sun.directional_shadow_max_distance=65;add_child(sun)
 	for i in range(16):
 		var cloud=Node3D.new();cloud.position=Vector3(cos(i*TAU/16)*370,60+sin(i)*15,sin(i*TAU/16)*370);add_child(cloud);clouds.append(cloud)
 		for j in range(3): ToonArt.ball(cloud,Color("fff2de"),Vector3(j*6,0,0),Vector3(20,9,12))
@@ -292,47 +295,9 @@ func make_environment():
 	moon=MeshInstance3D.new();var sphere=SphereMesh.new();sphere.radius=24;sphere.height=48;moon.mesh=sphere;moon.position=Vector3(220,110,-280);var paint=StandardMaterial3D.new();paint.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED;paint.albedo_texture=load("res://assets/illustrated/terrain-2.png");moon.material_override=paint;add_child(moon)
 
 func make_landmarks():
-	# Tall towers, raised ruins and an overlook make exploration readable from a distance.
-	for i in range(4):
-		var angle = i*TAU/4+.4
-		var p = Vector3(cos(angle)*145,0,sin(angle)*145)
-		p.y = height_at(p.x,p.z)
+	for biome in range(6):
+		var angle=(biome+.5)*TAU/6-float(seed_value%23)*.03-realm*.4
+		var p=Vector3(cos(angle)*175,0,sin(angle)*175)
+		p.y=height_at(p.x,p.z)
 		landmarks.append(p)
-		var ruin = Node3D.new()
-		ruin.position = p
-		add_child(ruin)
-		var stone = StandardMaterial3D.new()
-		stone.albedo_color=Color("8ca7b1") if realm==0 else Color("bc8865") if realm==1 else Color("918bc0")
-		stone.roughness = .85
-		stone.albedo_texture=load("res://assets/illustrated/stone.png")
-		stone.diffuse_mode=BaseMaterial3D.DIFFUSE_TOON
-		for j in range(6):
-			var pillar = MeshInstance3D.new()
-			var cylinder = CylinderMesh.new()
-			cylinder.top_radius = .6
-			cylinder.bottom_radius = .8
-			cylinder.height = 6.0 + float(j%2)*2
-			cylinder.radial_segments = 24
-			pillar.mesh = cylinder
-			pillar.material_override = stone
-			pillar.position = Vector3(cos(j*TAU/6)*8,cylinder.height*.5,sin(j*TAU/6)*8)
-			ruin.add_child(pillar)
-			pillar.create_convex_collision()
-		var platform = MeshInstance3D.new()
-		var box = BoxMesh.new()
-		box.size = Vector3(11,.45,11)
-		platform.mesh = box
-		platform.material_override = stone
-		platform.position = Vector3(0,1.5,0)
-		ruin.add_child(platform)
-		platform.create_trimesh_collision()
-		# Jumpable stone steps reach the raised reward platform.
-		for step in range(3):
-			var stair = MeshInstance3D.new()
-			var stair_mesh = BoxMesh.new()
-			stair_mesh.size = Vector3(3,.5,2)
-			stair.mesh = stair_mesh
-			stair.material_override = stone
-			stair.position = Vector3(0,.25+step*.5,8-step*1.8)
-			ruin.add_child(stair)
-			stair.create_convex_collision()
+		preload("res://scripts/biome_landmarks.gd").build(self,biome,p)

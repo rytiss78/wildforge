@@ -25,12 +25,14 @@ var hurt_voice=AudioStreamPlayer3D.new()
 var hurt_source: Node3D
 var last_hurt=-100.0
 var chest_voice=AudioStreamPlayer.new()
+var ui_voice=AudioStreamPlayer.new()
 
 func setup(options: Dictionary):
 	settings = options
 	add_child(hurt_voice)
 	hurt_voice.unit_size=8;hurt_voice.max_distance=45;hurt_voice.max_db=0
 	add_child(chest_voice)
+	ui_voice.max_polyphony=4;add_child(ui_voice)
 	if AudioServer.get_bus_index("SkyVoice")<0:
 		AudioServer.add_bus();var sky_bus=AudioServer.bus_count-1;AudioServer.set_bus_name(sky_bus,"SkyVoice")
 		var reverb=AudioEffectReverb.new();reverb.room_size=.82;reverb.damping=.65;reverb.wet=.24;reverb.dry=.90;reverb.spread=.85;reverb.predelay_msec=65
@@ -124,7 +126,7 @@ func effect(id: String,position: Vector3=Vector3.ZERO):
 	if not cache.has(key):
 		var audio=AudioStreamWAV.new();audio.mix_rate=22050;audio.format=AudioStreamWAV.FORMAT_16_BITS
 		var bass=id in ["shotgun","rocket","turret-rocket","land","blast","saw","meteor","bomb","horn"]
-		var duration=1.2 if id=="steam" else .6 if id=="level" else .3 if id.ends_with("bump") or id=="squish" else .26 if bass else .14
+		var duration=1.2 if id=="steam" else .6 if id=="level" else .32 if id=="sneeze" else .3 if id.ends_with("bump") or id=="squish" else .26 if bass else .14
 		var frequencies={"gun":170.0,"shotgun":70.0,"rail":1250.0,"rocket":85.0,"flame":230.0,"fire":230.0,"poison":320.0,"ice":1600.0,"saw":100.0,"turret":430.0,"fire-turret":210.0,"turret-flame":210.0,"lightning":980.0,"lightning-turret":980.0,"turret-tesla":980.0,"rocket-turret":80.0,"turret-rocket":80.0,"coin":1100.0,"dash":370.0,"hit":90.0,"jump":650.0,"land":80.0,"drink":900.0,"level":523.25}
 		var frequency=float(frequencies.get(id,520.0))
 		if id in ["boomerang","disc","harpoon","gravity","horn","bubble","meteor","bomb","steam"]:
@@ -150,6 +152,7 @@ func effect(id: String,position: Vector3=Vector3.ZERO):
 			if id=="slash": sample=(local_rng.randf_range(-.24,.24)+sin(TAU*(900-600*t/duration)*t)*.06)*sin(PI*t/duration)
 			if id=="melee_hit": sample=(sin(TAU*75*t*(1-t*2))*.34+local_rng.randf_range(-.23,.23))*exp(-t*26)
 			if id=="steam": sample=(local_rng.randf_range(-.06,.06)+sin(TAU*frequency*t)*.025)*(.7+.3*sin(t*50))
+			if id=="sneeze": sample=local_rng.randf_range(-.32,.32)*pow(sin(PI*t/duration),3)+sin(TAU*110*t*(1+t))*.12*envelope
 			if id=="level":
 				var note=[523.25,659.25,783.99,1046.50][mini(3,int(t/.15))]
 				sample=(sin(TAU*note*t)*.12+sin(TAU*note*2*t)*.035)*minf(1,t*80)*minf(1,(duration-t)*30)
@@ -161,6 +164,9 @@ func effect(id: String,position: Vector3=Vector3.ZERO):
 	channel.stream=cache[key];channel.volume_db=linear_to_db(float(settings.sfx));channel.play()
 
 func weapon_loop(id: String,enabled: bool,position: Vector3):
+	if float(settings.sfx)<=0:
+		if weapon_loops.has(id): weapon_loops[id].stop()
+		return
 	if not weapon_loops.has(id):
 		if not enabled: return
 		effect(id,position)
@@ -171,3 +177,30 @@ func weapon_loop(id: String,enabled: bool,position: Vector3):
 	channel.volume_db=linear_to_db(maxf(.0001,float(settings.sfx)))-8
 	if enabled and not channel.playing: channel.play()
 	if not enabled and channel.playing: channel.stop()
+
+func ui_effect(id: String):
+	if float(settings.sfx)<=0: return
+	var key="ui_"+id
+	if not cache.has(key):
+		var frequencies={"fire":220.0,"poison":196.0,"ice":880.0,"engineering":330.0,"armour":440.0,"coins":1046.5,"garden":587.3,"healing":659.3,"lightning":784.0,"magic":622.3,"movement":740.0,"damage":293.7,"reroll":392.0,"card":523.3,"sneeze":90.0}
+		var frequency=float(frequencies.get(id,523.3));var duration=.12 if id=="card" else .32
+		var audio=AudioStreamWAV.new();audio.mix_rate=22050;audio.format=AudioStreamWAV.FORMAT_16_BITS
+		var bytes=PackedByteArray();bytes.resize(int(duration*22050)*2)
+		var noise_rng=RandomNumberGenerator.new();noise_rng.seed=id.hash()
+		for i in range(bytes.size()/2):
+			var t=float(i)/22050;var envelope=sin(PI*t/duration)*exp(-t*7)
+			var sample=(sin(TAU*frequency*t)+sin(TAU*frequency*1.5*t)*.35)*.17*envelope
+			if id=="card": sample=noise_rng.randf_range(-.22,.22)*exp(-t*35)+sin(TAU*(frequency+t*1600)*t)*.1*envelope
+			if id=="fire": sample+=noise_rng.randf_range(-.12,.12)*envelope
+			if id=="poison": sample=sin(TAU*frequency*t*(1+sin(t*58)*.18))*.22*envelope
+			if id=="ice": sample+=sin(TAU*frequency*2.4*t)*.10*envelope
+			if id=="lightning": sample+=noise_rng.randf_range(-.08,.08)*envelope*sin(t*180)
+			if id=="sneeze": sample=noise_rng.randf_range(-.35,.35)*pow(sin(PI*t/duration),3)+sin(TAU*frequency*t)*.09*envelope
+			bytes.encode_s16(i*2,int(clampf(sample,-.9,.9)*32767))
+		audio.data=bytes;cache[key]=audio
+	ui_voice.stream=cache[key];ui_voice.volume_db=linear_to_db(float(settings.sfx))-3;ui_voice.play()
+
+func choose_power(key: String):
+	var tile=int(IllustratedIcons.SKILLS.get(key,0 if key.ends_with("Power") else 7))
+	var families=["damage","engineering","engineering","damage","magic","lightning","engineering","magic","garden","healing","armour","coins","poison","fire","ice","movement"]
+	ui_effect(families[tile])

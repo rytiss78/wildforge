@@ -30,6 +30,8 @@ var melee={}
 var melee_side=1.0
 var reach_links=[]
 var reach_glove: MeshInstance3D
+var thumb_clock=0.0
+var thumb_glove: Node3D
 
 func setup_solid(model_name: String) -> bool:
 	var asset=model_name if model_name.begins_with("creature_") else "count_duck" if model_name=="rubber_duck_toy" else "hero_"+model_name
@@ -174,6 +176,7 @@ func sync_equipment(weapons: Array):
 	var signature=""
 	for weapon in weapons: signature+=weapon.id+str(weapon.rank)+";"
 	if signature==equipment_signature: return
+	var previous_third_rank=held[2].rank if held.size()==3 else 0
 	finish_melee()
 	equipment_signature=signature
 	body.rotation=Vector3.ZERO
@@ -188,6 +191,29 @@ func sync_equipment(weapons: Array):
 		weapon.position.y=.18
 		arms[i].get_meta("hand").add_child(weapon)
 		held.append(weapon)
+	if weapons.size()==3 and previous_third_rank>0 and weapons[2].rank>previous_third_rank: third_hand_cheer()
+
+func third_hand_cheer():
+	if held.size()!=3 or arms.size()<3: return
+	if is_instance_valid(thumb_glove): thumb_glove.queue_free()
+	thumb_clock=.7;held[2].visible=false
+	thumb_glove=Node3D.new();arms[2].get_meta("hand").add_child(thumb_glove)
+	thumb_glove.position=Vector3(.08,.18,-.08)
+	ToonArt.ball(thumb_glove,skin,Vector3.ZERO,Vector3(.24,.27,.17))
+	for i in range(3): ToonArt.ball(thumb_glove,skin.darkened(.12),Vector3(.06,.07-i*.065,-.08),Vector3(.14,.06,.09))
+	ToonArt.tube(thumb_glove,skin,Vector3(-.09,.16,-.02),.048,.06,.22)
+	ToonArt.ball(thumb_glove,skin,Vector3(-.09,.28,-.02),Vector3(.095,.1,.10))
+	thumb_glove.scale=Vector3.ONE*.05
+	thumb_glove.create_tween().tween_property(thumb_glove,"scale",Vector3.ONE,.16).set_trans(Tween.TRANS_BACK)
+
+func tick_thumb(delta: float):
+	if not is_instance_valid(thumb_glove): return
+	thumb_clock=maxf(0,thumb_clock-delta)
+	if thumb_clock>0:
+		if arms.size()>2: arms[2].rotation.x=-1.15
+	else:
+		thumb_glove.queue_free();thumb_glove=null
+		if held.size()==3: held[2].visible=true
 
 func shot(id: String):
 	for model in held:
@@ -262,6 +288,7 @@ func animate(delta: float,movement: Vector3,on_floor: bool=true,slamming: bool=f
 		arms[i].rotation.x=lerpf(arms[i].rotation.x,.06 if held.size()>i else -1.0 if attack>0 else sin(clock*12+i*PI)*.30*walk,delta*10)
 		arms[i].rotation.z=lerpf(arms[i].rotation.z,-.75 if i==2 else 0.0,delta*10)
 	for model in held: model.tick(delta)
+	tick_thumb(delta)
 	tick_melee(delta)
 	if illustrated and not identity.begins_with("creature_"):
 		var view=get_viewport().get_camera_3d()

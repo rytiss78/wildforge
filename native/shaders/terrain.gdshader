@@ -10,13 +10,13 @@ uniform float phase=0.0;
 varying vec3 p;
 void vertex(){p=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz;}
 vec3 biome_paint(float b,vec2 uv) {
- vec3 paint=texture(t0,uv).rgb;vec3 base=vec3(.62,.73,.54);
- if(b>4.5){paint=texture(t5,uv).rgb;base=vec3(.55,.43,.68);}
- else if(b>3.5){paint=texture(t4,uv).rgb;base=vec3(.80,.40,.30);}
- else if(b>2.5){paint=texture(t3,uv).rgb;base=vec3(.83,.91,.92);}
- else if(b>1.5){paint=texture(t2,uv).rgb;base=vec3(.63,.72,.85);}
- else if(b>.5){paint=texture(t1,uv).rgb;base=vec3(.49,.68,.62);}
- return mix(paint,base,.55);
+ vec3 paint=texture(t0,uv).rgb;vec3 base=vec3(.23,.52,.14);
+ if(b>4.5){paint=texture(t5,uv).rgb;base=vec3(.30,.13,.58);}
+ else if(b>3.5){paint=texture(t4,uv).rgb;base=vec3(.74,.18,.07);}
+ else if(b>2.5){paint=texture(t3,uv).rgb;base=vec3(.48,.77,.87);}
+ else if(b>1.5){paint=texture(t2,uv).rgb;base=vec3(.25,.40,.66);}
+ else if(b>.5){paint=texture(t1,uv).rgb;base=vec3(.12,.40,.30);}
+ return mix(paint,base,.32);
 }
 void fragment(){
  vec2 uv=p.xz*.085;

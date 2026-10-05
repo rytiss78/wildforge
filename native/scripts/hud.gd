@@ -35,6 +35,8 @@ var box_counter: Label
 var party_label: Label
 var party_list: VBoxContainer
 var party_list_key=""
+var offer_tween: Tween
+var preview_id=""
 
 func menu_controls(node: Node=modal) -> Array:
 	var result=[]
@@ -204,6 +206,8 @@ func setup(owner_game):
 	modal.visible = false
 
 func open(title: String, subtitle: String = "") -> VBoxContainer:
+	if offer_tween!=null and offer_tween.is_valid(): offer_tween.kill()
+	preview_id=""
 	for child in modal.get_children(): child.queue_free()
 	modal.visible = true
 	var panel = PanelContainer.new()
@@ -222,6 +226,7 @@ func open(title: String, subtitle: String = "") -> VBoxContainer:
 	return content
 
 func close():
+	if offer_tween!=null and offer_tween.is_valid(): offer_tween.kill()
 	modal.visible = false
 	game.mode = "playing"
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED if not game.smoke else Input.MOUSE_MODE_VISIBLE
@@ -273,7 +278,7 @@ func update(delta: float):
 			control_hints.remove_child(child)
 			child.queue_free()
 		add_prompts(control_hints,[["WASD","LS","Move"],["Mouse","RS","Look"],["Shift","RT","Dash"],["Space","A","Jump"],["Ctrl","B","Slam"],["E","X","Open"],["B","Y","Build"],["Esc","Menu","Pause"]])
-		if game.mode == "offer": show_offers(game.offers,game.offer_source)
+		# InputGlyph updates itself; rebuilding choices here resets controller focus.
 	prompt.visible=not modal.visible and not game.interaction_hint().is_empty()
 	prompt.text = game.interaction_hint().replace("E / X", "X" if game.input_kind=="xbox" else "E")
 	alert.visible=not modal.visible and game.boss_active()
@@ -506,6 +511,9 @@ func offer_card(item: Dictionary, index: int, select: Callable) -> Button:
 
 func preview_offer(item: Dictionary):
 	if not is_instance_valid(offer_detail): return
+	var signature=item.id+":"+str(item.tier)+":"+str(item.get("strength",1))
+	if signature==preview_id: return
+	preview_id=signature
 	for child in offer_detail.get_children():
 		offer_detail.remove_child(child)
 		child.queue_free()
@@ -534,13 +542,13 @@ func preview_offer(item: Dictionary):
 			row.add_child(detail)
 			offer_detail.add_child(row)
 			var common=item.effects[0].duplicate()
-			var source=game.rules.data.loot.filter(func(t):return t.id==item.id)
-			common.amount=source[0].effects[0].amount if not source.is_empty() else float(common.amount)/float(item.strength)
+			var source=game.rules.loot_by_id.get(item.id,{})
+			common.amount=source.effects[0].amount if not source.is_empty() else float(common.amount)/float(item.strength)
 			var baseline=label("Common: "+game.rules.describe(common),13)
 			baseline.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 			offer_detail.add_child(baseline)
 
-func show_offers(items: Array, source: String):
+func show_offers(items: Array, source: String,animate: bool=true):
 	var box=open("LEVEL %d" % game.level if source=="level" else "CHOOSE YOUR TREASURE", "Take one. Make it count.")
 	box.get_parent().position=Vector2(340,145)
 	box.get_parent().size=Vector2(760,505)
@@ -559,12 +567,28 @@ func show_offers(items: Array, source: String):
 	choices.add_theme_constant_override("separation",7)
 	body.add_child(choices)
 	for i in range(items.size()): choices.add_child(offer_card(items[i],i,func():game.choose_offer(i)))
+	var quality_only=game.offer_kind=="weapon" and game.equipped.size()>=RunRules.WEAPON_CAP
+	var reroll=button(("REROLL QUALITY" if quality_only else "REROLL CARDS")+"  ·  %d COINS" % game.reroll_price(),func():game.reroll_offers())
+	reroll.disabled=game.gold<game.reroll_price();choices.add_child(reroll)
 	if items.any(func(item):return item.kind=="weapon"):
 		choices.add_child(button("SKIP  ·  KEEP MY WEAPONS",func():game.skip_offer()))
 	var hints=HBoxContainer.new()
 	choices.add_child(hints)
-	add_prompts(hints,[["↑↓","D-pad","Browse"],["Enter","A","Choose"]])
+	add_prompts(hints,[["↑↓","D-pad","Browse"],["Enter","A","Choose"],["R","Y","Reroll"]])
 	if not cards.is_empty(): cards[0].grab_focus();preview_offer(items[0])
+	if animate: animate_offers()
+
+func animate_offers():
+	# Scale opaque panels so controller focus works throughout the reveal.
+	var panel=content.get_parent()
+	panel.pivot_offset=Vector2(380,250);panel.scale=Vector2(.94,.94)
+	panel.create_tween().tween_property(panel,"scale",Vector2.ONE,.22).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+	offer_tween=create_tween()
+	for card in cards: card.pivot_offset=Vector2(180,38);card.scale=Vector2(.90,.90)
+	for card in cards:
+		offer_tween.tween_callback(func():game.sound.ui_effect("card"))
+		offer_tween.tween_property(card,"scale",Vector2.ONE,.16).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
+		offer_tween.tween_interval(.025)
 
 func chest_reveal(tier: int, progress_value: float):
 	if not modal.visible: open("▣  TREASURE", "")

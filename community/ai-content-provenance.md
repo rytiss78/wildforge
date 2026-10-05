@@ -3,6 +3,7 @@
 This records asset origins for standalone distribution.
 
 - The 24 original item/weapon illustrations and four painted material textures were generated from original prompts. Those prompts are recorded in `native/assets/illustrated/README.md`.
+- The separate 16-tile skill atlas was generated with OpenAI's built-in image tool for the 0.7.9 update. It uses original glove, clock, binocular, crystal, weather, tool, ghost, plant, heart, shield, coin, potion, flame and boot illustrations. Skills no longer reuse firearm tiles. No external game art was copied.
 - Achievement artwork composes those illustrations with authored badge motifs; hero badges use renders of the actual procedural game models. `achievement-art.json` maps the 100 stable IDs to their compositions.
 - Hero, weapon and environment meshes, rig animation, scenery batching, sounds and music arrangements use AI-assisted authored code. The game runs these locally; there is no live image or language-model service in gameplay.
 - Current announcer and hero lines were generated offline with Kyutai Pocket TTS stock synthetic profiles. Exact text, hashes, sources, attribution and licenses are supplied with the build. No personal voice is cloned.
