@@ -25,6 +25,7 @@ foreach ($taskRole in @('host','client')) {
   if ($taskErrors -match 'SCRIPT ERROR|ERROR:') { throw $taskErrors }
   $taskResult=($taskLog -split "`n" | Where-Object { $_ -like 'COOP_TEST {*' } | Select-Object -Last 1).Substring(10) | ConvertFrom-Json
   if (-not $taskResult.standalone -or -not $taskResult.discovery -or -not $taskResult.connected -or $taskResult.avatars -lt 1 -or -not $taskResult.same_enemies -or $taskResult.realm -ne 1) { throw "Co-op $taskRole failed: $taskLog" }
+  if (-not $taskResult.downed -or -not $taskResult.rescued -or -not $taskResult.ping -or -not $taskResult.merchant -or -not $taskResult.supply) { throw "Co-op $taskRole interaction checks failed: $taskLog" }
   if ($taskRole -eq 'host' -and $taskResult.remote_hits -lt 1) { throw 'Guest attacks did not reach the host.' }
   if ($taskRole -eq 'client' -and ($taskResult.snapshots -lt 20 -or $taskResult.kills_received -lt 1 -or -not $taskResult.party_pause -or -not $taskResult.realm_received -or -not $taskResult.moved)) { throw 'Guest world replication failed.' }
   $taskResult | ConvertTo-Json -Compress

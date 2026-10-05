@@ -204,3 +204,12 @@ func choose_power(key: String):
 	var tile=int(IllustratedIcons.SKILLS.get(key,0 if key.ends_with("Power") else 7))
 	var families=["damage","engineering","engineering","damage","magic","lightning","engineering","magic","garden","healing","armour","coins","poison","fire","ice","movement"]
 	ui_effect(families[tile])
+
+func hero_quip(id: String,context: String,source: Node3D):
+	if float(settings.voice)<=0 or hurt_voice.playing: return
+	var path="res://assets/voices/quip_%s_%s.wav" % [id,context]
+	if not ResourceLoader.exists(path): return
+	if not cache.has(path): cache[path]=load(path)
+	hurt_source=source;hurt_voice.global_position=source.global_position+Vector3.UP
+	hurt_voice.stream=cache[path];hurt_voice.pitch_scale=1.0
+	hurt_voice.volume_db=linear_to_db(maxf(.0001,float(settings.voice)));hurt_voice.play()

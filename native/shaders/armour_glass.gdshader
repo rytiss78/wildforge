@@ -18,5 +18,5 @@ void fragment(){
  float rim=pow(1.0-clamp(dot(normalize(NORMAL),normalize(VIEW)),0.0,1.0),1.6);
  ALBEDO=vec3(.16,.57,.95);
  EMISSION=vec3(.08,.30,.65)*rim*protection*.35;
- ALPHA=(.10+rim*.65)*protection;
+ ALPHA=(.08+rim*.72)*protection;
 }

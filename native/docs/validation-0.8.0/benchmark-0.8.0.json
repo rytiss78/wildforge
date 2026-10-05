@@ -1,0 +1,18 @@
+{
+  "buffs": 2,
+  "chunks": 28,
+  "cpu": "AMD Ryzen 7 5800X 8-Core Processor",
+  "draw_calls": 1457.0,
+  "frames": 2973,
+  "lowest_ground_delta": -0.000617686469441381,
+  "max_nodes": 7047,
+  "minimum_enemy_spacing": 0.845309394471189,
+  "p50_ms": 3.38,
+  "p95_ms": 22.836,
+  "physics_ms": 24.538,
+  "process_ms": 13.03,
+  "regions": 6,
+  "remaining_enemies": 106,
+  "renderer": "AMD Radeon RX 9060 XT",
+  "static_memory_mb": 0.0
+}

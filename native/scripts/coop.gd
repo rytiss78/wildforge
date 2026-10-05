@@ -3,7 +3,7 @@ class_name CoopSession
 
 # Transport-independent authoritative world. Important events are reliable;
 # poses/snapshots use unreliable ordered delivery. Never deserialize objects.
-const PROTOCOL="wildforge-0.7.7-direct-1"
+const PROTOCOL="wildforge-0.8.2-direct-3"
 const PORT=29736
 const DISCOVERY_PORT=29737
 var discovery: PacketPeerUDP
@@ -182,6 +182,7 @@ func tick(delta: float):
 			var node=avatars[id];var target=vector(state.position);var movement=(target-node.position)*8
 			node.position=node.position.lerp(target,1-exp(-delta*12));node.rotation.y=float(state.get("yaw",0));node.get_meta("rig").animate(delta,movement,true)
 			if state.has("weapons"): node.get_meta("rig").sync_equipment(state.weapons)
+			if node.has_meta("nameplate"): node.get_meta("nameplate").text=str(state.get("name","Friend"))+("\nDOWNED · HOLD E / X" if game.update.downed_ids.has(id) else "")
 			if state.has("hp") and state.has("stats"): node.get_meta("rig").set_health(float(state.hp)/maxf(1,float(state.stats.get("maxHp",100))))
 			if state.has("stats"): node.get_meta("rig").set_defense(float(state.stats.get("armor",0)),float(state.get("shield_hp",0)),float(state.stats.get("shield",0))+float(state.stats.get("jumpShield",0)))
 
@@ -191,15 +192,19 @@ func pose() -> Dictionary:
 		var state={"id":weapon.id,"rank":weapon.rank}
 		if weapon.turret and is_instance_valid(weapon.get("node")): state.placement=array(weapon.node.position)
 		weapons.append(state)
-	return {"type":"pose","position":array(game.player.position),"yaw":game.avatar.rotation.y,"model":game.hero.model,"name":game.hero.name,"mode":"ended" if game.run_recorded else game.mode,"weapons":weapons,"hp":game.hp,"shield_hp":game.shield_hp,"stats":game.stats}
+	var effective=game.stats.duplicate()
+	for key in effective.keys():
+		if str(key).begins_with("augment-"): effective.erase(key)
+	for key in game.conditional_bonuses: effective[key]=game.stat(key)
+	return {"type":"pose","position":array(game.player.position),"yaw":game.avatar.rotation.y,"model":game.hero.model,"name":game.hero.name,"mode":"ended" if game.run_recorded else game.mode,"weapons":weapons,"hp":game.hp,"shield_hp":game.shield_hp,"stats":effective,"gold":game.gold,"rescue_hold":game.update.rescue_hold}
 
 func snapshot() -> Dictionary:
 	var actors=[]
 	for enemy in game.enemies:
-		if not enemy.dead: actors.append({"id":enemy.net_id,"position":array(enemy.node.position),"biome":enemy.biome,"species":enemy.species,"height":enemy.height,"radius":enemy.radius,"hp":enemy.hp,"maxHp":enemy.maxHp,"xp_reward":enemy.xp_reward,"boss":enemy.boss,"elite":enemy.elite,"fire":enemy.fire,"poison":enemy.poison,"freeze":enemy.freeze,"blind":enemy.blind})
+		if not enemy.dead: actors.append({"id":enemy.net_id,"position":array(enemy.node.position),"biome":enemy.biome,"species":enemy.species,"height":enemy.height,"radius":enemy.radius,"hp":enemy.hp,"maxHp":enemy.maxHp,"xp_reward":enemy.xp_reward,"boss":enemy.boss,"elite":enemy.elite,"fire":enemy.fire,"poison":enemy.poison,"freeze":enemy.freeze,"blind":enemy.blind,"slip_until":enemy.get("slip_until",0),"windup":enemy.get("windup",0)})
 	var poses=members.duplicate(true);poses[local_id]=pose()
 	for member in poses.values(): member.erase("stats");member.erase("last_seen")
-	return {"type":"world","actors":actors,"players":poses,"seconds":game.realm_time,"elapsed":game.elapsed,"realm":game.realm,"pause":frozen() or game.mode not in ["playing","ended"]}
+	return {"type":"world","actors":actors,"players":poses,"seconds":game.realm_time,"elapsed":game.elapsed,"realm":game.realm,"pause":frozen() or game.mode not in ["playing","ended"],"big_update":game.update.world_state()}
 
 static func array(v: Vector3) -> Array: return [v.x,v.y,v.z]
 static func vector(v) -> Vector3:
@@ -208,6 +213,7 @@ static func vector(v) -> Vector3:
 
 func receive(sender: int,message):
 	if not message is Dictionary or not message.get("type","") is String: return
+	if game.update.receive(sender,message): return
 	var kind=message.type
 	if hosting:
 		if kind=="hello":
@@ -218,10 +224,11 @@ func receive(sender: int,message):
 		members[sender].last_seen=Time.get_ticks_msec()/1000.0
 		if kind=="pose":
 			var p=vector(message.get("position",[]))
-			if not p.is_finite() or maxf(absf(p.x),absf(p.z))>510: return
-			for key in ["position","yaw","model","name","mode","weapons","hp","shield_hp","stats"]:
+			if not p.is_finite() or maxf(absf(p.x),absf(p.z))>RealmWorld.EXTENT+10: return
+			for key in ["position","yaw","model","name","mode","weapons","hp","shield_hp","stats","gold","rescue_hold"]:
 				if message.has(key): members[sender][key]=message[key]
 			ensure_avatar(sender,members[sender])
+			if game.update.downed_ids.has(sender): members[sender].hp=0
 		elif kind=="shot":
 			var weapon=str(message.get("weapon",""))
 			if members[sender].get("weapons",[]).any(func(w):return w.get("id","")==weapon):
@@ -247,11 +254,16 @@ func receive(sender: int,message):
 				var limit=maxf(1,float(stats.get("damage",15)))*maxf(4,float(stats.get("critPower",1)))*10
 				var damage=clampf(float(message.get("damage",0)),0,limit)
 				if not is_finite(damage): return
+				enemy.hit_owner=sender
 				game.hurt_enemy(enemy,damage,"coop");remote_hits+=1
+				enemy.erase("hit_owner");enemy.status_owner=sender
 				if not enemy.dead:
-					var ids=state.get("weapons",[]).map(func(w):return str(w.id))
+					var owned_ids=state.get("weapons",[]).map(func(w):return str(w.id))
+					var ids=owned_ids.map(func(id):return ContentExpansion.kind(id))
 					var mechanic=str(message.get("mechanic",""))
-					if ids.has(mechanic):
+					if owned_ids.has(mechanic):
+						ContentExpansion.payload(enemy,str(ContentExpansion.weapon(mechanic).get("modifiers",{}).get("payload","")))
+						mechanic=ContentExpansion.kind(mechanic)
 						if mechanic=="bubble": enemy.bubble=1.5*float(stats.get("bubbleTime",1));enemy.slow=maxf(enemy.slow,.7)
 						if mechanic=="horn": enemy.freeze=maxf(enemy.freeze,.35+float(stats.get("hornStun",0)))
 						if mechanic in ["harpoon","gravity"] and not enemy.boss:
@@ -261,6 +273,10 @@ func receive(sender: int,message):
 					enemy.status_time=4;enemy.fire=maxf(enemy.fire,float(stats.get("burn",0))+(10 if ids.any(func(id):return id.contains("flame") or id.contains("fire")) else 0));enemy.poison=maxf(enemy.poison,float(stats.get("poison",0))+(9 if ids.any(func(id):return id.contains("poison")) else 0));enemy.slow=maxf(enemy.slow,float(stats.get("slow",0)) + (.35 if ids.any(func(id):return id.contains("ice")) else 0))
 					if game.rules.rng.randf()<float(stats.get("freeze",0)): enemy.freeze=1.6
 					if game.rules.rng.randf()<float(stats.get("blind",0)): enemy.blind=3
+					game.update_reaction(enemy,mechanic,damage)
+					if game.rules.rng.randf()<float(stats.get("banana",0)) and game.realm_time>enemy.get("slip_until",-3)+2:
+						enemy.slip_until=game.realm_time+(.2 if enemy.boss else .8);enemy.freeze=maxf(enemy.freeze,.2 if enemy.boss else .8)
+						send_to(sender,{"type":"big_memory","key":"BANANA"})
 				return
 	else:
 		if sender!=owner_id: return
@@ -290,20 +306,21 @@ func ensure_avatar(id: int,state: Dictionary):
 		var node=CharacterBody3D.new();node.collision_layer=2;node.collision_mask=1
 		var collider=CollisionShape3D.new();var capsule=CapsuleShape3D.new();capsule.radius=.42;capsule.height=1.6;collider.shape=capsule;collider.position.y=.8;node.add_child(collider)
 		var rig=game.world.model(model,1.65);node.add_child(rig);node.set_meta("rig",rig);game.add_child(node);avatars[id]=node
-		var nameplate=Label3D.new();nameplate.text=str(state.get("name","Friend")).left(24);nameplate.position.y=2.1;nameplate.font_size=26;nameplate.billboard=BaseMaterial3D.BILLBOARD_ENABLED;node.add_child(nameplate)
+		var nameplate=Label3D.new();nameplate.text=str(state.get("name","Friend")).left(24);nameplate.position.y=2.1;nameplate.font_size=26;nameplate.billboard=BaseMaterial3D.BILLBOARD_ENABLED;node.add_child(nameplate);node.set_meta("nameplate",nameplate)
 		if state.has("position"): node.position=vector(state.position)
 	var wanted={}
 	for weapon in state.get("weapons",[]):
 		if not weapon is Dictionary or not weapon.has("placement") or not game.rules.data.weapons.any(func(w):return w.id==weapon.get("id","") and w.turret): continue
 		var key=str(id)+":"+str(weapon.id);wanted[key]=true
 		if not turret_models.has(key):
-			var turret=WeaponModel.new();turret.setup(weapon.id);turret.scale=Vector3.ONE*1.7;game.add_child(turret);turret_models[key]=turret
-		turret_models[key].position=vector(weapon.placement)+Vector3.UP*.75
+			var turret=WeaponModel.new();turret.setup(weapon.id);turret.rank=int(weapon.rank);turret.scale=Vector3.ONE*1.7;game.add_child(turret);turret_models[key]=turret
+		turret_models[key].position=vector(weapon.placement)+Vector3.UP*.75;turret_models[key].rank=int(weapon.rank);turret_models[key].transform_rank()
 	for key in turret_models.keys():
 		if key.begins_with(str(id)+":") and not wanted.has(key): turret_models[key].queue_free();turret_models.erase(key)
 
 func apply_world(message: Dictionary):
 	if not game.run_active or int(message.realm)!=game.realm: return
+	game.update.apply_state(message.get("big_update",{}))
 	snapshots_received+=1;paused=bool(message.pause);saw_pause=saw_pause or paused;game.realm_time=float(message.seconds);game.elapsed=float(message.elapsed)
 	for id in message.players:
 		var number=int(id)
@@ -320,7 +337,7 @@ func apply_world(message: Dictionary):
 		if found.is_empty(): found=game.spawn_network_enemy(actor)
 		if found.is_empty() or found.dead: continue
 		found.hp=float(actor.hp);found.target_position=vector(actor.position)
-		for key in ["fire","poison","freeze","blind"]: found[key]=float(actor[key])
+		for key in ["fire","poison","freeze","blind","slip_until","windup"]: found[key]=float(actor.get(key,0))
 	for enemy in game.enemies:
 		if not ids.has(enemy.net_id) and not enemy.dead: enemy.dead=true;enemy.node.queue_free()
 
@@ -345,7 +362,12 @@ func target(origin: Vector3) -> Dictionary:
 
 func damage_player(id: int,amount: float,origin: Vector3,sound: String):
 	if id==local_id: game.take_damage(amount,origin,sound)
-	elif hosting: send_to(id,{"type":"damage","amount":amount,"position":array(origin),"sound":sound})
+	elif hosting:
+		if game.update.downed_ids.has(id): return
+		members[id].rescue_hold=false
+		members[id].rescue_interrupt_until=game.elapsed+.4
+		game.update.rescue_progress.clear()
+		send_to(id,{"type":"damage","amount":amount,"position":array(origin),"sound":sound})
 
 func shot(weapon: String,origin: Vector3,target_position: Vector3,duration: float=.44):
 	if not active: return
@@ -359,7 +381,7 @@ func show_shot(message: Dictionary):
 	var origin=vector(message.get("origin",[]));var target_position=vector(message.get("target",[]))
 	if not origin.is_finite() or not target_position.is_finite() or origin.distance_to(target_position)>80: return
 	var duration=clampf(float(message.get("duration",.44)),.07,.44)
-	if weapon=="saw": avatars[actor].get_meta("rig").begin_melee(weapon,target_position,duration)
+	if ContentExpansion.kind(weapon)=="saw": avatars[actor].get_meta("rig").begin_melee(weapon,target_position,duration)
 	else: avatars[actor].get_meta("rig").shot(weapon)
 	if weapon.contains("turret") and turret_models.has(str(actor)+":"+weapon): turret_models[str(actor)+":"+weapon].shoot()
 	game.remote_weapon_effect(weapon,origin,target_position,duration);game.sound.effect("slash" if weapon=="saw" else weapon,origin)

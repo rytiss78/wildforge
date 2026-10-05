@@ -1,0 +1,21 @@
+{
+  "avatars": 1,
+  "connected": true,
+  "discovery": true,
+  "downed": true,
+  "kills_received": 5,
+  "members": 1,
+  "merchant": true,
+  "moved": true,
+  "party_pause": true,
+  "ping": true,
+  "realm": 1,
+  "realm_received": true,
+  "remote_hits": 0,
+  "rescued": true,
+  "role": "client",
+  "same_enemies": true,
+  "snapshots": 180,
+  "standalone": true,
+  "supply": true
+}

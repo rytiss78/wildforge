@@ -20,7 +20,7 @@ void fragment() {
 	float blood=(1.0-smoothstep(surface-0.008,surface+0.008,height))*step(0.002,fill);
 	float rim=pow(1.0-clamp(dot(normalize(NORMAL),normalize(VIEW)),0.0,1.0),2.3);
 	vec3 empty_glass=mix(vec3(0.66,0.83,0.76),vec3(0.22,0.48,0.47),rim*0.75);
-	vec3 red=mix(vec3(0.36,0.012,0.027),vec3(0.65,0.047,0.049),height);
+	vec3 red=mix(vec3(0.56,0.024,0.038),vec3(0.85,0.072,0.065),height);
 	vec3 liquid=red;
 	vec3 color=mix(empty_glass,liquid,blood*(1.0-rim*0.3));
 	float meniscus=(1.0-smoothstep(0.008,0.021,abs(height-surface)))*step(0.015,fill)*step(fill,0.985);
@@ -28,7 +28,7 @@ void fragment() {
 	// Broken ink lines reinforce current damage without replacing the level readout.
 	vec2 p=UV;
 	float crack_path=0.26+abs(p.y-0.48)*0.24+sin(p.y*49.0)*0.009;
-	float crack=(1.0-smoothstep(0.002,0.006,abs(p.x-crack_path)))*step(0.2,p.y)*step(p.y,0.85)*step(fill,0.65);
+	float crack=(1.0-smoothstep(0.003,0.009,abs(p.x-crack_path)))*step(0.2,p.y)*step(p.y,0.85)*step(fill,0.65);
 	float crack2=(1.0-smoothstep(0.002,0.006,abs(p.x-(0.67+sin(p.y*27.0)*0.022))))*step(0.34,p.y)*step(p.y,0.67)*step(fill,0.25);
 	color=mix(color,vec3(0.16,0.30,0.30),max(crack,crack2)*0.8);
 	float reflection=(1.0-smoothstep(0.019,0.037,abs(UV.x-0.18)))*smoothstep(0.30,0.48,UV.y)*(1.0-smoothstep(0.69,0.77,UV.y));

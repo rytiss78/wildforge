@@ -4,7 +4,9 @@
 
 A bright 3D survival game where a duck, a loaf of bread and an angry granny are perfectly reasonable hero choices. Explore strange places, grab unpredictable upgrades and become outrageously overpowered before the monsters catch you.
 
-**[Download the Windows alpha](https://github.com/rytiss78/wildforge/releases/tag/v0.7.9)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
+**[Download the Windows build](https://github.com/rytiss78/wildforge/releases/tag/v0.8.2)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
+
+The current build is 0.8.2. See [release and validation notes](native/docs/build-0.8.2.md). Run `build/Wildforge.exe` locally, or unpack the Windows download and run `Wildforge.exe`.
 
 ![Two Count Ducks fighting strange creatures together in Clover Woods](docs/screenshots/co-op.png)
 
@@ -24,7 +26,7 @@ Carry three weapons at once. When two hands aren't enough, grow a third arm. Mix
 
 Roam through Clover Woods, Puffcap Marsh, Moon Craters, Cloud City, Candy Hell and Starfall Space. Hunt for treasure, jump over trouble, squash enemies underfoot and face huge bosses as the clock ticks down.
 
-Spend your coins on a chest, choose one of three rewards and keep building your ridiculous little disaster. Chase 100 achievements built around exploration, clever combinations and unusual challenges.
+Spend your coins on a chest, choose one of five rewards and keep building your ridiculous little disaster. Chase 108 achievements built around exploration, clever combinations and unusual challenges.
 
 ![Detailed skill cards with paid rerolls](docs/screenshots/skill-cards.png)
 
@@ -40,7 +42,7 @@ On the same Wi-Fi, host a party and let friends join from the nearby-party list.
 
 Download the Windows ZIP, extract the whole folder and run **Wildforge.exe**. No store account or installation is needed. Keyboard and mouse or Xbox controller both work.
 
-**This is a development alpha.** Expect rough edges and plenty of changes. Your ideas can help shape what comes next: [tell us what you loved, what broke or what would be fun](https://github.com/rytiss78/wildforge/issues). Community Lab also saves suggestions inside the game; those currently stay on your PC. Automatic online sharing is planned.
+**This is a development alpha.** Expect rough edges and plenty of changes. Your ideas can help shape what comes next: [tell us what you loved, what broke or what would be fun](https://github.com/rytiss78/wildforge/issues).
 
 <details>
 <summary><strong>For builders: source, tools and controls</strong></summary>
@@ -58,6 +60,6 @@ node scripts/native.mjs
 
 WASD / left stick moves; mouse / right stick looks; Space / A jumps; Shift / RT dashes; Ctrl / B slams; E / X interacts; B / Y opens your build; Escape / Menu pauses. Weapons attack automatically. Florist plants while moving.
 
-Achievements, scores and settings save locally in `%APPDATA%/Godot/app_userdata/Wildforge/career.json`. [Build notes](native/docs/build-0.7.9.md) · [Asset origins](community/ai-content-provenance.md)
+Achievements, scores and settings save locally in `%APPDATA%/Godot/app_userdata/Wildforge/career.json`. [Build notes](native/docs/build-0.8.1.md) · [Asset origins](community/ai-content-provenance.md)
 
 </details>

@@ -72,7 +72,7 @@ void vertex(){
 	if(abs(VERTEX.x)>.43&&VERTEX.y>.45&&VERTEX.y<1.16){VERTEX.z-=attack*.13;}
 	if(abs(VERTEX.x)>.4){VERTEX.y+=sin(clock*8.0)*smoothstep(.4,1.2,abs(VERTEX.x))*.10*airborne;}
 }
-void fragment(){vec3 paint=COLOR.a<.5?texture(bark,UV*vec2(1.0,2.0)).rgb:COLOR.a<.8?texture(stone,UV).rgb:texture(paper,UV*.7).rgb;ALBEDO=pow(COLOR.rgb,vec3(2.2))*tint*mix(vec3(1.0),paint*1.3,.24);ROUGHNESS=1.0;SPECULAR=0.0;}
+void fragment(){vec3 paint=COLOR.a<.5?texture(bark,UV*vec2(1.0,2.0)).rgb:COLOR.a<.8?texture(stone,UV).rgb:texture(paper,UV*.7).rgb;ALBEDO=pow(COLOR.rgb,vec3(2.2))*tint*mix(vec3(1.0),paint*1.3,.32);ROUGHNESS=1.0;SPECULAR=0.0;}
 """
 	if not animated:
 		shader.code=shader.code.replace("void vertex(){","varying vec3 world_position;void vertex(){world_position=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz;if(COLOR.g>COLOR.r*1.04 && VERTEX.y>2.0){VERTEX.x+=sin(TIME*1.3+VERTEX.z*.2)*.05;}")

@@ -31,8 +31,8 @@ cast={
  'toaster':('am_eric',['Ow!','Burnt toast!'])}
 out=root/'native/assets/voices';records=[]
 for hero,(voice,lines) in cast.items():
- for i,line in enumerate(lines):
-  p=out/f'hurt_{hero}_{i}.wav'
+ for context,line in [(str(i),line) for i,line in enumerate(lines)]+[("discovery","Well, that looks suspicious."),("boss","That one skipped leg day."),("weapon","Three hands. Still no pockets.")]:
+  p=out/(f'hurt_{hero}_{context}.wav' if context.isdigit() else f'quip_{hero}_{context}.wav')
   if p.exists(): audio,sr=sf.read(p)
   else:
    audio,sr=engine.create(line,voice=voice,speed=1.08,lang='en-gb' if voice.startswith('b') else 'en-us')

@@ -98,6 +98,7 @@ func style(color: Color = Color("f6eddc"), border: Color = Color("a99070"), radi
 	box.border_color=Color(border.r,border.g,border.b,1) if border.a>.7 else Color("b9a58a")
 	box.set_border_width_all(1)
 	box.border_width_bottom=2
+	box.shadow_color=Color(.18,.12,.08,.24);box.shadow_size=4;box.shadow_offset=Vector2(1,2)
 	box.set_corner_radius_all(mini(radius,4))
 	box.content_margin_left=12
 	box.content_margin_right=12
@@ -148,8 +149,8 @@ func setup(owner_game):
 	map_view.position = Vector2(1180,24)
 	map_view.size = Vector2(230,230)
 	root.add_child(map_view)
-	var header = label("WILDFORGE",13)
-	header.position = Vector2(1280,173)
+	var header = label("ISLAND MAP",13)
+	header.position = Vector2(1244,10)
 	root.add_child(header)
 	var info = PanelContainer.new()
 	info.add_theme_stylebox_override("panel",style())
@@ -277,13 +278,25 @@ func update(delta: float):
 		for child in control_hints.get_children():
 			control_hints.remove_child(child)
 			child.queue_free()
-		add_prompts(control_hints,[["WASD","LS","Move"],["Mouse","RS","Look"],["Shift","RT","Dash"],["Space","A","Jump"],["Ctrl","B","Slam"],["E","X","Open"],["B","Y","Build"],["Esc","Menu","Pause"]])
+		add_prompts(control_hints,[["WASD","LS","Move"],["Mouse","RS","Look"],["Shift","RT","Dash"],["Space","A","Jump"],["Ctrl","B","Slam"],["E","X","Interact"],["F","R3","Ping"],["B","Y","Build"],["Esc","Menu","Pause"]])
 		# InputGlyph updates itself; rebuilding choices here resets controller focus.
 	prompt.visible=not modal.visible and not game.interaction_hint().is_empty()
 	prompt.text = game.interaction_hint().replace("E / X", "X" if game.input_kind=="xbox" else "E")
 	alert.visible=not modal.visible and game.boss_active()
 	alert.text = "☠  %s" % game.boss_name if game.boss_active() else ""
 	if game.coop.frozen() and game.mode=="playing": alert.text="PARTY PAUSED  ·  A FRIEND IS CHOOSING";alert.visible=true
+	map_view.configure(game.world.seed_value,game.world.realm)
+	map_view.interactables.clear()
+	if is_instance_valid(game.update.merchant): map_view.interactables.append({"position":game.update.merchant.position,"kind":"merchant"})
+	if is_instance_valid(game.update.beacon) and game.update.beacon_state in ["idle","defending"]: map_view.interactables.append({"position":game.update.beacon_position,"kind":"supply"})
+	for landmark in game.world.landmarks: map_view.interactables.append({"position":landmark,"kind":"landmark"})
+	for pot in game.pots:
+		if is_instance_valid(pot.node): map_view.interactables.append({"position":pot.node.position,"kind":"pot"})
+	for drop in game.consumables:
+		if is_instance_valid(drop.node): map_view.interactables.append({"position":drop.node.position,"kind":"potion"})
+	map_view.camera_yaw=game.yaw
+	map_view.party=game.coop.members.values().filter(func(m):return m.has("position")).map(func(m):return CoopSession.vector(m.position))
+	map_view.pings=game.update.pings.map(func(p):return p.position)
 	map_view.hero_position = game.player.position
 	map_view.gate = game.gate_position
 	map_view.gate_open = game.realm_bosses >= 2
@@ -337,7 +350,6 @@ func start_menu():
 	nav.add_child(button("Local scores",func(): career_menu(true)))
 	nav.add_child(button("Play with friends",coop_menu))
 	nav.add_child(button("Sound & controls",settings_menu))
-	nav.add_child(button("Community Lab",community_menu))
 	nav.add_child(button("3D Style Lab",func():
 		if game.coop.active:
 			tell("Leave the party before opening the solo art prototype.");return
@@ -443,22 +455,23 @@ func update_party_list():
 func pause_menu(ended: bool = false, win: bool = false):
 	game.mode = "ended" if ended else "paused"
 	var box = open("YOU WON" if win else "TRY AGAIN" if ended else "PAUSED", "%s · %d coins · %d enemies · ★ %d" % [game.hero.name,game.gold,game.kills,game.level])
+	if ended: box.add_child(label(game.update.recap(),15))
 	if not ended: box.add_child(button("▶  CONTINUE",close,true))
 	box.add_child(button("↻  NEW RUN",game.start_run,ended))
 	box.add_child(button("★  ACHIEVEMENTS",func(): career_menu(false)))
 	box.add_child(button("♛  LOCAL SCORES",func(): career_menu(true)))
 	box.add_child(button("♫  SOUND / CONTROLS",settings_menu))
-	box.add_child(button("✉  COMMUNITY LAB",community_menu))
 	box.add_child(button("←  HEROES",func(): game.record_run(false,true); start_menu()))
 	box.add_child(button("QUIT",func(): game.record_run(false,true); game.career.save(); game.get_tree().quit()))
-	box.get_child(2 if box.get_child_count() > 2 else 1).grab_focus()
+	for control in box.get_children():
+		if control is Button and not control.disabled: control.grab_focus();break
 
 func icon_key(item: Dictionary) -> String:
-	return item.id if item.kind == "weapon" else item.effects[0].key
+	return item.id
 
 func offer_card(item: Dictionary, index: int, select: Callable) -> Button:
 	var card=button("",select)
-	card.custom_minimum_size=Vector2(360,76)
+	card.custom_minimum_size=Vector2(360,84)
 	card.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	card.add_theme_stylebox_override("normal",style(paper,RunRules.COLORS[item.tier]))
 	var row=HBoxContainer.new()
@@ -480,7 +493,7 @@ func offer_card(item: Dictionary, index: int, select: Callable) -> Button:
 	title.max_lines_visible=1
 	title.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
 	words.add_child(title)
-	words.add_child(label(RunRules.RARITIES[item.tier]+"  /  "+item.kind.capitalize(),13))
+	words.add_child(label(RunRules.RARITIES[item.tier]+"  /  "+item.kind.capitalize()+" · "+str(item.get("family","Weapon")),13))
 	if item.kind=="weapon":
 		var tag=label("",12)
 		var rank=0
@@ -493,9 +506,11 @@ func offer_card(item: Dictionary, index: int, select: Callable) -> Button:
 		powers.mouse_filter=Control.MOUSE_FILTER_IGNORE
 		for effect in item.effects:
 			var badge=PowerIcon.new()
-			badge.key=effect.key;badge.custom_minimum_size=Vector2(20,20)
+			badge.key=item.id;badge.custom_minimum_size=Vector2(20,20)
 			powers.add_child(badge)
-		powers.add_child(label(game.rules.describe(item.effects[0]),12))
+		var description=label(game.rules.describe(item.effects[0]),12)
+		description.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;description.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+		powers.add_child(description)
 		words.add_child(powers)
 	var shortcut=InputGlyph.new()
 	shortcut.game=game;shortcut.keyboard_key=str(index+1);shortcut.xbox_key="A"
@@ -510,6 +525,7 @@ func offer_card(item: Dictionary, index: int, select: Callable) -> Button:
 	return card
 
 func preview_offer(item: Dictionary):
+	game.update.focused_offer=game.offers.find(item)
 	if not is_instance_valid(offer_detail): return
 	var signature=item.id+":"+str(item.tier)+":"+str(item.get("strength",1))
 	if signature==preview_id: return
@@ -529,18 +545,24 @@ func preview_offer(item: Dictionary):
 		var mechanic=label(WeaponDetails.describe(item.id),15)
 		mechanic.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 		offer_detail.add_child(mechanic)
-		offer_detail.add_child(label("Uses one weapon slot",14))
+		var owned=game.equipped.filter(func(w):return w.id==item.id)
+		var before=float(owned[0].power) if not owned.is_empty() else 0.0
+		var after=before+item.strength*.3 if before>0 else item.strength
+		offer_detail.add_child(label("Power %.2f → %.2f" % [before,after],14))
+		offer_detail.add_child(label("Upgrades owned weapon" if before>0 else "Uses one weapon slot",14))
 	else:
 		for effect in item.effects:
 			var row=HBoxContainer.new()
 			var symbol=PowerIcon.new()
-			symbol.key=effect.key;symbol.custom_minimum_size=Vector2(28,28)
+			symbol.key=item.id;symbol.custom_minimum_size=Vector2(28,28)
 			row.add_child(symbol)
 			var detail=label(game.rules.describe(effect),16)
 			detail.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 			detail.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 			row.add_child(detail)
 			offer_detail.add_child(row)
+			var candidate=game.stats.duplicate(true);game.rules.apply_effects(candidate,[effect])
+			offer_detail.add_child(label("%s → %s" % [snappedf(game.stats.get(effect.key,0),.01),snappedf(candidate.get(effect.key,0),.01)],14))
 			var common=item.effects[0].duplicate()
 			var source=game.rules.loot_by_id.get(item.id,{})
 			common.amount=source.effects[0].amount if not source.is_empty() else float(common.amount)/float(item.strength)
@@ -550,13 +572,13 @@ func preview_offer(item: Dictionary):
 
 func show_offers(items: Array, source: String,animate: bool=true):
 	var box=open("LEVEL %d" % game.level if source=="level" else "CHOOSE YOUR TREASURE", "Take one. Make it count.")
-	box.get_parent().position=Vector2(340,145)
-	box.get_parent().size=Vector2(760,505)
+	box.get_parent().position=Vector2(300,85)
+	box.get_parent().size=Vector2(840,650)
 	var body=HBoxContainer.new()
 	body.add_theme_constant_override("separation",22)
 	box.add_child(body)
 	var detail_panel=PanelContainer.new()
-	detail_panel.custom_minimum_size=Vector2(240,385)
+	detail_panel.custom_minimum_size=Vector2(250,475)
 	detail_panel.add_theme_stylebox_override("panel",style(Color("fff5e6"),Color("c56c50")))
 	body.add_child(detail_panel)
 	offer_detail=VBoxContainer.new()
@@ -567,7 +589,13 @@ func show_offers(items: Array, source: String,animate: bool=true):
 	choices.add_theme_constant_override("separation",7)
 	body.add_child(choices)
 	for i in range(items.size()): choices.add_child(offer_card(items[i],i,func():game.choose_offer(i)))
-	var quality_only=game.offer_kind=="weapon" and game.equipped.size()>=RunRules.WEAPON_CAP
+	if game.update.banish_charges>0 and items.any(func(i):return i.kind!="weapon"):
+		choices.add_child(button("BANISH FOCUSED BONUS · %d LEFT" % game.update.banish_charges,func():
+			for i in range(cards.size()):
+				if cards[i].has_focus(): game.update.banish(i);return
+			game.update.banish(game.update.focused_offer)
+		))
+	var quality_only=false
 	var reroll=button(("REROLL QUALITY" if quality_only else "REROLL CARDS")+"  ·  %d COINS" % game.reroll_price(),func():game.reroll_offers())
 	reroll.disabled=game.gold<game.reroll_price();choices.add_child(reroll)
 	if items.any(func(item):return item.kind=="weapon"):
@@ -581,7 +609,7 @@ func show_offers(items: Array, source: String,animate: bool=true):
 func animate_offers():
 	# Scale opaque panels so controller focus works throughout the reveal.
 	var panel=content.get_parent()
-	panel.pivot_offset=Vector2(380,250);panel.scale=Vector2(.94,.94)
+	panel.pivot_offset=Vector2(420,325);panel.scale=Vector2(.94,.94)
 	panel.create_tween().tween_property(panel,"scale",Vector2.ONE,.22).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	offer_tween=create_tween()
 	for card in cards: card.pivot_offset=Vector2(180,38);card.scale=Vector2(.90,.90)
@@ -679,7 +707,7 @@ func settings_menu():
 	box.add_child(invert)
 	var prompts=HBoxContainer.new()
 	box.add_child(prompts)
-	add_prompts(prompts,[["WASD","LS","Move"],["Mouse","RS","Look"],["Space","A","Jump"],["Ctrl","B","Slam"],["Shift","RT","Dash"],["E","X","Open"]])
+	add_prompts(prompts,[["WASD","LS","Move"],["Mouse","RS","Look"],["Space","A","Jump"],["Ctrl","B","Slam"],["Shift","RT","Dash"],["E","X","Interact"],["F","R3","Ping"]])
 	var secondary=HBoxContainer.new()
 	box.add_child(secondary)
 	add_prompts(secondary,[["B","Y","Build"],["T","LB","Place turret"],["G","RB","Next turret"],["Esc","Menu","Pause"]])
@@ -687,7 +715,7 @@ func settings_menu():
 
 func career_menu(scores: bool):
 	game.mode = "career"
-	var box = open("♛  LOCAL SCORES" if scores else "★  %d / 100 ACHIEVEMENTS" % game.career.data.unlocked.size(), "Saved on this PC")
+	var box = open("♛  LOCAL SCORES" if scores else "★  %d / %d ACHIEVEMENTS" % [game.career.data.unlocked.size(),game.career.achievements.size()], "Saved on this PC")
 	var scroll = ScrollContainer.new()
 	scroll.custom_minimum_size.y = 430
 	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -707,52 +735,15 @@ func career_menu(scores: bool):
 			var row=HBoxContainer.new();rows.add_child(row)
 			var icon=TextureRect.new();icon.custom_minimum_size=Vector2(54,54);icon.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;icon.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 			var tile=AtlasTexture.new();tile.atlas=load("res://assets/illustrated/achievements.png" if unlocked else "res://assets/illustrated/achievements-locked.png")
-			var index=game.career.achievements.find(achievement);tile.region=Rect2((index%10)*96,(index/10)*96,96,96);icon.texture=tile;row.add_child(icon)
+			var index=game.career.achievements.find(achievement)
+			if index>=100:
+				icon.texture=IllustratedIcons.texture(["turretCount","goldGain","luck","poison","revive","range","speed","jumpHeight"][index-100])
+				if not unlocked: icon.modulate=Color(.6,.6,.6)
+			else: tile.region=Rect2((index%10)*96,(index/10)*96,96,96);icon.texture=tile
+			row.add_child(icon)
 			var text=VBoxContainer.new();row.add_child(text)
 			text.add_child(label(achievement.name+"  ·  "+str(int(value))+" / "+str(int(achievement.target)),17))
 			text.add_child(label(achievement.description,14))
-
-func community_menu():
-	game.mode="community"
-	game.achievement_event("ROADMAP")
-	var roadmap=JSON.parse_string(FileAccess.get_file_as_string("res://data/community.json"))
-	var box=open("✉  COMMUNITY LAB", "Your ideas → AI-assisted development → tested updates")
-	var intro=label(roadmap.promise,17,Color("c5d9cb"))
-	intro.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
-	box.add_child(intro)
-	var scroll=ScrollContainer.new()
-	scroll.custom_minimum_size.y=235
-	scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED
-	box.add_child(scroll)
-	var list=VBoxContainer.new()
-	list.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-	scroll.add_child(list)
-	for entry in roadmap.entries:
-		list.add_child(label(entry.status.to_upper()+"  ·  "+entry.title,21,Color("ecd58e")))
-		var detail=label(entry.source+"  ·  "+entry.detail,16)
-		detail.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
-		detail.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-		list.add_child(detail)
-	list.add_child(label("Saved suggestions on this PC: %d" % game.career.data.feedback.size(),17))
-	var input=TextEdit.new()
-	input.placeholder_text="An idea or a bug: what happened, and what would you change?"
-	input.custom_minimum_size.y=100
-	box.add_child(input)
-	var note=label("Saved on this PC. Online feedback sharing is planned.",16,Color("adc8b9"))
-	box.add_child(note)
-	var row=HBoxContainer.new()
-	box.add_child(row)
-	row.add_child(button("SAVE SUGGESTION",func():
-		var text=input.text.strip_edges().left(3000)
-		if text.is_empty(): note.text="Write an idea first.";return
-		game.career.data.feedback.append({"id":str(Time.get_unix_time_from_system()),"text":text,"status":"Submitted locally","date":Time.get_datetime_string_from_system(),"build":"0.4-native"})
-		game.career.dirty=true
-		game.achievement_event("FEEDBACK")
-		game.career.save()
-		input.text=""
-		note.text="Saved on this PC. Thank you — your suggestion is ready for review."
-	))
-	row.add_child(button("←  BACK",func(): start_menu() if not game.run_active else pause_menu(game.run_recorded)))
 
 func add_prompts(parent: HBoxContainer, bindings: Array):
 	parent.add_theme_constant_override("separation",8)

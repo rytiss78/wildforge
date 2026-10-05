@@ -1,7 +1,9 @@
 extends Node3D
 class_name RealmWorld
 
-const EXTENT=500.0
+const EXTENT=400.0
+const SPAWN_EXTENT=EXTENT-30.0
+const DANGER_EXTENT=EXTENT-25.0
 const CHUNK=64.0
 const NAMES=["Sunlit Frontier","Wild Highlands","Skyward Reach"]
 const BIOMES=["Clover Woods","Puffcap Marsh","Moon Craters","Cloud City","Candy Hell","Starfall Space"]
@@ -18,6 +20,7 @@ var pending=[]
 var terrain_material: ShaderMaterial
 var scenery_material: ShaderMaterial
 var last_cell=Vector2i(999,999)
+var stream_signature=""
 var sky_paint: ShaderMaterial
 var sky_top=Color("76c8e6")
 var sky_horizon=Color("dfedda")
@@ -36,7 +39,7 @@ const SKY_TOP=[Color("76c8e6"),Color("7fb7a9"),Color("18234d"),Color("83cdeb"),C
 const SKY_HORIZON=[Color("dfedda"),Color("c1d8b7"),Color("a3b8d9"),Color("fff7e2"),Color("ffd3a0"),Color("ba9bd5")]
 
 func dangerous(p: Vector3) -> bool:
-	return maxf(absf(p.x),absf(p.z))>=475
+	return maxf(absf(p.x),absf(p.z))>=DANGER_EXTENT
 
 func weather_tick(delta: float,p: Vector3):
 	var biome=biome_at(p)
@@ -62,15 +65,20 @@ func weather_tick(delta: float,p: Vector3):
 	edge_near=false
 	for index in range(border_steam.size()):
 		var axis=0 if index==0 else 2;var distance_value=absf(p[axis])
-		var nearby=distance_value>435;edge_near=edge_near or nearby
+		var nearby=distance_value>EXTENT-65;edge_near=edge_near or nearby
 		border_steam[index].emitting=nearby;border_patches[index].visible=nearby
 		if not nearby: continue
-		var point=p;point[axis]=signf(p[axis])*475;point.y=height_at(point.x,point.z)+.15
+		var point=p;point[axis]=signf(p[axis])*DANGER_EXTENT;point.y=.15
 		border_steam[index].position=point;border_patches[index].position=point
 
 func biome_at(p: Vector3) -> int:
 	if Vector2(p.x,p.z).length()<65: return 0
 	return int(floor(fposmod(atan2(p.z,p.x)+float(seed_value%23)*.03+realm*.4,TAU)/(TAU/6)))
+
+func crossing_distance(p: Vector3) -> float:
+	var radius=Vector2(p.x,p.z).length()
+	var angle=fposmod(atan2(p.z,p.x)+float(seed_value%23)*.03+realm*.4,TAU/6)
+	return minf(absf(radius-65),radius*sin(minf(angle,TAU/6-angle)))
 
 func height_at(x: float,z: float) -> float:
 	# Match the actual four-metre terrain triangles used by collision exactly.
@@ -101,7 +109,13 @@ func compute_height_at(x: float,z: float) -> float:
 	var blend=smoothstep(65.0,120.0,Vector2(x,z).length())
 	var terrain=[sin(x*.06)*cos(z*.06)*1.5,-absf(sin(x*.025)*sin(z*.035))*3,-pow(maxf(0,noise.get_noise_2d(x*2,z*2)),2)*28,sin(x*.025)*cos(z*.025)*7,absf(sin(x*.032)+cos(z*.041))*4,sin(x*.018)*cos(z*.022)*9]
 	var relief=lerpf(terrain[index],terrain[(index+1)%6],smoothstep(0.0,1.0,fposmod(angle,1.0)))
-	return (base+mountain*blend*(amplitude/28.0)+relief*blend)*smoothstep(0.0,28.0,Vector2(x,z).length())+pow(clampf((maxf(absf(x),absf(z))-455)/45,0,1),2)*16
+	var original=base+mountain*blend*(amplitude/28.0)+relief*blend
+	var terrace=floorf(original/5.0)*5.0+smoothstep(.62,1.0,fposmod(original,5.0)/5.0)*5.0
+	var route=1.0-smoothstep(4.0,12.0,crossing_distance(p))
+	var inland=lerpf(terrace,original*.85,route)*smoothstep(0.0,28.0,Vector2(x,z).length())
+	var edge=maxf(absf(x),absf(z))
+	var shore=2.0-maxf(0.0,edge-369.0)/3.0
+	return lerpf(inland,shore,smoothstep(340.0,369.0,edge))
 
 func model(name: String,height: float) -> Node3D:
 	if ResourceLoader.exists("res://assets/illustrated/"+("creatures/" if name.begins_with("creature_") else "heroes/")+name+".png") or name in ["pipe_wrench","rubber_duck_toy","sweet_potato","marble_bust_01","street_rat","hamburger_buns","florist","acorn","toad","crab","penguin","lizard","beetle"]:
@@ -115,7 +129,7 @@ func build(index: int,world_seed: int):
 	noise.seed=world_seed%2147483647;noise.frequency=.014;noise.fractal_octaves=3;noise.fractal_gain=.4
 	for child in get_children():
 		remove_child(child);child.queue_free()
-	chunks.clear();pending.clear();landmarks.clear();last_cell=Vector2i(999,999)
+	chunks.clear();pending.clear();landmarks.clear();last_cell=Vector2i(999,999);stream_signature=""
 	clouds.clear();border_steam.clear();border_patches.clear()
 	make_environment();make_material();make_boundaries();make_landmarks()
 	# Synchronous collision cover at spawn; later chunks are budgeted across frames.
@@ -150,10 +164,16 @@ func make_chunk(cell: Vector2i):
 	var local_rng=RandomNumberGenerator.new();local_rng.seed=seed_value+cell.x*73856093+cell.y*19349663
 	for i in range(12):
 		var p=Vector3(cell.x*CHUNK+local_rng.randf()*CHUNK,0,cell.y*CHUNK+local_rng.randf()*CHUNK)
+		if maxf(absf(p.x),absf(p.z))>335: continue
 		if Vector2(p.x,p.z).length()<13 or absf(p.x+sin(p.z*.035)*9)<6: continue
+		if crossing_distance(p)<12 and i%3!=0: continue
 		p.y=height_at(p.x,p.z)
 		var biome=biome_at(p)
 		var prop=Node3D.new();prop.position=p-root.position;root.add_child(prop)
+		if biome==2 and i%3==0:
+			ToonArt.ball(prop,Color("e5cb70"),Vector3(0,.4,0),Vector3(2.2,.8,1.6))
+			for bite in range(4): ToonArt.ball(prop,Color("9b874b"),Vector3(-.7+bite*.4,.7,.3 if bite%2==0 else -.2),Vector3(.22,.12,.22))
+
 		# Keep greenery and terrain landmarks; large structures are sparse and smaller.
 		var variant=local_rng.randi_range(0,3) if i<11 else local_rng.randi_range(4,5)
 		var model_path="res://assets/style3d/prop_%d_%d.glb" % [biome,variant]
@@ -241,30 +261,40 @@ func make_chunk(cell: Vector2i):
 		multimesh.set_instance_transform(i,Transform3D(Basis.IDENTITY,p-root.position));multimesh.set_instance_color(i,COLORS[biome_at(p)].darkened(.17))
 	var grass=MultiMeshInstance3D.new();grass.multimesh=multimesh
 	grass.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	var material=StandardMaterial3D.new();material.vertex_color_use_as_albedo=true;material.roughness=1;grass.material_override=material;root.add_child(grass)
+	var material=ShaderMaterial.new();material.shader=preload("res://shaders/flora.gdshader");grass.material_override=material;root.add_child(grass)
 
-func stream(position_value: Vector3):
-	var cell=Vector2i(floori(position_value.x/CHUNK),floori(position_value.z/CHUNK))
-	if cell!=last_cell:
-		last_cell=cell;pending.clear()
-		for x in range(-2,3):
-			for z in range(-2,3):
-				var key=cell+Vector2i(x,z)
-				if absi(key.x)<=8 and absi(key.y)<=8 and not chunks.has(key): pending.append(key)
-		pending.sort_custom(func(a,b):return a.distance_squared_to(cell)<b.distance_squared_to(cell))
+func stream(position_value: Vector3,party: Array=[]):
+	var centers=[Vector2i(floori(position_value.x/CHUNK),floori(position_value.z/CHUNK))]
+	for p in party:
+		var cell=Vector2i(floori(p.x/CHUNK),floori(p.z/CHUNK))
+		if not centers.has(cell): centers.append(cell)
+	var signature=str(centers)
+	if signature!=stream_signature:
+		stream_signature=signature;pending.clear()
+		var wanted={}
+		for cell in centers:
+			for x in range(-2,3):
+				for z in range(-2,3):
+					var key=cell+Vector2i(x,z)
+					if absi(key.x)<=ceili(EXTENT/CHUNK) and absi(key.y)<=ceili(EXTENT/CHUNK): wanted[key]=true
+		for key in wanted:
+			if not chunks.has(key): pending.append(key)
+		pending.sort_custom(func(a,b):return a.distance_squared_to(centers[0])<b.distance_squared_to(centers[0]))
 		for key in chunks.keys():
-				if maxi(absi(key.x-cell.x),absi(key.y-cell.y))>3:
-					chunks[key].queue_free();chunks.erase(key)
+			if centers.all(func(c):return maxi(absi(key.x-c.x),absi(key.y-c.y))>3): chunks[key].queue_free();chunks.erase(key)
 	if not pending.is_empty(): make_chunk(pending.pop_front())
 
 func ensure_ground(p: Vector3):
 	make_chunk(Vector2i(floori(p.x/CHUNK),floori(p.z/CHUNK)))
 
 func make_boundaries():
+	var ocean=MeshInstance3D.new();ocean.name="DeadlySea"
+	var sea_plane=PlaneMesh.new();sea_plane.size=Vector2(2800,2800);ocean.mesh=sea_plane
+	var water=ShaderMaterial.new();water.shader=load("res://shaders/deadly_sea.gdshader");ocean.material_override=water;add_child(ocean)
 	for side in [-1,1]:
 		for axis in [0,2]:
-			var mesh=BoxMesh.new();mesh.size=Vector3(16,100,1024) if axis==0 else Vector3(1024,100,16)
-			var p=Vector3.ZERO;p[axis]=side*508;p.y=36
+			var mesh=BoxMesh.new();mesh.size=Vector3(16,100,EXTENT*2+24) if axis==0 else Vector3(EXTENT*2+24,100,16)
+			var p=Vector3.ZERO;p[axis]=side*(EXTENT+8);p.y=36
 			var ridge=ToonArt.part(self,mesh,Color("a7b6a2"),p);ridge.create_trimesh_collision();ridge.visible=false
 	for axis in [0,2]:
 		var steam=GPUParticles3D.new();steam.amount=32;steam.lifetime=3;steam.emitting=false;steam.visibility_aabb=AABB(Vector3(-10,-1,-10),Vector3(20,10,20));add_child(steam);border_steam.append(steam)

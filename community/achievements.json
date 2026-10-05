@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "count": 100,
+  "count": 108,
   "achievements": [
     {
       "apiName": "WF_PLAY_WRENCH",
@@ -1298,6 +1298,110 @@
       "iconLocked": "achievement-icons/wf_ghost_danger-locked.png",
       "condition": {
         "key": "event_GHOST_DANGER",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_beacon",
+      "displayName": "Signal Served",
+      "description": "Defend an explored supply beacon.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_beacon-unlocked.png",
+      "iconLocked": "achievement-icons/wf_beacon-locked.png",
+      "condition": {
+        "key": "event_BEACON",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_merchant",
+      "displayName": "Window Shopping",
+      "description": "Buy a positive upgrade from the wandering merchant.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_merchant-unlocked.png",
+      "iconLocked": "achievement-icons/wf_merchant-locked.png",
+      "condition": {
+        "key": "event_MERCHANT",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_mimic",
+      "displayName": "Running Refund",
+      "description": "Discover a fleeing mimic and its bonus coins.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_mimic-unlocked.png",
+      "iconLocked": "achievement-icons/wf_mimic-locked.png",
+      "condition": {
+        "key": "event_MIMIC",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_reaction",
+      "displayName": "Questionable Chemistry",
+      "description": "Trigger an elemental reaction.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_reaction-unlocked.png",
+      "iconLocked": "achievement-icons/wf_reaction-locked.png",
+      "condition": {
+        "key": "event_REACTION",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_rescue",
+      "displayName": "Helping Hand",
+      "description": "Rescue a downed party member.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_rescue-unlocked.png",
+      "iconLocked": "achievement-icons/wf_rescue-locked.png",
+      "condition": {
+        "key": "event_RESCUE",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_ping",
+      "displayName": "Over There",
+      "description": "Send a contextual exploration ping.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_ping-unlocked.png",
+      "iconLocked": "achievement-icons/wf_ping-locked.png",
+      "condition": {
+        "key": "event_PING",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_banana",
+      "displayName": "Slippery Business",
+      "description": "Slip an enemy with Banana Business.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_banana-unlocked.png",
+      "iconLocked": "achievement-icons/wf_banana-locked.png",
+      "condition": {
+        "key": "event_BANANA",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_terrace",
+      "displayName": "Taking the High Road",
+      "description": "Explore a raised biome route.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_terrace-unlocked.png",
+      "iconLocked": "achievement-icons/wf_terrace-locked.png",
+      "condition": {
+        "key": "event_TERRACE",
         "target": 1,
         "scope": "total"
       }

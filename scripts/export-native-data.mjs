@@ -5,6 +5,7 @@ import {ITEMS,PERKS,HEROES,createStats,STAT_LABELS} from './data/content.js';
 import {ACHIEVEMENTS} from './data/achievements.js';
 
 import {CHEST_PRICES,WEAPON_CAP} from './data/run-rules.js';
+import {expandContent} from './data/expansion.js';
 
 const labels={damage:'Power',rate:'Speed',speed:'Move',maxHp:'Health',pickup:'Magnet',size:'Big Shots',range:'Reach',projectileSpeed:'Fast Shots',armor:'Armor',dodge:'Dodge',lifesteal:'Vampire',regen:'Heal',crit:'Critical',critPower:'Big Critical',pierce:'Pierce',splash:'Blast',chain:'Lightning',multishot:'More Shots',burn:'Fire',poison:'Poison',slow:'Ice',knockback:'Push',execute:'Finish',thorns:'Thorns',explosion:'Boom',xpGain:'Learn',luck:'Lucky',chestBonus:'Lucky',dashCooldown:'Quick Dash',dashBlast:'Dash Blast',orbitDamage:'Orbit',magnetPulse:'Magnet',turretDamage:'Turret Power',turretRate:'Turret Speed',turretRange:'Turret Reach',turretLife:'Turret Life',turretCount:'Turret Power',repair:'Repair',auraDamage:'Aura',stun:'Stun',salvage:'Heal',drones:'Drone',revive:'Extra Life',bossDamage:'Boss Power',ghost:'Ghost',burrow:'Mole',blind:'Blind',freeze:'Freeze',shield:'Shield',berserk:'Rage',ricochet:'Bounce',storm:'Storm',nova:'Nova',pools:'Poison Cloud',boomerang:'Return'};
 
@@ -108,10 +109,14 @@ for(const [id,name,key,amount,mode,base] of moreCards) {
  stats[key]=base;labels[key]=name;
  for(const kind of ['item','skill']) loot.push({id:id+'-'+kind,name,title:name,family:key.startsWith('potion')?'Fortune':'Arcane',kind,effects:[{key,amount,mode}]});
 }
+stats.banana=0;labels.banana='Banana Business';
+for(const kind of ['item','skill']) loot.push({id:'banana-'+kind,name:'Banana Business',title:'Banana Business',family:'Mobility',kind,effects:[{key:'banana',amount:.12,mode:'add'}]});
+const discoveries=[['BEACON','Signal Served','Defend an explored supply beacon.'],['MERCHANT','Window Shopping','Buy a positive upgrade from the wandering merchant.'],['MIMIC','Running Refund','Discover a fleeing mimic and its bonus coins.'],['REACTION','Questionable Chemistry','Trigger an elemental reaction.'],['RESCUE','Helping Hand','Rescue a downed party member.'],['PING','Over There','Send a contextual exploration ping.'],['BANANA','Slippery Business','Slip an enemy with Banana Business.'],['TERRACE','Taking the High Road','Explore a raised biome route.']].map(([key,name,description])=>({id:'WF_'+key.toLowerCase(),name,description,key:'event_'+key,target:1,scope:'total',hidden:false}));
 const bonusBases=new Map();
 for(const item of loot){const effect=item.effects[0];if(!bonusBases.has(effect.key))bonusBases.set(effect.key,{...effect});item.effects=[{...bonusBases.get(effect.key)}];}
+const augments=expandContent(loot,weapons,stats,labels);
 await mkdir(new URL('../native/data/',import.meta.url),{recursive:true});
 
-await writeFile(new URL('../native/data/catalog.json',import.meta.url),JSON.stringify({version:7,heroes,weapons,weaponCap:WEAPON_CAP,loot,stats,labels,families,chestPrices:CHEST_PRICES,achievements:ACHIEVEMENTS},null,2));
+await writeFile(new URL('../native/data/catalog.json',import.meta.url),JSON.stringify({version:8,heroes,weapons,weaponCap:WEAPON_CAP,loot,stats,labels,families,augments,chestPrices:CHEST_PRICES,achievements:[...ACHIEVEMENTS,...discoveries]},null,2));
 
-console.log(`Native content: ${loot.length} loot templates, ${weapons.length} weapons, 100 achievement IDs`);
+console.log(`Native content: ${loot.length} loot templates, ${weapons.length} weapons, 108 achievement IDs`);

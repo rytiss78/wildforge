@@ -30,4 +30,6 @@ const MECHANICS = {
 }
 
 static func describe(id: String) -> String:
+	var item=ContentExpansion.weapon(id)
+	if item.has("archetype"): return str(item.description)+" "+str(MECHANICS.get(item.archetype,""))
 	return MECHANICS.get(id,"Automatically attacks nearby enemies with your collected shot powers.")

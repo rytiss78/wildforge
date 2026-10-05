@@ -24,6 +24,9 @@ var outline: ShaderMaterial
 var batched: ShaderMaterial
 var previous_fill=-1.0
 var previous_hit=-1.0
+var moving=0.0
+var was_grounded=true
+var land_squash=0.0
 static var core_data={}
 
 func setup_baked(asset: String, tank: bool):
@@ -116,7 +119,13 @@ func animate(delta: float, speed: float = 0, grounded: bool = true):
 	if not is_equal_approx(previous_hit,hit_clock):
 		for material in core_materials: material.set_shader_parameter("hit",hit_clock*4)
 		previous_hit=hit_clock
-	var walk=clampf(speed/5,0,1)
+	var target_walk=clampf(speed/5,0,1)
+	moving=move_toward(moving,target_walk,delta*5)
+	var walk=moving
+	if grounded and not was_grounded: land_squash=.16
+	was_grounded=grounded;land_squash=maxf(0,land_squash-delta)
+	body.scale=Vector3(1+land_squash,1-land_squash,1+land_squash)
+	body.rotation.x=lerpf(body.rotation.x,-.06*walk if grounded else -.14 if speed>0 else .05,minf(1,delta*10))
 	for i in range(legs.size()):
 		legs[i].rotation.x=sin(clock*11+i*PI)*.45*walk if grounded else -.3
 	for i in range(arms.size()): arms[i].rotation.x=sin(clock*11+i*PI)*.14*walk

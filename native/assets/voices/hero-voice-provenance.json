@@ -1,350 +1,847 @@
 {
-  "engine": "Kyutai Pocket TTS 3.3.0, CPU offline rendering",
-  "type": "Original lines generated with stock synthetic voice profiles. No human recordings are shipped.",
-  "source": "https://github.com/kyutai-labs/pocket-tts",
-  "modelLicense": "MIT",
-  "voiceLicenses": {
-    "alba": "CC BY 4.0, Alba MacKenna / Kyutai stock profile",
-    "marius, javert": "CC0, Kyutai volunteer stock profiles",
-    "charles, fantine, anna, eponine, azelma": "CC BY 4.0, CSTR VCTK / University of Edinburgh stock profiles"
-  },
-  "voiceLicenseSource": "https://huggingface.co/kyutai/tts-voices/blob/main/README.md",
+  "engine": "Kokoro-82M v1.0, offline",
+  "type": "Original interjections rendered with synthetic neural voices; no human recording or cloning",
+  "modelLicense": "Apache-2.0",
   "lines": [
     {
-      "hero": "duck",
       "id": "hurt_duck_0",
+      "hero": "duck",
+      "voice": "am_puck",
       "text": "Ow!",
-      "voice": "marius",
       "duration": 0.493,
       "sha256": "d1af1f47d24050b370f4132b3d3aaafaffd2b7d521c8859b207a5f4463776755"
     },
     {
-      "hero": "duck",
       "id": "hurt_duck_1",
-      "text": "Watch the feathers!",
-      "voice": "marius",
+      "hero": "duck",
+      "voice": "am_puck",
+      "text": "Hey, watch the feathers!",
       "duration": 0.93,
       "sha256": "f501579368c5564939a636ead7d9cf6c8825af2299d87a1a455a00dd3df3bd4c"
     },
     {
-      "hero": "wrench",
+      "id": "quip_duck_discovery",
+      "hero": "duck",
+      "voice": "am_puck",
+      "text": "Well, that looks suspicious.",
+      "duration": 1.28,
+      "sha256": "fb706fffd8b052c3af8d262a8555a40281bb57f47cf1762f615ca889ab242e67"
+    },
+    {
+      "id": "quip_duck_boss",
+      "hero": "duck",
+      "voice": "am_puck",
+      "text": "That one skipped leg day.",
+      "duration": 1.259,
+      "sha256": "5918653efd073a3bbc2341cc6f2238409f466ec2342b9a6103450000def4bcef"
+    },
+    {
+      "id": "quip_duck_weapon",
+      "hero": "duck",
+      "voice": "am_puck",
+      "text": "Three hands. Still no pockets.",
+      "duration": 1.557,
+      "sha256": "65ebc55abf2344d89bd95f6c6b6117ec3791aa02a61d07bb1dcaa28bd6b1826d"
+    },
+    {
       "id": "hurt_wrench_0",
+      "hero": "wrench",
+      "voice": "am_adam",
       "text": "Ouch!",
-      "voice": "charles",
       "duration": 0.95,
       "sha256": "2df04ae8bb585e449d367e3ee697ec8efc8857db17b12d5079e6338d9d1f8446"
     },
     {
-      "hero": "wrench",
       "id": "hurt_wrench_1",
+      "hero": "wrench",
+      "voice": "am_adam",
       "text": "That stings!",
-      "voice": "charles",
       "duration": 1.478,
       "sha256": "7ae3c6a13e3b1e917c9af47fc07447bd06f0926dc5d294d0b13814d5e48e0d2b"
     },
     {
-      "hero": "broccoli",
+      "id": "quip_wrench_discovery",
+      "hero": "wrench",
+      "voice": "am_adam",
+      "text": "Well, that looks suspicious.",
+      "duration": 1.408,
+      "sha256": "b9a01915d6f5ea1966f5a9ae676ae8abed10fed3b2ab25bb7a28af7d723ec0aa"
+    },
+    {
+      "id": "quip_wrench_boss",
+      "hero": "wrench",
+      "voice": "am_adam",
+      "text": "That one skipped leg day.",
+      "duration": 1.344,
+      "sha256": "b71e2052289d83b8119bd45473ef87952a791698ffd1412c42c30517092c703f"
+    },
+    {
+      "id": "quip_wrench_weapon",
+      "hero": "wrench",
+      "voice": "am_adam",
+      "text": "Three hands. Still no pockets.",
+      "duration": 1.664,
+      "sha256": "b4e3f5155c3ad50fdcbfa4f53b7fbcce1c1f81f9e78643fef43bd3e9a3202fca"
+    },
+    {
       "id": "hurt_broccoli_0",
+      "hero": "broccoli",
+      "voice": "bm_george",
       "text": "Ugh!",
-      "voice": "javert",
       "duration": 1.04,
       "sha256": "69d92c63bad31e8bd02a60789c62cd507dc9746894516c59ae48d1f6d54bc8e9"
     },
     {
-      "hero": "broccoli",
       "id": "hurt_broccoli_1",
+      "hero": "broccoli",
+      "voice": "bm_george",
       "text": "My roots!",
-      "voice": "javert",
       "duration": 1.49,
       "sha256": "e67e9d43bcfd450165b2b16f3f375e36951dd45ec5508fd866122819a676aa98"
     },
     {
-      "hero": "grandma",
+      "id": "quip_broccoli_discovery",
+      "hero": "broccoli",
+      "voice": "bm_george",
+      "text": "Well, that looks suspicious.",
+      "duration": 1.643,
+      "sha256": "a03381734ed61868e8a73aba29f1595210894bbc69557a89bf943ecb5fb5f052"
+    },
+    {
+      "id": "quip_broccoli_boss",
+      "hero": "broccoli",
+      "voice": "bm_george",
+      "text": "That one skipped leg day.",
+      "duration": 1.664,
+      "sha256": "5d4ac0936cc5f435dd32b5e2dde5c7518411c7712fea7cd9a570c905279e901e"
+    },
+    {
+      "id": "quip_broccoli_weapon",
+      "hero": "broccoli",
+      "voice": "bm_george",
+      "text": "Three hands. Still no pockets.",
+      "duration": 2.24,
+      "sha256": "be216329a2c7ad579b9e281f5a637d5d223272d194965cc9b0568025b2c0deff"
+    },
+    {
       "id": "hurt_grandma_0",
+      "hero": "grandma",
+      "voice": "bf_emma",
       "text": "Oh!",
-      "voice": "fantine",
       "duration": 1.2,
       "sha256": "3f144b2512659d4a4191d6c7f98c6105cca5e0a108567059887c73ae8d846b3f"
     },
     {
-      "hero": "grandma",
       "id": "hurt_grandma_1",
+      "hero": "grandma",
+      "voice": "bf_emma",
       "text": "You little rascal!",
-      "voice": "fantine",
       "duration": 1.917,
       "sha256": "e8d145f29b17816be64e65651bf05a8ad25100b825aa0852133e77900c6431ab"
     },
     {
-      "hero": "goblin",
+      "id": "quip_grandma_discovery",
+      "hero": "grandma",
+      "voice": "bf_emma",
+      "text": "Well, that looks suspicious.",
+      "duration": 1.579,
+      "sha256": "dd2c4a863f3a6e400736b536b207f8ad03e9c69e0fe7f7b3031e5d2e706d6844"
+    },
+    {
+      "id": "quip_grandma_boss",
+      "hero": "grandma",
+      "voice": "bf_emma",
+      "text": "That one skipped leg day.",
+      "duration": 1.493,
+      "sha256": "ff855cf5a18250abee1ae723fc63245f2b7c291119efe07e69066ee6fd3754a5"
+    },
+    {
+      "id": "quip_grandma_weapon",
+      "hero": "grandma",
+      "voice": "bf_emma",
+      "text": "Three hands. Still no pockets.",
+      "duration": 1.835,
+      "sha256": "a17575392716c850443de0725be5c9eca3bade653892b0d32ae58fe666e9653b"
+    },
+    {
       "id": "hurt_goblin_0",
+      "hero": "goblin",
+      "voice": "am_fenrir",
       "text": "Ack!",
-      "voice": "marius",
       "duration": 0.313,
       "sha256": "e1517f6eae8e9daa2ca0a3807cae9c5c73bbd487ec5f7d513e2f5c000deccdbc"
     },
     {
-      "hero": "goblin",
       "id": "hurt_goblin_1",
+      "hero": "goblin",
+      "voice": "am_fenrir",
       "text": "My wallet!",
-      "voice": "marius",
       "duration": 0.852,
       "sha256": "2220bb03f60a39174cab529c0d5dbf5476d9ddb2eecd5d08974b5615e2e0f688"
     },
     {
-      "hero": "loaf",
+      "id": "quip_goblin_discovery",
+      "hero": "goblin",
+      "voice": "am_fenrir",
+      "text": "Well, that looks suspicious.",
+      "duration": 1.237,
+      "sha256": "6585b4d048c01440045508eb1ab4acfdca0b1aa5f964c26bd564f5b6c7196fa2"
+    },
+    {
+      "id": "quip_goblin_boss",
+      "hero": "goblin",
+      "voice": "am_fenrir",
+      "text": "That one skipped leg day.",
+      "duration": 1.237,
+      "sha256": "25c71fcec2066cb91a542ec7acfbeae600e029a142dd4f536d9fa8a63d3b0a8c"
+    },
+    {
+      "id": "quip_goblin_weapon",
+      "hero": "goblin",
+      "voice": "am_fenrir",
+      "text": "Three hands. Still no pockets.",
+      "duration": 1.515,
+      "sha256": "a4a37730917536edb7a658d00aa8e08802689aede28ad0e5877f1bc11768116f"
+    },
+    {
       "id": "hurt_loaf_0",
+      "hero": "loaf",
+      "voice": "bm_lewis",
       "text": "Ow!",
-      "voice": "charles",
       "duration": 0.88,
       "sha256": "3145ef7f49f35cf1f96808e43d945e94a74f3e63f49278c8b700535907d4b59a"
     },
     {
-      "hero": "loaf",
       "id": "hurt_loaf_1",
+      "hero": "loaf",
+      "voice": "bm_lewis",
       "text": "My crust!",
-      "voice": "charles",
       "duration": 1.278,
       "sha256": "6e820a14c1ca161aa6df5185468b22add73317b3a70e479e4f28040f75bd4c82"
     },
     {
-      "hero": "florist",
+      "id": "quip_loaf_discovery",
+      "hero": "loaf",
+      "voice": "bm_lewis",
+      "text": "Well, that looks suspicious.",
+      "duration": 1.515,
+      "sha256": "f51d7fb8afdf5c1cd59ea95b6d45bff41879e6084e369350712617102978673a"
+    },
+    {
+      "id": "quip_loaf_boss",
+      "hero": "loaf",
+      "voice": "bm_lewis",
+      "text": "That one skipped leg day.",
+      "duration": 1.515,
+      "sha256": "df09a52660fd145559ac817851cea135f296253d6ddc7a6e2b8701ae61ea344c"
+    },
+    {
+      "id": "quip_loaf_weapon",
+      "hero": "loaf",
+      "voice": "bm_lewis",
+      "text": "Three hands. Still no pockets.",
+      "duration": 2.069,
+      "sha256": "8f97b111756cabb6286e5aad3df00671080586483a4f5fdb309aca749efbf53d"
+    },
+    {
       "id": "hurt_florist_0",
+      "hero": "florist",
+      "voice": "af_heart",
       "text": "Ah!",
-      "voice": "anna",
       "duration": 1.2,
       "sha256": "924f1d6a6ac3da810d9bbfd3046cebaf136396ff6bc17fc2567a56549c56a2da"
     },
     {
-      "hero": "florist",
       "id": "hurt_florist_1",
+      "hero": "florist",
+      "voice": "af_heart",
       "text": "Watch the flowers!",
-      "voice": "anna",
       "duration": 1.879,
       "sha256": "4dfc41779218c93142a8e81d4b2d0a4a704a4c658bf82394de9b135281c96c8c"
     },
     {
-      "hero": "teapot",
+      "id": "quip_florist_discovery",
+      "hero": "florist",
+      "voice": "af_heart",
+      "text": "Well, that looks suspicious.",
+      "duration": 1.387,
+      "sha256": "818e504fd3c725564b3732039c2da55c24b786a7b90844172d1500f97f396733"
+    },
+    {
+      "id": "quip_florist_boss",
+      "hero": "florist",
+      "voice": "af_heart",
+      "text": "That one skipped leg day.",
+      "duration": 1.365,
+      "sha256": "76bf726e431afe4a9e16c7a9f08e8971e95d309b7eedad7872652b6791e9760b"
+    },
+    {
+      "id": "quip_florist_weapon",
+      "hero": "florist",
+      "voice": "af_heart",
+      "text": "Three hands. Still no pockets.",
+      "duration": 1.877,
+      "sha256": "34561e74297d265e88e287100459326ca408cbb3902f2763d3de104dde18d28f"
+    },
+    {
       "id": "hurt_teapot_0",
+      "hero": "teapot",
+      "voice": "bf_isabella",
       "text": "Ooh!",
-      "voice": "alba",
       "duration": 0.62,
       "sha256": "43c1d2eefb4b9fa55ca4068e632c843fd31c1a4da0ee16194b6315be469feca1"
     },
     {
-      "hero": "teapot",
       "id": "hurt_teapot_1",
+      "hero": "teapot",
+      "voice": "bf_isabella",
       "text": "My porcelain!",
-      "voice": "alba",
       "duration": 0.937,
       "sha256": "cc9bf38a933d0c84779bbb59e79c5dc03ea0b42fb1d9e3c36a02a5d7df47ee3d"
     },
     {
-      "hero": "octopus",
+      "id": "quip_teapot_discovery",
+      "hero": "teapot",
+      "voice": "bf_isabella",
+      "text": "Well, that looks suspicious.",
+      "duration": 1.749,
+      "sha256": "71e552527e7dc0ebb65aa4e5b368a2d11e1279ebc5de306bfbbfc341900244ee"
+    },
+    {
+      "id": "quip_teapot_boss",
+      "hero": "teapot",
+      "voice": "bf_isabella",
+      "text": "That one skipped leg day.",
+      "duration": 1.621,
+      "sha256": "35b1f8a4d46af979573274b5936847a58d0d4fface6f7e3a241897c7de459ec3"
+    },
+    {
+      "id": "quip_teapot_weapon",
+      "hero": "teapot",
+      "voice": "bf_isabella",
+      "text": "Three hands. Still no pockets.",
+      "duration": 2.005,
+      "sha256": "56e284694a245cf033646d215ecb2dbe8c48f3c2688e96b51216beada437d0a9"
+    },
+    {
       "id": "hurt_octopus_0",
+      "hero": "octopus",
+      "voice": "bm_daniel",
       "text": "Argh!",
-      "voice": "javert",
       "duration": 1.402,
       "sha256": "f4f5e4becda66d2cc03fcecb54818b470a6a0f00ee6218f3aa9d8d77d4136e48"
     },
     {
-      "hero": "octopus",
       "id": "hurt_octopus_1",
+      "hero": "octopus",
+      "voice": "bm_daniel",
       "text": "My tentacles!",
-      "voice": "javert",
       "duration": 1.751,
       "sha256": "5b50ba2d138f6e98ba427bfbf693ed758a4df604360fb107feb3843f215c3535"
     },
     {
-      "hero": "astronaut",
+      "id": "quip_octopus_discovery",
+      "hero": "octopus",
+      "voice": "bm_daniel",
+      "text": "Well, that looks suspicious.",
+      "duration": 1.685,
+      "sha256": "3ed7628a50de19216ad02d099c4763714e80d55f95291c390d6c37305dd4db77"
+    },
+    {
+      "id": "quip_octopus_boss",
+      "hero": "octopus",
+      "voice": "bm_daniel",
+      "text": "That one skipped leg day.",
+      "duration": 1.643,
+      "sha256": "3b06d587c0ee3ab5771eb8456ad37332e463f5ff50f41cfdc94acc014d57796a"
+    },
+    {
+      "id": "quip_octopus_weapon",
+      "hero": "octopus",
+      "voice": "bm_daniel",
+      "text": "Three hands. Still no pockets.",
+      "duration": 1.877,
+      "sha256": "cc284c7fed156d3c53042d04f0665907f478887e9ec194530d29d8f8fb0e0e92"
+    },
+    {
       "id": "hurt_astronaut_0",
+      "hero": "astronaut",
+      "voice": "am_michael",
       "text": "Whoa!",
-      "voice": "charles",
       "duration": 0.88,
       "sha256": "faf3188a0c17506a555173f4be3abe3429bb0b7de8487725e93a72deab0c4717"
     },
     {
-      "hero": "astronaut",
       "id": "hurt_astronaut_1",
+      "hero": "astronaut",
+      "voice": "am_michael",
       "text": "Suit breach!",
-      "voice": "charles",
       "duration": 1.129,
       "sha256": "f201e1098bb92bba6351d4b381a66417cfcb7dfa024aef9605b1bf2a54ea62b3"
     },
     {
-      "hero": "cactus",
+      "id": "quip_astronaut_discovery",
+      "hero": "astronaut",
+      "voice": "am_michael",
+      "text": "Well, that looks suspicious.",
+      "duration": 1.621,
+      "sha256": "3d35df7c72842c4663e6069924111a78c449cfa89e5c39eed915938470882c67"
+    },
+    {
+      "id": "quip_astronaut_boss",
+      "hero": "astronaut",
+      "voice": "am_michael",
+      "text": "That one skipped leg day.",
+      "duration": 1.493,
+      "sha256": "d87f08bb159d7a9848640192a19a69f8ce00ec3ac469d1daebe437042f307a00"
+    },
+    {
+      "id": "quip_astronaut_weapon",
+      "hero": "astronaut",
+      "voice": "am_michael",
+      "text": "Three hands. Still no pockets.",
+      "duration": 2.027,
+      "sha256": "31fcb4d5a34e2adad4325c7bb2f7767deacd80f51e0fd785b53fc20b727054df"
+    },
+    {
       "id": "hurt_cactus_0",
+      "hero": "cactus",
+      "voice": "am_echo",
       "text": "Ow!",
-      "voice": "marius",
       "duration": 0.348,
       "sha256": "9afbe930a731c80241d929b5fb212bd5beae5c93d51369eef56075d41a1d8af8"
     },
     {
-      "hero": "cactus",
       "id": "hurt_cactus_1",
+      "hero": "cactus",
+      "voice": "am_echo",
       "text": "That was sharp!",
-      "voice": "marius",
       "duration": 1.064,
       "sha256": "989050c1fa4fe729faff04a2af6afb0d74fe766cbdd060e7280763a40d9b141f"
     },
     {
-      "hero": "book",
+      "id": "quip_cactus_discovery",
+      "hero": "cactus",
+      "voice": "am_echo",
+      "text": "Well, that looks suspicious.",
+      "duration": 1.813,
+      "sha256": "90bd260f8a1e5cebfc25e0ae2465e9f37d9d7f52d68a56bef4665341316c19b5"
+    },
+    {
+      "id": "quip_cactus_boss",
+      "hero": "cactus",
+      "voice": "am_echo",
+      "text": "That one skipped leg day.",
+      "duration": 1.835,
+      "sha256": "0540e8844086a7a24d003e2230063987d34aa97e086f842cf3a8360fe67c290d"
+    },
+    {
+      "id": "quip_cactus_weapon",
+      "hero": "cactus",
+      "voice": "am_echo",
+      "text": "Three hands. Still no pockets.",
+      "duration": 2.24,
+      "sha256": "e17f9bf49ae839e16baa645efb84d4fdf95e443b0f8560f95f0ab8071de54002"
+    },
+    {
       "id": "hurt_book_0",
+      "hero": "book",
+      "voice": "bf_lily",
       "text": "Ah!",
-      "voice": "fantine",
       "duration": 0.88,
       "sha256": "4ceb1f8b43cfbb11b463ae1a8c9d55fd46289ab21b08643a2aad0eb7128cc820"
     },
     {
-      "hero": "book",
       "id": "hurt_book_1",
+      "hero": "book",
+      "voice": "bf_lily",
       "text": "My pages!",
-      "voice": "fantine",
       "duration": 1.375,
       "sha256": "67296bab83ce8b7e3982f724785133dd3e57da74ab6e65a096337a1bfe660f7a"
     },
     {
-      "hero": "snail",
+      "id": "quip_book_discovery",
+      "hero": "book",
+      "voice": "bf_lily",
+      "text": "Well, that looks suspicious.",
+      "duration": 1.813,
+      "sha256": "8c8d69dc45b81a4aec0d1852b9f56282c5829ff0906d2c07ee649597819cec5b"
+    },
+    {
+      "id": "quip_book_boss",
+      "hero": "book",
+      "voice": "bf_lily",
+      "text": "That one skipped leg day.",
+      "duration": 1.771,
+      "sha256": "2c82d19ba09c6788ef730796cbc4d7871aaaf7993ec18e823fa742ba0c6edc6d"
+    },
+    {
+      "id": "quip_book_weapon",
+      "hero": "book",
+      "voice": "bf_lily",
+      "text": "Three hands. Still no pockets.",
+      "duration": 2.048,
+      "sha256": "6fbb8df6a211a41811652a0714643b98bc7a3ee266d7215f784941142660f586"
+    },
+    {
       "id": "hurt_snail_0",
+      "hero": "snail",
+      "voice": "bm_fable",
       "text": "Oof!",
-      "voice": "javert",
       "duration": 0.96,
       "sha256": "a2a4ca395bd8cdeb60c4f70b55d0ea0a179ada1e6c7011a57c2cebe459acf6ac"
     },
     {
-      "hero": "snail",
       "id": "hurt_snail_1",
+      "hero": "snail",
+      "voice": "bm_fable",
       "text": "My shell!",
-      "voice": "javert",
       "duration": 1.629,
       "sha256": "cc9ed68117653a24d2eb9f1b1323a2530b5bc25637c4eb9ed4a9ca4ef9fd6264"
     },
     {
-      "hero": "bee",
+      "id": "quip_snail_discovery",
+      "hero": "snail",
+      "voice": "bm_fable",
+      "text": "Well, that looks suspicious.",
+      "duration": 2.069,
+      "sha256": "c977d68d28938657f2ba5364baa5936d29642ff77049e6b6700139e67cd5373f"
+    },
+    {
+      "id": "quip_snail_boss",
+      "hero": "snail",
+      "voice": "bm_fable",
+      "text": "That one skipped leg day.",
+      "duration": 2.048,
+      "sha256": "60e94ca90ace34246942cee7580808f743c496a8eb1f0a1b39b7717f991d7afc"
+    },
+    {
+      "id": "quip_snail_weapon",
+      "hero": "snail",
+      "voice": "bm_fable",
+      "text": "Three hands. Still no pockets.",
+      "duration": 2.496,
+      "sha256": "60efaa29d748922b579af2ce3696f340394e3303f02b8f29a2c2ae692640b3d2"
+    },
+    {
       "id": "hurt_bee_0",
+      "hero": "bee",
+      "voice": "af_bella",
       "text": "Eek!",
-      "voice": "eponine",
       "duration": 0.815,
       "sha256": "0f187d57515d314b261bad100eef57e9d4fd3a7f39bdf96ad54053e0207f007b"
     },
     {
-      "hero": "bee",
       "id": "hurt_bee_1",
+      "hero": "bee",
+      "voice": "af_bella",
       "text": "Not the wings!",
-      "voice": "eponine",
       "duration": 1.657,
       "sha256": "426c57f032d033a171922c2aa8f53f87f5d2a2e88b226b7fdc423815702884b1"
     },
     {
-      "hero": "sushi",
+      "id": "quip_bee_discovery",
+      "hero": "bee",
+      "voice": "af_bella",
+      "text": "Well, that looks suspicious.",
+      "duration": 1.301,
+      "sha256": "69239661ce8d0fe48bd3cf841b40fbd60be0eaaea8ddfe5b251453508ee862aa"
+    },
+    {
+      "id": "quip_bee_boss",
+      "hero": "bee",
+      "voice": "af_bella",
+      "text": "That one skipped leg day.",
+      "duration": 1.195,
+      "sha256": "00e5264554f22e9193d08ce88e3242b992a08c71c3629d53dfc3d0134f3b4741"
+    },
+    {
+      "id": "quip_bee_weapon",
+      "hero": "bee",
+      "voice": "af_bella",
+      "text": "Three hands. Still no pockets.",
+      "duration": 1.835,
+      "sha256": "9cf89a34c1a0bf601470e8a49ba9d89424dd2ff7b95348a89fb3752ad3947581"
+    },
+    {
       "id": "hurt_sushi_0",
+      "hero": "sushi",
+      "voice": "am_liam",
       "text": "Hah!",
-      "voice": "marius",
       "duration": 0.485,
       "sha256": "a3cf94e1612afcc138a0b33bb2f7b7612b65af7a428f130514131cd0a43de746"
     },
     {
-      "hero": "sushi",
       "id": "hurt_sushi_1",
+      "hero": "sushi",
+      "voice": "am_liam",
       "text": "Too close!",
-      "voice": "marius",
       "duration": 0.732,
       "sha256": "48245ee4b1b213dc17b36003ad5f147caad1957faff8731a62c4951c5d844cad"
     },
     {
-      "hero": "mushroom",
+      "id": "quip_sushi_discovery",
+      "hero": "sushi",
+      "voice": "am_liam",
+      "text": "Well, that looks suspicious.",
+      "duration": 1.621,
+      "sha256": "0ae55fcb68d2edb7a9081ef63bffd5cf1f3c5e8d8f1b3bb8306a5829ac364c0e"
+    },
+    {
+      "id": "quip_sushi_boss",
+      "hero": "sushi",
+      "voice": "am_liam",
+      "text": "That one skipped leg day.",
+      "duration": 1.6,
+      "sha256": "956644cdbde5dfe384e0e9e421d159651923f38de1861e16a642f59955331eb5"
+    },
+    {
+      "id": "quip_sushi_weapon",
+      "hero": "sushi",
+      "voice": "am_liam",
+      "text": "Three hands. Still no pockets.",
+      "duration": 1.92,
+      "sha256": "09025a51dc3cb1cd9b5c1ec9254a930cbab009b07a807196aca12b30f9658af0"
+    },
+    {
       "id": "hurt_mushroom_0",
+      "hero": "mushroom",
+      "voice": "am_onyx",
       "text": "Ouch!",
-      "voice": "charles",
       "duration": 0.935,
       "sha256": "b847f63e6a1d6d2125c6564d3db1c422bdfe9bdbfefff986883d8dd4c90c3049"
     },
     {
-      "hero": "mushroom",
       "id": "hurt_mushroom_1",
+      "hero": "mushroom",
+      "voice": "am_onyx",
       "text": "Hot pan!",
-      "voice": "charles",
       "duration": 0.909,
       "sha256": "83e081e9f32f39579f6210b2b25351a0cb714070df530b7eb5fb7d8b10df65b8"
     },
     {
-      "hero": "clock",
+      "id": "quip_mushroom_discovery",
+      "hero": "mushroom",
+      "voice": "am_onyx",
+      "text": "Well, that looks suspicious.",
+      "duration": 1.963,
+      "sha256": "67c88f0737ab027d5188a36ee0b9869b7f16481baf401c6bd3f9c77a5b3c36ab"
+    },
+    {
+      "id": "quip_mushroom_boss",
+      "hero": "mushroom",
+      "voice": "am_onyx",
+      "text": "That one skipped leg day.",
+      "duration": 1.984,
+      "sha256": "aacd773e44d06a1c8ee992001c36441fa7da396cef2dd80cf8b69040ee27c190"
+    },
+    {
+      "id": "quip_mushroom_weapon",
+      "hero": "mushroom",
+      "voice": "am_onyx",
+      "text": "Three hands. Still no pockets.",
+      "duration": 2.411,
+      "sha256": "1b9cbc05e9cb7b96f450d011387c1cf8ef2b8cb47715ef48d683afa6e6d5a095"
+    },
+    {
       "id": "hurt_clock_0",
+      "hero": "clock",
+      "voice": "bm_lewis",
       "text": "Agh!",
-      "voice": "javert",
       "duration": 1.04,
       "sha256": "64a154adcdb9801e660cb2fc958450c8050ddc5746b6b40b4da24f52d7925c56"
     },
     {
-      "hero": "clock",
       "id": "hurt_clock_1",
+      "hero": "clock",
+      "voice": "bm_lewis",
       "text": "Bad timing!",
-      "voice": "javert",
       "duration": 1.834,
       "sha256": "4ec26dc058b122f765de5ae8698c0b51c7b433b8dd14de65f7c0d55c8062daa1"
     },
     {
-      "hero": "icecream",
+      "id": "quip_clock_discovery",
+      "hero": "clock",
+      "voice": "bm_lewis",
+      "text": "Well, that looks suspicious.",
+      "duration": 1.515,
+      "sha256": "f51d7fb8afdf5c1cd59ea95b6d45bff41879e6084e369350712617102978673a"
+    },
+    {
+      "id": "quip_clock_boss",
+      "hero": "clock",
+      "voice": "bm_lewis",
+      "text": "That one skipped leg day.",
+      "duration": 1.515,
+      "sha256": "df09a52660fd145559ac817851cea135f296253d6ddc7a6e2b8701ae61ea344c"
+    },
+    {
+      "id": "quip_clock_weapon",
+      "hero": "clock",
+      "voice": "bm_lewis",
+      "text": "Three hands. Still no pockets.",
+      "duration": 2.069,
+      "sha256": "8f97b111756cabb6286e5aad3df00671080586483a4f5fdb309aca749efbf53d"
+    },
+    {
       "id": "hurt_icecream_0",
+      "hero": "icecream",
+      "voice": "af_nicole",
       "text": "Oh!",
-      "voice": "azelma",
       "duration": 1.212,
       "sha256": "d182475172e3587b0268170cddd58fec1f69ee4213b1837155e5936fb5bac583"
     },
     {
-      "hero": "icecream",
       "id": "hurt_icecream_1",
+      "hero": "icecream",
+      "voice": "af_nicole",
       "text": "Brain freeze!",
-      "voice": "azelma",
       "duration": 1.738,
       "sha256": "31ce13d83effae0d8b7ac40c8ee4002c787a4941fce9d22686861a72e22ea5ec"
     },
     {
-      "hero": "bathtub",
+      "id": "quip_icecream_discovery",
+      "hero": "icecream",
+      "voice": "af_nicole",
+      "text": "Well, that looks suspicious.",
+      "duration": 1.6,
+      "sha256": "1a9014a92c2136bc609480b71fa5a198e533b0df9b0dd983337f9bfa72766166"
+    },
+    {
+      "id": "quip_icecream_boss",
+      "hero": "icecream",
+      "voice": "af_nicole",
+      "text": "That one skipped leg day.",
+      "duration": 1.685,
+      "sha256": "6c221e18ff736f73384730510fdf6b81974c849d47cb190aed14c5f015856588"
+    },
+    {
+      "id": "quip_icecream_weapon",
+      "hero": "icecream",
+      "voice": "af_nicole",
+      "text": "Three hands. Still no pockets.",
+      "duration": 2.944,
+      "sha256": "9eb352f792b80eeb39b776257fa018bff1cb029b3003c87ce398b0468dacc585"
+    },
+    {
       "id": "hurt_bathtub_0",
+      "hero": "bathtub",
+      "voice": "bm_george",
       "text": "Argh!",
-      "voice": "javert",
       "duration": 1.535,
       "sha256": "58554e9b213dd7808a4ca94481552ae32a05befaabdd811de3e5b557e5153376"
     },
     {
-      "hero": "bathtub",
       "id": "hurt_bathtub_1",
+      "hero": "bathtub",
+      "voice": "bm_george",
       "text": "Man overboard!",
-      "voice": "javert",
       "duration": 1.918,
       "sha256": "166021c9614b555769f2c5a260eb1779837f22412d34e4753127ce127fd3a9ab"
     },
     {
-      "hero": "peacock",
+      "id": "quip_bathtub_discovery",
+      "hero": "bathtub",
+      "voice": "bm_george",
+      "text": "Well, that looks suspicious.",
+      "duration": 1.643,
+      "sha256": "a03381734ed61868e8a73aba29f1595210894bbc69557a89bf943ecb5fb5f052"
+    },
+    {
+      "id": "quip_bathtub_boss",
+      "hero": "bathtub",
+      "voice": "bm_george",
+      "text": "That one skipped leg day.",
+      "duration": 1.664,
+      "sha256": "5d4ac0936cc5f435dd32b5e2dde5c7518411c7712fea7cd9a570c905279e901e"
+    },
+    {
+      "id": "quip_bathtub_weapon",
+      "hero": "bathtub",
+      "voice": "bm_george",
+      "text": "Three hands. Still no pockets.",
+      "duration": 2.24,
+      "sha256": "be216329a2c7ad579b9e281f5a637d5d223272d194965cc9b0568025b2c0deff"
+    },
+    {
       "id": "hurt_peacock_0",
+      "hero": "peacock",
+      "voice": "af_sarah",
       "text": "Ah!",
-      "voice": "eponine",
       "duration": 0.958,
       "sha256": "b0424163a192be461a5e61889cc4181c671d1feb0a01616d15072446102f5a03"
     },
     {
-      "hero": "peacock",
       "id": "hurt_peacock_1",
+      "hero": "peacock",
+      "voice": "af_sarah",
       "text": "My beautiful tail!",
-      "voice": "eponine",
       "duration": 1.944,
       "sha256": "0853c85131b4d5c0c213e9ff316c8101a814ac58f19226854bc4a79d9f8c1c81"
     },
     {
-      "hero": "toaster",
+      "id": "quip_peacock_discovery",
+      "hero": "peacock",
+      "voice": "af_sarah",
+      "text": "Well, that looks suspicious.",
+      "duration": 1.387,
+      "sha256": "cd80a3c4e4e87096751759fdf58a9690ac95f15b3d7b1a0fa359ae5eed6fef93"
+    },
+    {
+      "id": "quip_peacock_boss",
+      "hero": "peacock",
+      "voice": "af_sarah",
+      "text": "That one skipped leg day.",
+      "duration": 1.28,
+      "sha256": "cded99025b782a1efb33a3468927b6400547420837f23a892113cf9e47662d00"
+    },
+    {
+      "id": "quip_peacock_weapon",
+      "hero": "peacock",
+      "voice": "af_sarah",
+      "text": "Three hands. Still no pockets.",
+      "duration": 1.835,
+      "sha256": "80022156cec58eb397e6fa8943043cd8c142f09dcec14f165aced87b2894a11d"
+    },
+    {
       "id": "hurt_toaster_0",
+      "hero": "toaster",
+      "voice": "am_eric",
       "text": "Ow!",
-      "voice": "marius",
       "duration": 0.349,
       "sha256": "c85a51174d062318dfa2ada126ad0cc980ab179b0c503f822e3e9f92b88e2251"
     },
     {
-      "hero": "toaster",
       "id": "hurt_toaster_1",
+      "hero": "toaster",
+      "voice": "am_eric",
       "text": "Burnt toast!",
-      "voice": "marius",
       "duration": 0.673,
       "sha256": "d341d5187221ee8402ce83dbaa09495e780afc4bf58e82989c88598fd5827ad1"
+    },
+    {
+      "id": "quip_toaster_discovery",
+      "hero": "toaster",
+      "voice": "am_eric",
+      "text": "Well, that looks suspicious.",
+      "duration": 1.664,
+      "sha256": "d387becfb26c8cbf81e3e3d4aa87042a39597f4271d312587edc665488c308b2"
+    },
+    {
+      "id": "quip_toaster_boss",
+      "hero": "toaster",
+      "voice": "am_eric",
+      "text": "That one skipped leg day.",
+      "duration": 1.621,
+      "sha256": "2403dbb6a370c9ca1f82126ee906baf3501b0ae8a213aedd158be966c23af4c5"
+    },
+    {
+      "id": "quip_toaster_weapon",
+      "hero": "toaster",
+      "voice": "am_eric",
+      "text": "Three hands. Still no pockets.",
+      "duration": 1.899,
+      "sha256": "e503622c10e4306f5faad8858672105efd0d86aa02422e4059202c65f04e4cf9"
     }
   ]
 }

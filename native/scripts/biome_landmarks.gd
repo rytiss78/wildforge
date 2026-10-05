@@ -72,6 +72,14 @@ static func build(world: Node3D,biome: int,p: Vector3):
 			ToonArt.ball(art,Color("ad5ad7"),Vector3(0,17,0),Vector3(8,8,8))
 			var orbit=ring(art,Color("f4bb64"),Vector3(0,17,0),6);orbit.rotation.z=.45
 			ToonArt.ball(art,Color("52bde6"),Vector3(-6,23,1),Vector3(3,3,3))
+	# Readable door/window framing and small illustrated cracks on existing structures.
+	for side in [-1,1]:
+		box(art,Color("574536"),Vector3(side*2.1,2.4,2.0),Vector3(1.1,1.5,.16))
+		box(art,Color("ffd991"),Vector3(side*2.1,2.4,2.1),Vector3(.7,1.1,.08))
+	box(art,Color("574536"),Vector3(0,1.0,2.2),Vector3(1.6,2,.18))
+	box(art,accent.lightened(.2),Vector3(0,1.0,2.32),Vector3(1.2,1.8,.08))
+	for i in range(3):
+		var crack=box(root,accent.darkened(.4),Vector3(-3+i*.24,1.52,1+i*.3),Vector3(.07,.02,.7));crack.rotation.y=.4 if i%2==0 else -.6
 	var nodes=[];PaintedBatch.collect(root,nodes)
 	var mesh=PaintedBatch.merge(root,nodes)
 	for node in nodes:
@@ -84,3 +92,6 @@ static func build(world: Node3D,biome: int,p: Vector3):
 	paint.next_pass=paint.next_pass.duplicate();paint.next_pass.set_shader_parameter("fade_near",false)
 	var combined=MeshInstance3D.new();combined.mesh=mesh;combined.material_override=paint;root.add_child(combined)
 	var title=Label3D.new();title.text=NAMES[biome];title.position=Vector3(0,4,0);title.font_size=30;title.modulate=Color("fff0ca");title.billboard=BaseMaterial3D.BILLBOARD_ENABLED;title.visibility_range_end=55;root.add_child(title)
+
+	var banner=MeshInstance3D.new();var plane=PlaneMesh.new();plane.size=Vector2(1.4,2.2);plane.orientation=PlaneMesh.FACE_Z;banner.mesh=plane
+	banner.position=Vector3(4,4,-2);var cloth=ShaderMaterial.new();cloth.shader=preload("res://shaders/banner.gdshader");cloth.set_shader_parameter("tint",accent);banner.material_override=cloth;root.add_child(banner)

@@ -36,6 +36,10 @@ const POWERS = {
 }
 
 static func texture(key: String, weapon: bool=false) -> Texture2D:
+	var content="res://assets/illustrated/content/"+key+".png"
+	if ResourceLoader.exists(content):
+		if not textures.has(content): textures[content]=load(content)
+		return textures[content]
 	var cache_key=("weapon:" if weapon else "power:")+key
 	if textures.has(cache_key): return textures[cache_key]
 	if not weapon and ResourceLoader.exists("res://assets/illustrated/skills.png"):

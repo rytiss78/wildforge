@@ -29,7 +29,7 @@ func _draw():
 		draw_circle(center,15,Color("0a1423"))
 		draw_circle(center-Vector2(0,2),13,colors[key])
 		ink = Color("142238")
-	elif xbox and key in ["LS","RS"]:
+	elif xbox and key in ["LS","RS","R3"]:
 		draw_circle(center,15,Color("fff3d4"))
 		draw_circle(center,12,Color("34435f"))
 		draw_arc(center,17,-PI*.8,PI*.8,24,Color("e7b967"),2,true)
@@ -47,6 +47,11 @@ func _draw():
 	if key == "D-pad":
 		draw_rect(Rect2(center-Vector2(4,11),Vector2(8,22)),ink)
 		draw_rect(Rect2(center-Vector2(11,4),Vector2(22,8)),ink)
+	elif key=="R3":
+		draw_string(font,center+Vector2(-9,4),"RS",HORIZONTAL_ALIGNMENT_LEFT,-1,13,Color("fff3d4"))
+		draw_line(center+Vector2(0,9),center+Vector2(0,15),Color("fff3d4"),2)
+		draw_line(center+Vector2(-3,12),center+Vector2(0,15),Color("fff3d4"),2)
+		draw_line(center+Vector2(3,12),center+Vector2(0,15),Color("fff3d4"),2)
 	elif key == "Menu":
 		for y in [-5,0,5]: draw_line(center+Vector2(-7,y),center+Vector2(7,y),ink,2,true)
 	elif key == "Mouse":
