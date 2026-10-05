@@ -19,7 +19,12 @@ public sealed class RuntimeDriver : MonoBehaviour
     public void Awake()
     {
         UObject.DontDestroyOnLoad(gameObject);
-        if (smoke) Application.runInBackground = true;
+        if (smoke)
+        {
+            Application.runInBackground = true;
+            Application.add_logMessageReceived((Application.LogCallback)(Action<string,string,LogType>)((message,stack,type)=>
+            {if(type==LogType.Exception&&message.Contains("KeyNotFoundException"))Plugin.Logger.LogError("NATIVE TRACE: "+message+"\n"+stack);}));
+        }
     }
     public void Update()
     {
@@ -29,6 +34,7 @@ public sealed class RuntimeDriver : MonoBehaviour
             EnemyModels.Tick();
             CombatEffects.PollInput(MyPlayer.Instance);
             Effects.Tick();
+            Presentation.Tick(MyPlayer.Instance);
             if (!smoke || stage == 4 || Time.realtimeSinceStartup < next) return;
             next = Time.realtimeSinceStartup + 1;
             if (started == 0) started = Time.realtimeSinceStartup;
@@ -93,11 +99,13 @@ public sealed class RuntimeDriver : MonoBehaviour
                 Plugin.Logger.LogInfo($"SMOKE: Duck and gun spawned; 3 items stack; luck +{luckDelta}, speed +{speedDelta}.");
                 SkillSmoke.AllSkills(player);
                 MergeSmoke.SpawnEnemies(player);
+                FeatureSmoke.Start(player);
                 stage = 3;
                 next = Time.realtimeSinceStartup + 15;
             }
             else if (stage == 3)
             {
+                FeatureSmoke.Finish();
                 MergeSmoke.HealingAndOrbs(MyPlayer.Instance);
                 Plugin.Logger.LogInfo("SMOKE PASS: full catalog, models, enemies, card stacks and HP orbs batch completed. Complete-run balance remains manual.");
                 stage = 4;
@@ -110,4 +118,5 @@ public sealed class RuntimeDriver : MonoBehaviour
             enabled = false;
         }
     }
+    public void OnGUI()=>Presentation.Hud();
 }

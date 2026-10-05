@@ -13,6 +13,6 @@ Copy-Item -LiteralPath (Join-Path $modRoot 'artifacts\skill-coverage.json') -Des
 $scripts = Join-Path $package 'scripts'
 New-Item -ItemType Directory -Path $scripts -Force | Out-Null
 Copy-Item -LiteralPath (Join-Path $PSScriptRoot 'install.ps1') -Destination $scripts -Force
-$zip = Join-Path $modRoot 'artifacts\Megabonk-Wildforge-Mod-0.3.0-skills-compatible.zip'
+$zip = Join-Path $modRoot 'artifacts\Megabonk-Wildforge-Mod-0.4.0-combat-and-feedback.zip'
 Compress-Archive -Path (Join-Path $package '*') -DestinationPath $zip -Force
 Get-FileHash -LiteralPath $zip -Algorithm SHA256 | Format-List

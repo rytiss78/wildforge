@@ -35,8 +35,10 @@ internal static class FullCatalog
             weapon.damageSourceName="wildforge_weapon_"+entry.Id;
             weapon.baseStats=new Il2CppSystem.Collections.Generic.Dictionary<EStat,float>();
             foreach(var pair in source.baseStats) weapon.baseStats.Add(pair.Key,pair.Value);
-            if(weapon.baseStats.ContainsKey(EStat.DamageMultiplier)) weapon.baseStats[EStat.DamageMultiplier]*=entry.Damage;
-            if(weapon.baseStats.ContainsKey(EStat.AttackSpeed)) weapon.baseStats[EStat.AttackSpeed]*=entry.Rate;
+            // Source values are factors of Wildforge's base damage and shots/sec,
+            // not factors of the level-one native template's much weaker defaults.
+            weapon.baseStats[EStat.DamageMultiplier]=Catalog.Data.Stats["damage"]*entry.Damage;
+            weapon.baseStats[EStat.AttackSpeed]=Catalog.Data.Stats["rate"]*entry.Rate;
             void Modify(string key,EStat stat,bool multiplier=false)
             {
                 if(!entry.Modifiers.TryGetValue(key,out var value)||value.ValueKind!=System.Text.Json.JsonValueKind.Number)return;

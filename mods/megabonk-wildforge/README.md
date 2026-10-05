@@ -1,18 +1,20 @@
-# Megabonk Wildforge Mod 0.3.0 skills compatibility release
+# Megabonk Wildforge Mod 0.4.0 combat and feedback update
 
 The mod imports 21 heroes and their perks, 694 item/skill cards, 65 weapons, 36 enemy species and 18 biome boss forms, with 875 original icon images. Megabonk's original roster, items and enemies remain available.
 
 Wildforge heroes and enemies display HP as blood fill inside their original model orbs. Native Megabonk actors keep their original HP indicators. Source art is loaded directly from GLB and PNG assets; no Unity editor or external character loader is required.
 
-Skill cards appear alongside native level-up upgrades and work on both rosters; item cards enter native chest/reward pools. Mixed enemy waves include Wildforge creatures, and boss selection can include World Maw, Sun Breaker and Star Eater. With Wildforge content equipped, Left Shift dashes and Left Ctrl starts an airborne slam. The perk/card engine covers native stat bonuses, contextual augments, healing, procs, status effects, turrets, flowers and movement/economy effects.
+Skill cards appear alongside native level-up upgrades and work on both rosters; item cards enter native chest/reward pools. Mixed enemy waves include Wildforge creatures, and boss selection can include World Maw, Sun Breaker and Star Eater. Left Shift, Right Shift or right mouse dashes. Press R to deploy an equipped turret in front of you; Wrench starts with a turret. Left Ctrl starts an airborne slam. The in-game Wildforge panel shows controls, cooldown and card stack count. The perk/card engine covers native stat bonuses, contextual augments, healing, procs, status effects, turrets, flowers and movement/economy effects.
 
 This is a development alpha. Weapon attacks and enemy AI use native archetype adapters. Some projectile variant details and status/boss behaviors differ from the Godot source and need further adaptation. Full-run balance and visual acceptance are not established by compilation or catalog smoke checks.
 
-All 342 skills pass native acquisition, two-stack effect resolution and removal checks. Conditional activation, additive conditional stacking and a skill on a native Megabonk hero also pass. Build coverage checks all 100 effect keys and 18 conditions for runtime consumers. The full batch builds with zero warnings/errors and passes the catalog, models, enemy spawning, sampled healing and partial orb-fill checks. See [VERIFICATION.md](VERIFICATION.md) for the evidence and its limits.
+The runtime batch checks all 694 cards for native acquisition, two-stack effect resolution and removal. Equipped weapon damage and cooldown are checked before acquisition, after three stacks, and after removal. Conditional activation, additive conditional stacking and a skill on a native Megabonk hero also pass. Build coverage checks all 100 effect keys and 18 conditions for runtime consumers. The full batch builds with zero warnings/errors and passes the catalog, models, enemy spawning, sampled healing and partial orb-fill checks. See [VERIFICATION.md](VERIFICATION.md) for the evidence and its limits.
+
+Version 0.4.0 adds visible item models, recoil, growing and swaying flowers, turret aim and tracers, expansion effects and distinct synthesized action/weapon sounds. Weapons now use Wildforge base damage and shots per second instead of inheriting weak native template defaults. Turret capacity cards increase the deployment limit up to four. Card descriptions identify actual stats, units and activation conditions.
 
 Compatibility changes include weapon-specific power/bounce/quantity/area effects on matching native archetypes, real timed slowing, coin-only healing and attraction, native regeneration units, dash windows, deliberate slam triggers, Wrench's turret and localized kill pools. Kill explosions stop recursive explosion chains. Modifier updates run when values change, and enemy snapshots are shared within a frame.
 
-[Download mod 0.3.0 and checksums](https://github.com/rytiss78/wildforge/releases/tag/megabonk-wildforge-v0.3.0) · [Nexus Mods](https://www.nexusmods.com/megabonk/mods/188)
+[Download mod 0.4.0 and checksums](https://github.com/rytiss78/wildforge/releases/tag/megabonk-wildforge-v0.4.0) · [Nexus Mods](https://www.nexusmods.com/megabonk/mods/188)
 
 ## Install and disable
 

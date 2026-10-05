@@ -1,6 +1,6 @@
 {
-  "description": "Wildforge meets Megabonk: 21 heroes and perks, 694 cards, 65 weapons, 54 enemy forms and 875 icons. Compatible skills and orb HP. Development alpha.",
-  "version_number": "0.3.0",
+  "description": "Wildforge meets Megabonk: 21 heroes, 694 cards, 65 weapons and 54 enemy forms. Stronger working attacks, item models, unique sounds, animated effects, dash and R-deployed turrets. Alpha.",
+  "version_number": "0.4.0",
   "dependencies": [
     "BepInEx-BepInExPack_IL2CPP-6.0.738"
   ],

@@ -12,7 +12,7 @@ internal static class SkillSmoke
         Effects.ConditionOverride=_=>true;
         try
         {
-            foreach(var card in Catalog.Data.Cards.Where(c=>c.Kind=="skill"))
+            foreach(var card in Catalog.Data.Cards)
             {
                 Effects.Tick(true);
                 var before=new Dictionary<string,float>(Effects.Values);
@@ -57,6 +57,6 @@ internal static class SkillSmoke
             if(native.playerStats.GetStat(EStat.AttackSpeed)<=before)throw new InvalidOperationException("Wildforge skill does not apply to Megabonk hero.");
         }
         finally {player.inventory=original;native.Cleanup();Effects.Tick(true);}
-        Plugin.Logger.LogInfo($"SKILLS PASS: all {count} skill cards acquired, stacked, resolved and removed; conditional activation and native hero compatibility passed.");
+        Plugin.Logger.LogInfo($"SKILLS PASS: all {count} cards acquired, stacked, resolved and removed; conditional activation and native hero compatibility passed.");
     }
 }

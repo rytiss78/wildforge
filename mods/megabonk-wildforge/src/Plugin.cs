@@ -10,7 +10,7 @@ public sealed class Plugin : BasePlugin
 {
     public const string Id = "wildforge.megabonk";
     public const string Name = "Megabonk Wildforge Mod";
-    public const string Version = "0.3.0";
+    public const string Version = "0.4.0";
     internal static ManualLogSource Logger = null!;
     internal static string AssetDirectory = Path.Combine(Path.GetDirectoryName(typeof(Plugin).Assembly.Location)!, "assets");
 

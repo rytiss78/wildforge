@@ -28,7 +28,7 @@ internal static class Effects
     {
         ["airJumps"]=8,["keyPower"]=.75f,["fallGuard"]=.95f,["jumpHeight"]=5,["slamRadius"]=4,["bounceJump"]=2,["flowerSeeds"]=2,["flowerRoots"]=.7f,
         ["rate"]=18,["speed"]=18,["maxHp"]=5000,["damage"]=3000,["dodge"]=.65f,["lifesteal"]=.4f,["crit"]=.85f,["freeze"]=.65f,["blind"]=.65f,
-        ["discount"]=.6f,["multishot"]=7,["chain"]=8,["pierce"]=12,["turretCount"]=1,["drones"]=3,["interest"]=.08f,["ghost"]=2,["pickup"]=20,["coinRadius"]=22,
+        ["discount"]=.6f,["multishot"]=7,["chain"]=8,["pierce"]=12,["turretCount"]=4,["drones"]=3,["interest"]=.08f,["ghost"]=2,["pickup"]=20,["coinRadius"]=22,
         ["regen"]=40,["revive"]=4,["discBounces"]=8,["boomerangPierce"]=12,["harpoonPull"]=3,["gravitySize"]=4,["hornStun"]=3,["bubbleTime"]=4,
         ["meteorCount"]=5,["bombSize"]=4,["airDamage"]=3,["landingHeal"]=50,["slamHeal"]=50,["airControl"]=.5f,["fallThreshold"]=20,["potionDuration"]=4,
         ["potionPower"]=3,["potionChance"]=.6f,["jumpShield"]=100,["jumpBlast"]=200,["slamFire"]=100,["slamPoison"]=100,["coinHeal"]=20,["chestHeal"]=200,
@@ -45,6 +45,7 @@ internal static class Effects
     internal static bool ExtraDamage;
     internal static float Value(string key)=>Values.GetValueOrDefault(key,Catalog.Data?.Stats.GetValueOrDefault(key,0)??0);
     internal static float Bonus(string key)=>Value(key)-(Catalog.Data?.Stats.GetValueOrDefault(key,0)??0);
+    internal static bool IsRatio(string key)=>Ratios.Contains(key);
     internal static void Tick(bool force=false)
     {
         var player=MyPlayer.Instance;
@@ -77,8 +78,14 @@ internal static class Effects
         }
         dirty|=SetSpecial(inv,"discount",EStat.ChestPriceMultiplier,-Math.Clamp(Value("discount"),0,.6f),EStatModifyType.Multiplication);
         dirty|=SetSpecial(inv,"airControl",EStat.MoveSpeedMultiplier,player.playerMovement?.grounded==false?Bonus("airControl"):0,EStatModifyType.Multiplication);
-        if(dirty){inv.playerStats.ForceUpdateStats();inv.statInventory.Tick();inv.playerStats.TryPopStatUpdatesQueue();}
-        if(hasContent) CombatEffects.Tick(player,.15f);
+        if(dirty)
+        {
+            inv.playerStats.ForceUpdateStats();inv.statInventory.Tick();inv.playerStats.TryPopStatUpdatesQueue();
+            // Existing weapons cache their stats. A card must update attacks already equipped.
+            foreach(var weapon in inv.weaponInventory.weapons)
+                foreach(var stat in NativeStats.Values.Distinct())if(weapon.Value.weaponStats.ContainsKey(stat))weapon.Value.UpdateStat(stat);
+        }
+        if(GameManager.Instance?.isPlaying==true) CombatEffects.Tick(player,.15f);
     }
     private static bool SetSpecial(PlayerInventory inv,string name,EStat stat,float value,EStatModifyType mode)
     {

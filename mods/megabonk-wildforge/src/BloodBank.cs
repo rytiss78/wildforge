@@ -30,6 +30,7 @@ internal static class BloodBank
     private static void Postfix(Enemy __instance,DamageContainer dc,float __state)
     {
         float dealt=Math.Clamp(__state-Math.Max(0,__instance.hp),0,__state);
+        if(dealt>0&&!Effects.ExtraDamage&&dc.damageSource?.StartsWith("wildforge_weapon_")==true)FeatureSmoke.WeaponHits++;
         CombatEffects.OnHit(__instance,dc,dealt);
     }
 }

@@ -24,7 +24,13 @@ internal static class MergeSmoke
         }
         foreach(var e in Catalog.Data.Cards)
             if(!manager.itemData.ContainsKey((EItem)e.RuntimeId)||!File.Exists(Path.Combine(Plugin.AssetDirectory,e.Portrait)))throw new InvalidDataException("Missing card/icon: "+e.Id);
-        foreach(var e in Catalog.Data.Weapons)if(!manager.weapons.ContainsKey((EWeapon)e.RuntimeId))throw new InvalidDataException("Missing weapon: "+e.Id);
+        foreach(var e in Catalog.Data.Weapons)
+        {
+            if(!manager.weapons.ContainsKey((EWeapon)e.RuntimeId))throw new InvalidDataException("Missing weapon: "+e.Id);
+            var model=Presentation.Model(e);
+            if(model.GetComponentsInChildren<MeshRenderer>(true).Length==0)throw new InvalidDataException("Missing item model: "+e.Id);
+            UObject.Destroy(model);
+        }
         foreach(var e in Catalog.Data.Enemies)if(!manager.enemyData.ContainsKey((Actors.Enemies.EEnemy)e.RuntimeId))throw new InvalidDataException("Missing enemy: "+e.Id);
         foreach(var icon in Catalog.Data.Icons)if(!File.Exists(Path.Combine(Plugin.AssetDirectory,icon)))throw new InvalidDataException("Missing icon: "+icon);
         int modelCount=0;

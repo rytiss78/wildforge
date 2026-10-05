@@ -17,7 +17,7 @@ try {
             if ((Get-Item -LiteralPath $log).LastWriteTimeUtc -ge $launchTime) {
                 $text = Get-Content -LiteralPath $log -Raw
                 if ($text -match 'SMOKE PASS:') { $passed = $true; break }
-                if ($text -match 'Error loading \[Megabonk Wildforge Mod|Wildforge runtime failed:|Wildforge hero model failed:|Wildforge enemy model failed:|Wildforge registration failed:') { break }
+                if ($text -match 'Error loading \[Megabonk Wildforge Mod|Wildforge runtime failed:|Wildforge hero model failed:|Wildforge enemy model failed:|Wildforge registration failed:|NATIVE TRACE:') { break }
             }
         }
         if ($testProcess.HasExited) { break }
