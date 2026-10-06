@@ -1,0 +1,219 @@
+# Wildforge Development Plan
+**Goal:** Transform from alpha prototype to a polished, good-looking, fun-to-play endless survivor game.
+**Current:** v0.8.2 — feature-rich but visually rough. Flat UI, literal icons, prototype-grade character presentation.
+**Target:** Consistent whimsical-surreal art direction, readable UI, juicy combat feel, responsive controls, 60fps on target PC.
+
+**Working principle:** Every increment is git-committed, screenshot-verified, and test-passing. Plans live on disk (this file + milestone docs) so long-horizon work survives context resets. Each phase has a "definition of done" with concrete checks.
+
+---
+
+## Phase 0 — Style Lock & Foundation (Week 1)
+**Goal:** Establish the visual language so everything after it is consistent.
+
+### 0.1 Art direction document
+- Write `native/docs/art-direction.md`: palette (5 core colors + biome accents), typography (display font for titles, body font for UI), shape language (rounded vs angular), lighting mood, particle style
+- Define the "one sentence" style: *warm, whimsical, slightly surreal — like a storybook came to life and got a bit dangerous*
+- Reference: the existing illustrated icon style (painted, warm outlines) is the north star
+
+### 0.2 Golden scene
+- Build one small scene: hero + 2 enemies + 1 chest + ground + sky
+- Apply the full art direction: proper lighting, contact shadows, particle ambience
+- Screenshot and save as `native/docs/golden-scene.png`
+- This is the quality bar for everything else
+
+### 0.3 Verification pipeline
+- Ensure `node scripts/native.mjs --test` (55 checks) is the gate
+- Add screenshot capture at each milestone (non-headless) for visual regression
+- Git: commit at every meaningful step
+
+**Done when:** `art-direction.md` exists, golden scene looks intentional, tests pass.
+
+---
+
+## Phase 1 — UI & Menu Overhaul (Week 1-2)
+**Goal:** Kill the "flat beige rectangle" look. This is the most visible ugliness.
+
+### 1.1 Theme system
+- Create `native/scripts/theme.gd`: centralized color palette, font assignments, spacing tokens
+- All UI scripts reference theme.gd instead of hard-coded colors
+- Fonts: use a display font (rounded, characterful) for titles; clean sans for body
+- Colors: warm parchment → deeper tones; rarity colors (Common=gray, Rare=blue, Epic=purple, Legendary=gold)
+
+### 1.2 Card redesign
+- Card layout: icon top-left, name top-right, rarity bar (colored strip), description bottom
+- Rarity glow: subtle colored border + inner shadow matching rarity
+- Icon legibility: audit all 694 icons; flag ones that don't convey their effect (boxing glove → "Aura" is wrong)
+- Hover state: slight scale up + tooltip with base comparison
+- Selection state: clear highlight, not just focus border
+
+### 1.3 Menu screens
+- Main menu: hero display with slow idle rotation, thematic background (not flat parchment)
+- Hero selection: larger portraits, name + tagline, smooth transition on select
+- Pause menu: compact, doesn't obscure the world too much
+- Level-up: dramatic moment — screen dim, cards slide in, "LEVEL UP" text with glow
+
+### 1.4 HUD
+- Health orb: cleaner, readable at distance
+- Weapon bar: compact, shows rank with visual weight
+- Minimap: themed border, clear icons
+- Buff timers: icon + countdown, consistent size
+
+**Done when:** Screenshots of menu, cards, HUD look intentional and cohesive. No flat beige rectangles. Rarity is instantly readable. Tests pass.
+
+---
+
+## Phase 2 — Character & World Quality (Week 2-4)
+**Goal:** Make the world feel alive and characters feel present.
+
+### 2.1 Character presentation
+- Improve hero models: better proportions, more expressive idle poses
+- Enemy readability: silhouettes distinguishable at gameplay camera distance
+- Contact shadows under all characters
+- Hit reactions: brief squash/stretch, white flash on damage
+- Death: particles + shrink/fade, not just disappear
+
+### 2.2 World props & terrain
+- Terrain: painted textures (already exists) — verify tiling, contrast, no visible seams
+- Props (trees, rocks, chests): consistent style, proper scale, contact shadows
+- Biome transitions: smooth material blends, clear visual boundaries
+- Scenery density: enough to feel alive, not so much it hides enemies
+
+### 2.3 Lighting & atmosphere
+- Directional light per biome (warm woods, cool frost, etc.)
+- Ambient occlusion (if performance allows)
+- Fog: subtle distance fog for depth
+- Sky: per-biome gradient (already has biome_sky.gdshader — verify quality)
+
+### 2.4 Particle effects
+- Ambient: floating dust/spores/petals per biome
+- Combat: hit sparks, blood/sap splatter per creature type
+- Status: fire (embers), poison (green bubbles), ice (crystal shards)
+- Level-up: burst of light + rising particles
+- Chest open: sparkle burst + light
+
+**Done when:** Golden scene matches Phase 0 quality bar in all 6 biomes. Characters and enemies are readable at gameplay distance. Tests pass.
+
+---
+
+## Phase 3 — Gameplay Feel & Audio (Week 3-5)
+**Goal:** Make combat feel good. Juice.
+
+### 3.1 Combat juice
+- Screen shake: small on hits, medium on criticals, large on explosions
+- Hit flash: enemies flash white 50ms on damage
+- Damage numbers: floating, colored by type (physical=white, fire=orange, poison=green)
+- Kill feedback: squash + particles + sound, slight camera pulse on multi-kills
+- Weapon recoil: each weapon type has distinct visual kick
+
+### 3.2 Audio
+- Weapon sounds: distinct per type (pistol crack, shotgun boom, rail zap)
+- Hit sounds: material-sensitive (metal clang, flesh thud, plant squish)
+- Status: fire crackle, poison bubble, ice crack
+- UI: card select (satisfying click), level up (rising chime), chest open (sparkle)
+- Music: per-biome ambient, boss theme, level-up sting
+- Audio pooling: no new AudioStreamPlayer per bullet (performance)
+
+### 3.3 Control feel
+- Movement: acceleration/deceleration (not instant), slight camera lead
+- Dash: brief invulnerability frames + trail effect
+- Jump: anticipation (crouch) → launch → land (dust puff)
+- Camera: smooth follow with slight lag, zoom out on dash, zoom in on boss
+
+### 3.4 Enemy readability
+- Attack telegraphs: wind-up animation before attack
+- Elite markers: glowing outline + name tag
+- Boss: health bar top of screen, phase transitions with dramatic moment
+
+**Done when:** Playing 5 minutes feels satisfying. Combat is readable. Audio is present and non-annoying. Tests pass.
+
+---
+
+## Phase 4 — Content & Balance (Week 4-6)
+**Goal:** Expand variety and tune the loop.
+
+### 4.1 New content
+- 5+ new weapons with distinct mechanics
+- 5+ new enemy types (1-2 per biome)
+- 10+ new card entries (single-benefit, matching Phase 1 card design)
+- 2-3 new hero abilities (if existing 21 feel repetitive)
+
+### 4.2 Balance pass
+- Run 10+ full sessions, record: time to clear, death points, power curve
+- Adjust XP curve, enemy HP/damage scaling, chest prices
+- Ensure all 65 weapons feel distinct (no "best weapon" that dominates)
+- Rarity balance: Common is usable, Legendary is exciting but not broken
+
+### 4.3 Progression
+- Career progression: visible milestones, unlockable heroes
+- Achievements: verify all 108 work, add 10-15 more for new content
+- Score system: kill streaks, exploration bonuses, style points
+
+**Done when:** 10 full runs feel varied. No single dominant build. All new content tested. Tests pass.
+
+---
+
+## Phase 5 — Polish & Release (Week 6-8)
+**Goal:** Ship a build people want to play.
+
+### 5.1 Performance
+- Target: 60fps at 1080p on mid-range GPU
+- Profile: GPU, CPU, memory, draw calls
+- Optimization: LOD on props, cull distant enemies, batch particles
+- Load time: <5s to playable
+
+### 5.2 Bug pass
+- Full run: all 6 biomes, all bosses, all 21 heroes
+- Co-op: 4-player, all interactions
+- Save/load: career, mid-run, achievements
+- Edge cases: rapid pause/resume, window resize, controller disconnect
+
+### 5.3 Accessibility
+- Colorblind mode: shape + color for rarity
+- UI scale: adjustable text size
+- Audio: independent music/SFX volume
+- Controls: full remapping, controller-first
+
+### 5.4 Release
+- Windows build (existing pipeline)
+- README update with new features
+- Screenshots for store page
+- Version bump to 1.0 (or 0.9.0 if still alpha)
+
+**Done when:** Build is stable, performant, fun, and looks good. Release is packaged.
+
+---
+
+## Workstream Division (for parallel agents)
+| Workstream | Phase | Independent? |
+|---|---|---|
+| UI theme + cards | P1 | Yes (hud.gd, theme.gd, card rendering) |
+| Character/world models | P2 | Yes (GLB assets, world.gd, actor_rig.gd) |
+| Lighting/atmosphere | P2 | Partial (shaders, environment) |
+| Combat juice | P3 | Yes (game.gd combat, particles) |
+| Audio | P3 | Yes (sound.gd, assets/music, SFX) |
+| New content (weapons/enemies) | P4 | Yes (catalog.json, rules.gd, content scripts) |
+| Balance | P4 | No (needs content done first) |
+| Performance | P5 | No (needs all content done) |
+
+**Dependencies:** P0 → P1 → P2/P3 (parallel) → P4 → P5
+**Parallelizable:** P2 and P3 can run concurrently. Content (P4) can start after P2 models are done.
+
+## Verification Gates
+- After every commit: `node scripts/native.mjs --test` passes
+- After every phase: screenshot review against art-direction.md
+- After P2/P3: 5-minute playtest, record feel notes
+- After P4: 10 full runs, balance review
+- After P5: full bug pass, performance profile
+
+## File Map (where things live)
+- **UI:** `native/scripts/hud.gd`, `native/scripts/theme.gd` (new)
+- **Game logic:** `native/scripts/game.gd` (main loop), `native/scripts/rules.gd` (data/rules)
+- **World:** `native/scripts/world.gd`, `native/scripts/biome_landmarks.gd`
+- **Characters:** `native/scripts/actor_rig.gd`, `native/assets/style3d/*.glb`
+- **Content data:** `native/data/catalog.json` (heroes, weapons, loot, achievements)
+- **Icons:** `native/assets/illustrated/` (painted PNGs)
+- **Shaders:** `native/shaders/*.gdshader`
+- **Audio:** `native/assets/music/`, `native/scripts/sound.gd`
+- **Tests:** `node scripts/native.mjs --test` (55 Godot checks), `npm test` (JS tests)
+- **Build:** `build/Wildforge.exe`, `dist/Wildforge-0.8.2-Windows.zip`
+- **Mod (frozen):** `mods/megabonk-wildforge/` — do not touch
