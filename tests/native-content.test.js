@@ -17,9 +17,9 @@ test('every native loot card has one beneficial bonus with a shared rarity basel
  }
  for(const key of ['jumpHeight','airJumps','fallGuard','slamPower','slamRadius','bounceJump'])assert.ok(baselines.has(key),key);
 });
-test('all 100 stable local achievements have paired valid illustrated 256px icons',()=>{
+test('all stable local achievements have paired valid illustrated 256px icons',()=>{
  const steam=JSON.parse(readFileSync(new URL('community/achievements.json',root),'utf8'));
- assert.equal(steam.achievements.length,100);
+ assert.equal(steam.achievements.length,catalog.achievements.length);
  assert.deepEqual(steam.achievements.map(a=>a.apiName),catalog.achievements.map(a=>a.id));
  const hashes=new Set();
  for(const a of steam.achievements){
@@ -29,7 +29,7 @@ test('all 100 stable local achievements have paired valid illustrated 256px icon
    if(field==='iconUnlocked')hashes.add(png.toString('base64'));
   }
  }
- assert.equal(hashes.size,100);
+ assert.equal(hashes.size,steam.achievements.length);
 });
 test('all six first-discovery announcements have original text and rendered audio',()=>{
  const provenance=JSON.parse(readFileSync(new URL('native/assets/voices/voice-provenance.json',root),'utf8'));

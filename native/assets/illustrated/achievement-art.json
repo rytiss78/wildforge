@@ -698,5 +698,61 @@
     "motif": "badge",
     "sourceTile": 23,
     "secondaryTile": null
+  },
+  {
+    "id": "WF_beacon",
+    "tile": 100,
+    "motif": "badge",
+    "sourceTile": 23,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_merchant",
+    "tile": 101,
+    "motif": "badge",
+    "sourceTile": 23,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_mimic",
+    "tile": 102,
+    "motif": "badge",
+    "sourceTile": 23,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_reaction",
+    "tile": 103,
+    "motif": "badge",
+    "sourceTile": 23,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_rescue",
+    "tile": 104,
+    "motif": "badge",
+    "sourceTile": 23,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_ping",
+    "tile": 105,
+    "motif": "badge",
+    "sourceTile": 23,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_banana",
+    "tile": 106,
+    "motif": "badge",
+    "sourceTile": 23,
+    "secondaryTile": null
+  },
+  {
+    "id": "WF_terrace",
+    "tile": 107,
+    "motif": "badge",
+    "sourceTile": 23,
+    "secondaryTile": null
   }
 ]
