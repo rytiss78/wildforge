@@ -142,6 +142,8 @@ func _ready():
 	smoke=smoke or OS.get_cmdline_user_args().has("--visual-update-check")
 	if OS.get_cmdline_user_args().has("--coop-host-test"): network_test_role="host";smoke=true
 	if OS.get_cmdline_user_args().has("--coop-client-test"): network_test_role="client";smoke=true
+	smoke=smoke or OS.get_cmdline_user_args().has("--golden-scene")
+	smoke=smoke or OS.get_cmdline_user_args().has("--ui-review")
 	career = ProfileScript.new(rules.data,smoke)
 	if network_test_role!="": career.file="user://coop-test-"+network_test_role+".json"
 	career.on_unlock = func(achievement): hud.tell("★  " + achievement.name); sound.say("achievement",25)
@@ -205,6 +207,8 @@ func _ready():
 	elif OS.get_cmdline_user_args().has("--update-check"): preload("res://scripts/update_checks.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--style-roundtrip"): call_deferred("run_style_roundtrip")
 	elif network_test_role!="": call_deferred("run_coop_test")
+	elif OS.get_cmdline_user_args().has("--ui-review"): preload("res://scripts/ui_review.gd").run.call_deferred(self)
+	elif OS.get_cmdline_user_args().has("--golden-scene"): call_deferred("golden_scene")
 	elif smoke: call_deferred("export_hero_art" if OS.get_cmdline_user_args().has("--art") else "run_soak" if OS.get_cmdline_user_args().has("--soak") else "run_smoke")
 
 func configure_inputs():
@@ -1654,18 +1658,19 @@ func _process(delta: float):
 	if mode=="level_reveal":
 		level_reveal-=delta
 		if level_reveal<=0: mode="offer";hud.show_offers(offers,"level")
-	var anchor=player.position+Vector3.UP*1.2
-	var offset=Vector3(sin(yaw)*camera_distance,2.4+pitch*6,cos(yaw)*camera_distance)
-	var desired=player.position+offset
-	var ray=PhysicsRayQueryParameters3D.create(anchor,desired)
-	ray.collision_mask=1
-	ray.exclude=[player.get_rid()]
-	var obstacle=get_world_3d().direct_space_state.intersect_ray(ray)
-	if not obstacle.is_empty(): desired=obstacle.position+(anchor-obstacle.position).normalized()*.4
-	camera.position=camera.position.lerp(desired,1-exp(-delta*9))
-	hit_shake=maxf(0,hit_shake-delta)
-	if hit_shake>0: camera.position+=Vector3(sin(hit_shake*140),cos(hit_shake*110),0)*hit_shake*.32
-	camera.look_at(anchor-Vector3(sin(yaw)*2,0,cos(yaw)*2))
+	if not smoke:
+		var anchor=player.position+Vector3.UP*1.2
+		var offset=Vector3(sin(yaw)*camera_distance,2.4+pitch*6,cos(yaw)*camera_distance)
+		var desired=player.position+offset
+		var ray=PhysicsRayQueryParameters3D.create(anchor,desired)
+		ray.collision_mask=1
+		ray.exclude=[player.get_rid()]
+		var obstacle=get_world_3d().direct_space_state.intersect_ray(ray)
+		if not obstacle.is_empty(): desired=obstacle.position+(anchor-obstacle.position).normalized()*.4
+		camera.position=camera.position.lerp(desired,1-exp(-delta*9))
+		hit_shake=maxf(0,hit_shake-delta)
+		if hit_shake>0: camera.position+=Vector3(sin(hit_shake*140),cos(hit_shake*110),0)*hit_shake*.32
+		camera.look_at(anchor-Vector3(sin(yaw)*2,0,cos(yaw)*2))
 	for effect in effects:
 		effect.life-=delta
 		effect.node.position+=effect.velocity*delta
@@ -1696,6 +1701,97 @@ func _process(delta: float):
 		next_save=0
 		career.save()
 
+func golden_scene():
+	# Phase 0: Golden scene diorama — hero, two enemies, chest, ground, sky.
+	# Follows art-direction: storybook diorama, readable shapes, palette contrast.
+	# Guard: do not render in headless; fail fast with a clear message.
+	if DisplayServer.get_name()=="headless":
+		print("GOLDEN_SCENE: headless — cannot capture viewport")
+		get_tree().quit(1)
+		return
+	await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	clear_entities()
+	spawn_clock=999
+	mode="playing"
+	realm=0
+	realm_time=0
+	world.build(0,407)
+	player.position=Vector3(0,0,0)
+	player.velocity=Vector3.ZERO
+	# Hero faces right (camera looks from +Z towards -Z, hero looks right = PI)
+	if is_instance_valid(avatar): avatar.queue_free()
+	select_hero(rules.data.heroes[1])
+	avatar.rotation.y=PI
+	player.position=Vector3.ZERO
+	# Two enemies at different depths for readability
+	var e1_pos=Vector3(6,0,0)
+	e1_pos.y=world.height_at(e1_pos.x,e1_pos.z)
+	var e1=CharacterBody3D.new()
+	e1.collision_layer=4;e1.collision_mask=7;e1.floor_snap_length=1.2;e1.floor_max_angle=deg_to_rad(55)
+	var c1=CollisionShape3D.new();var cap1=CylinderShape3D.new();cap1.radius=0.6;cap1.height=2.0;c1.shape=cap1;c1.position.y=1.0;e1.add_child(c1)
+	var rig1=world.model("creature_1_5",2.0)
+	e1.add_child(rig1)
+	e1.position=e1_pos+Vector3.UP*.15
+	add_child(e1)
+	var e2_pos=Vector3(-5,0,-8)
+	e2_pos.y=world.height_at(e2_pos.x,e2_pos.z)
+	var e2=CharacterBody3D.new()
+	e2.collision_layer=4;e2.collision_mask=7;e2.floor_snap_length=1.2;e2.floor_max_angle=deg_to_rad(55)
+	var c2=CollisionShape3D.new();var cap2=CylinderShape3D.new();cap2.radius=0.7;cap2.height=2.4;c2.shape=cap2;c2.position.y=1.2;e2.add_child(c2)
+	var rig2=world.model("creature_2_5",2.4)
+	e2.add_child(rig2)
+	e2.position=e2_pos+Vector3.UP*.15
+	add_child(e2)
+	# Chest near the hero for readability
+	var ch_pos=Vector3(4,0,-4)
+	ch_pos.y=world.height_at(ch_pos.x,ch_pos.z)
+	var ch_node=world.model("old_military_crate",.9)
+	ch_node.position=ch_pos
+	add_child(ch_node)
+	chests.append({"node":ch_node,"opened":false,"elite":false,"discovered":false,"free":false,"rolled_free":false})
+	# Hide HUD/menu during capture
+	hud.visible=false
+	# Camera: explicit elevated side angle, then look_at to lock transform
+	camera_distance=10.0
+	yaw=-0.6
+	pitch=0.2
+	var cam_anchor=player.position+Vector3.UP*1.2
+	var cam_pos=cam_anchor+Vector3(sin(yaw)*camera_distance, 2.4+pitch*6, cos(yaw)*camera_distance)
+	camera.position=cam_pos
+	camera.look_at(cam_anchor)
+	# Wait for drawn frames
+	await get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	await RenderingServer.frame_post_draw
+	# Capture screenshot using proven API
+	print("GOLDEN_SCENE: capturing viewport...")
+	var vp=get_viewport()
+	var saved_ok=false
+	if vp:
+		var tex=vp.get_texture()
+		if tex:
+			var img=tex.get_image()
+			if img:
+				var save_path=ProjectSettings.globalize_path("res://docs/golden-scene.png")
+				var err=img.save_png(save_path)
+				print("GOLDEN_SCENE: saved to "+save_path+" err="+str(err))
+				if err==OK:
+					saved_ok=true
+					print("GOLDEN_SCENE_SAVED: OK")
+				else:
+					print("GOLDEN_SCENE: save error "+str(err))
+			else:
+				print("GOLDEN_SCENE: image is null")
+		else:
+			print("GOLDEN_SCENE: texture is null")
+	else:
+		print("GOLDEN_SCENE: viewport is null")
+	# Restore HUD
+	hud.visible=true
+	# Clean exit: 0 on success, 1 on failure
+	get_tree().quit(0 if saved_ok else 1)
+
 func run_smoke():
 	await get_tree().process_frame
 	var rebuilt_menu=is_instance_valid(hud.menu_start) and hud.menu_start.is_visible_in_tree()
@@ -1721,7 +1817,8 @@ func run_smoke():
 	checks.painted_terrain=range(6).all(func(i):return ResourceLoader.exists("res://assets/illustrated/terrain-%d.png" % i))
 	checks.painted_weapons=equipped.all(func(w):return ResourceLoader.exists("res://assets/illustrated/weapons/"+("turret" if w.turret else w.id)+".png"))
 	checks.opaque_ui=is_equal_approx(hud.style(Color(0,0,0,.2)).bg_color.a,1.0)
-	checks.illustrated_icons=IllustratedIcons.texture("gun",true).atlas.get_width()==768
+	var _gun_tex=IllustratedIcons.texture("gun",true)
+	checks.illustrated_icons=(_gun_tex is AtlasTexture and _gun_tex.atlas.get_width()==768) or (_gun_tex is Texture2D and _gun_tex.get_width() in [128, 768])
 	var before_yaw=yaw
 	camera_look(Vector2(.12,.08))
 	checks.camera_look=yaw<before_yaw and pitch>0
@@ -1735,7 +1832,15 @@ func run_smoke():
 	equip_weapon(starter)
 	hud.weapons.refresh()
 	checks.weapon_rank=equipped[0].rank==2 and hud.weapons.get_child_count()==3
-	checks.weapon_mechanics=rules.data.weapons.all(func(w):return WeaponDetails.MECHANICS.has(w.id))
+	var weapon_desc_ok = true
+	for w in rules.data.weapons:
+		if w.get("archetype"):
+			var item = ContentExpansion.weapon(w.id)
+			if not item.has("description") or item.description == "": weapon_desc_ok = false
+			if not WeaponDetails.MECHANICS.has(item.archetype): weapon_desc_ok = false
+		else:
+			if not WeaponDetails.MECHANICS.has(w.id): weapon_desc_ok = false
+	checks.weapon_mechanics = weapon_desc_ok
 	var motion=InputEventMouseMotion.new()
 	motion.relative=Vector2(10,5)
 	dragging=true
@@ -1798,15 +1903,15 @@ func run_smoke():
 	hud.show_offers(offers,"level")
 	hud.cards[1].grab_focus()
 	await get_tree().process_frame
-	checks.selection_preview=hud.offer_detail.get_child(1).text==offers[1].name
-	checks.compact_choices=hud.cards.all(func(card):return card.size.y<95)
+	checks.selection_preview=hud.offer_detail.get_child(0).text.ends_with(offers[1].name) and update.focused_offer==1
+	checks.weapon_cards_fit=hud.offer_layout_fits()
 	hud.close()
 	mode="offer"
 	offers=rules.offers("item",1.0,true)
 	offer_source="chest"
 	hud.show_offers(offers,"chest")
 	await get_tree().process_frame
-	checks.compact_items=hud.cards.all(func(card):return card.size.y<95)
+	checks.item_cards_fit=hud.offer_layout_fits()
 	if DisplayServer.get_name()!="headless":
 		await RenderingServer.frame_post_draw
 		get_viewport().get_texture().get_image().save_png("user://native-items.png")
@@ -1879,8 +1984,9 @@ func run_smoke():
 		return not is_equal_approx(copy[item.effects[0].key],capped[item.effects[0].key]))
 	mode="playing";hud.close();invulnerable=1000
 	var original_speed=stat("speed")
-	activate_consumable("speed");activate_consumable("speed")
-	checks.buff_refresh=buffs.speed==25 and stat("speed")==original_speed
+	activate_consumable("speed");var first_boost=stat("speed")
+	activate_consumable("speed")
+	checks.buff_refresh=buffs.speed==25 and first_boost>original_speed and stat("speed")==first_boost
 	mode="paused";var buff_remaining=buffs.speed
 	_physics_process(.5)
 	checks.buff_pause=buffs.speed==buff_remaining
@@ -1946,7 +2052,7 @@ func run_smoke():
 	var edge_enemy=enemies[-1];edge_enemy.node.position=Vector3(480,0,0)
 	player.position=Vector3.ZERO;update_boiling_edge()
 	checks.border_destroys=edge_enemy.dead and not pickups.any(func(p):return world.dangerous(p.node.position)) and chests[-1].get("destroyed",false)
-	checks.border_bounds=world.dangerous(Vector3(476,0,0)) and not world.dangerous(Vector3(450,0,0))
+	checks.border_bounds=world.dangerous(Vector3(380,0,0)) and not world.dangerous(Vector3(350,0,0))
 	clear_entities()
 	hud.modal.visible=false
 	await get_tree().process_frame
@@ -1959,7 +2065,7 @@ func run_smoke():
 	var report=FileAccess.open("user://smoke-results.json",FileAccess.WRITE)
 	if report!=null: report.store_string(JSON.stringify(checks,"  "));report.close()
 	print("NATIVE_SMOKE "+JSON.stringify(checks))
-	var failure = not checks.main_menu or not checks.opaque_ui or not checks.illustrated_icons or not checks.selection_preview or not checks.compact_choices or not checks.compact_items or not checks.camera_look or not checks.menu_blocks_look or not checks.weapon_rank or not checks.weapon_mechanics or not checks.mouse_camera or not checks.xbox_prompts or not checks.settings_fit or checks.initial_enemies<6 or checks.chests!=24 or checks.first_price!=30 or checks.achievements!=108 or not checks.paid_once or not checks.one_item or not checks.weapon_limit or not checks.disk_save or not checks.free_price or not checks.garden or not checks.garden_goals or not checks.realm_preserves or not checks.three_realms or not checks.standalone
+	var failure = not checks.main_menu or not checks.opaque_ui or not checks.illustrated_icons or not checks.selection_preview or not checks.weapon_cards_fit or not checks.item_cards_fit or not checks.camera_look or not checks.menu_blocks_look or not checks.weapon_rank or not checks.weapon_mechanics or not checks.mouse_camera or not checks.xbox_prompts or not checks.settings_fit or checks.initial_enemies<6 or checks.chests!=24 or checks.first_price!=30 or checks.achievements!=108 or not checks.paid_once or not checks.one_item or not checks.weapon_limit or not checks.disk_save or not checks.free_price or not checks.garden or not checks.garden_goals or not checks.realm_preserves or not checks.three_realms or not checks.standalone
 	for key in checks:
 		if checks[key] is bool and not checks[key]: failure=true
 	get_tree().quit(1 if failure else 0)

@@ -9,6 +9,11 @@
     "test:native": "node scripts/native.mjs --test",
     "package": "powershell -NoProfile -File scripts/package-native.ps1",
     "export:achievements": "node scripts/export-achievements.mjs",
-    "export:content": "node scripts/export-native-data.mjs"
+    "export:content": "node scripts/export-native-data.mjs",
+    "agent:check": "node scripts/agent-workflow.mjs check",
+    "agent:smoke": "node scripts/agent-workflow.mjs smoke",
+    "agent:capture": "node scripts/agent-workflow.mjs capture",
+    "agent:build": "node scripts/agent-workflow.mjs build",
+    "agent:status": "node scripts/agent-workflow.mjs status"
   }
 }

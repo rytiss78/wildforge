@@ -1,6 +1,6 @@
 # Wildforge Development Plan
 **Goal:** Transform from alpha prototype to a polished, good-looking, fun-to-play endless survivor game.
-**Current:** v0.8.2 — feature-rich but visually rough. Flat UI, literal icons, prototype-grade character presentation.
+**Current:** standalone overhaul in progress (2026-10-07). Reward cards and health HUD improved; world readability, combat pace and measured performance remain the immediate priorities. Published v0.8.2 is historical, not this development build.
 **Target:** Consistent whimsical-surreal art direction, readable UI, juicy combat feel, responsive controls, 60fps on target PC.
 
 **Working principle:** Every increment is git-committed, screenshot-verified, and test-passing. Plans live on disk (this file + milestone docs) so long-horizon work survives context resets. Each phase has a "definition of done" with concrete checks.
@@ -217,3 +217,10 @@
 - **Tests:** `node scripts/native.mjs --test` (55 Godot checks), `npm test` (JS tests)
 - **Build:** `build/Wildforge.exe`, `dist/Wildforge-0.8.2-Windows.zip`
 - **Mod (frozen):** `mods/megabonk-wildforge/` — do not touch
+
+## Current execution checkpoints — 2026-10-07
+
+- Phase 1.2 card layout/focus: implemented and screenshot-reviewed. Five horizontal rarity cards, full selected comparison, keyboard/controller selection retained. Comprehensive 694-icon semantic audit remains open.
+- Phase 1.4 HUD: HP/shield readout and bar added; controls recede after the opening. Further minimap/menu consolidation remains open.
+- Next bounded deliverable: readable, responsive combat view. Capture an actual fixed-seed gameplay camera baseline; reduce terrain noise and oversized foreground enemies, then measure frame times before/after.
+- Follow with encounter pacing and early reward cadence, then remaining menus/content quality. Do not add catalog volume before these foundations work.
