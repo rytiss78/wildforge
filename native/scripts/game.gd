@@ -2374,8 +2374,10 @@ func run_soak():
 		var item=rules.data.weapons.filter(func(w):return w.id==id)[0].duplicate(true);item.kind="weapon";item.strength=1;item.tier=0;equip_weapon(item)
 	while enemies.size()<110: spawn_enemy(randf_range(10,28))
 	var frame_times=[];var began=Time.get_ticks_msec();var next_region=0;var snapshots={};var max_nodes=0;var lowest_y=0.0;var crowd_min=1000.0
+	var next_spacing_sample=0.0;var skip_next_sample=false
 	while Time.get_ticks_msec()-began<36000:
 		await get_tree().process_frame
+		var omit_frame=skip_next_sample;skip_next_sample=false
 		var seconds=float(Time.get_ticks_msec()-began)/1000
 		if mode=="offer": choose_offer(0)
 		if mode=="replace": replace_weapon(0,offers[0])
@@ -2396,12 +2398,13 @@ func run_soak():
 		if int(seconds*10)%31==0: try_jump()
 		lowest_y=minf(lowest_y,player.position.y-world.height_at(player.position.x,player.position.z))
 		max_nodes=maxi(max_nodes,int(Performance.get_monitor(Performance.OBJECT_NODE_COUNT)))
-		if fmod(seconds,6)>2:
+		if fmod(seconds,6)>2 and not omit_frame:
 			frame_times.append(get_process_delta_time()*1000)
 			if not snapshots.has(region) and DisplayServer.get_name()!="headless":
 				await RenderingServer.frame_post_draw
 				get_viewport().get_texture().get_image().save_png("user://biome-"+str(region)+".png");snapshots[region]=true
-		if int(seconds*10)%10==0:
+		if seconds>=next_spacing_sample:
+			next_spacing_sample=seconds+1;skip_next_sample=true
 			for a in enemies:
 				for b in enemies:
 					if a.net_id==b.net_id or a.dead or b.dead or absf(a.node.position.y-b.node.position.y)>=minf(a.height,b.height): continue

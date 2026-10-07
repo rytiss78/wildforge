@@ -233,3 +233,6 @@ Opening XP curve and one closer chest delivered. Fixed normal-stat scenario reac
 
 ### 2026-10-07 menu checkpoint
 Phase1.3 main menu/hero selection delivered and captured with two heroes/controller focus. Six-biome traversal inspected; player locatable but foreground props still large. Heavy soak p95 23.519ms needs clean diagnostic sampling before attributing all cost to gameplay. Next: correct sampler and verify heavy-crowd performance.
+
+### 2026-10-07 verified playable preview
+Final current-source Windows export: `.build-staging/agent-workflow/2026-10-07T15-44-29-883Z-build/Wildforge.exe`, exported67-check smoke passed. Cleaned diagnostic heavy-crowd soak p50 11.965ms/p95 16.702ms across6biomes. Measurement correction only. Next investigate low spacing metric, then other-hero/later-boss pacing. This is a tested preview; remaining phase acceptance criteria are still open.
