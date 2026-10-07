@@ -46,18 +46,18 @@ export function assessSmoke(output) {
   return {checksPassed: checks.length, metadataFields: Object.keys(fields).length - checks.length};
 }
 
-export function assessPng(path, started) {
+export function assessPng(path, started, minimum=320) {
   const info = statSync(path);
   if (info.mtimeMs < started - 1000) throw new Error('Capture is stale.');
   const data = readFileSync(path);
   if (!data.subarray(0, 8).equals(Buffer.from([137,80,78,71,13,10,26,10]))) throw new Error('Capture is not a PNG.');
   const width = data.readUInt32BE(16), height = data.readUInt32BE(20);
-  if (width < 320 || height < 180) throw new Error('Capture is unexpectedly small.');
+  if (width < minimum || height < Math.min(minimum,180)) throw new Error('Capture is unexpectedly small.');
   return {path, width, height, bytes: info.size, sha256: createHash('sha256').update(data).digest('hex'), visualReview: 'required'};
 }
 
 async function main(action) {
-  if (!['check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'status'].includes(action)) {
+  if (!['check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'status'].includes(action)) {
     console.error('Usage: node scripts/agent-workflow.mjs check|smoke|capture|capture-ui|combat-review|pace-review|soak|integration|build|status'); return 2;
   }
   const git = (...args) => spawnSync('git', ['-C', root, ...args], {encoding:'utf8', windowsHide:true}).stdout?.trim() ?? '';
@@ -80,6 +80,12 @@ async function main(action) {
     if (action === 'check' || action === 'build' || !existsSync(join(root,'native/.godot/global_script_class_cache.cfg'))) {
       await step('godot-import',godot,['--headless','--path',join(root,'native'),'--editor','--import'],180000);
       await step('gdscript-parse',godot,['--headless','--path',join(root,'native'),'--check-only','--script','res://scripts/game.gd'],45000);
+    }
+    if (action === 'weapon-icons') {
+      const output=await step('weapon-icons',godot,['--path',join(root,'native'),'--script','res://scripts/render_weapon_icons.gd'],180000);
+      const weapons=JSON.parse(readFileSync(join(root,'native/data/catalog.json'),'utf8')).weapons;
+      if(!output.includes('WEAPON_ICONS_COMPLETE '+weapons.length)) throw new Error('Missing weapon render completion.');
+      report.icons=weapons.map(w=>assessPng(join(root,'native/assets/illustrated/weapon-icons',w.id+'.png'),started,128));
     }
     if (action === 'smoke') report.smoke=assessSmoke(await step('native-smoke',godot,['--headless','--path',join(root,'native'),'--','--smoke'],90000));
     if (action === 'integration') {
@@ -106,7 +112,7 @@ async function main(action) {
     if (action === 'capture-ui') {
       const output=await step('ui-capture',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--ui-review'],90000);
       if (!output.includes('UI_REVIEW_SAVED: OK')) throw new Error('UI capture failed.');
-      report.capture=['menu','hero','hud','potions','potion-icons','chest-opening','chest-reels','offers','focus','weapons'].map(name=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','ui-'+name+'.png'),started));
+      report.capture=['menu','hero','ice-match','hud','potions','potion-icons','chest-opening','chest-reels','offers','focus','weapons'].map(name=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','ui-'+name+'.png'),started));
     }
     if (action === 'coop') {
       const results=await Promise.allSettled(['host','client'].map(role=>step('coop-'+role,godot,['--headless','--path',join(root,'native'),'--','--coop-'+role+'-test'],90000)));

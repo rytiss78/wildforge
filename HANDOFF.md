@@ -11,10 +11,10 @@ f161c1e cards/focus/HPHUD;9616aeb camera/enemy scale/player locator/staggered30H
 4e3b2e6 scenery camera-to-hero stippled cutaway (paint+outline), smallerdecorativeprops. Actor/projectile materials optout; outlinesindependent. Fixed obstructingtree/moonprop before/after inspected.
 44a6039 hero cloth/leather/metal/ceramic material categories. Subtle polish; no new character models or selectable skins.
 8901d4c Hunter's Oath: shrine60,-35m, available60s; optional3marked tougher ordinary foes/45s; freeRare+chest per player on success; no-cost timeout; oneattempt/realm. Shrine/targetminimapmarks, compactprogress. Host-authoritative activation; replicated state drives each player's reward exactly once.
-Batch14 (commit next):14semantic potion SVG icons now match world bottle palettes and effects, replacing unrelated skill art. Generator scripts/create-potion-icons.py.
+71a07a4:14semantic potion SVG icons now match world bottle palettes and effects, replacing unrelated skill art. Generator scripts/create-potion-icons.py.
 
 ## Latest fresh validation / playable build
-EXE G:/game/.build-staging/agent-workflow/2026-10-07T16-41-31-053Z-build/Wildforge.exe. Keep Wildforge.pck alongside. Final import/parse/export and71exported smoke booleans+9metadata passed. Development artifact, not release distribution.
+EXE G:/game/.build-staging/agent-workflow/2026-10-07T16-51-20-084Z-build/Wildforge.exe. Keep Wildforge.pck alongside. Final import/parse/export and72exported smoke booleans+9metadata passed. Development artifact, not release distribution.
 check16-40-40:13JS+parse/import passed. Final UI diagnostic compiled in build above.
 capture-ui16-41-13:10PNGs/focus/layout assertions. All14potion icons contact sheet and four-buff gameplayHUD inspected; before16-39-43 inspected. Earliermaterial before16-29-50/after16-30-38 duck/potato inspected.
 hunt-review16-36-27:11booleans including gated/proximityactivation,nocharge,3marks,duplicateblock,timeout,reset,singlereward,5Rare+offers,captures. Active/completePNG inspected.
@@ -30,3 +30,5 @@ Stronger scenery/weapon art and general item/skill/weapon semantic icon audit. E
 node scripts/agent-workflow.mjs check|smoke|integration|capture-ui|combat-review|pace-review|soak|journey-review|scenery-review|hunt-review|coop|build. Wrapper isolates APPDATA, bounds runtime, saves full logs/results. No improvisedengineargs. view_image used because vision_analyze unavailable.
 Python C:/Users/rytis/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe.
 Preserve preexisting modified AGENTS.md, untracked native/docs/golden-scene.png and nul; never stage/delete them. No savesdeleted,modedits,publishing. No active tool sessions.
+
+Latest batch15: user requested allguns match icons. Fixed elemental model identities and rendered all65icons from WeaponModel (sameheld/previewconstructor); prioritylookup bypasses legacycontentart. All65distinct; fullcontactsheet/QueenTeaIceGun UI inspected. Finalcheck13JS+parse16-49-19;capture-ui16-49-58 now11PNGs. Firstexport16-50-10 failed stale128/768iconresolutionassertion; acceptednew256afterpublicrenderverification. Finalexport16-51-20 passed72smoke+9metadata. native/docs/weapon-identity.md documents regeneration; new wrapper weapon-icons. Specific gun/icon mismatch request complete. Broader nonweaponsemantic/modelquality roadmap remains open.

@@ -273,3 +273,6 @@ Hunter's Oath shrine,3marked foes/45seconds, freeRare+chest on success, no-cost 
 
 ### Batch14 potion semantics complete
 All14temporary-drink HUD icons now depict matching bottles/effect symbols; full-set and in-game renders inspected. General item/skill/weapon semantic audit remains open. Next stronger scenery/weapon assets, broader semantic audit and normal-play hunt balance before further endgame expansion.
+
+### Batch15 all weapon model/icon identities fixed
+User-provided IceGun mismatch traced to generic elemental GLBs plus independently illustrated card art. Added elemental model hardware/colors and regenerated all65weapon icons from the exact WeaponModel constructor used in hands/hero previews, including variants and sentries. Weapon image lookup takes precedence over legacy content art. All65PNG hashes distinct; full contact sheets and corrected QueenTea/IceGun preview inspected. See native/docs/weapon-identity.md for regeneration contract. Broader non-weapon item/skill semantics remain open.

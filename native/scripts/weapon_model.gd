@@ -45,6 +45,7 @@ func setup(weapon_id: String):
 	var asset="mint_pistol" if id=="gun" else "weapon_"+id
 	if ResourceLoader.exists("res://assets/style3d/"+asset+".glb"):
 		var solid=StyleModel.new();solid.setup(asset);base.add_child(solid)
+		preload("res://scripts/weapon_identity.gd").apply(id,solid)
 		if id=="saw":
 			for node in solid.model.find_children("*","MeshInstance3D",true,false):
 				if str(node.name).begins_with("Disc") or str(node.name).begins_with("Tooth"): saw_parts.append({"node":node,"rest":node.transform})

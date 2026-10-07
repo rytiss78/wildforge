@@ -1850,7 +1850,7 @@ func run_smoke():
 	checks.painted_weapons=equipped.all(func(w):return ResourceLoader.exists("res://assets/illustrated/weapons/"+("turret" if w.turret else w.id)+".png"))
 	checks.opaque_ui=is_equal_approx(hud.style(Color(0,0,0,.2)).bg_color.a,1.0)
 	var _gun_tex=IllustratedIcons.texture("gun",true)
-	checks.illustrated_icons=(_gun_tex is AtlasTexture and _gun_tex.atlas.get_width()==768) or (_gun_tex is Texture2D and _gun_tex.get_width() in [128, 768])
+	checks.illustrated_icons=(_gun_tex is AtlasTexture and _gun_tex.atlas.get_width()==768) or (_gun_tex is Texture2D and _gun_tex.get_width() in [128, 256, 768])
 	var before_yaw=yaw
 	camera_look(Vector2(.12,.08))
 	checks.camera_look=yaw<before_yaw and pitch>0
@@ -2091,6 +2091,7 @@ func run_smoke():
 	await get_tree().process_frame
 	var old_realm=realm
 	sound.start(407);sound.tick(.01,true,false)
+	checks.weapon_icon_models=rules.data.weapons.all(func(w):return IllustratedIcons.texture(w.id,true).resource_path=="res://assets/illustrated/weapon-icons/"+str(w.id)+".png")
 	checks.long_music=range(3).all(func(i):return sound.stream("realm_theme_"+str(i)).get_length()>53)
 	var theme_before=sound.atmosphere.stream
 	sound.phrase+=1;sound.play_phrase()

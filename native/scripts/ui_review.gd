@@ -19,6 +19,8 @@ static func run(game):
 	for frame in range(4): await game.get_tree().process_frame
 	okay=game.get_viewport().gui_get_focus_owner().text=="Tank Potato" and game.hero.name=="Tank Potato" and okay
 	okay=await capture(game,"hero") and okay
+	game.select_hero(game.rules.data.heroes.filter(func(h):return h.weapon=="ice")[0]);game.hud.start_menu()
+	okay=await capture(game,"ice-match") and okay
 	game.select_hero(original_hero)
 	game.start_run(407);game.set_physics_process(false);game.spawn_clock=99999
 	game.player.position=Vector3(0,.2,0);game.camera.position=Vector3(0,10,15)
