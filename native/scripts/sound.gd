@@ -8,6 +8,8 @@ var drums = AudioStreamPlayer.new()
 var rhythm = AudioStreamPlayer.new()
 var lead = AudioStreamPlayer.new()
 var synth = AudioStreamPlayer.new()
+var atmosphere = AudioStreamPlayer.new()
+var theme_realm=-1
 var rng = RandomNumberGenerator.new()
 var phrase = 0
 var clock = 0.0
@@ -38,7 +40,7 @@ func setup(options: Dictionary):
 		var reverb=AudioEffectReverb.new();reverb.room_size=.82;reverb.damping=.65;reverb.wet=.24;reverb.dry=.90;reverb.spread=.85;reverb.predelay_msec=65
 		AudioServer.add_bus_effect(sky_bus,reverb)
 	voice.bus="SkyVoice";voice.attenuation_model=AudioStreamPlayer3D.ATTENUATION_DISABLED;voice.max_distance=120;voice.panning_strength=.65
-	for player in [voice,drums,rhythm,lead,synth]: add_child(player)
+	for player in [voice,drums,rhythm,lead,synth,atmosphere]: add_child(player)
 	voice.pitch_scale = 1.0
 	for i in range(12):
 		var channel=AudioStreamPlayer3D.new();channel.unit_size=7;channel.max_distance=75;channel.max_db=0;add_child(channel);sfx_pool.append(channel)
@@ -76,6 +78,7 @@ func start(seed_value: int):
 	clock = 0
 	active = true
 	last_hurt=-100;hurt_voice.stop();hurt_source=null;pending_biome=""
+	theme_realm=-1;atmosphere.stop()
 	play_phrase()
 
 func play_phrase():
@@ -87,7 +90,13 @@ func play_phrase():
 	lead.stream = stream("lead_" + str(riff % 4))
 	synth.stream = stream("pad")
 	lead.volume_db -= 80 if genre=="metal" else 4 if boss or riff >= 2 else 12
-	synth.volume_db -= 10
+	# 32-phrase arc: leave breathing room between combat-heavy sections.
+	var section=(phrase/4)%8
+	if not boss:
+		if section in [0,4]: drums.volume_db-=9;rhythm.volume_db-=10
+		if section in [2,6]: lead.volume_db=linear_to_db(maxf(.0001,volume))-12
+		if section==7: rhythm.volume_db-=5
+	synth.volume_db -= 16
 	for player in [drums,rhythm,lead,synth]: player.play()
 
 func tick(delta: float, playing: bool, has_boss: bool):
@@ -100,7 +109,14 @@ func tick(delta: float, playing: bool, has_boss: bool):
 	for channel in weapon_loops.values(): channel.stream_paused=not playing
 	if playing and not voice.playing and not pending_biome.is_empty():
 		var id=pending_biome;pending_biome="";say(id,0)
-	for player in [drums,rhythm,lead,synth]: player.stream_paused = not playing
+	for player in [drums,rhythm,lead,synth,atmosphere]: player.stream_paused = not playing
+	var realm_index=clampi(get_parent().realm,0,2)
+	if active and theme_realm!=realm_index:
+		theme_realm=realm_index
+		var theme=stream("realm_theme_"+str(realm_index)).duplicate() as AudioStreamWAV
+		theme.loop_mode=AudioStreamWAV.LOOP_FORWARD;theme.loop_begin=0;theme.loop_end=theme.data.size()/2
+		atmosphere.stream=theme;atmosphere.play();atmosphere.stream_paused=not playing
+	atmosphere.volume_db=linear_to_db(maxf(.0001,float(settings.music)))-(12 if boss else 3)
 	voice.volume_db = linear_to_db(maxf(.0001, float(settings.voice)))
 	if not playing or not active: return
 	if genre != settings.get("genre", "metal"):

@@ -258,3 +258,6 @@ Next batch after ground materials: compact HUD and chest presentation. Then enco
 
 ### Batch9 compact HUD and chest presentation complete
 Larger hinged boxes, opening visible before modal, five actual reward-icon reels with sequential sound locks; full movement bindings remain in controls menu. Compact clock/status and one-line controls hint free gameplay space. Next longer evolving soundtrack, then encounters/character and prop art.
+
+### Batch10 longer music complete (listening review open)
+Three original53-second realm melodies sustain across backing phrases, with procedural quiet/heavy sections and boss response. Runtime continuity/pause/realm transition tested in exported build. Remaining: subjective mix/listening review. Next bounded batch: character/material and scenery art with before/after rendered acceptance, followed by semantic icon audit and encounter expansion.

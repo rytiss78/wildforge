@@ -2080,6 +2080,17 @@ func run_smoke():
 	clear_entities()
 	hud.modal.visible=false
 	await get_tree().process_frame
+	var old_realm=realm
+	sound.start(407);sound.tick(.01,true,false)
+	checks.long_music=range(3).all(func(i):return sound.stream("realm_theme_"+str(i)).get_length()>53)
+	var theme_before=sound.atmosphere.stream
+	sound.phrase+=1;sound.play_phrase()
+	checks.music_theme_continuity=sound.atmosphere.stream==theme_before
+	sound.tick(.01,false,false)
+	checks.music_pause=sound.atmosphere.stream_paused and sound.rhythm.stream_paused
+	realm=(old_realm+1)%3;sound.tick(.01,true,true)
+	checks.music_realm_and_boss=sound.theme_realm==realm and sound.atmosphere.stream!=theme_before and not sound.atmosphere.stream_paused and sound.boss
+	realm=old_realm
 	mode="test_finished"
 	sound.active=false
 	for audio_player in sound.get_children():
