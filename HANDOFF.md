@@ -20,7 +20,7 @@ Updated2026-10-07. User wants a substantial standalone quality overhaul: ugly, b
 ## Latest user steering and active work
 User explicitly requests impactful boss spawns, meaningful timer ending, coherent minimap, irregular island, portal-summoned final map boss and more visible portal. Then continue broader textures/skins, mechanics/events/endgame/music work; do not stop at those five fixes.
 Batch6 realm climax implemented: RealmJourney state flow, boss intro+healthbar, Eclipse600s/escalation30s/sky+music, portal vortex/beacon+HUDdirection, finalguardian beforetravel/win. Journey-review11checks+PNGs passed/inspected(15-57-41),integration55passed(15-56-42),build67smoke passed(15-58-00). Co-op wired, networktestnotrerun. Commit now.
-Next batch organic coastline shared across collision/deadlysea/minimap/shader, preserve24chests and interactions. Currentmap squareinsidecircle. Then continue user-requested art/gameplay/audio development. Other outstanding roadmap remains.
+Batch7 organiccoast/minimap implemented; integration55 and journey13checks passed; before/after coast PNGs inspected16-02-37. Finalbuild latest-build.json passed67smoke. Commit now. Next integrate generated moss ground texture from C:/Users/rytis/.codex/generated_images/01a10b10-07c7-76a3-bc65-7e58a599995f/exec-9351c2b6-c242-468d-92a4-180308bba91c.png. imagegen skill read; built-in generation used and output inspected. Then continue gameplay mechanics/events/music/skins.
 
 ## Working state/commands
 Preexisting modified AGENTS.md, untracked native/docs/golden-scene.png and nul remain untouched/uncommitted. Read git status/diff before edits. No saves deleted, no mod edits.

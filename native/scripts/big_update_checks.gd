@@ -8,8 +8,9 @@ static func run(game: Node3D):
 	game.equipped.clear();game.clear_entities();game.mode="playing"
 	var checks=expansion
 	checks.world_dimensions=RealmWorld.EXTENT==400 and RealmWorld.SPAWN_EXTENT==370
-	checks.boundary=not game.world.dangerous(Vector3(350,0,0)) and game.world.dangerous(Vector3(376,0,0))
-	checks.visible_sea=game.world.has_node("DeadlySea") and game.world.height_at(376,0)<0 and game.world.height_at(360,0)>0
+	var coast=game.world.shore_radius(Vector3.RIGHT)
+	checks.boundary=not game.world.dangerous(Vector3(coast-15,0,0)) and game.world.dangerous(Vector3(coast+8,0,0))
+	checks.visible_sea=game.world.has_node("DeadlySea") and game.world.height_at(coast+8,0)<0 and game.world.height_at(coast-8,0)>0
 	var jump_stats=game.stats.duplicate(true)
 	var boots=game.rules.data.loot.filter(func(i):return i.id=="jump-boots-item")[0]
 	game.rules.apply_effects(jump_stats,boots.effects)
@@ -17,7 +18,7 @@ static func run(game: Node3D):
 	checks.extra_air_jump=game.rules.data.loot.any(func(i):return i.id=="extra-hop-item" and i.effects[0].key=="airJumps" and i.effects[0].amount==1)
 	game.hud.update(0)
 	var minimap=game.hud.map_view
-	checks.minimap_no_fog=minimap.terrain!=null and minimap.terrain.get_image().get_pixel(64,64)==RealmWorld.COLORS[0]
+	checks.minimap_no_fog=minimap.terrain!=null and minimap.terrain.get_image().get_pixel(128,128)==RealmWorld.COLORS[0]
 	checks.minimap_interactions=minimap.interactables.any(func(i):return i.kind=="merchant") and minimap.interactables.any(func(i):return i.kind=="supply") and minimap.interactables.filter(func(i):return i.kind=="landmark").size()==6
 	checks.rare_boxes=game.rules.chest_price(0)==30 and RunRules.WEAPON_CAP==3
 	checks.achievements=game.career.achievements.size()==108 and game.career.achievements.map(func(a):return a.id).size()==108
@@ -114,7 +115,7 @@ static func run(game: Node3D):
 	checks.ping=count==1 and game.update.pings.size()==count
 	var map=game.hud.map_view;map.camera_yaw=PI*.5
 	var rotated=map.point(Vector3(10,0,0),100)-map.size*.5
-	checks.map_rotation=absf(rotated.x)<.01 and rotated.y>0
+	checks.map_north_up=rotated.x>0 and absf(rotated.y)<.01
 	game.make_chest(Vector3(3,0,0),false);var chest=game.chests[-1];chest.mimic=true;gold=game.gold;game.update.start_mimic(chest)
 	checks.mimic_no_charge=game.gold==gold and not chest.opened and not game.update.mimic.is_empty()
 	game.update.tick(.7);checks.mimic_coins=game.pickups.any(func(p):return p.kind=="gold")
@@ -139,7 +140,7 @@ static func run(game: Node3D):
 		if DisplayServer.get_name()!="headless":
 			await RenderingServer.frame_post_draw;game.get_viewport().get_texture().get_image().save_png("user://big-update-biome-%d.png" % biome)
 	checks.base_routes=worst_slope<tan(deg_to_rad(52))
-	game.player.position=Vector3(372,game.world.height_at(372,0)+.2,0);game.yaw=-PI*.5
+	game.player.position=Vector3(coast-3,game.world.height_at(coast-3,0)+.2,0);game.yaw=-PI*.5
 	game.world.ensure_ground(game.player.position);game._process(1.0)
 	for i in range(24): await game.get_tree().process_frame
 	game.update_boiling_edge()

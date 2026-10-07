@@ -243,3 +243,6 @@ Final current-source Windows export: `.build-staging/agent-workflow/2026-10-07T1
 3. Continue beyond these fixes: improved textures/skins, encounter mechanics/events, endgame and music. Do not stop at the first five requests or represent the whole game as finished.
 
 Progression decision: two wardens awaken the portal early; at10minutes the Eclipse also awakens it, changes sky/music and escalates enemies every30s. Portal activation summons one final guardian, whose defeat permits travel; third-island guardian leads to victory. Existing three-world progression and builds preserved.
+
+### Batch7 organic island complete
+Seeded lobed coastline shared by terrain, dead-sea damage/water/sand shader and minimap. North-up single-frame map with distinct portal ring. Chests repositioned inland,24/four-per-biome preserved. Next art and gameplay/audio continuation.

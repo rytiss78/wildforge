@@ -114,7 +114,7 @@ async function main(action) {
       if (!line) throw new Error('Missing journey checks.');
       report.journey=JSON.parse(line.slice('JOURNEY_REVIEW '.length));
       if(Object.values(report.journey).some(v=>v===false)) throw new Error('Journey checks failed');
-      report.capture=['portal','boss'].map(name=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','journey-'+name+'.png'),started));
+      report.capture=['portal','boss','coast'].map(name=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','journey-'+name+'.png'),started));
     }
     if (action === 'soak') {
       const output=await step('soak',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--soak'],120000);

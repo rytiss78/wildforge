@@ -39,8 +39,15 @@ static var prop_meshes={}
 const SKY_TOP=[Color("76c8e6"),Color("7fb7a9"),Color("18234d"),Color("83cdeb"),Color("f49a78"),Color("302457")]
 const SKY_HORIZON=[Color("dfedda"),Color("c1d8b7"),Color("a3b8d9"),Color("fff7e2"),Color("ffd3a0"),Color("ba9bd5")]
 
+static func coast_radius(angle: float,world_seed: int,world_realm: int) -> float:
+	var phase=float(world_seed%23)*.03+world_realm*.4
+	return 344+24*sin(3*(angle+phase))+14*sin(5*(angle-phase))+8*cos(7*(angle+phase*.5))
+
+func shore_radius(p: Vector3) -> float:
+	return coast_radius(atan2(p.z,p.x),seed_value,realm)
+
 func dangerous(p: Vector3) -> bool:
-	return maxf(absf(p.x),absf(p.z))>=DANGER_EXTENT
+	return Vector2(p.x,p.z).length()>=shore_radius(p)
 
 func weather_tick(delta: float,p: Vector3):
 	var biome=biome_at(p)
@@ -64,12 +71,13 @@ func weather_tick(delta: float,p: Vector3):
 	environment.fog_depth_begin=lerpf(environment.fog_depth_begin,35.0 if biome in [1,3] else 45.0,1-exp(-delta*.6))
 	environment.fog_depth_end=lerpf(environment.fog_depth_end,140.0 if biome in [1,3] else 165.0,1-exp(-delta*.6))
 	edge_near=false
+	var radius=Vector2(p.x,p.z).length();var coast=shore_radius(p)
 	for index in range(border_steam.size()):
-		var axis=0 if index==0 else 2;var distance_value=absf(p[axis])
-		var nearby=distance_value>EXTENT-65;edge_near=edge_near or nearby
+		var nearby=radius>coast-28;edge_near=edge_near or nearby
 		border_steam[index].emitting=nearby;border_patches[index].visible=nearby
 		if not nearby: continue
-		var point=p;point[axis]=signf(p[axis])*DANGER_EXTENT;point.y=.15
+		var angle=atan2(p.z,p.x)+(index-.5)*.025
+		var point=Vector3(cos(angle),0,sin(angle))*coast;point.y=.15
 		border_steam[index].position=point;border_patches[index].position=point
 
 func biome_at(p: Vector3) -> int:
@@ -114,9 +122,9 @@ func compute_height_at(x: float,z: float) -> float:
 	var terrace=floorf(original/5.0)*5.0+smoothstep(.62,1.0,fposmod(original,5.0)/5.0)*5.0
 	var route=1.0-smoothstep(4.0,12.0,crossing_distance(p))
 	var inland=lerpf(terrace,original*.85,route)*smoothstep(0.0,28.0,Vector2(x,z).length())
-	var edge=maxf(absf(x),absf(z))
-	var shore=2.0-maxf(0.0,edge-369.0)/3.0
-	return lerpf(inland,shore,smoothstep(340.0,369.0,edge))
+	var edge=Vector2(x,z).length();var coast=shore_radius(p)
+	var shore=2.0-maxf(0.0,edge-(coast-6.0))/3.0
+	return lerpf(inland,shore,smoothstep(coast-32.0,coast-4.0,edge))
 
 func portal_site() -> Vector3:
 	var p=landmarks[(realm+1)%landmarks.size()]+Vector3(18,0,16)
@@ -173,7 +181,7 @@ func make_chunk(cell: Vector2i):
 	var local_rng=RandomNumberGenerator.new();local_rng.seed=seed_value+cell.x*73856093+cell.y*19349663
 	for i in range(12):
 		var p=Vector3(cell.x*CHUNK+local_rng.randf()*CHUNK,0,cell.y*CHUNK+local_rng.randf()*CHUNK)
-		if maxf(absf(p.x),absf(p.z))>335: continue
+		if Vector2(p.x,p.z).length()>shore_radius(p)-25: continue
 		var portal=portal_site()
 		if Vector2(p.x-portal.x,p.z-portal.z).length()<14: continue
 		if Vector2(p.x,p.z).length()<13 or absf(p.x+sin(p.z*.035)*9)<6: continue
@@ -301,7 +309,7 @@ func ensure_ground(p: Vector3):
 func make_boundaries():
 	var ocean=MeshInstance3D.new();ocean.name="DeadlySea"
 	var sea_plane=PlaneMesh.new();sea_plane.size=Vector2(2800,2800);ocean.mesh=sea_plane
-	var water=ShaderMaterial.new();water.shader=load("res://shaders/deadly_sea.gdshader");ocean.material_override=water;add_child(ocean)
+	var water=ShaderMaterial.new();water.shader=load("res://shaders/deadly_sea.gdshader");water.set_shader_parameter("phase",float(seed_value%23)*.03+realm*.4);ocean.material_override=water;add_child(ocean)
 	for side in [-1,1]:
 		for axis in [0,2]:
 			var mesh=BoxMesh.new();mesh.size=Vector3(16,100,EXTENT*2+24) if axis==0 else Vector3(EXTENT*2+24,100,16)

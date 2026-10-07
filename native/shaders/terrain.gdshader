@@ -30,6 +30,8 @@ void fragment(){
  else if(fraction>1.0-width){paint=mix(paint,biome_paint(mod(index+1.0,6.0),uv),smoothstep(1.0-width,1.0+width,fraction));}
  if(length(p.xz)<69.0) paint=mix(biome_paint(0.0,uv),paint,smoothstep(61.0,69.0,length(p.xz)));
  float path=1.0-smoothstep(2.2,3.5,abs(p.x+sin(p.z*.035)*9.0));
- paint=mix(paint,vec3(.79,.68,.43),smoothstep(349.0,369.0,max(abs(p.x),abs(p.z))));
+ float a=atan(p.z,p.x);
+ float coast=344.0+24.0*sin(3.0*(a+phase))+14.0*sin(5.0*(a-phase))+8.0*cos(7.0*(a+phase*.5));
+ paint=mix(paint,vec3(.79,.68,.43),smoothstep(coast-22.0,coast-3.0,length(p.xz)));
  ALBEDO=mix(paint,paint*.8+vec3(.13,.10,.06),path*.65);EMISSION=paint*.035;ROUGHNESS=1.0;SPECULAR=0.0;
 }

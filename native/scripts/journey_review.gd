@@ -10,6 +10,13 @@ static func run(game):
 	var checks={}
 	checks.captures=await capture(game,"portal")
 	checks.sealed=game.Journey.state(game)=="sealed"
+	var coast=game.world.shore_radius(Vector3.RIGHT)
+	checks.irregular_coast=absf(coast-game.world.shore_radius(Vector3.FORWARD))>5
+	checks.chests_inland=game.chests.all(func(c):return not game.world.dangerous(c.node.position))
+	game.player.position=Vector3(coast-12,game.world.height_at(coast-12,0),0)
+	game.camera.position=game.player.position+Vector3(-12,10,14);game.camera.look_at(Vector3(coast+14,0,0))
+	checks.captures=await capture(game,"coast") and checks.captures
+	game.player.position=game.gate_position+Vector3(0,0,14)
 	game.Journey.activate(game);checks.seal_blocks=not game.events.get("guardian_summoned",false)
 	game.realm_time=600;game.update_events()
 	checks.eclipse=game.events.get("eclipse",false) and game.Journey.state(game)=="ready" and game.events.eclipse_stage==1

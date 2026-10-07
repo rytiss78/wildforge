@@ -392,7 +392,8 @@ func make_chests():
 	for biome in range(6):
 		for band in range(4):
 			var angle=(biome+.2+rng.randf()*.6)*TAU/6-float(seed_value%23)*.03-realm*.4
-			var radius=75+band*75+rng.randf_range(0,20)
+			var radius=[75,145,210,280][band]+rng.randf_range(0,15)
+			if band==3: radius=RealmWorld.coast_radius(angle,seed_value,realm)-26-rng.randf_range(0,8)
 			if biome==0 and band==0: radius=38+rng.randf_range(0,7)
 			var p=Vector3(cos(angle)*radius,0,sin(angle)*radius)
 			p.y=world.height_at(p.x,p.z)
@@ -743,6 +744,9 @@ func random_spawn(radius: float,anchor: Vector3=Vector3.INF) -> Vector3:
 	var p = origin + Vector3(cos(angle)*radius,0,sin(angle)*radius)
 	p.x = clampf(p.x,-RealmWorld.SPAWN_EXTENT,RealmWorld.SPAWN_EXTENT)
 	p.z = clampf(p.z,-RealmWorld.SPAWN_EXTENT,RealmWorld.SPAWN_EXTENT)
+	var safe_radius=world.shore_radius(p)-18
+	if Vector2(p.x,p.z).length()>safe_radius:
+		p=Vector3(p.x,0,p.z).normalized()*safe_radius
 	p.y = world.height_at(p.x,p.z)
 	return p
 
@@ -2070,7 +2074,8 @@ func run_smoke():
 	var edge_enemy=enemies[-1];edge_enemy.node.position=Vector3(480,0,0)
 	player.position=Vector3.ZERO;update_boiling_edge()
 	checks.border_destroys=edge_enemy.dead and not pickups.any(func(p):return world.dangerous(p.node.position)) and chests[-1].get("destroyed",false)
-	checks.border_bounds=world.dangerous(Vector3(380,0,0)) and not world.dangerous(Vector3(350,0,0))
+	var coast=world.shore_radius(Vector3.RIGHT)
+	checks.border_bounds=world.dangerous(Vector3(coast+8,0,0)) and not world.dangerous(Vector3(coast-15,0,0))
 	clear_entities()
 	hud.modal.visible=false
 	await get_tree().process_frame
@@ -2399,7 +2404,8 @@ func run_soak():
 		var region=mini(5,int(seconds/6))
 		if region>=next_region:
 			var angle=(region+.5)*TAU/6-float(seed_value%23)*.03
-			player.position=Vector3(cos(angle)*330,0,sin(angle)*330);world.ensure_ground(player.position)
+			var route_radius=RealmWorld.coast_radius(angle,seed_value,realm)-45
+			player.position=Vector3(cos(angle)*route_radius,0,sin(angle)*route_radius);world.ensure_ground(player.position)
 			player.position.y=world.height_at(player.position.x,player.position.z)+.2;player.velocity=Vector3.ZERO;landing_ready=false;last_safe=player.position
 			for enemy in enemies: enemy.node.queue_free()
 			enemies.clear()
