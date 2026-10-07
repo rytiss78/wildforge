@@ -45,15 +45,20 @@ which exposed a real uniqueness mismatch. Handoff instruction: fix the mismatch,
 - In-game HUD already intentionally falls back to `IllustratedIcons` for achievement index ≥100 (native/scripts/hud.gd:739). The 8 new badges therefore do NOT need to fit the 10x10 native atlases; the 256px distinct PNGs are the community/Steam export surface the test enforces. hud.gd left untouched.
 - Achievement IDs and save format preserved; no IDs renamed.
 
+## Batch — 2026-10-07: wrote `native/docs/art-direction.md` (Phase 0, item 1 done)
+- New `native/docs/art-direction.md` (145 lines): style statement (warm whimsical storybook diorama), 5 core palette hexes verified from code (ink `#17293D`, paper `#FFF8DE`, warm light `#FFF2DE`, star gold `#FFF1C8`, terracotta `#B67552`) plus verified biome accents 0–4, typography (marked proposed — HUD fonts not yet audited), rounded-shape rules, warm single-sun lighting, restrained particle budget, and 7 measurable readability criteria (contrast ≥4.5:1, silhouette flat-render test, color distinctness, distance, screen share, frame check via golden scene, motion).
+- Honest status: typography, Prism biome palette, card radii and new hero models are marked **proposed/unverified** in §3/§8 pending a rendered check. No game code touched; no assets modified.
+- Committed as local docs checkpoint (this commit).
+- Next task unchanged: build the golden scene (see below).
+
 ## Unresolved / next concrete task
-1. **Phase 0** (PLAN.md): write `native/docs/art-direction.md` (palette, typography, shape language, lighting mood, particle style, one-sentence style).
-2. Build the golden scene (hero + 2 enemies + 1 chest + ground + sky), screenshot to `native/docs/golden-scene.png`, verify visually.
+1. ~~Phase 0 item 1: art-direction.md~~ — **done 2026-10-07** (see batch above).
+2. Build the golden scene (hero + 2 enemies + 1 chest + ground + sky), screenshot to `native/docs/golden-scene.png`, verify visually against art-direction.md §7. Capture pattern to reuse: `game.gd` smoke path uses `await RenderingServer.frame_post_draw` + `get_viewport().get_texture().get_image().save_png("user://...")` (e.g. line 1849); models via `world.model(name, height)` (`world.gd:120`); heroes via `select_hero(...)` (`game.gd:264`).
 3. First focused UI/theme batch: `native/scripts/theme.gd` + card/HUD pass against the art direction.
 4. At milestone end: run the Godot integrated checks (`node scripts/native.mjs --test`) and a short playable run; record results.
    (The 55 integrated Godot checks were NOT rerun in this batch — historical only until re-run.)
 
 ## Environment notes (for future sessions)
-- Node: use `C:\Users
-ytis\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe` (npm was unavailable in the handoff shell; `node --test` works from G:\game).
+- Node: use `C:\Users\rytis\.cache\codex-runtimes\codex-primary-runtime\dependencies\node\bin\node.exe` (npm was unavailable in the handoff shell; `node --test` works from G:\game).
 - Python with PIL: `C:/Users/rytis/AppData/Local/hermes/installs/9f9fc6403a6bec78/environments/f2292ca6a116451e86fb5ed0c1cbc8a8/venv/Scripts/python.exe` (system python has no PIL).
 - Historical (handoff, not re-verified): compression config updated (no-thinking summaries, 45K trigger, 300s cap); test log at Hermes logs/wildforge-compression-test.json.
