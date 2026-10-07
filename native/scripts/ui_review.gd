@@ -25,6 +25,14 @@ static func run(game):
 	game.camera.look_at(Vector3(0,0,-5));game.gold=75;game.hp=game.stats.maxHp*.7
 	game.hud.update(0)
 	okay=await capture(game,"hud") and okay
+	game.make_chest(Vector3(1,game.world.height_at(1,0),0),false)
+	game.gold=1000;game.camera.position=Vector3(5,4,6);game.camera.look_at(Vector3(1,.7,0))
+	game.buy_chest(game.chests[-1])
+	await game.get_tree().create_timer(.35).timeout
+	okay=await capture(game,"chest-opening") and okay
+	game.reveal_clock=.8+(game.reveal_duration-.8)*.72
+	okay=await capture(game,"chest-reels") and okay
+	game.finish_reveal();game.hud.close()
 	var offers=[]
 	for pair in [["jump-boots-item",0],["augment-air-damage",1],["augment-dash-rate",2],["jump-boots-skill",3],["augment-kill-speed",1]]:
 		var item=game.rules.loot_by_id[pair[0]].duplicate(true)

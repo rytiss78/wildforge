@@ -29,3 +29,5 @@ Next boundedbatch compactHUD and visiblechestopening/reels, then encounters/audi
 ## Working state/commands
 Preexisting modified AGENTS.md, untracked native/docs/golden-scene.png and nul remain untouched/uncommitted. Read git status/diff before edits. No saves deleted, no mod edits.
 Use node scripts/agent-workflow.mjs check|smoke|integration|capture-ui|combat-review|pace-review|soak|build. Wrappers isolate APPDATA and preserve full logs/results. Give check/smoke/capture >=180s outer timeout, build>=600s. Build output is a development artifact, not release distribution. vision_analyze unavailable; inspect actualPNG via view_image.
+
+Batch9 committed next: compact HUD, 31% taller hinged chests, five reward reels with latch/tick/lock sounds. Fresh capture-ui16-13-16 eight PNGs (HUD/opening/reels inspected),check13JS+parse16-12-32,smoke67+9metadata16-13-29. Latest playable build G:/game/.build-staging/agent-workflow/2026-10-07T16-18-06-886Z-build/Wildforge.exe; final sound edits parse/export/67smoke passed. Next evolving longer music, then encounters/skins/semantic art audit.

@@ -184,14 +184,16 @@ func ui_effect(id: String):
 	if float(settings.sfx)<=0: return
 	var key="ui_"+id
 	if not cache.has(key):
-		var frequencies={"fire":220.0,"poison":196.0,"ice":880.0,"engineering":330.0,"armour":440.0,"coins":1046.5,"garden":587.3,"healing":659.3,"lightning":784.0,"magic":622.3,"movement":740.0,"damage":293.7,"reroll":392.0,"card":523.3,"sneeze":90.0}
-		var frequency=float(frequencies.get(id,523.3));var duration=.12 if id=="card" else .32
+		var frequencies={"fire":220.0,"poison":196.0,"ice":880.0,"engineering":330.0,"armour":440.0,"coins":1046.5,"garden":587.3,"healing":659.3,"lightning":784.0,"magic":622.3,"movement":740.0,"damage":293.7,"reroll":392.0,"card":523.3,"reel_tick":1350.0,"reel_lock":783.99,"chest_latch":135.0,"sneeze":90.0}
+		var frequency=float(frequencies.get(id,523.3));var duration=.055 if id=="reel_tick" else .12 if id=="card" else .32
 		var audio=AudioStreamWAV.new();audio.mix_rate=22050;audio.format=AudioStreamWAV.FORMAT_16_BITS
 		var bytes=PackedByteArray();bytes.resize(int(duration*22050)*2)
 		var noise_rng=RandomNumberGenerator.new();noise_rng.seed=id.hash()
 		for i in range(bytes.size()/2):
 			var t=float(i)/22050;var envelope=sin(PI*t/duration)*exp(-t*7)
 			var sample=(sin(TAU*frequency*t)+sin(TAU*frequency*1.5*t)*.35)*.17*envelope
+			if id=="chest_latch": sample=(noise_rng.randf_range(-.18,.18)+sin(TAU*frequency*t)*.35)*exp(-t*24)
+			if id=="reel_tick": sample=sin(TAU*frequency*t)*.12*exp(-t*65)
 			if id=="card": sample=noise_rng.randf_range(-.22,.22)*exp(-t*35)+sin(TAU*(frequency+t*1600)*t)*.1*envelope
 			if id=="fire": sample+=noise_rng.randf_range(-.12,.12)*envelope
 			if id=="poison": sample=sin(TAU*frequency*t*(1+sin(t*58)*.18))*.22*envelope

@@ -400,7 +400,7 @@ func make_chests():
 			make_chest(p,false)
 
 func make_chest(p: Vector3, elite: bool):
-	var node = world.model("old_military_crate",.9)
+	var node = preload("res://scripts/treasure_chest.gd").create(elite)
 	node.position = p
 	add_child(node)
 	chests.append({"node":node,"opened":false,"elite":elite,"discovered":elite,"free":elite,"rolled_free":false})
@@ -502,11 +502,11 @@ func buy_chest(chest: Dictionary):
 	if price > 0: paid_chests += 1
 	chest.opened = true
 	# A tiny, collectible sneeze bonus; the box is still paid for exactly once.
-	sound.effect("sneeze",chest.node.position)
+	sound.ui_effect("chest_latch")
 	for coin in range(4): spawn_pickup(chest.node.position+Vector3.UP*.8,"gold",1)
 	var squish=chest.node.create_tween();squish.tween_property(chest.node,"scale",Vector3(1.12,.8,1.12),.12);squish.tween_property(chest.node,"scale",Vector3.ONE,.18).set_trans(Tween.TRANS_BACK)
-	if chest.node.has_meta("lid"): create_tween().tween_property(chest.node.get_meta("lid"),"rotation:x",-1.5,.5).set_trans(Tween.TRANS_BACK)
-	var disappear=create_tween();disappear.tween_interval(.5);disappear.tween_callback(func():if is_instance_valid(chest.node): chest.node.visible=false)
+	if chest.node.has_meta("lid"): create_tween().tween_property(chest.node.get_meta("lid"),"rotation:x",1.4,.65).set_trans(Tween.TRANS_BACK)
+	var disappear=create_tween();disappear.tween_interval(1.0);disappear.tween_callback(func():if is_instance_valid(chest.node): chest.node.visible=false)
 	run_chests += 1
 	career.bump("chests")
 	career.best("chestRewards",3)
@@ -516,11 +516,12 @@ func buy_chest(chest: Dictionary):
 	offer_source = "chest"
 	reveal_tier = offers.map(func(item):return item.tier).max()
 	if reveal_tier == 3: achievement_event("LEGENDARY")
-	reveal_duration = [.75,1.25,2.1,3.1][reveal_tier]
+	reveal_duration = [2.6,2.9,3.3,3.8][reveal_tier]
 	sound.chest_open(reveal_tier,reveal_duration)
 	reveal_clock = 0
 	mode = "reveal"
-	hud.open("▣  TREASURE", "Five choices. One new power.")
+	hud.modal.visible=false
+	burst(chest.node.position+Vector3.UP,RunRules.COLORS[reveal_tier],18)
 	sound.effect("coin")
 	vibrate(.25,.55,.2)
 	if reveal_tier == 3: sound.say("legendary",0)
@@ -1714,7 +1715,7 @@ func _process(delta: float):
 	effects=effects.filter(func(effect):return effect.life>0)
 	if mode=="reveal":
 		reveal_clock+=delta
-		hud.chest_reveal(reveal_tier,minf(1,reveal_clock/reveal_duration))
+		if reveal_clock>=.8: hud.chest_reveal(reveal_tier,minf(1,(reveal_clock-.8)/(reveal_duration-.8)))
 		if reveal_clock>=reveal_duration: finish_reveal()
 	sound.tick(delta,mode in ["playing","settings"],boss_active() or events.get("eclipse",false))
 	hud.update(delta)

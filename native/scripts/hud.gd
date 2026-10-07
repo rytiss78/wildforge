@@ -135,7 +135,7 @@ func setup(owner_game):
 	player_locator=preload("res://scripts/player_locator.gd").new();player_locator.game=game;player_locator.mouse_filter=Control.MOUSE_FILTER_IGNORE;root.add_child(player_locator)
 	buff_icons=HBoxContainer.new();buff_icons.position=Vector2(750,685);root.add_child(buff_icons)
 	buff_label=label("",14);buff_label.position=Vector2(760,702);root.add_child(buff_label)
-	biome_label=label("",16);biome_label.position=Vector2(24,242);root.add_child(biome_label)
+	biome_label=label("",16);biome_label.position=Vector2(24,188);root.add_child(biome_label)
 	level_plate=label("",30);level_plate.position=Vector2(550,250);root.add_child(level_plate)
 	level_plate.add_theme_stylebox_override("normal",style(paper,ThemeTokens.EARTH_TERRACOTTA))
 	add_child(root)
@@ -155,7 +155,7 @@ func setup(owner_game):
 	clock.scale=Vector2.ONE*.75
 	clock.size = Vector2(300,112)
 	root.add_child(clock)
-	var health_panel=PanelContainer.new();health_panel.position=Vector2(24,108);health_panel.custom_minimum_size=Vector2(254,54)
+	var health_panel=PanelContainer.new();health_panel.position=Vector2(24,92);health_panel.custom_minimum_size=Vector2(254,54)
 	health_panel.add_theme_stylebox_override("panel",style(paper,Color("8eac93"),10));root.add_child(health_panel)
 	var health_column=VBoxContainer.new();health_panel.add_child(health_column)
 	health_text=label("",16);health_column.add_child(health_text)
@@ -185,7 +185,7 @@ func setup(owner_game):
 	xp.add_theme_stylebox_override("fill",style(Color("a5de9d"),Color.TRANSPARENT,3))
 	info_box.add_child(xp)
 	coins = label("GOLD  0    BOX PRICE  30",15,ThemeTokens.STAR_GOLD)
-	coins.position = Vector2(24,170)
+	coins.position = Vector2(24,151)
 	coins.add_theme_stylebox_override("normal",style())
 	root.add_child(coins)
 	box_counter=label("",15);box_counter.position=Vector2(24,199);box_counter.add_theme_stylebox_override("normal",style());root.add_child(box_counter)
@@ -293,8 +293,8 @@ func update(delta: float):
 	xp.value = game.xp
 	status.text = "LEVEL %d   ·   %s" % [game.level,game.hero.name]
 	xp_text.text="XP  %d / %d to next level" % [floori(game.xp),game.xp_target]
-	coins.text = "GOLD  %d    BOX PRICE  %d" % [game.gold,game.rules.chest_price(game.paid_chests,game.stats.discount)]
-	box_counter.text="BOXES  %d left" % game.chests.filter(func(c):return not c.opened and not c.get("destroyed",false)).size()
+	coins.text = "%d gold  ·  Chest %d  ·  %d left" % [game.gold,game.rules.chest_price(game.paid_chests,game.stats.discount),game.chests.filter(func(c):return not c.opened and not c.get("destroyed",false)).size()]
+	box_counter.visible=false
 	weapons.refresh()
 	turret_hints.visible=not modal.visible and game.equipped.any(func(w):return w.turret)
 	if hint_device != game.input_kind:
@@ -302,9 +302,9 @@ func update(delta: float):
 		for child in control_hints.get_children():
 			control_hints.remove_child(child)
 			child.queue_free()
-		add_prompts(control_hints,[["WASD","LS","Move"],["Mouse","RS","Look"],["Shift","RT","Dash"],["Space","A","Jump"],["Ctrl","B","Slam"],["E","X","Interact"],["F","R3","Ping"],["B","Y","Build"],["Esc","Menu","Pause"]])
+		control_hints.add_child(label("Menu · Pause / controls" if game.input_kind=="xbox" else "Esc · Pause / controls",12))
 		# InputGlyph updates itself; rebuilding choices here resets controller focus.
-	control_hints.visible=not modal.visible and (game.elapsed<25 or game.elapsed<hints_until)
+	control_hints.visible=not modal.visible
 	prompt.visible=not modal.visible and not game.interaction_hint().is_empty()
 	prompt.text = game.interaction_hint().replace("E / X", "X" if game.input_kind=="xbox" else "E")
 	alert.visible=false
@@ -595,10 +595,10 @@ func animate_offers():
 		offer_tween.tween_property(card,"scale",Vector2.ONE,.16).set_delay(i*.035).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 
 func chest_reveal(tier: int, progress_value: float):
-	if not modal.visible: open("▣  TREASURE", "")
+	if not modal.visible: open("TREASURE REELS", "Items from exploration · Choose one lasting bonus")
 	if content.get_child_count() <= 2:
 		var display=preload("res://scripts/chest_show.gd").new()
-		display.tier=tier
+		display.tier=tier;display.sound=game.sound
 		display.custom_minimum_size=Vector2(920,340)
 		display.setup(game.offers)
 		content.add_child(display)

@@ -255,3 +255,6 @@ Seeded lobed coastline shared by terrain, dead-sea damage/water/sand shader and 
 - Slightly larger boxes, visible opening animation/audio, retain slot-machine reward identity.
 - Clarify and improve chest versus level reward progression: currently chest items/gold/exploration, level skills+periodic weapons/XP; effect pools overlap.
 Next batch after ground materials: compact HUD and chest presentation. Then encounters, music and hero skins; all visual categories remain part of continuing development.
+
+### Batch9 compact HUD and chest presentation complete
+Larger hinged boxes, opening visible before modal, five actual reward-icon reels with sequential sound locks; full movement bindings remain in controls menu. Compact clock/status and one-line controls hint free gameplay space. Next longer evolving soundtrack, then encounters/character and prop art.
