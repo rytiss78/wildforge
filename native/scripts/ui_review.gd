@@ -13,6 +13,13 @@ static func run(game):
 	AudioServer.set_bus_volume_db(0,-80)
 	game.set_physics_process(false)
 	var okay=await capture(game,"menu")
+	var original_hero=game.hero
+	var hero_button=game.hud.menu_controls().filter(func(c):return c is Button and c.text=="Tank Potato")[0]
+	hero_button.grab_focus();game.hud.controller_accept()
+	for frame in range(4): await game.get_tree().process_frame
+	okay=game.get_viewport().gui_get_focus_owner().text=="Tank Potato" and game.hero.name=="Tank Potato" and okay
+	okay=await capture(game,"hero") and okay
+	game.select_hero(original_hero)
 	game.start_run(407);game.set_physics_process(false);game.spawn_clock=99999
 	game.player.position=Vector3(0,.2,0);game.camera.position=Vector3(0,10,15)
 	game.camera.look_at(Vector3(0,0,-5));game.gold=75;game.hp=game.stats.maxHp*.7

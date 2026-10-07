@@ -13,10 +13,11 @@ Updated 2026-10-07. User wants substantial standalone quality overhaul: ugly, bo
 - Before/after evidence under .build-staging/agent-workflow/2026-10-07T15-18-52-715Z-combat-review and 2026-10-07T15-29-45-543Z-combat-review.
 - Failed intermediate parse/float precision/stale UI hierarchy checks and fixes recorded in PROGRESS.md.
 
-## Batch 3 completed; next deliverable
-Opening curve now14XP first level (8+4L+2L²); first woods chest38–45m. 24/four-per-biome unchanged. New pace-review normal stats/HP: first choice13.77s, level3 16.60s, level4 32.38s,60s survived. Baseline died20.88s before first choice. Capture baseline scheduling failure recorded honestly in PROGRESS. After screenshot inspected.
-Fresh check13JS+parse, integration55, build/exported-smoke67passed. Latest build path in .build-staging/agent-workflow/latest-build.json. Batch3 local commit next. New pace-review action lasts60s.
-Next: Phase1.3 main menu; inspected old ui-menu.png is flat parchment with small static hero and generic panels. Build a cohesive storybook backdrop, clearer hierarchy and larger moving hero preview. Preserve keyboard/controller actions. Then all-biome/later-run review, icon semantic audit remains open.
+## Latest completed work and next task
+Batch3 committed037b67f: first XP threshold14, first woods chest38–45m; normal-stat fixed scenario first choice13.77s/level4 32.38s. Integration55/check13JS+parse/build67smoke passed.
+Batch4 menu: dusk forest backdrop, larger animated hero, retained controller focus. Capture-ui six PNGs (2026-10-07T15-39-51-899Z) inspected menu+hero. Build `G:/game/.build-staging/agent-workflow/2026-10-07T15-40-04-289Z-build/Wildforge.exe` passed67exported smoke checks. Commit next.
+Six-biome100-enemy soak (2026-10-07T15-40-38-124Z) traversed all6; PNGs inspected. Hero locatable; some large foreground props. Ground delta>-0.002m. p50 13.695ms/p95 23.519ms NOT60fps pass. Diagnostic O(n²) spacing loop executes repeatedly for100ms everysecond, contaminating measured frames. Next correct sampler to once/second and exclude its following frame from timing; rerun, then profile gameplay if still slow. New wrapper soak action encodes native command and validates6PNGs.
+Still open: later-run/other-hero balance, icon semantic audit, remaining roadmap polish. No new release/publication.
 
 ## Working state and commands
 Preserve preexisting modified AGENTS.md, untracked native/docs/golden-scene.png and nul. Do not stage them. Read git status/diff. No saves deleted; diagnostics isolate APPDATA.

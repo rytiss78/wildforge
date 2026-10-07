@@ -230,3 +230,6 @@ Phase 2 partial: gameplay camera, ordinary enemy scale, player locator and calme
 
 ### 2026-10-07 opening progression checkpoint
 Opening XP curve and one closer chest delivered. Fixed normal-stat scenario reaches first choice13.77s and level4 at32.38s; previously died20.88s before any choice. 24chests/four per biome preserved. Later-run and other-hero balance still open. Next Phase1.3 menu presentation.
+
+### 2026-10-07 menu checkpoint
+Phase1.3 main menu/hero selection delivered and captured with two heroes/controller focus. Six-biome traversal inspected; player locatable but foreground props still large. Heavy soak p95 23.519ms needs clean diagnostic sampling before attributing all cost to gameplay. Next: correct sampler and verify heavy-crowd performance.

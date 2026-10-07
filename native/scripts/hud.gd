@@ -337,7 +337,7 @@ func update(delta: float):
 		blast.color.a = 0
 	else: blast.color.a = 0
 
-func start_menu():
+func start_menu(focus_hero: bool=false):
 	game.mode="start"
 	game.run_active=false
 	for child in modal.get_children():
@@ -345,22 +345,20 @@ func start_menu():
 		child.queue_free()
 	modal.visible=true
 	Input.mouse_mode=Input.MOUSE_MODE_VISIBLE
-	var background=TextureRect.new()
-	background.texture=load("res://assets/illustrated/paper.png")
-	background.expand_mode=TextureRect.EXPAND_IGNORE_SIZE
-	background.texture_repeat=CanvasItem.TEXTURE_REPEAT_ENABLED
-	background.stretch_mode=TextureRect.STRETCH_TILE
+	var background=preload("res://scripts/menu_backdrop.gd").new()
 	modal.add_child(background)
 	background.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	var title=label("WILDFORGE",52)
-	title.position=Vector2(110,80)
+	var title=label("WILDFORGE",64)
+	title.add_theme_color_override("font_color",Color("f4da9e"))
+	title.position=Vector2(86,62)
 	modal.add_child(title)
 	var strap=label("Grow strange. Fight hard. Start again.",18)
-	strap.position=Vector2(113,144)
+	strap.position=Vector2(90,141)
+	strap.add_theme_color_override("font_color",Color("d6e2d4"))
 	modal.add_child(strap)
 	var nav=VBoxContainer.new()
-	nav.position=Vector2(112,230)
-	nav.custom_minimum_size=Vector2(235,0)
+	nav.position=Vector2(90,235)
+	nav.custom_minimum_size=Vector2(245,0)
 	nav.add_theme_constant_override("separation",9)
 	modal.add_child(nav)
 	menu_start=button("START RUN",func():
@@ -372,17 +370,11 @@ func start_menu():
 	nav.add_child(button("Local scores",func(): career_menu(true)))
 	nav.add_child(button("Play with friends",coop_menu))
 	nav.add_child(button("Sound & controls",settings_menu))
-	nav.add_child(button("3D Style Lab",func():
-		if game.coop.active:
-			tell("Leave the party before opening the solo art prototype.");return
-		game.career.save()
-		game.get_tree().change_scene_to_file("res://style_lab.tscn")
-	))
 	nav.add_child(button("Quit",func(): game.career.save();game.get_tree().quit()))
 	var hero_panel=PanelContainer.new()
-	hero_panel.position=Vector2(430,215)
-	hero_panel.size=Vector2(890,430)
-	hero_panel.add_theme_stylebox_override("panel",style())
+	hero_panel.position=Vector2(400,208)
+	hero_panel.size=Vector2(950,470)
+	hero_panel.add_theme_stylebox_override("panel",style(Color("efe8cf"),Color("b5aa80"),18))
 	modal.add_child(hero_panel)
 	var columns=HBoxContainer.new()
 	columns.add_theme_constant_override("separation",22)
@@ -390,14 +382,16 @@ func start_menu():
 	var hero_list=VBoxContainer.new()
 	hero_list.custom_minimum_size.x=170
 	hero_list.add_theme_constant_override("separation",6)
-	var hero_scroll=ScrollContainer.new();hero_scroll.custom_minimum_size=Vector2(185,385);hero_scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;columns.add_child(hero_scroll);hero_scroll.add_child(hero_list)
+	var hero_scroll=ScrollContainer.new();hero_scroll.custom_minimum_size=Vector2(185,435);hero_scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;columns.add_child(hero_scroll);hero_scroll.add_child(hero_list)
 	hero_list.add_child(label("CHOOSE YOUR HERO",13))
+	var selected_hero: Button
 	for item in game.rules.data.heroes:
-		var pick=button(item.name,func():game.select_hero(item);start_menu())
+		var pick=button(item.name,func():game.select_hero(item);start_menu(true))
+		if item.id==game.hero.id: selected_hero=pick
 		if item.id==game.hero.id: pick.add_theme_stylebox_override("normal",style(ThemeTokens.BIOME_ACCENTS.verdant.blossom,ThemeTokens.EARTH_TERRACOTTA))
 		hero_list.add_child(pick)
 	var portrait=HeroPortrait.new()
-	portrait.custom_minimum_size=Vector2(285,350)
+	portrait.custom_minimum_size=Vector2(320,420)
 	columns.add_child(portrait)
 	var preview_stats=game.rules.data.stats.duplicate(true);game.rules.apply_effects(preview_stats,game.hero.effects)
 	portrait.setup(game.hero.model,game.hero.weapon,float(preview_stats.armor),float(preview_stats.shield))
@@ -427,16 +421,21 @@ func start_menu():
 	mechanics.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	bio.add_child(mechanics)
 	var rules=label("3 weapon slots   •   3 worlds   •   One choice per chest",16)
-	rules.position=Vector2(432,672)
+	rules.position=Vector2(424,704)
+	rules.add_theme_color_override("font_color",Color("d6e2d4"))
 	modal.add_child(rules)
 	var footer=HBoxContainer.new()
-	footer.position=Vector2(112,748)
+	footer.position=Vector2(90,748)
 	modal.add_child(footer)
 	add_prompts(footer,[["↑↓","D-pad","Navigate"],["Enter","A","Select"]])
 	var version=label("DEVELOPMENT ALPHA  /  NATIVE PC",12)
 	version.position=Vector2(1080,770)
+	version.add_theme_color_override("font_color",Color("b4c9bc"))
 	modal.add_child(version)
-	menu_start.grab_focus()
+	if focus_hero and is_instance_valid(selected_hero):
+		selected_hero.grab_focus()
+		hero_scroll.ensure_control_visible.call_deferred(selected_hero)
+	else: menu_start.grab_focus()
 
 func coop_menu():
 	game.mode="coop"

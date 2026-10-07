@@ -1,6 +1,18 @@
 extends TextureRect
 class_name HeroPortrait
 
+var preview_actor: Node3D
+var preview_view: SubViewport
+var idle_time=0.0
+
+func _process(delta: float):
+	if not is_instance_valid(preview_actor): return
+	preview_view.render_target_update_mode=SubViewport.UPDATE_ALWAYS if is_visible_in_tree() else SubViewport.UPDATE_DISABLED
+	if not is_visible_in_tree(): return
+	idle_time+=delta
+	preview_actor.rotation.y=.28+sin(idle_time*.55)*.22
+	preview_actor.animate(delta,Vector3.ZERO,true)
+
 func setup(model_name: String,weapon: String="gun",armour: float=0,shield_capacity: float=0):
 	expand_mode=TextureRect.EXPAND_IGNORE_SIZE
 	stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
@@ -11,12 +23,15 @@ func setup(model_name: String,weapon: String="gun",armour: float=0,shield_capaci
 	var viewport=SubViewport.new()
 	viewport.size=Vector2i(512,512)
 	viewport.own_world_3d=true
+	viewport.transparent_bg=true
+	preview_view=viewport
 	viewport.render_target_update_mode=SubViewport.UPDATE_ONCE
 	viewport.msaa_3d=Viewport.MSAA_2X
 	add_child(viewport)
 	var stage=Node3D.new()
 	viewport.add_child(stage)
 	var hero=ActorRig.new()
+	preview_actor=hero
 	hero.setup(model_name)
 	hero.rotation.y=.28
 	stage.add_child(hero)
@@ -24,7 +39,7 @@ func setup(model_name: String,weapon: String="gun",armour: float=0,shield_capaci
 	hero.sync_equipment([{"id":weapon,"rank":1}]);hero.arms[0].rotation.x=.06
 	var floor_mesh=CylinderMesh.new()
 	floor_mesh.top_radius=1.2;floor_mesh.bottom_radius=1.2;floor_mesh.height=.06
-	ToonArt.part(stage,floor_mesh,Color("b7c6a0"),Vector3(0,-.03,0))
+	ToonArt.part(stage,floor_mesh,Color("a3b6a2"),Vector3(0,-.03,0))
 	var env=WorldEnvironment.new()
 	env.environment=Environment.new()
 	env.environment.background_mode=Environment.BG_COLOR
