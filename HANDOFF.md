@@ -35,3 +35,5 @@ Use node scripts/agent-workflow.mjs check|smoke|integration|capture-ui|combat-re
 Python: C:/Users/rytis/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe. Current source music assets require import (wrapper does this in check/build). No active tool sessions.
 
 Batch11 checkpoint: opt-in scenery sightline cutaway, smaller decorative props, independent outline materials; new scenery-review wrapper. Before16-26-40/after16-28-14 PNGs inspected (hero visible behind tree/moon prop). Integration55passed16-27-51; latest build G:/game/.build-staging/agent-workflow/2026-10-07T16-28-25-113Z-build/Wildforge.exe passed71smoke+9metadata. Next hero costume/material presentation.
+
+Batch12 complete: hero_surfaces.gd and hero_surface shader categorize garment/leather/metal/ceramic surfaces. Subtle polish, not new skins/models. Check13+parse16-30-22; before/after8UI captures16-29-50/16-30-38, duck/potato inspected. Latest build16-31-00 passed71smoke. Next timed optional hunt event; no event edits yet.

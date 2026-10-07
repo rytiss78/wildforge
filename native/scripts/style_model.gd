@@ -83,12 +83,13 @@ func prepare_meshes(node: Node):
 		for surface in range(node.mesh.get_surface_count()):
 			var original=node.mesh.surface_get_material(surface)
 			if original is StandardMaterial3D:
-				var key=original.get_instance_id()
+				var surface_kind=preload("res://scripts/hero_surfaces.gd").kind(str(node.name))
+				var key=str(original.get_instance_id())+":"+str(surface_kind)
 				if not prepared_materials.has(key):
 					var prepared=original.duplicate() as StandardMaterial3D
 					prepared.diffuse_mode=BaseMaterial3D.DIFFUSE_TOON
-					prepared.metallic_specular=0;prepared.roughness=1;prepared.next_pass=outline
-					prepared_materials[key]=prepared
+					prepared.metallic_specular=.14;prepared.roughness=.75;prepared.next_pass=outline
+					prepared_materials[key]=preload("res://scripts/hero_surfaces.gd").material(original,surface_kind,outline) if surface_kind>0 else prepared
 				var material=prepared_materials[key]
 				node.set_surface_override_material(surface,material)
 	for child in node.get_children(): prepare_meshes(child)

@@ -264,3 +264,6 @@ Three original53-second realm melodies sustain across backing phrases, with proc
 
 ### Batch11 scenery visibility complete
 Smaller decorative scenery and camera-to-hero cutaway, matching outline behavior; fixed before/after tree and moon obstruction inspected. Traversal/collision integration and exported smoke pass. Next hero costume/material presentation, then semantic icons and gameplay encounters.
+
+### Batch12 hero material pass
+Cloth/leather/metal/ceramic differentiation implemented; original character silhouettes retained. New models/selectable skins remain open. Next optional timed hunt combat objective between bosses.
