@@ -184,3 +184,11 @@ Fresh validation: `node scripts/agent-workflow.mjs check` passed 13 JavaScript t
 Failures recorded: initial stagger edit caused indentation parse error, repaired before checks passed. New exact size assertion failed from float32 geometry precision; corrected to epsilon/is_equal_approx while retaining collider/model contract. Integration's old >5 detail-child assertion failed after card redesign; now checks selected item name, populated detail text and selected index. Existing wall pursuit, collision, freeze, melee and controller assertions passed unchanged. No Megabonk changes or publication.
 
 Next deliverable: measure and improve first-minute reward/encounter pace in normal-stat play, then improve menu presentation. Full icon semantic audit, all-biome visual acceptance, later-run balance and human fun assessment remain open.
+
+## Standalone overhaul batch 3 — 2026-10-07
+
+Deliverable: faster opening progression and a reachable first chest. XP curve now 8 + 4L + 2L² (first threshold14 instead of41). One woods chest moved to38–45m; all24 chests and four-per-biome distribution retained. No starter-stat buffs or diagnostic invulnerability.
+
+Added independent rendered `node scripts/agent-workflow.mjs pace-review`: fixed seed407, normal Count Duck starter stats/health, simple nearby-pickup seeking movement, automatic first-card selection, up to60 gameplay seconds. Baseline (15-33-52 run) died at20.88s after10kills,25.72XP and no level; its capture was incorrectly scheduled after25s, so the wrapper honestly failed for missing PNG while preserving pace data. Fixed capture to10s. After (15-35-09 run) first weapon choice13.77s, level3 at16.60s, level4 at32.38s,66kills/117gold/100HP at60s, chest affordable15.52s, nearest chest39.70m vs76.50m. Automated first-choice outcomes and movement are a scenario, not broad hero balance or proof of fun. Screenshot inspected: visible player, readable XP14 threshold and clear combat space.
+
+Fresh `check` passed13JS tests and Godot import/parse (15-36-40); `integration` passed55booleans including unchanged24-chest distribution and collision checks (15-36-12). Current-source build/exported smoke passed67booleans (latest-build.json). Next: cohesive main menu with stronger hero presentation, then later-run/all-biome review. No publication or mod edits.

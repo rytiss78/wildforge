@@ -27,7 +27,8 @@ func free_chance(power: float) -> float:
 	return clampf(power,0,.75)
 
 func next_xp(level: int) -> int:
-	return 24 + level * 14 + level * level * 3
+	# Early choices arrive during the opening fight; the quadratic tail still slows long runs.
+	return 8 + level * 4 + level * level * 2
 
 func can_weapon(equipped: Array, id: String) -> bool:
 	return equipped.any(func(w): return w.id == id) or equipped.size() < WEAPON_CAP

@@ -145,7 +145,7 @@ func _ready():
 	if OS.get_cmdline_user_args().has("--coop-client-test"): network_test_role="client";smoke=true
 	smoke=smoke or OS.get_cmdline_user_args().has("--golden-scene")
 	smoke=smoke or OS.get_cmdline_user_args().has("--ui-review")
-	smoke=smoke or OS.get_cmdline_user_args().has("--combat-review")
+	smoke=smoke or OS.get_cmdline_user_args().has("--combat-review") or OS.get_cmdline_user_args().has("--pace-review")
 	camera_locked=OS.get_cmdline_user_args().has("--golden-scene") or OS.get_cmdline_user_args().has("--ui-review")
 	career = ProfileScript.new(rules.data,smoke)
 	if network_test_role!="": career.file="user://coop-test-"+network_test_role+".json"
@@ -211,6 +211,7 @@ func _ready():
 	elif OS.get_cmdline_user_args().has("--style-roundtrip"): call_deferred("run_style_roundtrip")
 	elif network_test_role!="": call_deferred("run_coop_test")
 	elif OS.get_cmdline_user_args().has("--ui-review"): preload("res://scripts/ui_review.gd").run.call_deferred(self)
+	elif OS.get_cmdline_user_args().has("--pace-review"): preload("res://scripts/pace_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--combat-review"): preload("res://scripts/combat_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--golden-scene"): call_deferred("golden_scene")
 	elif smoke: call_deferred("export_hero_art" if OS.get_cmdline_user_args().has("--art") else "run_soak" if OS.get_cmdline_user_args().has("--soak") else "run_smoke")
@@ -388,6 +389,7 @@ func make_chests():
 		for band in range(4):
 			var angle=(biome+.2+rng.randf()*.6)*TAU/6-float(seed_value%23)*.03-realm*.4
 			var radius=75+band*75+rng.randf_range(0,20)
+			if biome==0 and band==0: radius=38+rng.randf_range(0,7)
 			var p=Vector3(cos(angle)*radius,0,sin(angle)*radius)
 			p.y=world.height_at(p.x,p.z)
 			make_chest(p,false)

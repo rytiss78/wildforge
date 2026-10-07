@@ -227,3 +227,6 @@
 
 ### 2026-10-07 combat checkpoint
 Phase 2 partial: gameplay camera, ordinary enemy scale, player locator and calmer terrain verified in actual crowded combat. Phase 3 performance partial: alternating enemy simulation reduced measured p95 from 18.872 to 13.814ms in a fixed stress scenario. Full biome review and later-run performance remain open. Next: measured opening reward pace.
+
+### 2026-10-07 opening progression checkpoint
+Opening XP curve and one closer chest delivered. Fixed normal-stat scenario reaches first choice13.77s and level4 at32.38s; previously died20.88s before any choice. 24chests/four per biome preserved. Later-run and other-hero balance still open. Next Phase1.3 menu presentation.

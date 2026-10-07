@@ -57,8 +57,8 @@ export function assessPng(path, started) {
 }
 
 async function main(action) {
-  if (!['check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'integration', 'build', 'status'].includes(action)) {
-    console.error('Usage: node scripts/agent-workflow.mjs check|smoke|capture|capture-ui|combat-review|integration|build|status'); return 2;
+  if (!['check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'integration', 'build', 'status'].includes(action)) {
+    console.error('Usage: node scripts/agent-workflow.mjs check|smoke|capture|capture-ui|combat-review|pace-review|integration|build|status'); return 2;
   }
   const git = (...args) => spawnSync('git', ['-C', root, ...args], {encoding:'utf8', windowsHide:true}).stdout?.trim() ?? '';
   if (action === 'status') { console.log(JSON.stringify({root, node:process.execPath, godot, godotPresent:existsSync(godot), head:git('rev-parse','HEAD'), changes:git('status','--short')}, null, 2)); return 0; }
@@ -107,6 +107,13 @@ async function main(action) {
       const output=await step('ui-capture',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--ui-review'],90000);
       if (!output.includes('UI_REVIEW_SAVED: OK')) throw new Error('UI capture failed.');
       report.capture=['menu','hud','offers','focus','weapons'].map(name=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','ui-'+name+'.png'),started));
+    }
+    if (action === 'pace-review') {
+      const output=await step('pace-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--pace-review'],120000);
+      const line=output.split(/\r?\n/).findLast(x=>x.startsWith('PACE_REVIEW '));
+      if (!line) throw new Error('Missing pace measurements.');
+      report.pace=JSON.parse(line.slice('PACE_REVIEW '.length));
+      report.capture=assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge/pace-review.png'),started);
     }
     if (action === 'combat-review') {
       const output=await step('combat-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--combat-review'],90000);

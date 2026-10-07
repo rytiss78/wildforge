@@ -3,7 +3,7 @@ Updated 2026-10-07. User wants substantial standalone quality overhaul: ugly, bo
 
 ## Completed local checkpoints
 - Batch 1 f161c1e: five readable illustrated reward cards, selected comparison, HP/shield HUD, controller focus. UI capture verified.
-- Batch 2: higher gameplay camera, normalized smaller ordinary enemies, player locator, calmer terrain, shorter scenery/shadows, staggered enemy simulation. Pending local commit immediately after this update.
+- Batch 2: higher gameplay camera, normalized smaller ordinary enemies, player locator, calmer terrain, shorter scenery/shadows, staggered enemy simulation. Committed as 9616aeb.
 
 ## Fresh batch 2 evidence
 - `node scripts/agent-workflow.mjs check`: 13 JS tests + Godot import/parse passed.
@@ -13,8 +13,10 @@ Updated 2026-10-07. User wants substantial standalone quality overhaul: ugly, bo
 - Before/after evidence under .build-staging/agent-workflow/2026-10-07T15-18-52-715Z-combat-review and 2026-10-07T15-29-45-543Z-combat-review.
 - Failed intermediate parse/float precision/stale UI hierarchy checks and fixes recorded in PROGRESS.md.
 
-## Next deliverable
-Measure first-minute normal-stat reward/encounter pace, then improve it. Current first-level target41 XP, first chest30 gold at75–95m; base ordinary spawn two per1.9s. Start nine enemies11–16m. Current combat-review is a stress scene (damage4/three weapons/invulnerability), not pacing evidence. Add independent pace-review wrapper, measure before/after. Then menu presentation, all-biome visual review and later-run balance.
+## Batch 3 completed; next deliverable
+Opening curve now14XP first level (8+4L+2L²); first woods chest38–45m. 24/four-per-biome unchanged. New pace-review normal stats/HP: first choice13.77s, level3 16.60s, level4 32.38s,60s survived. Baseline died20.88s before first choice. Capture baseline scheduling failure recorded honestly in PROGRESS. After screenshot inspected.
+Fresh check13JS+parse, integration55, build/exported-smoke67passed. Latest build path in .build-staging/agent-workflow/latest-build.json. Batch3 local commit next. New pace-review action lasts60s.
+Next: Phase1.3 main menu; inspected old ui-menu.png is flat parchment with small static hero and generic panels. Build a cohesive storybook backdrop, clearer hierarchy and larger moving hero preview. Preserve keyboard/controller actions. Then all-biome/later-run review, icon semantic audit remains open.
 
 ## Working state and commands
 Preserve preexisting modified AGENTS.md, untracked native/docs/golden-scene.png and nul. Do not stage them. Read git status/diff. No saves deleted; diagnostics isolate APPDATA.
