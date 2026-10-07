@@ -18,10 +18,11 @@ vec3 biome_paint(float b,vec2 uv) {
  else if(b>.5){paint=texture(t1,uv).rgb;base=vec3(.16,.27,.23);}
  else {paint=texture(t0,uv).rgb;base=vec3(.16,.29,.12);}
  float wash=sin(uv.x*.57+sin(uv.y*.8))*.025+cos(uv.y*.66)*.02;
- return mix(base,paint,.19)+vec3(wash);
+ float grain=dot(paint,vec3(.299,.587,.114));
+ return base*(.82+grain*.9)+vec3(wash*.55);
 }
 void fragment(){
- vec2 uv=p.xz*.085;
+ vec2 uv=p.xz*.042;
  float angle=mod(atan(p.z,p.x)+phase+6.2831853,6.2831853)/1.04719755;
  float index=floor(angle);float fraction=fract(angle);
  float width=clamp(12.0/max(length(p.xz),1.0),.004,.20);

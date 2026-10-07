@@ -20,7 +20,11 @@ Updated2026-10-07. User wants a substantial standalone quality overhaul: ugly, b
 ## Latest user steering and active work
 User explicitly requests impactful boss spawns, meaningful timer ending, coherent minimap, irregular island, portal-summoned final map boss and more visible portal. Then continue broader textures/skins, mechanics/events/endgame/music work; do not stop at those five fixes.
 Batch6 realm climax implemented: RealmJourney state flow, boss intro+healthbar, Eclipse600s/escalation30s/sky+music, portal vortex/beacon+HUDdirection, finalguardian beforetravel/win. Journey-review11checks+PNGs passed/inspected(15-57-41),integration55passed(15-56-42),build67smoke passed(15-58-00). Co-op wired, networktestnotrerun. Commit now.
-Batch7 organiccoast/minimap implemented; integration55 and journey13checks passed; before/after coast PNGs inspected16-02-37. Finalbuild latest-build.json passed67smoke. Commit now. Next integrate generated moss ground texture from C:/Users/rytis/.codex/generated_images/01a10b10-07c7-76a3-bc65-7e58a599995f/exec-9351c2b6-c242-468d-92a4-180308bba91c.png. imagegen skill read; built-in generation used and output inspected. Then continue gameplay mechanics/events/music/skins.
+Batch7 committed3df475b: organiccoast/northupmap,55integration+13journeychecks,build67smoke.
+Batch8 groundtextures complete: new moss/stonev2PNG assets, biome-tintedshader; sourceprompts in native/docs/generated-art.md. Check13JS+parse,soak6biomes (forest/moon/space inspected),build16-08-34export67smoke passed. Soakp95 23.519ms randomscenario, no60fpsclaim. Commit next.
+User added: improve allheroes/enemies/items/guns/buildings/trees (useassetsifneeded), semanticicons, longer/proceduralmusic, compactHUD, largeranimatedaudiochestswithslotmachinevibe. Asked rewarddifference: explained chestitems/gold/bossRareminimum vs levelskills/weaponat2andmultiples3 +15%heal/shield; effects currently overlap. AlladdedPLAN.
+Next boundedbatch compactHUD and visiblechestopening/reels, then encounters/audio/skins. Mustcontinuebeyondfirst5fixes. Preserveoriginalbroaddevelopmentobjective.
+
 
 ## Working state/commands
 Preexisting modified AGENTS.md, untracked native/docs/golden-scene.png and nul remain untouched/uncommitted. Read git status/diff before edits. No saves deleted, no mod edits.

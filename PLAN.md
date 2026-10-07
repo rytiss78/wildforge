@@ -246,3 +246,12 @@ Progression decision: two wardens awaken the portal early; at10minutes the Eclip
 
 ### Batch7 organic island complete
 Seeded lobed coastline shared by terrain, dead-sea damage/water/sand shader and minimap. North-up single-frame map with distinct portal ring. Chests repositioned inland,24/four-per-biome preserved. Next art and gameplay/audio continuation.
+
+### Additional user priorities (2026-10-07)
+- Upgrade enemies, heroes, items, guns, buildings and trees visually; use suitable assets where engine-made art is inadequate.
+- Icons must depict the represented item/effect, not merely be distinct.
+- Longer or procedurally arranged music.
+- Rethink gameplay overlay: movement instruction strip occupies too much space.
+- Slightly larger boxes, visible opening animation/audio, retain slot-machine reward identity.
+- Clarify and improve chest versus level reward progression: currently chest items/gold/exploration, level skills+periodic weapons/XP; effect pools overlap.
+Next batch after ground materials: compact HUD and chest presentation. Then encounters, music and hero skins; all visual categories remain part of continuing development.

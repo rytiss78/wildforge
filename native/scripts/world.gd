@@ -157,7 +157,7 @@ func build(index: int,world_seed: int):
 func make_material():
 	var shader=load("res://shaders/terrain.gdshader")
 	terrain_material=ShaderMaterial.new();terrain_material.shader=shader;terrain_material.set_shader_parameter("phase",float(seed_value%23)*.03+realm*.4)
-	for i in range(6): terrain_material.set_shader_parameter("t"+str(i),load("res://assets/illustrated/terrain-"+str(i)+".png"))
+	for i in range(6): terrain_material.set_shader_parameter("t"+str(i),load("res://assets/illustrated/terrain-moss-v2.png" if i<2 else "res://assets/illustrated/terrain-stone-v2.png"))
 	scenery_material=PaintedBatch.material()
 
 func make_chunk(cell: Vector2i):
