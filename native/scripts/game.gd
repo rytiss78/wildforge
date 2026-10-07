@@ -1,5 +1,6 @@
 extends Node3D
 
+const Hunt=preload("res://scripts/hunt_trial.gd")
 const Journey=preload("res://scripts/realm_journey.gd")
 
 const RulesScript = preload("res://scripts/rules.gd")
@@ -147,7 +148,7 @@ func _ready():
 	if OS.get_cmdline_user_args().has("--coop-client-test"): network_test_role="client";smoke=true
 	smoke=smoke or OS.get_cmdline_user_args().has("--golden-scene")
 	smoke=smoke or OS.get_cmdline_user_args().has("--ui-review")
-	smoke=smoke or OS.get_cmdline_user_args().has("--journey-review") or OS.get_cmdline_user_args().has("--scenery-review")
+	smoke=smoke or OS.get_cmdline_user_args().has("--journey-review") or OS.get_cmdline_user_args().has("--scenery-review") or OS.get_cmdline_user_args().has("--hunt-review")
 	smoke=smoke or OS.get_cmdline_user_args().has("--combat-review") or OS.get_cmdline_user_args().has("--pace-review")
 	camera_locked=OS.get_cmdline_user_args().has("--golden-scene") or OS.get_cmdline_user_args().has("--ui-review")
 	career = ProfileScript.new(rules.data,smoke)
@@ -213,6 +214,7 @@ func _ready():
 	elif OS.get_cmdline_user_args().has("--update-check"): preload("res://scripts/update_checks.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--style-roundtrip"): call_deferred("run_style_roundtrip")
 	elif network_test_role!="": call_deferred("run_coop_test")
+	elif OS.get_cmdline_user_args().has("--hunt-review"): preload("res://scripts/hunt_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--scenery-review"): preload("res://scripts/scenery_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--journey-review"): preload("res://scripts/journey_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--ui-review"): preload("res://scripts/ui_review.gd").run.call_deferred(self)
@@ -378,6 +380,7 @@ func enter_realm(index: int):
 	make_pots()
 	make_gate()
 	update.realm_started()
+	Hunt.setup(self)
 	for weapon in equipped:
 		weapon.clock = 0
 		if weapon.turret: deploy_turret(weapon)
@@ -462,6 +465,8 @@ func nearest_chest() -> Dictionary:
 	return nearest
 
 func interaction_hint() -> String:
+	var hunt_hint=Hunt.hint(self)
+	if not hunt_hint.is_empty(): return hunt_hint
 	var special=update.hint()
 	if not special.is_empty(): return special
 	var drop=nearest_consumable()
@@ -476,6 +481,7 @@ func interaction_hint() -> String:
 	return ""
 
 func interact():
+	if Hunt.interact(self): return
 	if update.interact(): return
 	var drop=nearest_consumable()
 	if not drop.is_empty():
@@ -1104,6 +1110,7 @@ func kill_enemy(enemy: Dictionary, cause: String):
 	enemy.hp=0;enemy.node.get_meta("rig").set_health(0,enemy.boss or enemy.health>=1.8)
 	coop.died(enemy,cause)
 	enemy.dead = true
+	Hunt.defeated(self,enemy)
 	if enemy.get("elite",false): drop_consumable(enemy.node.position)
 	kills += 1
 	career.bump("kills")
@@ -1568,6 +1575,7 @@ func update_combat(delta: float):
 	if xp>=xp_target and mode=="playing" and hp>0: level_up()
 
 func update_events():
+	Hunt.tick(self)
 	Journey.tick(self)
 	if coop.active and not coop.hosting: return
 	if events.get("wave_active",false) and realm_time>=events.get("swarm_until",0): events.wave_active=false;hud.tell("WAVE CLEARED",3)
@@ -2250,7 +2258,8 @@ func run_coop_test():
 	if network_test_role=="host": stats.damage=2
 	var started=Time.get_ticks_msec();var pause_done=false;var realm_done=false;var moved=false;var shared_enemies=false;var maximum_avatars=0
 	var down_sent=false;var saw_down=false;var saw_rescue=false;var saw_ping=false;var purchase_sent=false;var supply_sent=false;var saw_purchase=false;var saw_supply=false;var gold_before=0
-	while Time.get_ticks_msec()-started<(15500 if network_test_role=="host" else 13500):
+	var hunt_sent=false;var hunt_seen=false;var hunt_reward=false;var guardian_sent=false;var guardian_seen=false
+	while Time.get_ticks_msec()-started<(19500 if network_test_role=="host" else 17500):
 		var seconds=(Time.get_ticks_msec()-started)/1000.0
 		shared_enemies=shared_enemies or enemies.size()>0
 		maximum_avatars=maxi(maximum_avatars,coop.avatars.size())
@@ -2260,6 +2269,18 @@ func run_coop_test():
 		saw_ping=saw_ping or not update.pings.is_empty()
 		saw_purchase=saw_purchase or update.memories.has("MERCHANT") or not update.purchased.is_empty()
 		saw_supply=saw_supply or update.beacon_state=="complete" or update.memories.has("BEACON")
+		hunt_seen=hunt_seen or Hunt.state(self)=="active"
+		hunt_reward=hunt_reward or (Hunt.shrine(self)!=null and Hunt.shrine(self).has_meta("reward_spawned"))
+		guardian_seen=guardian_seen or events.get("guardian_defeated",false)
+		if seconds>11: xp_target=1000000
+		if network_test_role=="client" and seconds>12 and not hunt_sent and realm==1:
+			hunt_sent=true;player.position=Hunt.shrine(self).position;Hunt.interact(self)
+		if network_test_role=="host" and seconds>13.5 and Hunt.state(self)=="active":
+			for target in enemies.filter(func(e):return e.net_id in events.hunt_ids and not e.dead): kill_enemy(target,"diagnostic")
+		if network_test_role=="host" and seconds>15 and not guardian_sent:
+			guardian_sent=true;realm_bosses=2;Journey.activate(self)
+		if network_test_role=="host" and seconds>16:
+			for target in enemies.filter(func(e):return e.get("guardian",false) and not e.dead): kill_enemy(target,"diagnostic")
 		if network_test_role=="host":
 			if seconds>2 and not down_sent and not coop.members.is_empty():
 				down_sent=true;player.position=Vector3(2,.1,0);invulnerable=1000
@@ -2271,7 +2292,7 @@ func run_coop_test():
 			if seconds>9.5 and mode=="offer": choose_offer(0)
 			if seconds>6.5 and not pause_done: pause_done=true;level_up()
 			if seconds>7.5 and mode=="offer": choose_offer(0)
-			if seconds>11 and not realm_done: realm_done=true;enter_realm(1)
+			if seconds>11 and not realm_done: realm_done=true;enter_realm(1);realm_time=75
 		else:
 			if seconds>1.5 and seconds<2.3: invulnerable=0;stats.dodge=0
 			if seconds>1 and not down_sent: down_sent=true;update.send_ping()
@@ -2284,8 +2305,8 @@ func run_coop_test():
 			await RenderingServer.frame_post_draw
 			get_viewport().get_texture().get_image().save_png("user://coop-"+network_test_role+".png")
 		await get_tree().create_timer(.1).timeout
-	var checks={"role":network_test_role,"standalone":not Engine.has_singleton("Steam"),"discovery":discovered_party if network_test_role=="client" else true,"connected":coop.active,"avatars":maximum_avatars,"members":coop.members.size(),"same_enemies":shared_enemies,"remote_hits":coop.remote_hits,"kills_received":coop.kills_received,"snapshots":coop.snapshots_received,"moved":moved,"party_pause":coop.saw_pause,"realm":realm,"realm_received":coop.saw_realm,"downed":saw_down,"rescued":saw_rescue,"ping":saw_ping,"merchant":saw_purchase,"supply":saw_supply}
-	var passed=checks.downed and checks.rescued and checks.ping and checks.merchant and checks.supply and checks.standalone and checks.discovery and checks.connected and checks.avatars>0 and shared_enemies and realm==1 and (coop.remote_hits>0 if network_test_role=="host" else coop.snapshots_received>20 and coop.saw_pause and coop.saw_realm and moved)
+	var checks={"role":network_test_role,"standalone":not Engine.has_singleton("Steam"),"discovery":discovered_party if network_test_role=="client" else true,"connected":coop.active,"avatars":maximum_avatars,"members":coop.members.size(),"same_enemies":shared_enemies,"remote_hits":coop.remote_hits,"kills_received":coop.kills_received,"snapshots":coop.snapshots_received,"moved":moved,"party_pause":coop.saw_pause,"realm":realm,"realm_received":coop.saw_realm,"downed":saw_down,"rescued":saw_rescue,"ping":saw_ping,"merchant":saw_purchase,"supply":saw_supply,"hunt_started":hunt_seen,"hunt_reward":hunt_reward,"guardian_defeated":guardian_seen}
+	var passed=checks.hunt_started and checks.hunt_reward and checks.guardian_defeated and checks.downed and checks.rescued and checks.ping and checks.merchant and checks.supply and checks.standalone and checks.discovery and checks.connected and checks.avatars>0 and shared_enemies and realm==1 and (coop.remote_hits>0 if network_test_role=="host" else coop.snapshots_received>20 and coop.saw_pause and coop.saw_realm and moved)
 	print("COOP_TEST "+JSON.stringify(checks));var report=FileAccess.open("user://coop-"+network_test_role+"-results.json",FileAccess.WRITE);report.store_string(JSON.stringify(checks,"  "));report.close();coop.leave()
 	mode="test_finished";clear_entities();sound.active=false
 	for channel in sound.get_children():

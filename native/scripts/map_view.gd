@@ -40,6 +40,9 @@ func _draw():
 	for entry in interactables:
 		var p=point(entry.position,radius)
 		match entry.kind:
+			"hunt_target": draw_circle(p,4,Color("e17afa"));draw_circle(p,2,Color("fff2ff"))
+			"hunt":
+				draw_circle(p,6,Color("46235c"));draw_line(p-Vector2(3,3),p+Vector2(3,3),Color("efb5ff"),2);draw_line(p+Vector2(-3,3),p+Vector2(3,-3),Color("efb5ff"),2)
 			"merchant":
 				draw_circle(p,6,Color("654a30"));draw_circle(p,4,Color("ffd767"))
 				draw_line(p+Vector2(-2,-2),p+Vector2(2,2),Color("654a30"),2)
@@ -64,4 +67,4 @@ func _draw():
 	for ping in pings: draw_arc(point(ping,radius),5,0,TAU,12,Color("d55746"),2,true)
 
 	draw_rect(Rect2(0,size.y+2,size.x,19),Color("17293d"))
-	draw_string(ThemeDB.fallback_font,Vector2(4,size.y+15),"Ring: portal · Gold: trader · Cyan: supply",HORIZONTAL_ALIGNMENT_LEFT,-1,9,Color("f4e9cc"))
+	draw_string(ThemeDB.fallback_font,Vector2(4,size.y+15),"Ring: portal · Gold: shop · Violet: hunt",HORIZONTAL_ALIGNMENT_LEFT,-1,9,Color("f4e9cc"))

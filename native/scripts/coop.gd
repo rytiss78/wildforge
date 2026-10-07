@@ -233,6 +233,8 @@ func receive(sender: int,message):
 			var weapon=str(message.get("weapon",""))
 			if members[sender].get("weapons",[]).any(func(w):return w.get("id","")==weapon):
 				message.actor=sender;show_shot(message);broadcast(message,false)
+		elif kind=="hunt_start" and int(message.get("realm",-1))==game.realm and not frozen() and float(members[sender].get("hp",0))>0:
+			game.Hunt.activate(game,vector(members[sender].get("position",[])))
 		elif kind=="travel" and game.mode=="playing" and not frozen():
 			if vector(members[sender].get("position",[])).distance_to(game.gate_position)<5:
 				game.Journey.activate(game)

@@ -267,3 +267,6 @@ Smaller decorative scenery and camera-to-hero cutaway, matching outline behavior
 
 ### Batch12 hero material pass
 Cloth/leather/metal/ceramic differentiation implemented; original character silhouettes retained. New models/selectable skins remain open. Next optional timed hunt combat objective between bosses.
+
+### Batch13 optional hunt delivered
+Hunter's Oath shrine,3marked foes/45seconds, freeRare+chest on success, no-cost timeout. Solo state/reward tests and real two-process co-op (including portal guardian replication) passed. Next semantic potion icons; full694-icon audit and new character/weapon/prop assets remain open.

@@ -16,6 +16,10 @@ func _draw():
 	if game.realm_time>=600:
 		draw_style_box(game.hud.style(Color("592e47"),Color("e38d6c"),5),Rect2(24,274,254,30))
 		draw_string(font,Vector2(34,296),"ECLIPSE · threat %d" % (1+int((game.realm_time-600)/30)),HORIZONTAL_ALIGNMENT_LEFT,-1,16,Color("ffdf9a"))
+	if game.Hunt.state(game)=="active":
+		draw_style_box(game.hud.style(Color("362742"),Color("c094d9"),5),Rect2(24,222,254,44))
+		draw_string(font,Vector2(34,242),"HUNT  %d / 3    ·    %ds" % [game.events.get("hunt_kills",[]).size(),maxi(0,ceili(float(game.events.get("hunt_deadline",0))-game.realm_time))],HORIZONTAL_ALIGNMENT_LEFT,-1,17,Color("efcaff"))
+		draw_string(font,Vector2(34,258),"Defeat the violet-marked foes",HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color("fff8de"))
 	var offset=game.gate_position-game.player.position;var distance=offset.length()
 	if distance<8: return
 	var relative=offset.rotated(Vector3.UP,-game.yaw)

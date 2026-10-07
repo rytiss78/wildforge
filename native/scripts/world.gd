@@ -189,6 +189,7 @@ func make_chunk(cell: Vector2i):
 		if Vector2(p.x,p.z).length()>shore_radius(p)-25: continue
 		var portal=portal_site()
 		if Vector2(p.x-portal.x,p.z-portal.z).length()<14: continue
+		if Vector2(p.x-60,p.z+35).length()<7: continue
 		if Vector2(p.x,p.z).length()<13 or absf(p.x+sin(p.z*.035)*9)<6: continue
 		if crossing_distance(p)<12 and i%3!=0: continue
 		p.y=height_at(p.x,p.z)

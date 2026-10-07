@@ -57,7 +57,7 @@ export function assessPng(path, started) {
 }
 
 async function main(action) {
-  if (!['check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'journey-review', 'integration', 'build', 'status'].includes(action)) {
+  if (!['check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'status'].includes(action)) {
     console.error('Usage: node scripts/agent-workflow.mjs check|smoke|capture|capture-ui|combat-review|pace-review|soak|integration|build|status'); return 2;
   }
   const git = (...args) => spawnSync('git', ['-C', root, ...args], {encoding:'utf8', windowsHide:true}).stdout?.trim() ?? '';
@@ -107,6 +107,20 @@ async function main(action) {
       const output=await step('ui-capture',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--ui-review'],90000);
       if (!output.includes('UI_REVIEW_SAVED: OK')) throw new Error('UI capture failed.');
       report.capture=['menu','hero','hud','chest-opening','chest-reels','offers','focus','weapons'].map(name=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','ui-'+name+'.png'),started));
+    }
+    if (action === 'coop') {
+      const results=await Promise.allSettled(['host','client'].map(role=>step('coop-'+role,godot,['--headless','--path',join(root,'native'),'--','--coop-'+role+'-test'],90000)));
+      const failed=results.filter(r=>r.status==='rejected');
+      if(failed.length) throw new Error(failed.map(r=>r.reason.message).join('\n'));
+      report.coop=results.map(r=>JSON.parse(r.value.split(/\r?\n/).findLast(x=>x.startsWith('COOP_TEST ')).slice(10)));
+    }
+    if (action === 'hunt-review') {
+      const output=await step('hunt-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--hunt-review'],120000);
+      const line=output.split(/\r?\n/).findLast(x=>x.startsWith('HUNT_REVIEW '));
+      if (!line) throw new Error('Missing hunt result.');
+      report.hunt=JSON.parse(line.slice('HUNT_REVIEW '.length));
+      if(Object.values(report.hunt).some(v=>v===false)) throw new Error('Hunt assertions failed.');
+      report.capture=['active','complete'].map(i=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','hunt-'+i+'.png'),started));
     }
     if (action === 'scenery-review') {
       const output=await step('scenery-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--scenery-review'],120000);

@@ -312,8 +312,13 @@ func update(delta: float):
 	if game.coop.frozen() and game.mode=="playing": alert.text="PARTY PAUSED  ·  A FRIEND IS CHOOSING";alert.visible=true
 	map_view.configure(game.world.seed_value,game.world.realm)
 	map_view.interactables.clear()
+	var hunt_shrine=game.Hunt.shrine(game)
+	if hunt_shrine and game.Hunt.state(game) in ["idle","active"]: map_view.interactables.append({"position":hunt_shrine.position,"kind":"hunt"})
 	if is_instance_valid(game.update.merchant): map_view.interactables.append({"position":game.update.merchant.position,"kind":"merchant"})
 	if is_instance_valid(game.update.beacon) and game.update.beacon_state in ["idle","defending"]: map_view.interactables.append({"position":game.update.beacon_position,"kind":"supply"})
+	if game.Hunt.state(game)=="active":
+		for enemy in game.enemies:
+			if not enemy.dead and enemy.net_id in game.events.get("hunt_ids",[]): map_view.interactables.append({"position":enemy.node.position,"kind":"hunt_target"})
 	for landmark in game.world.landmarks: map_view.interactables.append({"position":landmark,"kind":"landmark"})
 	for pot in game.pots:
 		if is_instance_valid(pot.node): map_view.interactables.append({"position":pot.node.position,"kind":"pot"})
