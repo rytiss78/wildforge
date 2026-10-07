@@ -261,3 +261,6 @@ Larger hinged boxes, opening visible before modal, five actual reward-icon reels
 
 ### Batch10 longer music complete (listening review open)
 Three original53-second realm melodies sustain across backing phrases, with procedural quiet/heavy sections and boss response. Runtime continuity/pause/realm transition tested in exported build. Remaining: subjective mix/listening review. Next bounded batch: character/material and scenery art with before/after rendered acceptance, followed by semantic icon audit and encounter expansion.
+
+### Batch11 scenery visibility complete
+Smaller decorative scenery and camera-to-hero cutaway, matching outline behavior; fixed before/after tree and moon obstruction inspected. Traversal/collision integration and exported smoke pass. Next hero costume/material presentation, then semantic icons and gameplay encounters.

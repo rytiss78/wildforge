@@ -50,6 +50,9 @@ func dangerous(p: Vector3) -> bool:
 	return Vector2(p.x,p.z).length()>=shore_radius(p)
 
 func weather_tick(delta: float,p: Vector3):
+	if scenery_material:
+		scenery_material.set_shader_parameter("hero_position",p)
+		if scenery_material.next_pass: scenery_material.next_pass.set_shader_parameter("hero_position",p)
 	var biome=biome_at(p)
 	if active_biome!=biome:
 		active_biome=biome
@@ -159,6 +162,8 @@ func make_material():
 	terrain_material=ShaderMaterial.new();terrain_material.shader=shader;terrain_material.set_shader_parameter("phase",float(seed_value%23)*.03+realm*.4)
 	for i in range(6): terrain_material.set_shader_parameter("t"+str(i),load("res://assets/illustrated/terrain-moss-v2.png" if i<2 else "res://assets/illustrated/terrain-stone-v2.png"))
 	scenery_material=PaintedBatch.material()
+	scenery_material.set_shader_parameter("fade_near",true)
+	scenery_material.next_pass.set_shader_parameter("fade_near",true)
 
 func make_chunk(cell: Vector2i):
 	if chunks.has(cell): return
@@ -200,7 +205,7 @@ func make_chunk(cell: Vector2i):
 			var baked_path="res://assets/style3d/baked/prop_%d_%d.res" % [biome,variant]
 			var baked=ResourceLoader.exists(baked_path)
 			var asset=Node3D.new() if baked else load(model_path).instantiate();prop.add_child(asset)
-			var scale_value=local_rng.randf_range(.9,1.7) if variant<4 else local_rng.randf_range(1.3,2.0)
+			var scale_value=local_rng.randf_range(.7,1.15) if variant<4 else local_rng.randf_range(1.05,1.4)
 			if biome==3 and variant==0: scale_value=1.0
 			asset.scale=Vector3.ONE*scale_value;prop.rotation.y=local_rng.randf()*TAU
 			if baked:

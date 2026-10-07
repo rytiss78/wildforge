@@ -15,7 +15,7 @@ Answered chest distinction: chests give items via exploration/gold, boss chests 
 - 3df475b: organic coastline shared by terrain/water/death/map; north-up single-frame minimap; inland chests.
 - 54cc3d2: generated moss/stone ground textures. Built-in imagegen; full prompts/provenance native/docs/generated-art.md. Ground improved, foreground props remain oversized in places.
 - 6270c96: compact clock/status, one-line controls hint, larger hinged chests, opening before modal, five actual-icon reels with synchronized latch/tick/lock cues. Bindings preserved in settings.
-- Batch10 (commit next): three original53.333s realm themes plus quiet/heavy backing section variation; theme does not restart each phrase. scripts/create-realm-music.py reproducible asset source.
+- cdc30f8: three original53.333s realm themes plus quiet/heavy backing section variation; theme does not restart each phrase. scripts/create-realm-music.py reproducible asset source.
 
 ## Latest fresh evidence
 Full reports: .build-staging/agent-workflow/<timestamp>-ACTION/result.json.
@@ -33,3 +33,5 @@ Review actual hero/enemy/material and foreground prop art before/after. Prioriti
 Preserve preexisting modified AGENTS.md, untracked native/docs/golden-scene.png and nul. Never stage/delete those. No user saves deleted; no mod changes; no new publication.
 Use node scripts/agent-workflow.mjs check|smoke|integration|capture-ui|combat-review|pace-review|soak|journey-review|build. Wrapper isolates APPDATA and preserves logs. No improvised engine arguments. Build is development artifact, not distributable release with all notices. vision_analyze unavailable: use view_image and inspect actual PNG.
 Python: C:/Users/rytis/.cache/codex-runtimes/codex-primary-runtime/dependencies/python/python.exe. Current source music assets require import (wrapper does this in check/build). No active tool sessions.
+
+Batch11 checkpoint: opt-in scenery sightline cutaway, smaller decorative props, independent outline materials; new scenery-review wrapper. Before16-26-40/after16-28-14 PNGs inspected (hero visible behind tree/moon prop). Integration55passed16-27-51; latest build G:/game/.build-staging/agent-workflow/2026-10-07T16-28-25-113Z-build/Wildforge.exe passed71smoke+9metadata. Next hero costume/material presentation.

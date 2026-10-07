@@ -54,14 +54,18 @@ static func merge(root: Node3D,nodes: Array) -> ArrayMesh:
 	return mesh
 
 static func material(animated: bool=false) -> ShaderMaterial:
-	if materials.has(animated): return materials[animated].duplicate()
+	if materials.has(animated):
+		var copy=materials[animated].duplicate()
+		if copy.next_pass: copy.next_pass=copy.next_pass.duplicate()
+		return copy
 	var shader=Shader.new()
 	shader.code="""shader_type spatial;
 uniform sampler2D paper:source_color,filter_linear_mipmap,repeat_enable;
 uniform sampler2D bark:source_color,filter_linear_mipmap,repeat_enable;
 uniform sampler2D stone:source_color,filter_linear_mipmap,repeat_enable;
 uniform vec3 tint=vec3(1.0);
-uniform bool fade_near=true;
+uniform bool fade_near=false;
+uniform vec3 hero_position=vec3(0.0);
 uniform float clock=0.0;
 uniform float moving=0.0;
 uniform float attack=0.0;
@@ -76,14 +80,30 @@ void fragment(){vec3 paint=COLOR.a<.5?texture(bark,UV*vec2(1.0,2.0)).rgb:COLOR.a
 """
 	if not animated:
 		shader.code=shader.code.replace("void vertex(){","varying vec3 world_position;void vertex(){world_position=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz;if(COLOR.g>COLOR.r*1.04 && VERTEX.y>2.0){VERTEX.x+=sin(TIME*1.3+VERTEX.z*.2)*.05;}")
-		shader.code=shader.code.replace("void fragment(){","void fragment(){if(fade_near && (COLOR.g>COLOR.r*1.04 || (COLOR.r>.8 && COLOR.g>.85)) && distance(world_position,INV_VIEW_MATRIX[3].xyz)<2.8){discard;}")
+		shader.code=shader.code.replace("void fragment(){", "void fragment(){"+sightline_cutaway("world_position"))
 		shader.code=shader.code.replace('if(VERTEX.y<.45)','if(false)').replace('else{VERTEX.y+=sin(clock*12.0)*.025*moving;}','').replace('if(abs(VERTEX.x)>.43','if(false&&abs(VERTEX.x)>.43')
 	var material=ShaderMaterial.new();material.shader=shader;material.set_shader_parameter("paper",load("res://assets/illustrated/paper.png"))
 	material.set_shader_parameter("bark",load("res://assets/illustrated/bark.png"));material.set_shader_parameter("stone",load("res://assets/illustrated/stone.png"))
 	material.next_pass=ToonArt.outline
 	if not animated:
 		var contour=ShaderMaterial.new();var contour_shader=Shader.new()
-		contour_shader.code="shader_type spatial;render_mode unshaded,cull_front;uniform bool fade_near=true;varying vec3 p;void vertex(){VERTEX+=NORMAL*.012;p=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz;}void fragment(){if(fade_near && (COLOR.g>COLOR.r*1.04 || (COLOR.r>.8 && COLOR.g>.85)) && distance(p,INV_VIEW_MATRIX[3].xyz)<2.8){discard;}ALBEDO=vec3(.26,.20,.15);}"
+		contour_shader.code="shader_type spatial;render_mode unshaded,cull_front;uniform bool fade_near=false;uniform vec3 hero_position=vec3(0.0);varying vec3 p;void vertex(){VERTEX+=NORMAL*.012;p=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz;}void fragment(){"+sightline_cutaway("p")+"ALBEDO=vec3(.26,.20,.15);}"
 		contour.shader=contour_shader;material.next_pass=contour
-	materials[animated]=material
+	materials[animated]=material.duplicate()
+	if material.next_pass: materials[animated].next_pass=material.next_pass.duplicate()
 	return material
+
+# Apply the same cutaway to paint and outlines so silhouettes do not remain as ghosts.
+static func sightline_cutaway(position_name: String) -> String:
+	return """
+	if(fade_near){
+		vec3 eye=INV_VIEW_MATRIX[3].xyz;
+		vec3 ray=hero_position+vec3(0.0,.9,0.0)-eye;
+		float fraction=dot(POSITION_NAME-eye,ray)/max(dot(ray,ray),.01);
+		float separation=length(POSITION_NAME-(eye+ray*clamp(fraction,0.0,1.0)));
+		float radius=mix(.65,1.65,clamp(fraction,0.0,1.0));
+		float cut=(1.0-smoothstep(radius*.65,radius,separation))*step(.02,fraction)*(1.0-step(1.02,fraction));
+		float stipple=fract(dot(floor(FRAGCOORD.xy),vec2(.75487766,.56984029)));
+		if(cut>.02 && stipple<cut*.97){discard;}
+	}
+	""".replace("POSITION_NAME",position_name)

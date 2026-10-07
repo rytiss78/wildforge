@@ -147,7 +147,7 @@ func _ready():
 	if OS.get_cmdline_user_args().has("--coop-client-test"): network_test_role="client";smoke=true
 	smoke=smoke or OS.get_cmdline_user_args().has("--golden-scene")
 	smoke=smoke or OS.get_cmdline_user_args().has("--ui-review")
-	smoke=smoke or OS.get_cmdline_user_args().has("--journey-review")
+	smoke=smoke or OS.get_cmdline_user_args().has("--journey-review") or OS.get_cmdline_user_args().has("--scenery-review")
 	smoke=smoke or OS.get_cmdline_user_args().has("--combat-review") or OS.get_cmdline_user_args().has("--pace-review")
 	camera_locked=OS.get_cmdline_user_args().has("--golden-scene") or OS.get_cmdline_user_args().has("--ui-review")
 	career = ProfileScript.new(rules.data,smoke)
@@ -213,6 +213,7 @@ func _ready():
 	elif OS.get_cmdline_user_args().has("--update-check"): preload("res://scripts/update_checks.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--style-roundtrip"): call_deferred("run_style_roundtrip")
 	elif network_test_role!="": call_deferred("run_coop_test")
+	elif OS.get_cmdline_user_args().has("--scenery-review"): preload("res://scripts/scenery_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--journey-review"): preload("res://scripts/journey_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--ui-review"): preload("res://scripts/ui_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--pace-review"): preload("res://scripts/pace_review.gd").run.call_deferred(self)
