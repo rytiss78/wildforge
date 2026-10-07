@@ -236,3 +236,10 @@ Phase1.3 main menu/hero selection delivered and captured with two heroes/control
 
 ### 2026-10-07 verified playable preview
 Final current-source Windows export: `.build-staging/agent-workflow/2026-10-07T15-44-29-883Z-build/Wildforge.exe`, exported67-check smoke passed. Cleaned diagnostic heavy-crowd soak p50 11.965ms/p95 16.702ms across6biomes. Measurement correction only. Next investigate low spacing metric, then other-hero/later-boss pacing. This is a tested preview; remaining phase acceptance criteria are still open.
+
+## Priority update — 2026-10-07, user-directed continuation
+1. Impactful boss arrivals, meaningful timer expiry, portal-summoned final guardian — implemented first checkpoint; tests and captures in PROGRESS.
+2. Organic coastline + one coherent minimap — next.
+3. Continue beyond these fixes: improved textures/skins, encounter mechanics/events, endgame and music. Do not stop at the first five requests or represent the whole game as finished.
+
+Progression decision: two wardens awaken the portal early; at10minutes the Eclipse also awakens it, changes sky/music and escalates enemies every30s. Portal activation summons one final guardian, whose defeat permits travel; third-island guardian leads to victory. Existing three-world progression and builds preserved.

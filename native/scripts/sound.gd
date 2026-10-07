@@ -91,6 +91,8 @@ func play_phrase():
 	for player in [drums,rhythm,lead,synth]: player.play()
 
 func tick(delta: float, playing: bool, has_boss: bool):
+	if boss!=has_boss and active:
+		boss=has_boss;clock=0;play_phrase()
 	boss = has_boss
 	voice.global_position=get_parent().player.global_position+Vector3.UP*32
 	if hurt_voice.playing and is_instance_valid(hurt_source): hurt_voice.global_position=hurt_source.global_position+Vector3.UP

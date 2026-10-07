@@ -57,7 +57,7 @@ export function assessPng(path, started) {
 }
 
 async function main(action) {
-  if (!['check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'integration', 'build', 'status'].includes(action)) {
+  if (!['check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'journey-review', 'integration', 'build', 'status'].includes(action)) {
     console.error('Usage: node scripts/agent-workflow.mjs check|smoke|capture|capture-ui|combat-review|pace-review|soak|integration|build|status'); return 2;
   }
   const git = (...args) => spawnSync('git', ['-C', root, ...args], {encoding:'utf8', windowsHide:true}).stdout?.trim() ?? '';
@@ -107,6 +107,14 @@ async function main(action) {
       const output=await step('ui-capture',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--ui-review'],90000);
       if (!output.includes('UI_REVIEW_SAVED: OK')) throw new Error('UI capture failed.');
       report.capture=['menu','hero','hud','offers','focus','weapons'].map(name=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','ui-'+name+'.png'),started));
+    }
+    if (action === 'journey-review') {
+      const output=await step('journey-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--journey-review'],120000);
+      const line=output.split(/\r?\n/).findLast(x=>x.startsWith('JOURNEY_REVIEW '));
+      if (!line) throw new Error('Missing journey checks.');
+      report.journey=JSON.parse(line.slice('JOURNEY_REVIEW '.length));
+      if(Object.values(report.journey).some(v=>v===false)) throw new Error('Journey checks failed');
+      report.capture=['portal','boss'].map(name=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','journey-'+name+'.png'),started));
     }
     if (action === 'soak') {
       const output=await step('soak',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--soak'],120000);

@@ -1,5 +1,7 @@
 extends Node3D
 
+const Journey=preload("res://scripts/realm_journey.gd")
+
 const RulesScript = preload("res://scripts/rules.gd")
 const WorldScript = preload("res://scripts/world.gd")
 const HudScript = preload("res://scripts/hud.gd")
@@ -145,6 +147,7 @@ func _ready():
 	if OS.get_cmdline_user_args().has("--coop-client-test"): network_test_role="client";smoke=true
 	smoke=smoke or OS.get_cmdline_user_args().has("--golden-scene")
 	smoke=smoke or OS.get_cmdline_user_args().has("--ui-review")
+	smoke=smoke or OS.get_cmdline_user_args().has("--journey-review")
 	smoke=smoke or OS.get_cmdline_user_args().has("--combat-review") or OS.get_cmdline_user_args().has("--pace-review")
 	camera_locked=OS.get_cmdline_user_args().has("--golden-scene") or OS.get_cmdline_user_args().has("--ui-review")
 	career = ProfileScript.new(rules.data,smoke)
@@ -210,6 +213,7 @@ func _ready():
 	elif OS.get_cmdline_user_args().has("--update-check"): preload("res://scripts/update_checks.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--style-roundtrip"): call_deferred("run_style_roundtrip")
 	elif network_test_role!="": call_deferred("run_coop_test")
+	elif OS.get_cmdline_user_args().has("--journey-review"): preload("res://scripts/journey_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--ui-review"): preload("res://scripts/ui_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--pace-review"): preload("res://scripts/pace_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--combat-review"): preload("res://scripts/combat_review.gd").run.call_deferred(self)
@@ -417,28 +421,34 @@ func make_pots():
 		pots.append({"node":node})
 
 func make_gate():
-	gate_position = world.landmarks[(realm+1)%world.landmarks.size()]+Vector3(0,1.8,0)
+	gate_position = world.portal_site()
 	gate = Node3D.new()
 	gate.position = gate_position
 	add_child(gate)
 	var ring = TorusMesh.new()
-	ring.inner_radius = 1.7
-	ring.outer_radius = 2.05
-	var rim = shape(ring,Color("a89db1"),gate,Vector3(0,2,0),.3)
+	ring.inner_radius = 3.0
+	ring.outer_radius = 3.5
+	var rim = shape(ring,Color("a89db1"),gate,Vector3(0,3.3,0),.8)
 	rim.rotation.x = PI/2
-	for x in [-2.1,2.1]:
+	for x in [-3.5,3.5]:
 		var pillar = CylinderMesh.new()
 		pillar.top_radius = .5
 		pillar.bottom_radius = .7
-		pillar.height = 3.7
-		shape(pillar,Color("788a92"),gate,Vector3(x,1.85,0))
+		pillar.height = 6.8
+		shape(pillar,Color("788a92"),gate,Vector3(x,3.4,0))
 	var marker = Label3D.new()
-	marker.text = "☠ 0 / 2"
+	marker.text = "PORTAL · 2 WARDENS"
 	marker.font_size = 48
-	marker.position.y = 5
+	marker.position.y = 8
 	marker.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	gate.add_child(marker)
 	gate.set_meta("marker",marker)
+	var disk=MeshInstance3D.new();var quad=QuadMesh.new();quad.size=Vector2(6,6);disk.mesh=quad
+	var vortex=ShaderMaterial.new();vortex.shader=preload("res://shaders/portal.gdshader");disk.material_override=vortex;disk.position.y=3.3;gate.add_child(disk)
+	var beam_mesh=CylinderMesh.new();beam_mesh.top_radius=.18;beam_mesh.bottom_radius=.8;beam_mesh.height=55
+	var beacon=shape(beam_mesh,Color("ffd767"),gate,Vector3(0,27.5,0),1.8);beacon.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var beam_paint=ShaderMaterial.new();beam_paint.shader=preload("res://shaders/portal_beacon.gdshader");beacon.material_override=beam_paint
+
 
 func nearest_chest() -> Dictionary:
 	var nearest = {}
@@ -460,7 +470,7 @@ func interaction_hint() -> String:
 		var price = 0 if chest.free else rules.chest_price(paid_chests,stats.discount)
 		return "E / X   ▣   %s" % ("FREE" if price == 0 else "● %d" % price) + ("   ✓" if gold >= price else "   ✕")
 	if player.position.distance_to(gate_position) < 4:
-		return "E / X   →  " + ("NEXT WORLD" if realm < 2 else "VICTORY") if realm_bosses >= 2 else "☠  %d / 2   →   LOCKED" % realm_bosses
+		return {"sealed":"PORTAL · %d / 2 wardens" % realm_bosses,"ready":"E / X · SUMMON FINAL GUARDIAN","fighting":"DEFEAT THE PORTAL GUARDIAN","cleared":"E / X · "+("NEXT WORLD" if realm<2 else "VICTORY")}[Journey.state(self)]
 	return ""
 
 func interact():
@@ -471,10 +481,8 @@ func interact():
 	var chest = nearest_chest()
 	if not chest.is_empty(): buy_chest(chest);return
 	if player.position.distance_to(gate_position) < 4:
-		if realm_bosses < 2: achievement_event("LOCKED_GATE");hud.tell("☠  Defeat both bosses to open this gate");return
 		if coop.active and not coop.hosting: coop.send_to(coop.owner_id,{"type":"travel"});return
-		if realm == 2: end_run(true)
-		else: enter_realm(realm+1)
+		Journey.activate(self)
 
 func buy_chest(chest: Dictionary):
 	if update.start_mimic(chest): return
@@ -723,7 +731,7 @@ func finish_reveal():
 	hud.blast.color.a = 0
 	hud.show_offers(offers,"chest")
 
-func random_spawn(radius: float) -> Vector3:
+func random_spawn(radius: float,anchor: Vector3=Vector3.INF) -> Vector3:
 	var angle = rules.rng.randf()*TAU
 	var origin=player.position
 	if coop.active and coop.hosting:
@@ -731,19 +739,20 @@ func random_spawn(radius: float) -> Vector3:
 		for member in coop.members.values():
 			if member.has("position") and member.get("hp",0)>0: positions.append(CoopSession.vector(member.position))
 		origin=positions[rules.rng.randi_range(0,positions.size()-1)]
+	if anchor.is_finite(): origin=anchor
 	var p = origin + Vector3(cos(angle)*radius,0,sin(angle)*radius)
 	p.x = clampf(p.x,-RealmWorld.SPAWN_EXTENT,RealmWorld.SPAWN_EXTENT)
 	p.z = clampf(p.z,-RealmWorld.SPAWN_EXTENT,RealmWorld.SPAWN_EXTENT)
 	p.y = world.height_at(p.x,p.z)
 	return p
 
-func spawn_enemy(radius: float = 22.0, boss: bool = false):
+func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector3.INF,guardian: bool=false):
 	if coop.active and not coop.hosting: return
 	if not boss and not make_spawn_room(): return
-	var p=random_spawn(radius)
+	var p=random_spawn(radius,anchor)
 	for attempt in range(12):
 		if p.distance_to(player.position)>3 and not enemies.any(func(e):return not e.dead and e.node.position.distance_to(p)<2.2) and spawn_is_clear(p,boss): break
-		p=random_spawn(radius+attempt*.6)
+		p=random_spawn(radius+attempt*.6,anchor)
 	if not spawn_is_clear(p,boss):
 		p.x=-sin(p.z*.035)*9;p.y=world.height_at(p.x,p.z)
 	world.ensure_ground(p)
@@ -756,7 +765,7 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false):
 	for attempt in range(24):
 		if spawn_is_clear(p,boss) and not enemies.any(func(e):return not e.dead and Vector2(e.node.position.x-p.x,e.node.position.z-p.z).length()<radius_value+e.radius+.1):
 			valid_spawn=true;break
-		p=random_spawn(radius+attempt*.7)
+		p=random_spawn(radius+attempt*.7,anchor)
 	if not valid_spawn: return
 	world.ensure_ground(p)
 	var node=CharacterBody3D.new()
@@ -776,12 +785,15 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false):
 	if not boss: max_health*=species.health*(.42 if species.behavior=="spit" else 1.0)
 	if elite: max_health*=2.5
 	var enemy = {"biome":biome,"elite":elite,"node":node,"hp":max_health,"maxHp":max_health,"speed":2.9+realm*.35+randf()*.6,"boss":boss,"fire":0.0,"poison":0.0,"status_time":0.0,"freeze":0.0,"blind":0.0,"slow":0.0,"attack":2.5,"telegraph":0.0,"dead":false,"contact":0.0,"phase":1,"startDamage":health_damage}
+	enemy.guardian=guardian
 	enemy.merge(species);enemy.speed*=species.speed
 	enemy.height=height;enemy.radius=radius_value;enemy.flying=species.flying and not boss
 	if biome==1 and enemy.species==1 and not boss: enemy.behavior="charge"
 	rig.set_health(1,boss or species.health>=1.8)
 	if enemy.flying: node.floor_snap_length=0;node.position.y+=species.altitude
 	enemy.net_id=coop.next_entity;coop.next_entity+=1
+	if not boss and realm_time>=600:
+		var threat=1+int((realm_time-600)/30);enemy.speed*=1+minf(.75,threat*.08);enemy.damage*=1+minf(3,threat*.15)
 	enemy.xp_reward=enemy_xp_reward(enemy)
 	if boss:
 		enemy.speed = 2.7+realm*.3
@@ -800,6 +812,7 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false):
 		sound.say("boss",0);update.quip("boss")
 		vibrate(.5,.8,.35)
 		hud.tell("☠  " + boss_name,5)
+		Journey.boss_arrived(self,enemy)
 	enemies.append(enemy)
 
 func enemy_xp_reward(enemy: Dictionary) -> float:
@@ -917,6 +930,7 @@ func spawn_network_enemy(actor: Dictionary) -> Dictionary:
 	var collision=CollisionShape3D.new();var capsule=CapsuleShape3D.new();capsule.radius=1.05 if actor.boss else .53;capsule.height=3.4 if actor.boss else 1.7;collision.shape=capsule;collision.position.y=capsule.height*.5;node.add_child(collision)
 	var entry=CreatureBook.entry(int(actor.biome),int(actor.species));var height=float(actor.get("height",9.0+realm*2 if actor.boss else entry.height*(1.25 if actor.elite else 1.0)));capsule.height=height;capsule.radius=float(actor.get("radius",2.8 if actor.boss else entry.radius));collision.position.y=height*.5;var rig=world.model("creature_%d_5" % int(actor.biome) if actor.boss else entry.model,height);node.add_child(rig);node.set_meta("rig",rig);node.position=CoopSession.vector(actor.position);add_child(node)
 	var enemy={"net_id":int(actor.id),"node":node,"hp":float(actor.hp),"maxHp":float(actor.maxHp),"boss":bool(actor.boss),"elite":bool(actor.elite),"biome":int(actor.biome),"dead":false,"speed":0.0,"fire":0.0,"poison":0.0,"status_time":0.0,"freeze":0.0,"blind":0.0,"slow":0.0,"phase":1,"startDamage":health_damage,"contact":0.0,"attack":2.5};enemy.merge(entry);enemy.height=height;enemy.radius=capsule.radius;enemy.flying=entry.flying and not enemy.boss;enemy.xp_reward=float(actor.get("xp_reward",enemy_xp_reward(enemy)))
+	enemy.guardian=bool(actor.get("guardian",false));enemy.title=str(actor.get("title","Guardian"))
 	if not enemy.boss: rig.bake_enemy()
 	if enemy.boss:
 		boss_name=["World Maw","Sun Breaker","Star Eater"][realm]
@@ -1099,14 +1113,10 @@ func kill_enemy(enemy: Dictionary, cause: String):
 		if equipped.size()==1 and equipped[0].id=="flowers": achievement_event("PURE_GARDEN")
 		if not equipped.any(func(w):return w.id in ["gun","shotgun","rail"]): achievement_event("NO_GUN")
 		run_bosses += 1
-		realm_bosses += 1
+		if not enemy.get("guardian",false): realm_bosses += 1
 		career.bump("bosses")
 		make_chest(p,true)
-		gate.get_meta("marker").text = "☠ %d / 2" % realm_bosses
-		if realm_bosses >= 2:
-			gate.get_meta("marker").text = "→  NEXT" if realm < 2 else "★  WIN"
-			sound.say("portal",0)
-			hud.tell("→  GATE OPEN",6)
+		Journey.defeated(self,enemy)
 	if stats.explosion > 0 and cause != "explosion": damage_area(p,3.0,stats.explosion,"explosion",enemy)
 	if stats.pools > 0:
 		var node = MeshInstance3D.new()
@@ -1364,7 +1374,7 @@ func update_combat(delta: float):
 			var thorn_offset=player.position-enemy.node.position
 			if hp>0 and stats.thorns>0 and enemy.thorn_clock<=0 and Vector2(thorn_offset.x,thorn_offset.z).length_squared()<pow(enemy.radius+.85,2) and absf(thorn_offset.y)<2.2:
 				enemy.thorn_clock=.5;hurt_enemy(enemy,stats.thorns,"thorn")
-			if enemy.boss: enemy.label.text="%s  %d%%" % [boss_name,enemy.hp/enemy.maxHp*100]
+			if enemy.boss: enemy.label.text="%s  %d%%" % [enemy.get("title",boss_name),enemy.hp/enemy.maxHp*100]
 			if enemy.get("windup",0)>0: update.eyebrows(enemy)
 			rig.rotation.z=sin((enemy.slip_until-realm_time)*9)*.4 if enemy.get("slip_until",0)>realm_time else 0
 			continue
@@ -1552,8 +1562,10 @@ func update_combat(delta: float):
 	if xp>=xp_target and mode=="playing" and hp>0: level_up()
 
 func update_events():
+	Journey.tick(self)
+	if coop.active and not coop.hosting: return
 	if events.get("wave_active",false) and realm_time>=events.get("swarm_until",0): events.wave_active=false;hud.tell("WAVE CLEARED",3)
-	for item in [[150,"warn_one","boss"],[180,"boss_one","spawn"],[210,"warn_swarm","swarm"],[240,"swarm_one","rush"],[390,"warn_swarm_two","swarm"],[420,"swarm_two","rush"],[450,"warn_two","boss"],[480,"boss_two","spawn"],[600,"overtime","rush"]]:
+	for item in [[150,"warn_one","boss"],[180,"boss_one","spawn"],[210,"warn_swarm","swarm"],[240,"swarm_one","rush"],[390,"warn_swarm_two","swarm"],[420,"swarm_two","rush"],[450,"warn_two","boss"],[480,"boss_two","spawn"]]:
 		if realm_time>=item[0] and not events.has(item[1]):
 			events[item[1]]=true
 			if item[2]=="spawn": spawn_enemy(18,true)
@@ -1658,6 +1670,7 @@ func _process(delta: float):
 		if menu_stick.length()>.55:
 			hud.controller_move(Vector2(signf(menu_stick.x),0) if absf(menu_stick.x)>absf(menu_stick.y) else Vector2(0,signf(menu_stick.y)));menu_repeat=.22
 	world.stream(player.position,coop.members.values().filter(func(m):return m.has("position") and m.get("hp",0)>0).map(func(m):return CoopSession.vector(m.position)) if coop.hosting else [])
+	world.eclipse=events.get("eclipse",false)
 	world.weather_tick(delta,player.position)
 	sound.weapon_loop("steam",world.edge_near,player.position)
 	if mode=="level_reveal":
@@ -1699,7 +1712,7 @@ func _process(delta: float):
 		reveal_clock+=delta
 		hud.chest_reveal(reveal_tier,minf(1,reveal_clock/reveal_duration))
 		if reveal_clock>=reveal_duration: finish_reveal()
-	sound.tick(delta,mode in ["playing","settings"],boss_active())
+	sound.tick(delta,mode in ["playing","settings"],boss_active() or events.get("eclipse",false))
 	hud.update(delta)
 	next_save+=delta
 	if next_save>10:

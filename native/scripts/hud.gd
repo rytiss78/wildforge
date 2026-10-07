@@ -41,6 +41,7 @@ var health_text: Label
 var health_bar: ProgressBar
 var hints_until=25.0
 var player_locator: Control
+var journey_overlay: Control
 
 func menu_controls(node: Node=modal) -> Array:
 	var result=[]
@@ -161,6 +162,7 @@ func setup(owner_game):
 	health_bar=ProgressBar.new();health_bar.custom_minimum_size.y=9;health_bar.show_percentage=false
 	health_bar.add_theme_stylebox_override("background",style(Color("d5d9c8"),Color.TRANSPARENT,4))
 	health_bar.add_theme_stylebox_override("fill",style(Color("559c78"),Color.TRANSPARENT,4));health_column.add_child(health_bar)
+	journey_overlay=preload("res://scripts/journey_hud.gd").new();journey_overlay.game=game;journey_overlay.mouse_filter=Control.MOUSE_FILTER_IGNORE;root.add_child(journey_overlay)
 	map_view.position = Vector2(1180,24)
 	map_view.size = Vector2(230,230)
 	root.add_child(map_view)
@@ -258,6 +260,7 @@ func level_flash():
 
 func update(delta: float):
 	player_locator.queue_redraw()
+	journey_overlay.queue_redraw()
 	for widget in root.get_children():
 		if widget is CanvasItem and widget!=modal and widget!=blast: widget.visible=not modal.visible
 	level_plate.visible=game.mode=="level_reveal"
@@ -304,7 +307,7 @@ func update(delta: float):
 	control_hints.visible=not modal.visible and (game.elapsed<25 or game.elapsed<hints_until)
 	prompt.visible=not modal.visible and not game.interaction_hint().is_empty()
 	prompt.text = game.interaction_hint().replace("E / X", "X" if game.input_kind=="xbox" else "E")
-	alert.visible=not modal.visible and game.boss_active()
+	alert.visible=false
 	alert.text = "☠  %s" % game.boss_name if game.boss_active() else ""
 	if game.coop.frozen() and game.mode=="playing": alert.text="PARTY PAUSED  ·  A FRIEND IS CHOOSING";alert.visible=true
 	map_view.configure(game.world.seed_value,game.world.realm)
@@ -321,7 +324,7 @@ func update(delta: float):
 	map_view.pings=game.update.pings.map(func(p):return p.position)
 	map_view.hero_position = game.player.position
 	map_view.gate = game.gate_position
-	map_view.gate_open = game.realm_bosses >= 2
+	map_view.gate_open = game.Journey.state(game) in ["ready","cleared"]
 	var cell = Vector2i(roundi(game.player.position.x/8),roundi(game.player.position.z/8))
 	map_view.visited[cell] = game.current_biome
 	map_view.known_chests.clear()

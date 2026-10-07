@@ -34,6 +34,7 @@ var moon: MeshInstance3D
 var border_steam=[]
 var border_patches=[]
 var edge_near=false
+var eclipse=false
 static var prop_meshes={}
 const SKY_TOP=[Color("76c8e6"),Color("7fb7a9"),Color("18234d"),Color("83cdeb"),Color("f49a78"),Color("302457")]
 const SKY_HORIZON=[Color("dfedda"),Color("c1d8b7"),Color("a3b8d9"),Color("fff7e2"),Color("ffd3a0"),Color("ba9bd5")]
@@ -55,7 +56,7 @@ func weather_tick(delta: float,p: Vector3):
 		paint.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED
 		var mesh=SphereMesh.new();mesh.radius=.035 if biome==1 else .07;mesh.height=.6 if biome==1 else .14;mesh.material=paint;weather.draw_pass_1=mesh
 	weather.position=p+Vector3.UP*8
-	sky_top=sky_top.lerp(SKY_TOP[biome],1-exp(-delta*.6));sky_horizon=sky_horizon.lerp(SKY_HORIZON[biome],1-exp(-delta*.6))
+	sky_top=sky_top.lerp(Color("21192f") if eclipse else SKY_TOP[biome],1-exp(-delta*.6));sky_horizon=sky_horizon.lerp(Color("77556c") if eclipse else SKY_HORIZON[biome],1-exp(-delta*.6))
 	sky_paint.set_shader_parameter("top_color",sky_top);sky_paint.set_shader_parameter("horizon_color",sky_horizon)
 	for pair in [["moon_strength",biome==2],["space_strength",biome==5],["fire_strength",biome==4]]:
 		var parameter=sky_paint.get_shader_parameter(pair[0]);var previous=float(parameter) if parameter!=null else 0.0;sky_paint.set_shader_parameter(pair[0],lerpf(previous,1.0 if pair[1] else 0.0,1-exp(-delta*.6)))
@@ -117,6 +118,11 @@ func compute_height_at(x: float,z: float) -> float:
 	var shore=2.0-maxf(0.0,edge-369.0)/3.0
 	return lerpf(inland,shore,smoothstep(340.0,369.0,edge))
 
+func portal_site() -> Vector3:
+	var p=landmarks[(realm+1)%landmarks.size()]+Vector3(18,0,16)
+	p.y=height_at(p.x,p.z)+.2
+	return p
+
 func model(name: String,height: float) -> Node3D:
 	if ResourceLoader.exists("res://assets/illustrated/"+("creatures/" if name.begins_with("creature_") else "heroes/")+name+".png") or name in ["pipe_wrench","rubber_duck_toy","sweet_potato","marble_bust_01","street_rat","hamburger_buns","florist","acorn","toad","crab","penguin","lizard","beetle"]:
 		var rig=ActorRig.new();rig.setup(name);var reference_height=1.65
@@ -168,6 +174,8 @@ func make_chunk(cell: Vector2i):
 	for i in range(12):
 		var p=Vector3(cell.x*CHUNK+local_rng.randf()*CHUNK,0,cell.y*CHUNK+local_rng.randf()*CHUNK)
 		if maxf(absf(p.x),absf(p.z))>335: continue
+		var portal=portal_site()
+		if Vector2(p.x-portal.x,p.z-portal.z).length()<14: continue
 		if Vector2(p.x,p.z).length()<13 or absf(p.x+sin(p.z*.035)*9)<6: continue
 		if crossing_distance(p)<12 and i%3!=0: continue
 		p.y=height_at(p.x,p.z)

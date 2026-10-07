@@ -201,10 +201,10 @@ func pose() -> Dictionary:
 func snapshot() -> Dictionary:
 	var actors=[]
 	for enemy in game.enemies:
-		if not enemy.dead: actors.append({"id":enemy.net_id,"position":array(enemy.node.position),"biome":enemy.biome,"species":enemy.species,"height":enemy.height,"radius":enemy.radius,"hp":enemy.hp,"maxHp":enemy.maxHp,"xp_reward":enemy.xp_reward,"boss":enemy.boss,"elite":enemy.elite,"fire":enemy.fire,"poison":enemy.poison,"freeze":enemy.freeze,"blind":enemy.blind,"slip_until":enemy.get("slip_until",0),"windup":enemy.get("windup",0)})
+		if not enemy.dead: actors.append({"id":enemy.net_id,"position":array(enemy.node.position),"biome":enemy.biome,"species":enemy.species,"height":enemy.height,"radius":enemy.radius,"hp":enemy.hp,"maxHp":enemy.maxHp,"xp_reward":enemy.xp_reward,"boss":enemy.boss,"guardian":enemy.get("guardian",false),"title":enemy.get("title",""),"elite":enemy.elite,"fire":enemy.fire,"poison":enemy.poison,"freeze":enemy.freeze,"blind":enemy.blind,"slip_until":enemy.get("slip_until",0),"windup":enemy.get("windup",0)})
 	var poses=members.duplicate(true);poses[local_id]=pose()
 	for member in poses.values(): member.erase("stats");member.erase("last_seen")
-	return {"type":"world","actors":actors,"players":poses,"seconds":game.realm_time,"elapsed":game.elapsed,"realm":game.realm,"pause":frozen() or game.mode not in ["playing","ended"],"big_update":game.update.world_state()}
+	return {"type":"world","actors":actors,"players":poses,"seconds":game.realm_time,"elapsed":game.elapsed,"realm":game.realm,"journey":game.events,"wardens":game.realm_bosses,"pause":frozen() or game.mode not in ["playing","ended"],"big_update":game.update.world_state()}
 
 static func array(v: Vector3) -> Array: return [v.x,v.y,v.z]
 static func vector(v) -> Vector3:
@@ -233,10 +233,9 @@ func receive(sender: int,message):
 			var weapon=str(message.get("weapon",""))
 			if members[sender].get("weapons",[]).any(func(w):return w.get("id","")==weapon):
 				message.actor=sender;show_shot(message);broadcast(message,false)
-		elif kind=="travel" and game.realm_bosses>=2:
+		elif kind=="travel" and game.mode=="playing" and not frozen():
 			if vector(members[sender].get("position",[])).distance_to(game.gate_position)<5:
-				if game.realm==2: game.end_run(true)
-				else: game.enter_realm(game.realm+1)
+				game.Journey.activate(game)
 		elif kind=="stomp" and game.mode=="playing" and not frozen():
 			for enemy in game.enemies:
 				if enemy.dead or enemy.net_id!=int(message.get("id",-1)): continue
@@ -286,6 +285,7 @@ func receive(sender: int,message):
 		elif kind=="start": game.start_run(int(message.seed));game.hud.close()
 		elif kind=="realm": game.enter_realm(int(message.realm));saw_realm=true
 		elif kind=="world": apply_world(message)
+		elif kind=="journey_announcement": game.Journey.announce(game,str(message.title),str(message.detail))
 		elif kind=="shot": show_shot(message)
 		elif kind=="hazard" and int(message.get("realm",-1))==game.realm:
 			game.warn_at(vector(message.position),float(message.radius),float(message.delay),float(message.damage),str(message.style))
@@ -321,6 +321,7 @@ func ensure_avatar(id: int,state: Dictionary):
 func apply_world(message: Dictionary):
 	if not game.run_active or int(message.realm)!=game.realm: return
 	game.update.apply_state(message.get("big_update",{}))
+	game.events=message.get("journey",game.events).duplicate(true);game.realm_bosses=int(message.get("wardens",game.realm_bosses))
 	snapshots_received+=1;paused=bool(message.pause);saw_pause=saw_pause or paused;game.realm_time=float(message.seconds);game.elapsed=float(message.elapsed)
 	for id in message.players:
 		var number=int(id)
@@ -348,7 +349,7 @@ func stomp(enemy: Dictionary):
 	if active and not hosting: send_to(owner_id,{"type":"stomp","id":enemy.net_id})
 
 func died(enemy: Dictionary,cause: String):
-	if active and hosting: broadcast({"type":"kill","id":enemy.net_id,"position":array(enemy.node.position),"cause":cause,"actor":{"id":enemy.net_id,"position":array(enemy.node.position),"biome":enemy.biome,"species":enemy.species,"height":enemy.height,"radius":enemy.radius,"hp":enemy.hp,"maxHp":enemy.maxHp,"xp_reward":enemy.xp_reward,"boss":enemy.boss,"elite":enemy.elite}})
+	if active and hosting: broadcast({"type":"kill","id":enemy.net_id,"position":array(enemy.node.position),"cause":cause,"actor":{"id":enemy.net_id,"position":array(enemy.node.position),"biome":enemy.biome,"species":enemy.species,"height":enemy.height,"radius":enemy.radius,"hp":enemy.hp,"maxHp":enemy.maxHp,"xp_reward":enemy.xp_reward,"boss":enemy.boss,"guardian":enemy.get("guardian",false),"title":enemy.get("title",""),"elite":enemy.elite}})
 
 func target(origin: Vector3) -> Dictionary:
 	var result={"id":local_id,"position":game.player.position};var distance=origin.distance_squared_to(game.player.position) if game.hp>0 else INF

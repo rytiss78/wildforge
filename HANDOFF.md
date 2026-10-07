@@ -17,8 +17,10 @@ Updated2026-10-07. User wants a substantial standalone quality overhaul: ugly, b
 - Six-biome100+enemy soak2026-10-07T15-40-38-124Z: allsixPNG inspected; player locatable, some large foregroundprops. Original tail timing contaminated by diagnostic spacing loops.
 - Corrected soak2026-10-07T15-43-12-117Z:2140samples,p50 11.965ms/p95 16.702ms,106enemies,grounddelta -0.000764m,6regions. No universal60fpsclaim. Minimum pairspacing0.245 unresolved: may be vertical/flying or actualoverlap.
 
-## Next concrete task
-Investigate low spacing metric with actual collision-volume vertical overlap; preserve collision/melee/freeze tests. Then extend normal-stat pace tests to other heroes and later bosses. Semantic icon audit, foreground scenery occlusion, movement polish, later-run balance and release acceptance remain open. Current build is a quality-overhaul preview, not all PLAN phases complete.
+## Latest user steering and active work
+User explicitly requests impactful boss spawns, meaningful timer ending, coherent minimap, irregular island, portal-summoned final map boss and more visible portal. Then continue broader textures/skins, mechanics/events/endgame/music work; do not stop at those five fixes.
+Batch6 realm climax implemented: RealmJourney state flow, boss intro+healthbar, Eclipse600s/escalation30s/sky+music, portal vortex/beacon+HUDdirection, finalguardian beforetravel/win. Journey-review11checks+PNGs passed/inspected(15-57-41),integration55passed(15-56-42),build67smoke passed(15-58-00). Co-op wired, networktestnotrerun. Commit now.
+Next batch organic coastline shared across collision/deadlysea/minimap/shader, preserve24chests and interactions. Currentmap squareinsidecircle. Then continue user-requested art/gameplay/audio development. Other outstanding roadmap remains.
 
 ## Working state/commands
 Preexisting modified AGENTS.md, untracked native/docs/golden-scene.png and nul remain untouched/uncommitted. Read git status/diff before edits. No saves deleted, no mod edits.
