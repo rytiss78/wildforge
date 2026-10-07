@@ -25,6 +25,10 @@ static func run(game):
 	game.camera.look_at(Vector3(0,0,-5));game.gold=75;game.hp=game.stats.maxHp*.7
 	game.hud.update(0)
 	okay=await capture(game,"hud") and okay
+	for kind in ["speed","xp","stone","fire"]: game.activate_consumable(kind)
+	game.hud.update(0)
+	okay=await capture(game,"potions") and okay
+	game.buffs.clear();game.hud.update(0)
 	game.make_chest(Vector3(1,game.world.height_at(1,0),0),false)
 	game.gold=1000;game.camera.position=Vector3(5,4,6);game.camera.look_at(Vector3(1,.7,0))
 	game.buy_chest(game.chests[-1])
@@ -51,5 +55,12 @@ static func run(game):
 		item.kind="weapon";item.tier=2;item.strength=3.5;weapons.append(item)
 	game.offers=weapons;game.hud.show_offers(weapons,"chest",false)
 	okay=await capture(game,"weapons") and game.hud.offer_layout_fits() and okay
+	var gallery=game.hud.open("POTION ICON REVIEW","Bottle colors match world pickups; badges show the effect")
+	var grid=GridContainer.new();grid.columns=7;gallery.add_child(grid)
+	for kind in PotionBook.TYPES:
+		var column=VBoxContainer.new();column.custom_minimum_size=Vector2(126,166);grid.add_child(column)
+		var icon=TextureRect.new();icon.texture=load("res://assets/illustrated/potions/"+str(kind)+".svg");icon.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;icon.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;icon.custom_minimum_size=Vector2(112,112);column.add_child(icon)
+		column.add_child(game.hud.label(PotionBook.TYPES[kind].name,14))
+	okay=await capture(game,"potion-icons") and okay
 	print("UI_REVIEW_SAVED: "+("OK" if okay else "FAILED"))
 	game.get_tree().quit(0 if okay else 1)

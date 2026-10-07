@@ -270,3 +270,6 @@ Cloth/leather/metal/ceramic differentiation implemented; original character silh
 
 ### Batch13 optional hunt delivered
 Hunter's Oath shrine,3marked foes/45seconds, freeRare+chest on success, no-cost timeout. Solo state/reward tests and real two-process co-op (including portal guardian replication) passed. Next semantic potion icons; full694-icon audit and new character/weapon/prop assets remain open.
+
+### Batch14 potion semantics complete
+All14temporary-drink HUD icons now depict matching bottles/effect symbols; full-set and in-game renders inspected. General item/skill/weapon semantic audit remains open. Next stronger scenery/weapon assets, broader semantic audit and normal-play hunt balance before further endgame expansion.

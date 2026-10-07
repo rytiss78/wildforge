@@ -278,7 +278,7 @@ func update(delta: float):
 		if not buff_widgets.has(key):
 			var panel=PanelContainer.new();panel.add_theme_stylebox_override("panel",style());buff_icons.add_child(panel)
 			var column=VBoxContainer.new();panel.add_child(column)
-			var icon=PowerIcon.new();icon.key=PotionBook.TYPES[key].key if not PotionBook.TYPES[key].key.is_empty() else "poison" if key=="poison" else "burn";icon.custom_minimum_size=Vector2(34,34);column.add_child(icon)
+			var icon=TextureRect.new();icon.texture=load("res://assets/illustrated/potions/"+str(key)+".svg");icon.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;icon.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;icon.custom_minimum_size=Vector2(40,40);column.add_child(icon)
 			var timer=label("",12);timer.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;column.add_child(timer);buff_widgets[key]=timer
 		buff_widgets[key].text="%s\n%ds" % [PotionBook.TYPES[key].name,ceil(game.buffs[key])]
 	health_text.text="HP  %d / %d" % [ceili(game.hp),roundi(game.stats.maxHp)]
