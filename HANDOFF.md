@@ -1,23 +1,21 @@
 # Wildforge current handoff
+Updated 2026-10-07. User wants substantial standalone quality overhaul: ugly, boring, slow. Ignore mods/megabonk-wildforge. One agent. No new publication performed.
 
-Updated 2026-10-07. User requests a substantial standalone quality overhaul: ugly, boring and slow. Ignore frozen mods/megabonk-wildforge. Use one agent. No new publication requested.
+## Completed local checkpoints
+- Batch 1 f161c1e: five readable illustrated reward cards, selected comparison, HP/shield HUD, controller focus. UI capture verified.
+- Batch 2: higher gameplay camera, normalized smaller ordinary enemies, player locator, calmer terrain, shorter scenery/shadows, staggered enemy simulation. Pending local commit immediately after this update.
 
-## Current milestone
-Batch 1 reward-card/health HUD pass complete. Five horizontal rarity cards, selected comparison, keyboard/controller focus, HP/shield readout, receding control hints. PLAN Phase 1.2 layout complete; semantic icon audit and remaining Phase 1 work open.
+## Fresh batch 2 evidence
+- `node scripts/agent-workflow.mjs check`: 13 JS tests + Godot import/parse passed.
+- `node scripts/agent-workflow.mjs integration`: 55 boolean checks passed, report 2026-10-07T15-31-31-139Z-integration.
+- `node scripts/agent-workflow.mjs build`: export + 67 exported smoke booleans passed; EXE G:/game/.build-staging/agent-workflow/2026-10-07T15-31-47-693Z-build/Wildforge.exe.
+- `node scripts/agent-workflow.mjs combat-review`: actual-camera PNG inspected. Stress p95 18.872→13.814ms, draw calls 1497→1084. p50 4.792→5.216ms. One bounded scenario, not global performance certification.
+- Before/after evidence under .build-staging/agent-workflow/2026-10-07T15-18-52-715Z-combat-review and 2026-10-07T15-29-45-543Z-combat-review.
+- Failed intermediate parse/float precision/stale UI hierarchy checks and fixes recorded in PROGRESS.md.
 
-## Fresh evidence
-- `node scripts/agent-workflow.mjs check`: passed JS suite and Godot import/parse.
-- `node scripts/agent-workflow.mjs smoke`: 67 boolean checks passed, 9 metadata fields.
-- `node scripts/agent-workflow.mjs capture-ui`: five PNGs + navigation/layout assertions passed. Last screenshots in `.build-staging/agent-workflow/2026-10-07T15-15-10-692Z-capture-ui/profile/Roaming/Godot/app_userdata/Wildforge/`.
-- Actual before/after reward, HUD and weapon screenshots inspected via view_image; vision_analyze unavailable. Weapon footer clipping was found and fixed.
-- Build: `G:\game\.build-staging\agent-workflow\2026-10-07T15-15-32-813Z-build\Wildforge.exe`; exported smoke passed 67 boolean checks. Full logs under its staging folder.
-- Initial three stale smoke assertions replaced with real on-screen/non-overlap and selected-preview checks. See PROGRESS for failures and exact paths.
+## Next deliverable
+Measure first-minute normal-stat reward/encounter pace, then improve it. Current first-level target41 XP, first chest30 gold at75–95m; base ordinary spawn two per1.9s. Start nine enemies11–16m. Current combat-review is a stress scene (damage4/three weapons/invulnerability), not pacing evidence. Add independent pace-review wrapper, measure before/after. Then menu presentation, all-biome visual review and later-run balance.
 
-## Next concrete deliverable
-Capture a fixed-seed actual gameplay camera, measure frame times, improve enemy/hero scale readability and noisy terrain. Then encounter/reward pace. Do not confuse the isolated golden diorama with gameplay-camera quality.
-
-## Working state
-Read git status/diff. Preexisting AGENTS.md edit, native/docs/golden-scene.png and untracked nul must be preserved. Existing theme, wrapper and game diagnostic changes were carried into the batch 1 checkpoint. No saves deleted.
-
-## Commands
-Use node scripts/agent-workflow.mjs check|smoke|capture|capture-ui|build. Node is on PATH. Wrappers use isolated APPDATA, bounded children and staged builds. New capture-ui uses --ui-review selected before career initialization. Build assets are development artifacts, not release distributions.
+## Working state and commands
+Preserve preexisting modified AGENTS.md, untracked native/docs/golden-scene.png and nul. Do not stage them. Read git status/diff. No saves deleted; diagnostics isolate APPDATA.
+Use node scripts/agent-workflow.mjs check|smoke|integration|capture-ui|combat-review|build. Build development artifacts are not release distributions. Full logs and result JSON under .build-staging/agent-workflow. vision_analyze unavailable; use view_image for actual PNG inspection.

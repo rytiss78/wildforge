@@ -58,8 +58,8 @@ Rules:
   contrast only, never the hero of a shot.
 - New asset colors must come from this table (or a darkened/lightened
   variant of one of them). No pure white, no pure black, no saturated neon.
-- Global grade: saturation ×1.22, contrast ×1.08 (`world.gd` environment) —
-  the paper "prints" slightly richer than the raw colors above.
+- Global grade: saturation ×1.04, contrast ×1.03 (`world.gd` environment) —
+  restrained terrain contrast keeps characters readable.
 
 ## 3. Typography
 
@@ -93,7 +93,7 @@ treating as canonical):
 ## 5. Lighting
 
 - Single warm sun: `#FFF8EF`, 0.85 energy, fixed angle (−42°, −35°),
-  shadows capped at 65m — one shadow direction per frame, never moving.
+  shadows capped at 38m — one shadow direction per frame, never moving.
 - Cool ambient `#E6EFFF` at 0.36 energy lifts shadows without killing the
   warm key.
 - Fog: depth fog `#E6EFFF`-tinted, begins 35m, ends 155m; the world recedes
@@ -143,3 +143,7 @@ A new model, enemy, or UI change is acceptable only if it passes all:
 - **Proposed / unverified**: UI font choice, exact card corner radii, the
   Prism biome palette, and any new hero models — each needs a rendered
   check against §7 before it becomes canonical.
+
+## Gameplay-camera checkpoint (2026-10-07)
+
+The actual combat camera now starts 8m behind and 9.5m above its target. Ordinary creature base heights are 1.2–2.5m; bosses retain their large scale. Baked meshes are normalized by their actual height. A small gold player marker remains readable through crowded fights. Terrain uses 19% painted detail over muted biome colors, with scenery visible to 105m. This is a gameplay readability pass; the older golden-scene image is not the acceptance capture. See PROGRESS.md for actual combat captures and measured frame times.

@@ -1,6 +1,6 @@
 # Wildforge Development Plan
 **Goal:** Transform from alpha prototype to a polished, good-looking, fun-to-play endless survivor game.
-**Current:** standalone overhaul in progress (2026-10-07). Reward cards and health HUD improved; world readability, combat pace and measured performance remain the immediate priorities. Published v0.8.2 is historical, not this development build.
+**Current:** standalone overhaul in progress (2026-10-07). Reward cards and health HUD improved; combat camera/scale and measured frame spikes improved; opening pace and menu presentation are next. Published v0.8.2 is historical, not this development build.
 **Target:** Consistent whimsical-surreal art direction, readable UI, juicy combat feel, responsive controls, 60fps on target PC.
 
 **Working principle:** Every increment is git-committed, screenshot-verified, and test-passing. Plans live on disk (this file + milestone docs) so long-horizon work survives context resets. Each phase has a "definition of done" with concrete checks.
@@ -224,3 +224,6 @@
 - Phase 1.4 HUD: HP/shield readout and bar added; controls recede after the opening. Further minimap/menu consolidation remains open.
 - Next bounded deliverable: readable, responsive combat view. Capture an actual fixed-seed gameplay camera baseline; reduce terrain noise and oversized foreground enemies, then measure frame times before/after.
 - Follow with encounter pacing and early reward cadence, then remaining menus/content quality. Do not add catalog volume before these foundations work.
+
+### 2026-10-07 combat checkpoint
+Phase 2 partial: gameplay camera, ordinary enemy scale, player locator and calmer terrain verified in actual crowded combat. Phase 3 performance partial: alternating enemy simulation reduced measured p95 from 18.872 to 13.814ms in a fixed stress scenario. Full biome review and later-run performance remain open. Next: measured opening reward pace.

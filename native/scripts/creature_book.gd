@@ -15,7 +15,7 @@ const SPEED=[1.0,1.4,.7,1.0,1.65,.65]
 const DAMAGE=[1.0,.75,1.4,1.25,.7,1.8]
 const BEHAVIORS=["chase","swoop","armored","spit","skitter","charge"]
 const SOUNDS=["shell_bump","wing_bump","stone_bump","wet_bump","buzz_bump","roar_bump"]
-const HEIGHTS=[2.1,1.85,3.0,2.4,1.75,4.1]
+const HEIGHTS=[1.45,1.3,1.85,1.6,1.2,2.5]
 const RADII=[.65,.48,.9,.7,.46,1.2]
 const FLYING=[[1,4],[3,4],[1,3,4],[0,1,3,4],[4],[1,2,4]]
 

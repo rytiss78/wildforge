@@ -57,8 +57,8 @@ export function assessPng(path, started) {
 }
 
 async function main(action) {
-  if (!['check', 'smoke', 'capture', 'capture-ui', 'build', 'status'].includes(action)) {
-    console.error('Usage: node scripts/agent-workflow.mjs check|smoke|capture|capture-ui|build|status'); return 2;
+  if (!['check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'integration', 'build', 'status'].includes(action)) {
+    console.error('Usage: node scripts/agent-workflow.mjs check|smoke|capture|capture-ui|combat-review|integration|build|status'); return 2;
   }
   const git = (...args) => spawnSync('git', ['-C', root, ...args], {encoding:'utf8', windowsHide:true}).stdout?.trim() ?? '';
   if (action === 'status') { console.log(JSON.stringify({root, node:process.execPath, godot, godotPresent:existsSync(godot), head:git('rev-parse','HEAD'), changes:git('status','--short')}, null, 2)); return 0; }
@@ -82,6 +82,15 @@ async function main(action) {
       await step('gdscript-parse',godot,['--headless','--path',join(root,'native'),'--check-only','--script','res://scripts/game.gd'],45000);
     }
     if (action === 'smoke') report.smoke=assessSmoke(await step('native-smoke',godot,['--headless','--path',join(root,'native'),'--','--smoke'],90000));
+    if (action === 'integration') {
+      const output=await step('integration',godot,['--headless','--path',join(root,'native'),'--','--big-update-check'],180000);
+      const line=output.split(/\r?\n/).findLast(x=>x.startsWith('BIG_UPDATE_CHECK '));
+      if (!line) throw new Error('Missing integration result.');
+      const result=JSON.parse(line.slice('BIG_UPDATE_CHECK '.length));
+      const checks=Object.entries(result.checks).filter(([,v])=>typeof v==='boolean');
+      if (!result.passed || !checks.length || checks.some(([,v])=>!v)) throw new Error('Integration assertions failed: '+line);
+      report.integration={checksPassed:checks.length,routeMaxSlope:result.route_max_slope};
+    }
     if (action === 'capture') {
       const output=await step('golden-capture',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--golden-scene'],90000);
       if (!output.includes('GOLDEN_SCENE_SAVED: OK')) throw new Error('Missing successful capture marker.');
@@ -98,6 +107,13 @@ async function main(action) {
       const output=await step('ui-capture',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--ui-review'],90000);
       if (!output.includes('UI_REVIEW_SAVED: OK')) throw new Error('UI capture failed.');
       report.capture=['menu','hud','offers','focus','weapons'].map(name=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','ui-'+name+'.png'),started));
+    }
+    if (action === 'combat-review') {
+      const output=await step('combat-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--combat-review'],90000);
+      const line=output.split(/\r?\n/).findLast(x=>x.startsWith('COMBAT_REVIEW '));
+      if (!line) throw new Error('Missing combat measurements.');
+      report.combat=JSON.parse(line.slice('COMBAT_REVIEW '.length));
+      report.capture=assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge/combat-review.png'),started);
     }
     report.success=true;
   } catch (error) { report.error=error.message; }

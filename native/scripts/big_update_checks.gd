@@ -91,7 +91,7 @@ static func run(game: Node3D):
 	game.hud.cards[1].grab_focus();var focused=game.hud.cards[1]
 	game.input_kind="xbox";game.hud.update(0)
 	checks.controller_focus=game.get_viewport().gui_get_focus_owner()==focused and InputMap.action_has_event("ping",ping_button())
-	checks.card_values=game.hud.offer_detail.get_child_count()>5
+	checks.card_values=game.hud.offer_detail.get_child(0).text.ends_with(game.offers[1].name) and game.hud.offer_detail.get_child(1).text.length()>10 and game.update.focused_offer==1
 	if DisplayServer.get_name()!="headless":
 		await RenderingServer.frame_post_draw
 		game.get_viewport().get_texture().get_image().save_png("user://big-update-cards.png")

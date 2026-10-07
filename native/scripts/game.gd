@@ -47,7 +47,8 @@ var ghost_time = 0.0
 var burrow_time = 0.0
 var yaw = 0.0
 var pitch = 0.0
-var camera_distance = 6.0
+var camera_distance = 8.0
+var camera_locked=false
 var walking_gold = 0.0
 var spawn_clock = 0.0
 var metric_clock = 0.0
@@ -144,6 +145,8 @@ func _ready():
 	if OS.get_cmdline_user_args().has("--coop-client-test"): network_test_role="client";smoke=true
 	smoke=smoke or OS.get_cmdline_user_args().has("--golden-scene")
 	smoke=smoke or OS.get_cmdline_user_args().has("--ui-review")
+	smoke=smoke or OS.get_cmdline_user_args().has("--combat-review")
+	camera_locked=OS.get_cmdline_user_args().has("--golden-scene") or OS.get_cmdline_user_args().has("--ui-review")
 	career = ProfileScript.new(rules.data,smoke)
 	if network_test_role!="": career.file="user://coop-test-"+network_test_role+".json"
 	career.on_unlock = func(achievement): hud.tell("★  " + achievement.name); sound.say("achievement",25)
@@ -208,6 +211,7 @@ func _ready():
 	elif OS.get_cmdline_user_args().has("--style-roundtrip"): call_deferred("run_style_roundtrip")
 	elif network_test_role!="": call_deferred("run_coop_test")
 	elif OS.get_cmdline_user_args().has("--ui-review"): preload("res://scripts/ui_review.gd").run.call_deferred(self)
+	elif OS.get_cmdline_user_args().has("--combat-review"): preload("res://scripts/combat_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--golden-scene"): call_deferred("golden_scene")
 	elif smoke: call_deferred("export_hero_art" if OS.get_cmdline_user_args().has("--art") else "run_soak" if OS.get_cmdline_user_args().has("--soak") else "run_smoke")
 
@@ -1309,10 +1313,6 @@ func warn_at(p: Vector3,radius_value: float,delay: float,damage_value: float,sty
 
 func update_combat(delta: float):
 	update_melee(delta)
-	enemy_step+=delta
-	var update_enemies=enemy_step>=1.0/30.0
-	var enemy_delta=enemy_step
-	if update_enemies: enemy_step=0
 	spawn_clock -= delta
 	if spawn_clock <= 0:
 		var swarm = events.get("swarm_until",0.0)>realm_time or update.beacon_state=="defending"
@@ -1323,13 +1323,12 @@ func update_combat(delta: float):
 		if update.beacon_state=="defending": update.beacon_budget=maxi(0,update.beacon_budget-count)
 		elif swarm: events.wave_budget=maxi(0,budget-count)
 		spawn_clock = maxf(.4,.95-realm_time*.0005)*(1.0/1.35 if swarm else 2.0)
-	if update_enemies:
-		crowd.clear()
-		for enemy in enemies:
-			if enemy.dead: continue
-			var cell=Vector2i(floori(enemy.node.position.x/3),floori(enemy.node.position.z/3))
-			if not crowd.has(cell): crowd[cell]=[]
-			crowd[cell].append(enemy)
+	crowd.clear()
+	for enemy in enemies:
+		if enemy.dead: continue
+		var cell=Vector2i(floori(enemy.node.position.x/3),floori(enemy.node.position.z/3))
+		if not crowd.has(cell): crowd[cell]=[]
+		crowd[cell].append(enemy)
 	update_garden(delta)
 	for weapon in equipped:
 		if weapon.id=="flowers": continue
@@ -1350,7 +1349,11 @@ func update_combat(delta: float):
 			fire(weapon,origin)
 			weapon.clock = 1.0/(weapon.rate*(stat("turretRate") if weapon.turret else stat("rate")))
 	for enemy in enemies:
-		if enemy.dead or not update_enemies: continue
+		if enemy.dead: continue
+		# Keep each actor at 30 Hz, offset across two physics frames instead of one large spike.
+		enemy.simulation_elapsed=float(enemy.get("simulation_elapsed",float(enemy.net_id%2)/60.0))+delta
+		if enemy.simulation_elapsed+.000001<1.0/30.0: continue
+		var enemy_delta=float(enemy.simulation_elapsed);enemy.simulation_elapsed=0.0
 		if coop.active and not coop.hosting:
 			var previous=enemy.node.position
 			enemy.node.position=enemy.node.position.lerp(enemy.get("target_position",previous),1-exp(-enemy_delta*16))
@@ -1658,9 +1661,9 @@ func _process(delta: float):
 	if mode=="level_reveal":
 		level_reveal-=delta
 		if level_reveal<=0: mode="offer";hud.show_offers(offers,"level")
-	if not smoke:
+	if not camera_locked:
 		var anchor=player.position+Vector3.UP*1.2
-		var offset=Vector3(sin(yaw)*camera_distance,2.4+pitch*6,cos(yaw)*camera_distance)
+		var offset=Vector3(sin(yaw)*camera_distance,7.5+camera_distance*.25+pitch*4,cos(yaw)*camera_distance)
 		var desired=player.position+offset
 		var ray=PhysicsRayQueryParameters3D.create(anchor,desired)
 		ray.collision_mask=1
@@ -2008,7 +2011,7 @@ func run_smoke():
 		var p=Vector3(cos(i*TAU/36)*300,0,sin(i*TAU/36)*300);detected[world.biome_at(p)]=true
 	checks.six_biomes=detected.size()==6
 	checks.large_world=RealmWorld.EXTENT==400
-	checks.enemy_size=enemies.all(func(e):return e.node is CharacterBody3D and e.node.get_child(0).shape.height>=1.65)
+	checks.enemy_size=enemies.all(func(e):return e.node is CharacterBody3D and e.node.get_child(0).shape.height+.0001>=e.height and is_equal_approx(e.node.get_child(0).shape.radius,e.radius))
 	player.position=Vector3(0,8,0);player.velocity=Vector3.ZERO;air_jumps=0;try_jump()
 	checks.no_free_air_jump=air_jumps==0 and player.velocity.y==0
 	rules.apply_effects(stats,[{"key":"airJumps","amount":1}]);try_jump()

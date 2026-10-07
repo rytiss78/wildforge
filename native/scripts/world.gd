@@ -119,7 +119,10 @@ func compute_height_at(x: float,z: float) -> float:
 
 func model(name: String,height: float) -> Node3D:
 	if ResourceLoader.exists("res://assets/illustrated/"+("creatures/" if name.begins_with("creature_") else "heroes/")+name+".png") or name in ["pipe_wrench","rubber_duck_toy","sweet_potato","marble_bust_01","street_rat","hamburger_buns","florist","acorn","toad","crab","penguin","lizard","beetle"]:
-		var rig=ActorRig.new();rig.setup(name);rig.scale=Vector3.ONE*(height/1.65)
+		var rig=ActorRig.new();rig.setup(name);var reference_height=1.65
+		if name.begins_with("creature_") and ResourceLoader.exists("res://assets/style3d/baked/"+name+".res"):
+			reference_height=load("res://assets/style3d/baked/"+name+".res").get_aabb().size.y
+		rig.scale=Vector3.ONE*(height/maxf(.1,reference_height))
 		return rig
 	return ToonArt.make(name,height)
 
@@ -248,11 +251,11 @@ func make_chunk(cell: Vector2i):
 	for path in scenery_groups:
 		var instances=MultiMesh.new();instances.transform_format=MultiMesh.TRANSFORM_3D;instances.mesh=prop_meshes[path];instances.instance_count=scenery_groups[path].size()
 		for index in range(instances.instance_count): instances.set_instance_transform(index,scenery_groups[path][index])
-		var combined=MultiMeshInstance3D.new();combined.multimesh=instances;combined.material_override=scenery_material;combined.visibility_range_end=160;combined.visibility_range_end_margin=20;root.add_child(combined)
+		var combined=MultiMeshInstance3D.new();combined.multimesh=instances;combined.material_override=scenery_material;combined.visibility_range_end=105;combined.visibility_range_end_margin=15;root.add_child(combined)
 	if not scenery.is_empty():
 		var mesh=PaintedBatch.merge(root,scenery)
 		for source in scenery: source.queue_free()
-		var combined=MeshInstance3D.new();combined.mesh=mesh;combined.material_override=scenery_material;combined.visibility_range_end=220;combined.visibility_range_end_margin=20;root.add_child(combined)
+		var combined=MeshInstance3D.new();combined.mesh=mesh;combined.material_override=scenery_material;combined.visibility_range_end=105;combined.visibility_range_end_margin=15;root.add_child(combined)
 	# Low batched ground details never conceal an ordinary enemy.
 	var multimesh=MultiMesh.new();multimesh.transform_format=MultiMesh.TRANSFORM_3D;multimesh.use_colors=true
 	var blade=PrismMesh.new();blade.size=Vector3(.08,.18,.07);multimesh.mesh=blade;multimesh.instance_count=80
@@ -308,14 +311,14 @@ func make_environment():
 	var env=Environment.new();env.background_mode=Environment.BG_SKY
 	var sky=Sky.new();var gradient=ShaderMaterial.new();gradient.shader=load("res://shaders/biome_sky.gdshader");gradient.set_shader_parameter("paint",load("res://assets/illustrated/terrain-2.png"));sky.sky_material=gradient;sky.process_mode=Sky.PROCESS_MODE_REALTIME;env.sky=sky
 	env.ambient_light_source=Environment.AMBIENT_SOURCE_COLOR;env.ambient_light_color=Color("e6efff");env.ambient_light_energy=.36
-	env.adjustment_enabled=true;env.adjustment_saturation=1.22;env.adjustment_contrast=1.08
+	env.adjustment_enabled=true;env.adjustment_saturation=1.04;env.adjustment_contrast=1.03
 	# Keep the playable foreground crisp; distant scenery still fades out.
 	env.fog_enabled=true;env.fog_mode=Environment.FOG_MODE_DEPTH;env.fog_light_color=sky_horizon;env.fog_density=1.0;env.fog_depth_begin=35;env.fog_depth_end=155;env.fog_sky_affect=0
 	var world_env=WorldEnvironment.new();world_env.environment=env;add_child(world_env)
 	sky_paint=gradient;environment=env;active_biome=-1
 	weather=GPUParticles3D.new();weather.amount=180;weather.lifetime=4;weather.visibility_aabb=AABB(Vector3(-25,-15,-25),Vector3(50,40,50));add_child(weather)
 	var particles=ParticleProcessMaterial.new();particles.emission_shape=ParticleProcessMaterial.EMISSION_SHAPE_BOX;particles.emission_box_extents=Vector3(14,4,14);particles.direction=Vector3.DOWN;particles.spread=35;weather.process_material=particles
-	var sun=DirectionalLight3D.new();sun.rotation_degrees=Vector3(-42,-35,0);sun.light_energy=.85;sun.light_color=Color("fff8ef");sun.shadow_enabled=true;sun.directional_shadow_max_distance=65;add_child(sun)
+	var sun=DirectionalLight3D.new();sun.rotation_degrees=Vector3(-42,-35,0);sun.light_energy=.85;sun.light_color=Color("fff8ef");sun.shadow_enabled=true;sun.directional_shadow_max_distance=38;add_child(sun)
 	for i in range(16):
 		var cloud=Node3D.new();cloud.position=Vector3(cos(i*TAU/16)*370,60+sin(i)*15,sin(i*TAU/16)*370);add_child(cloud);clouds.append(cloud)
 		for j in range(3): ToonArt.ball(cloud,Color("fff2de"),Vector3(j*6,0,0),Vector3(20,9,12))

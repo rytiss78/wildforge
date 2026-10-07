@@ -40,6 +40,7 @@ var preview_id=""
 var health_text: Label
 var health_bar: ProgressBar
 var hints_until=25.0
+var player_locator: Control
 
 func menu_controls(node: Node=modal) -> Array:
 	var result=[]
@@ -130,6 +131,7 @@ func button(text: String, action: Callable, accent: bool = false, radius_key: St
 
 func setup(owner_game):
 	game = owner_game
+	player_locator=preload("res://scripts/player_locator.gd").new();player_locator.game=game;player_locator.mouse_filter=Control.MOUSE_FILTER_IGNORE;root.add_child(player_locator)
 	buff_icons=HBoxContainer.new();buff_icons.position=Vector2(750,685);root.add_child(buff_icons)
 	buff_label=label("",14);buff_label.position=Vector2(760,702);root.add_child(buff_label)
 	biome_label=label("",16);biome_label.position=Vector2(24,242);root.add_child(biome_label)
@@ -255,6 +257,7 @@ func level_flash():
 	game.sound.effect("level")
 
 func update(delta: float):
+	player_locator.queue_redraw()
 	for widget in root.get_children():
 		if widget is CanvasItem and widget!=modal and widget!=blast: widget.visible=not modal.visible
 	level_plate.visible=game.mode=="level_reveal"
