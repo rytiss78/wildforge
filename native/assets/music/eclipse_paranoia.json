@@ -1,0 +1,16 @@
+{
+  "source": "User-supplied PARANOIA.mp3",
+  "source_sha256": "2a03bef0c126e443dcc79f5f530ee22cceb8e5a23b270f271e5354af955d6709",
+  "method": "Basic Pitch0.4 ONNX dual-pass note transcription; detected percussion; MIDI synthesized with original FM bell/sub/drum voices",
+  "scope": "Approximate MIDI arrangement, not the original recording; no source audio samples",
+  "duration": 116.40163265306123,
+  "tempo_estimate": 112.34714673913044,
+  "tracks": {
+    "Transcribed sub bass": 75,
+    "Transcribed bell melody": 814,
+    "Detected percussion": 894
+  },
+  "peak": 0.88,
+  "midi_sha256": "dce67a26ac1292b1ee5127937c02ae998f5d504e3db1a0a1e8a1011d0ba86a51",
+  "rms": 0.1433713802965811
+}

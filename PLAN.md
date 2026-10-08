@@ -395,3 +395,8 @@ Acceptance: focused gameplay assertions, rendered before/after UI/art inspection
 
 - [ ] Art follow-up: first3D pass covers344skill cards; several families still reuse base geometry. Make conditional augments and remaining offense effects more individually recognizable; retain rendered comparison checks.
 - [ ] Audio follow-up: human listening review of synthesized Lithuanian pronunciation/monster timbre and final combat mix.
+
+## Eclipse music and movement — 2026-10-08
+- [x] Transcribe supplied M:/Music/Phonk/PARANOIA.mp3 into editable MIDI, render a MIDI-instrument arrangement and play it only during Eclipse.
+- [x] Slight grounded running inertia during Eclipse; preserve normal movement, dash, air control and knockback.
+- [x] Verify music transitions/pause/volume/loop and frame-rate-independent movement; grouped local test build.

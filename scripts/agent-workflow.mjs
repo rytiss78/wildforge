@@ -57,7 +57,7 @@ export function assessPng(path, started, minimum=320) {
 }
 
 async function main(action) {
-  if (!['feedback-review', 'skill-icons', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
+  if (!['eclipse-review', 'feedback-review', 'skill-icons', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
     console.error('Usage: node scripts/agent-workflow.mjs check|smoke|capture|capture-ui|combat-review|pace-review|soak|integration|build|status'); return 2;
   }
   const git = (...args) => spawnSync('git', ['-C', root, ...args], {encoding:'utf8', windowsHide:true}).stdout?.trim() ?? '';
@@ -89,7 +89,7 @@ async function main(action) {
       if(!line) throw new Error('Missing exported combat result.');
       report.combat=JSON.parse(line.slice('COMBAT_REVIEW '.length));report.build=previous.build;
       report.capture=assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge/combat-review.png'),started);
-      for (const [flag,prefix,key] of [['--feedback-review','FEEDBACK_REVIEW ','feedback'],['--controls-review','CONTROLS_REVIEW ','controls'],['--surface-review','SURFACE_REVIEW ','surface'],['--progression-review','PROGRESSION_REVIEW ','progression'],['--journey-review','JOURNEY_REVIEW ','journey']]) {
+      for (const [flag,prefix,key] of [['--eclipse-review','ECLIPSE_REVIEW ','eclipse'],['--feedback-review','FEEDBACK_REVIEW ','feedback'],['--controls-review','CONTROLS_REVIEW ','controls'],['--surface-review','SURFACE_REVIEW ','surface'],['--progression-review','PROGRESSION_REVIEW ','progression'],['--journey-review','JOURNEY_REVIEW ','journey']]) {
         const details=await step('exported-'+key,previous.build,['--resolution','1440x810','--',flag],120000);
         const resultLine=details.split(/\r?\n/).findLast(x=>x.startsWith(prefix));
         if(!resultLine) throw new Error('Missing exported '+key+' result');
@@ -131,6 +131,13 @@ async function main(action) {
       for (const artifact of [exe,join(runDir,'Wildforge.pck')]) if (!existsSync(artifact) || statSync(artifact).size < 1024) throw new Error('Missing or empty build artifact: '+artifact);
       report.exportedSmoke=assessSmoke(await step('exported-smoke',exe,['--headless','--','--smoke'],90000));
       report.build=exe;
+    }
+    if (action === 'eclipse-review') {
+      const output=await step('eclipse-review',godot,['--headless','--path',join(root,'native'),'--','--eclipse-review'],180000);
+      const line=output.split(/\r?\n/).findLast(x=>x.startsWith('ECLIPSE_REVIEW '));
+      if(!line) throw new Error('Missing Eclipse checks');
+      report.eclipse=JSON.parse(line.slice('ECLIPSE_REVIEW '.length));
+      if(Object.values(report.eclipse).some(v=>v===false)) throw new Error('Eclipse checks failed');
     }
     if (action === 'feedback-review') {
       const output=await step('feedback-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--feedback-review'],180000);

@@ -9,6 +9,8 @@ var rhythm = AudioStreamPlayer.new()
 var lead = AudioStreamPlayer.new()
 var synth = AudioStreamPlayer.new()
 var atmosphere = AudioStreamPlayer.new()
+var eclipse_music=AudioStreamPlayer.new()
+var eclipse_active=false
 var theme_realm=-1
 var rng = RandomNumberGenerator.new()
 var phrase = 0
@@ -50,7 +52,7 @@ func setup(options: Dictionary):
 		var reverb=AudioEffectReverb.new();reverb.room_size=.82;reverb.damping=.65;reverb.wet=.24;reverb.dry=.90;reverb.spread=.85;reverb.predelay_msec=65
 		AudioServer.add_bus_effect(sky_bus,reverb)
 	voice.bus="SkyVoice";voice.attenuation_model=AudioStreamPlayer3D.ATTENUATION_DISABLED;voice.max_distance=120;voice.panning_strength=.65
-	for player in [voice,drums,rhythm,lead,synth,atmosphere]: add_child(player)
+	for player in [voice,drums,rhythm,lead,synth,atmosphere,eclipse_music]: add_child(player)
 	voice.pitch_scale = 1.0
 	for i in range(12):
 		var channel=AudioStreamPlayer3D.new();channel.unit_size=7;channel.max_distance=75;channel.max_db=0;add_child(channel);sfx_pool.append(channel)
@@ -88,12 +90,12 @@ func start(seed_value: int):
 	clock = 0
 	active = true
 	boss_voice_last=-100;boss_voice.stop();last_hurt=-100;hurt_voice.stop();hurt_source=null;pending_biome=""
-	theme_realm=-1;atmosphere.stop()
+	theme_realm=-1;atmosphere.stop();eclipse_music.stop();eclipse_active=false
 	play_phrase()
 
 func play_phrase():
 	var riff = arrangement[phrase % arrangement.size()]
-	var volume = float(settings.music)
+	var volume = 0.0 if eclipse_active else float(settings.music)
 	for player in [drums,rhythm,lead,synth]: player.volume_db = linear_to_db(maxf(.0001, volume))
 	drums.stream = stream(genre + ("_boss_drums" if boss else "_drums"))
 	rhythm.stream = stream(("metal_" + str(riff)) if genre == "metal" else ("cyber_" + str(riff % 4)))
@@ -110,6 +112,19 @@ func play_phrase():
 	for player in [drums,rhythm,lead,synth]: player.play()
 
 func tick(delta: float, playing: bool, has_boss: bool):
+	var eclipse_wanted=active and get_parent().events.get("eclipse",false)
+	if eclipse_wanted!=eclipse_active:
+		eclipse_active=eclipse_wanted
+		if eclipse_active:
+			var track=load("res://assets/music/eclipse_paranoia.wav").duplicate() as AudioStreamWAV
+			track.loop_mode=AudioStreamWAV.LOOP_FORWARD;track.loop_begin=0;track.loop_end=track.data.size()/4;eclipse_music.stream=track;eclipse_music.play()
+		else:
+			eclipse_music.stop();clock=0
+			if active: play_phrase()
+	eclipse_music.stream_paused=not playing
+	eclipse_music.volume_db=linear_to_db(maxf(.0001,float(settings.music)))-3
+	for channel in [drums,rhythm,lead,synth]:
+		if eclipse_active: channel.volume_db=-80
 	if boss!=has_boss and active:
 		boss=has_boss;clock=0;play_phrase()
 	boss = has_boss
@@ -127,7 +142,7 @@ func tick(delta: float, playing: bool, has_boss: bool):
 		var theme=stream("realm_theme_"+str(realm_index)).duplicate() as AudioStreamWAV
 		theme.loop_mode=AudioStreamWAV.LOOP_FORWARD;theme.loop_begin=0;theme.loop_end=theme.data.size()/2
 		atmosphere.stream=theme;atmosphere.play();atmosphere.stream_paused=not playing
-	atmosphere.volume_db=linear_to_db(maxf(.0001,float(settings.music)))-(12 if boss else 3)
+	atmosphere.volume_db=-80 if eclipse_active else linear_to_db(maxf(.0001,float(settings.music)))-(12 if boss else 3)
 	voice.volume_db = linear_to_db(maxf(.0001, float(settings.voice)))
 	if not playing or not active: return
 	if genre != settings.get("genre", "metal"):

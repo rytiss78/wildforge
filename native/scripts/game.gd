@@ -120,6 +120,7 @@ var player_blind=0.0
 var status_tick=0.0
 var enemy_step=0.0
 var pickup_merge_clock=0.0
+var eclipse_run_velocity=Vector3.ZERO
 var knock_velocity=Vector3.ZERO
 var hit_shake=0.0
 var hit_stop=0.0
@@ -146,7 +147,7 @@ func _ready():
 	get_viewport().use_occlusion_culling=true
 	player=CharacterBody3D.new();camera=Camera3D.new();coop=CoopSession.new()
 	profile_crowd=OS.get_cmdline_user_args().has("--crowd-review")
-	smoke = OS.get_cmdline_user_args().has("--feedback-review") or OS.get_cmdline_user_args().has("--controls-review") or OS.get_cmdline_user_args().has("--surface-review") or profile_crowd or OS.get_cmdline_user_args().has("--progression-review") or OS.get_cmdline_user_args().has("--field-review") or OS.get_cmdline_user_args().has("--smoke") or OS.get_cmdline_user_args().has("--soak") or OS.get_cmdline_user_args().has("--art") or OS.get_cmdline_user_args().has("--style-roundtrip")
+	smoke = OS.get_cmdline_user_args().has("--eclipse-review") or OS.get_cmdline_user_args().has("--feedback-review") or OS.get_cmdline_user_args().has("--controls-review") or OS.get_cmdline_user_args().has("--surface-review") or profile_crowd or OS.get_cmdline_user_args().has("--progression-review") or OS.get_cmdline_user_args().has("--field-review") or OS.get_cmdline_user_args().has("--smoke") or OS.get_cmdline_user_args().has("--soak") or OS.get_cmdline_user_args().has("--art") or OS.get_cmdline_user_args().has("--style-roundtrip")
 	smoke=smoke or OS.get_cmdline_user_args().has("--update-check") or OS.get_cmdline_user_args().has("--big-update-check")
 	smoke=smoke or OS.get_cmdline_user_args().has("--presentation-check")
 	smoke=smoke or OS.get_cmdline_user_args().has("--melee-check")
@@ -225,6 +226,7 @@ func _ready():
 	elif OS.get_cmdline_user_args().has("--update-check"): preload("res://scripts/update_checks.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--style-roundtrip"): call_deferred("run_style_roundtrip")
 	elif network_test_role!="": call_deferred("run_coop_test")
+	elif OS.get_cmdline_user_args().has("--eclipse-review"): preload("res://scripts/eclipse_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--feedback-review"): preload("res://scripts/feedback_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--controls-review"): preload("res://scripts/controls_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--surface-review"): preload("res://scripts/surface_review.gd").run.call_deferred(self)
@@ -289,7 +291,7 @@ func select_hero(item: Dictionary):
 	player.add_child(avatar)
 
 func clear_entities():
-	pickup_merge_clock=0;enemy_step=0;crowd.clear();damage_numbers.clear()
+	eclipse_run_velocity=Vector3.ZERO;pickup_merge_clock=0;enemy_step=0;crowd.clear();damage_numbers.clear()
 	melee_attacks.clear()
 	if is_instance_valid(avatar): avatar.finish_melee()
 	for id in sound.weapon_loops: sound.weapon_loop(id,false,player.position)
@@ -1722,8 +1724,12 @@ func _physics_process(delta: float):
 	invulnerable=maxf(0,invulnerable-delta)
 	ghost_time=maxf(0,ghost_time-delta)
 	burrow_time=maxf(0,burrow_time-delta)
-	if dash_time>0: player.velocity.x=direction.x*stat("speed")*3;player.velocity.z=direction.z*stat("speed")*3
-	else: player.velocity.x=wish.x*stat("speed");player.velocity.z=wish.z*stat("speed")
+	if dash_time>0:
+		eclipse_run_velocity=direction*stat("speed")
+		player.velocity.x=direction.x*stat("speed")*3;player.velocity.z=direction.z*stat("speed")*3
+	else:
+		var running=eclipse_running(wish,delta,player.is_on_floor())
+		player.velocity.x=running.x;player.velocity.z=running.z
 	if player_chill>0: player.velocity.x*=.7;player.velocity.z*=.7
 	player.velocity.x+=knock_velocity.x;player.velocity.z+=knock_velocity.z
 	knock_velocity=knock_velocity.move_toward(Vector3.ZERO,delta*30)
@@ -2626,3 +2632,13 @@ func update_reaction(enemy: Dictionary,kind: String,damage: float):
 
 func target_visible(origin: Vector3,target: Vector3) -> bool:
 	return get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(origin+Vector3.UP*.05,target+Vector3.UP*.05,1)).is_empty()
+
+func eclipse_running(wish: Vector3,delta: float,grounded: bool) -> Vector3:
+	var target=wish*stat("speed")
+	if events.get("eclipse",false) and grounded:
+		# Short, frame-rate-independent turn drift; releasing input brakes faster.
+		var response=22.0 if wish.length_squared()<.01 else 14.0
+		eclipse_run_velocity=eclipse_run_velocity.lerp(target,1-exp(-response*delta))
+		if target.is_zero_approx() and eclipse_run_velocity.length()<.02: eclipse_run_velocity=Vector3.ZERO
+	else: eclipse_run_velocity=target
+	return eclipse_run_velocity
