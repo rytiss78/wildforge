@@ -337,15 +337,15 @@ User-provided IceGun mismatch traced to generic elemental GLBs plus independentl
 - [x] Run source checks, exported smoke checks, UI capture and exported rendered combat; inspect images.
 - [x] Promote tested EXE/PCK to build/ and create dated test ZIP in dist/.
 - [ ] Remove obsolete local builds: attempted, blocked by automatic approval review; no deletion performed.
-- [ ] Earlier authorized GitHub release cleanup remains pending; keep latest standalone release and mod releases outside this work.
-- [ ] Follow-up: black-hole/poison visuals, stronger weapon audio, loot probability audit and damage-number aggregation/lifetime.
+- [x] Older GitHub standalone releases removed after new progression test verified; mod releases and Git tags preserved.
+- [x] Black-hole/poison visuals, stronger weapon audio, loot probability audit and damage-number aggregation/lifetime implemented; subjective audio acceptance remains open.
 
 - [x] Publish the tested Windows ZIP and checksums to GitHub: test-2026-10-08 prerelease (2026-10-08).
 
 ## Latest user priorities — crowd performance and co-op lobby (2026-10-08)
 - [ ] Reduce lag with many enemies; profile rendered crowd combat, bound damage-feedback overhead, compare measurements and preserve combat rules.
 - [ ] Co-op lobby: choose a hero inside the lobby, synchronized per-player Ready state, host-only Start Game gated on readiness; hero changes clear readiness. Validate real host/client flow and keyboard/controller UI.
-- [ ] Export/publish only after a larger combined batch passes; use source checks and local checkpoints between batches (user preference2026-10-08).
+- [x] Export/publish only after a larger combined batch passes; use source checks and local checkpoints between batches (user preference2026-10-08).
 
 - [x] Co-op lobby hero selection, synchronized Ready/cancel and host Start Game implemented and tested on2026-10-08. Earlier unchecked entry is superseded. Crowd lag remains open after bounded damage-popup allocation fix.
 
@@ -365,3 +365,5 @@ User-provided IceGun mismatch traced to generic elemental GLBs plus independentl
 - [x] Eclipse corruption readability (stage-scaled appearance, co-op snapshot check, rendered comparison).
 - [x] Twelve mobility icons depict their objects/effects; card art larger/centered.
 - [ ] Remaining: all-surface climbing, broader semantic/art pass, balance sessions, accessibility and maximum-crowd performance.
+
+Latest grouped build: [progression/Eclipse/card-art test](https://github.com/rytiss78/wildforge/releases/tag/test-2026-10-08-progression), source78e968b. One export for this continuation. Remaining plan is explicitly open; next all-surface traversal acceptance.

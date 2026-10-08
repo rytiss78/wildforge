@@ -89,6 +89,14 @@ async function main(action) {
       if(!line) throw new Error('Missing exported combat result.');
       report.combat=JSON.parse(line.slice('COMBAT_REVIEW '.length));report.build=previous.build;
       report.capture=assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge/combat-review.png'),started);
+      for (const [flag,prefix,key] of [['--progression-review','PROGRESSION_REVIEW ','progression'],['--journey-review','JOURNEY_REVIEW ','journey']]) {
+        const details=await step('exported-'+key,previous.build,['--resolution','1440x810','--',flag],120000);
+        const resultLine=details.split(/\r?\n/).findLast(x=>x.startsWith(prefix));
+        if(!resultLine) throw new Error('Missing exported '+key+' result');
+        report[key]=JSON.parse(resultLine.slice(prefix.length));
+        if(Object.values(report[key].checks ?? report[key]).some(v=>v===false)) throw new Error('Exported '+key+' checks failed');
+      }
+      report.featureCaptures=['progression-stats','progression-cards','progression-recap','progression-mobility','journey-corruption-after'].map(name=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge',name+'.png'),started));
     }
     if (action === 'weapon-icons') {
       const output=await step('weapon-icons',godot,['--path',join(root,'native'),'--script','res://scripts/render_weapon_icons.gd'],180000);
