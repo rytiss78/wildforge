@@ -2,7 +2,7 @@
 ## Current objective
 User's latest correction: damage labels must rise from bottom edge. Implemented and verified in current local export. Continue five requests in PLAN section Co-op reliability and rejected presentation: flowers, owned damage, complete icon remake, stationary enemies, intelligible hero/boss voices. One agent only; group builds/uploads.
 ## Current delivery
-Latest public download: https://github.com/rytiss78/wildforge/releases/tag/test-2026-10-08-coop-feedback (1a96f9b). Source pushed; ZIP/checksum published on explicit user request. Remote asset sizes/digests verified. ZIP dist/Wildforge-test-2026-10-08-coop-feedback-Windows.zip matches tested17-35-38 export. Stable build folder unchanged. Prior progression release retained. Preserve history/saves/logs.
+Latest public download: https://github.com/rytiss78/wildforge/releases/tag/v0.8.2-test.1 (1a96f9b). Source pushed; ZIP/checksum published on explicit user request. Remote asset sizes/digests verified. ZIP dist/Wildforge-0.8.2-test.1-Windows.zip matches tested17-35-38 export. Stable build folder unchanged. Prior progression release retained. Preserve history/saves/logs.
 Latest playable local: G:/game/.build-staging/agent-workflow/2026-10-08T17-35-38-980Z-build/Wildforge.exe with adjacent Wildforge.pck. Development staging, not fully packaged public release.
 ## Latest source batch
 Remote flowers: compact per-peer state, growth/bloom/removal/realm cleanup, visual-only replicas (no duplicate healing/damage). Protocol direct-6 requires matching builds.

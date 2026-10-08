@@ -410,3 +410,5 @@ Acceptance: focused gameplay assertions, rendered before/after UI/art inspection
 Acceptance: real host/client checks, rendered ownership/flowers evidence, terrain pursuit scenarios, inspected new art and voice listening review. Group exports/publication.
 
 - [x] Publish requested co-op feedback test download from tested17-35-38 export (source1a96f9b); ZIP/checksum verified on GitHub. Broader five-item fixes remain open above.
+
+- [x] Number GitHub release/tag/download: v0.8.2-test.1. Continue numbered versions for future releases.
