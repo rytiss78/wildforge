@@ -76,5 +76,7 @@ static func run(game):
 		var icon=TextureRect.new();icon.texture=load("res://assets/illustrated/potions/"+str(kind)+".svg");icon.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;icon.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;icon.custom_minimum_size=Vector2(112,112);column.add_child(icon)
 		column.add_child(game.hud.label(PotionBook.TYPES[kind].name,14))
 	okay=await capture(game,"potion-icons") and okay
+	game.hud.pause_menu();okay=await capture(game,"pause") and okay
+	game.hud.pause_menu(true);okay=await capture(game,"ended") and okay
 	print("UI_REVIEW_SAVED: "+("OK" if okay else "FAILED"))
 	game.get_tree().quit(0 if okay else 1)

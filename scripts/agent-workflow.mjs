@@ -57,7 +57,7 @@ export function assessPng(path, started, minimum=320) {
 }
 
 async function main(action) {
-  if (!['progression-review', 'field-review', 'crowd-review', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
+  if (!['crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
     console.error('Usage: node scripts/agent-workflow.mjs check|smoke|capture|capture-ui|combat-review|pace-review|soak|integration|build|status'); return 2;
   }
   const git = (...args) => spawnSync('git', ['-C', root, ...args], {encoding:'utf8', windowsHide:true}).stdout?.trim() ?? '';
@@ -121,7 +121,7 @@ async function main(action) {
     if (action === 'capture-ui') {
       const output=await step('ui-capture',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--ui-review'],90000);
       if (!output.includes('UI_REVIEW_SAVED: OK')) throw new Error('UI capture failed.');
-      report.capture=['menu','coop','hero','ice-match','hud','potions','potion-icons','chest-opening','chest-reels','offers','focus','weapons'].map(name=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','ui-'+name+'.png'),started));
+      report.capture=['menu','coop','hero','ice-match','hud','build','potions','potion-icons','chest-opening','chest-reels','offers','focus','weapons','pause','ended'].map(name=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','ui-'+name+'.png'),started));
     }
     if (action === 'coop') {
       const results=await Promise.allSettled(['host','client'].map(role=>step('coop-'+role,godot,['--headless','--path',join(root,'native'),'--','--coop-'+role+'-test'],90000)));
@@ -148,7 +148,7 @@ async function main(action) {
       if (!line) throw new Error('Missing journey checks.');
       report.journey=JSON.parse(line.slice('JOURNEY_REVIEW '.length));
       if(Object.values(report.journey).some(v=>v===false)) throw new Error('Journey checks failed');
-      report.capture=['portal','boss','coast'].map(name=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','journey-'+name+'.png'),started));
+      report.capture=['portal','boss','coast','corruption-before','corruption-after'].map(name=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','journey-'+name+'.png'),started));
     }
     if (action === 'soak') {
       const output=await step('soak',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--soak'],120000);
@@ -170,7 +170,7 @@ async function main(action) {
       if(!line) throw new Error('Missing progression result.');
       report.progression=JSON.parse(line.slice(19));
       if(Object.values(report.progression.checks).some(v=>v===false)) throw new Error('Progression assertions failed.');
-      report.capture=['stats','cards','recap'].map(name=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge/progression-'+name+'.png'),started));
+      report.capture=['stats','cards','recap','mobility'].map(name=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge/progression-'+name+'.png'),started));
     }
     if (action === 'field-review') {
       const output=await step('field-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--field-review'],90000);
@@ -180,8 +180,8 @@ async function main(action) {
       if(Object.values(report.fields).some(v=>v===false)) throw new Error('Field checks failed.');
       report.capture=assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge/field-review.png'),started);
     }
-    if (action === 'crowd-review') {
-      const output=await step('crowd-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--crowd-review'],90000);
+    if (action === 'crowd-review' || action === 'crowd-eclipse') {
+      const output=await step('crowd-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--crowd-review',...(action==='crowd-eclipse'?['--eclipse-crowd']:[])],90000);
       const line=output.split(/\r?\n/).findLast(x=>x.startsWith('CROWD_REVIEW '));
       if(!line) throw new Error('Missing crowd measurements.');
       report.crowd=JSON.parse(line.slice(13));

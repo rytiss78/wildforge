@@ -12,9 +12,9 @@ Reports under .build-staging/agent-workflow/2026-10-08T...:
 - coop15-45-19:realhost/client including force pulses passed.
 - integration15-48-27:55checks pass.
 - Final UI zero-stat visibility/base-power label refinement check passed; render rerun pending.
-No export this batch yet, per user preference.
+Eclipse check15-55-31, journey15-53-25 (21booleans), progression15-55-47 (16booleans), integration15-55-58 (55), coop15-58-45 all pass. capture-ui15-59-38:15screens, pause/ended/cards inspected. Corrupt crowd125 p95=49.328ms, ordinary same-source52.434ms; not60fps. No export this batch yet, per user preference.
 ## Next concrete task
-Eclipse enemy visual corruption, inspect before/after, retain collision dimensions and status readability; then grouped final tests/export/upload. Broader all-surface climbing, general semantic icons, playthrough balance, accessibility and art remain open.
+Eclipse corruption and12mobility icons now implemented/tested; grouped export/upload next. Broader all-surface climbing, general semantic icons, playthrough balance, accessibility and art remain open.
 Commands: node scripts/agent-workflow.mjs check|integration|coop|progression-review|journey-review|build|test-build. Use wrapper; diagnostic profiles isolated.
 ## Preserve
 Do not stage preexisting AGENTS.md, deleted mods/megabonk-wildforge files, untracked native/docs/golden-scene.png, scenery-review-0.png, scenery-review-2.png, nul. Keep saves/history/logs. Older local build deletion twice blocked by automatic review; no deletions. Older GitHub release cleanup pending. Source pushes/test publication authorized.

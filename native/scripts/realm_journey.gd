@@ -40,6 +40,7 @@ static func tick(g):
 		var stage=1+int((g.realm_time-600)/30)
 		if stage>int(g.events.get("eclipse_stage",0)):
 			g.events.eclipse_stage=stage
+			for enemy in g.enemies: EclipseCorruption.apply(enemy,stage)
 			g.events.swarm_until=g.realm_time+12;g.events.wave_active=true;g.events.wave_budget=30+stage*5
 			for i in range(4): g.spawn_enemy(22)
 	if state(g)=="fighting" and g.realm_time>=float(g.events.get("guardian_attack",0)):

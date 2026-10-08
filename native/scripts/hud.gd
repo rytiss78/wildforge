@@ -622,12 +622,13 @@ func offer_card(item: Dictionary, index: int, select: Callable) -> Button:
 	# Icon with subtle background
 	var icon_bg=ColorRect.new()
 	icon_bg.color=Color(paper.r,paper.g,paper.b,.85)
-	icon_bg.custom_minimum_size=Vector2(104,104)
+	icon_bg.custom_minimum_size=Vector2(104,132)
 	var radius=StyleBoxFlat.new();radius.bg_color=Color(accent,.12);radius.set_corner_radius_all(8);radius.set_border_width_all(1);radius.border_color=accent.darkened(.3)
 	icon_bg.add_theme_stylebox_override("normal",radius)
 	column.add_child(icon_bg)
 	var icon=PowerIcon.new();icon.key=icon_key(item);icon.weapon_icon=item.kind=="weapon"
-	icon.custom_minimum_size=Vector2(88,88);icon.size_flags_horizontal=Control.SIZE_SHRINK_CENTER;icon_bg.add_child(icon)
+	icon_bg.add_child(icon);icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	icon.offset_left=8;icon.offset_top=8;icon.offset_right=-8;icon.offset_bottom=-8
 	var title=label(item.name,20);title.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;title.custom_minimum_size.y=44
 	title.add_theme_color_override("font_outline_color",ink);title.add_theme_color_override("font_outline_color",ink)
 	column.add_child(title)

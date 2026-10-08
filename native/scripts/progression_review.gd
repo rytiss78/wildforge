@@ -46,6 +46,14 @@ static func run(game):
 	for id in ["attraction-pulse-skill","repulsion-pulse-skill","extra-hop-skill","jump-boots-skill","feather-soles-skill"]:
 		var card=game.rules.loot_by_id[id].duplicate(true);card.tier=0;card.strength=1;card.name=card.title;choices.append(card)
 	game.hud.show_offers(choices,"level");checks.cards_capture=await capture(game,"cards")
+	var gallery=game.hud.open("MOBILITY ICONS","Items and skills depict their actual movement effect")
+	var grid=GridContainer.new();grid.columns=6;gallery.add_child(grid)
+	for kind in ["item","skill"]:
+		for id in ["jump-boots","extra-hop","feather-soles","slam-stone","wide-slam","bounce-pad"]:
+			var column=VBoxContainer.new();column.custom_minimum_size=Vector2(145,195);grid.add_child(column)
+			var icon=TextureRect.new();icon.texture=IllustratedIcons.texture(id+"-"+kind);icon.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;icon.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;icon.custom_minimum_size=Vector2(132,140);column.add_child(icon)
+			column.add_child(game.hud.label(game.rules.loot_by_id[id+"-"+kind].name,14));column.add_child(game.hud.label(kind.capitalize(),12))
+	checks.mobility_capture=await capture(game,"mobility")
 	game.damage_sources.clear();game.update.run_damage=0;enemy.hp=10;enemy.maxHp=10
 	game.hurt_enemy(enemy,50,"hit","gun")
 	checks.credited_not_overkill=is_equal_approx(game.damage_sources.get("gun",0),10) and is_equal_approx(game.update.run_damage,10)

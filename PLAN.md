@@ -362,4 +362,6 @@ User-provided IceGun mismatch traced to generic elemental GLBs plus independentl
 - [x] Pull/push passive skills, matching icons and host-authoritative co-op.
 - [x] Detailed pause stats with source contributions.
 - [x] Persistent per-weapon/effect damage and enemy-type kill recap.
-- [ ] Eclipse corruption readability and remaining roadmap audits.
+- [x] Eclipse corruption readability (stage-scaled appearance, co-op snapshot check, rendered comparison).
+- [x] Twelve mobility icons depict their objects/effects; card art larger/centered.
+- [ ] Remaining: all-surface climbing, broader semantic/art pass, balance sessions, accessibility and maximum-crowd performance.

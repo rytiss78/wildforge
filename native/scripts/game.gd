@@ -837,6 +837,7 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 	enemy.net_id=coop.next_entity;coop.next_entity+=1
 	if not boss and realm_time>=600:
 		var threat=1+int((realm_time-600)/30);enemy.speed*=1+minf(.75,threat*.08);enemy.damage*=1+minf(3,threat*.15)
+	if realm_time>=600: EclipseCorruption.apply(enemy,1+int((realm_time-600)/30))
 	enemy.xp_reward=enemy_xp_reward(enemy)
 	if boss:
 		enemy.speed = 2.7+realm*.3
@@ -1539,7 +1540,7 @@ func update_combat(delta: float):
 		enemy.contact=maxf(0,enemy.get("contact",0)-enemy_delta)
 		var contact_offset=target_player.position-body.position
 		if enemy.get("slip_until",0)>realm_time: body.get_meta("rig").rotation.z=sin((enemy.slip_until-realm_time)*9)*.4
-		else: body.get_meta("rig").rotation.z=0
+		else: body.get_meta("rig").rotation.z=float(enemy.get("corruption_lean",0))
 		var touching=Vector2(contact_offset.x,contact_offset.z).length_squared()<pow(enemy.radius+.85,2) and absf(contact_offset.y)<2.2
 		enemy.thorn_clock=maxf(0,enemy.get("thorn_clock",0)-enemy_delta)
 		if touching and target_player.id==coop.local_id and stats.thorns>0 and enemy.thorn_clock<=0:

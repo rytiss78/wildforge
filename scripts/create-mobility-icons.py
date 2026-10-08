@@ -1,0 +1,18 @@
+from pathlib import Path
+ROOT=Path(__file__).resolve().parents[1]/"native/assets/illustrated/content"
+boot='''<path d="M53 53l47 4-6 52c8 11 33 11 40 22l-3 16-83-1-5-15 6-28z" fill="url(#leather)"/><path d="M51 58l-4-16 58 5-3 17z" fill="#eac584"/><path d="M47 130l47 3 37-2-1 16-83-1z" fill="#536175"/><path d="M82 74l15 2m-17 11l16 2m-18 11l16 2" stroke="#ffe3a5" stroke-width="5"/><path d="M58 73l-4 43" stroke="#dcaa71" stroke-width="5"/>'''
+feather='''<path d="M90 125C56 107 66 43 142 26c15 42-2 83-52 99z" fill="url(#feather)"/><path d="M80 143l58-108m-34 62l-21-28m32 5l-8-28m-3 52l27-7" fill="none" stroke="#4a7288" stroke-width="4"/>'''
+stone='''<path d="M57 67l39-25 36 16 13 44-29 25-59-10-16-28z" fill="url(#rock)"/><path d="M57 67l30 22 45-31m-45 31l-2 35m2-35l-46 0" fill="none" stroke="#8295a0" stroke-width="4"/><path d="M97 62l-15 17 19 3-8 18 24-26-19-1z" fill="#ffc66f" stroke="#604c47" stroke-width="2"/>'''
+shapes={
+'jump-boots':boot+'''<path d="M143 112V46m-17 17l17-20 17 20" fill="none" stroke="#79bcd2" stroke-width="9"/><path d="M45 161q40 9 85 0" fill="none" stroke="#dcad69" stroke-width="5"/>''',
+'extra-hop':'''<g transform="translate(-13,10) rotate(-14 90 90)">'''+boot+'''</g><path d="M126 106l16-18 16 18m-32-37l16-18 16 18" fill="none" stroke="#8dc4cd" stroke-width="9"/><path d="M29 151h26m-18 13h32" stroke="#e0ba7f" stroke-width="5"/>''',
+'feather-soles':'''<g transform="translate(-8,29) scale(.88)">'''+boot+'''</g><g transform="translate(26,-2) scale(.82)">'''+feather+'''</g><path d="M51 161q36 14 78-1" fill="none" stroke="#9bcad9" stroke-width="5"/>''',
+'slam-stone':stone+'''<path d="M54 28v23m18-30v16m69 0v21" stroke="#e2b67a" stroke-width="6"/><path d="M96 154l-18-23h36z" fill="#df9058"/><path d="M33 148l23-10m78 0l25 10m-89 14l13-6m35 0l13 6" stroke="#8e6852" stroke-width="5"/>''',
+'wide-slam':'''<ellipse cx="96" cy="134" rx="76" ry="28" fill="none" stroke="#d8995f" stroke-width="6"/><ellipse cx="96" cy="134" rx="52" ry="17" fill="none" stroke="#f1ca80" stroke-width="5"/><g transform="translate(24,9) scale(.75)">'''+stone+'''</g><path d="M15 128l-4 15 15-3m151-12l4 15-15-3" fill="none" stroke="#bd754c" stroke-width="5"/>''',
+'bounce-pad':'''<path d="M54 107l83 10-78 13 77 12-73 13" fill="none" stroke="#899eae" stroke-width="8"/><path d="M43 149l100 1 12 17-119-1z" fill="#6c788c"/><path d="M30 84l110-8 20 18-109 14z" fill="url(#leather)"/><path d="M30 84l21 24v12L30 96zm21 24l109-14v12L51 120z" fill="#786750"/><path d="M93 65V27m-16 16l16-18 16 18" fill="none" stroke="#8ec8d8" stroke-width="8"/>'''}
+for key,shape in shapes.items():
+ for kind in ['item','skill']:
+  aura='''<circle cx="96" cy="94" r="79" fill="#d6ece8" opacity=".6"/><path d="M26 72q12-35 47-46m47 137q36-13 44-48" fill="none" stroke="#7faebd" stroke-width="4" stroke-dasharray="9 7"/>''' if kind=='skill' else '''<ellipse cx="98" cy="170" rx=" sixty " ry="8" fill="#4b423b" opacity=".14"/>'''.replace(' sixty ','62')
+  svg='''<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 192 192"><defs><linearGradient id="leather" x2=".8" y2="1"><stop stop-color="#ebbd79"/><stop offset=".5" stop-color="#b87f51"/><stop offset="1" stop-color="#785242"/></linearGradient><linearGradient id="rock" x2=".7" y2="1"><stop stop-color="#b9c7ca"/><stop offset="1" stop-color="#596a81"/></linearGradient><linearGradient id="feather" x2="1" y2="1"><stop stop-color="#fff8dc"/><stop offset=".6" stop-color="#b9dae0"/><stop offset="1" stop-color="#679ab5"/></linearGradient></defs>'''+aura+'<g stroke="#493e3b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">'+shape+'</g></svg>'
+  (ROOT/(key+'-'+kind+'.svg')).write_text(svg)
+print('Created 12 semantic mobility SVG icons')
