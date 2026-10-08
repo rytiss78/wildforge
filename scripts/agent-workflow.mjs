@@ -57,7 +57,7 @@ export function assessPng(path, started, minimum=320) {
 }
 
 async function main(action) {
-  if (!['crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
+  if (!['controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
     console.error('Usage: node scripts/agent-workflow.mjs check|smoke|capture|capture-ui|combat-review|pace-review|soak|integration|build|status'); return 2;
   }
   const git = (...args) => spawnSync('git', ['-C', root, ...args], {encoding:'utf8', windowsHide:true}).stdout?.trim() ?? '';
@@ -89,14 +89,14 @@ async function main(action) {
       if(!line) throw new Error('Missing exported combat result.');
       report.combat=JSON.parse(line.slice('COMBAT_REVIEW '.length));report.build=previous.build;
       report.capture=assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge/combat-review.png'),started);
-      for (const [flag,prefix,key] of [['--progression-review','PROGRESSION_REVIEW ','progression'],['--journey-review','JOURNEY_REVIEW ','journey']]) {
+      for (const [flag,prefix,key] of [['--controls-review','CONTROLS_REVIEW ','controls'],['--surface-review','SURFACE_REVIEW ','surface'],['--progression-review','PROGRESSION_REVIEW ','progression'],['--journey-review','JOURNEY_REVIEW ','journey']]) {
         const details=await step('exported-'+key,previous.build,['--resolution','1440x810','--',flag],120000);
         const resultLine=details.split(/\r?\n/).findLast(x=>x.startsWith(prefix));
         if(!resultLine) throw new Error('Missing exported '+key+' result');
         report[key]=JSON.parse(resultLine.slice(prefix.length));
         if(Object.values(report[key].checks ?? report[key]).some(v=>v===false)) throw new Error('Exported '+key+' checks failed');
       }
-      report.featureCaptures=['progression-stats','progression-cards','progression-recap','progression-mobility','journey-corruption-after'].map(name=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge',name+'.png'),started));
+      report.featureCaptures=['controls-custom','surface-wall','surface-ceiling','surface-ledge','progression-stats','progression-cards','progression-recap','progression-mobility','journey-corruption-after'].map(name=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge',name+'.png'),started));
     }
     if (action === 'weapon-icons') {
       const output=await step('weapon-icons',godot,['--path',join(root,'native'),'--script','res://scripts/render_weapon_icons.gd'],180000);
@@ -125,6 +125,14 @@ async function main(action) {
       for (const artifact of [exe,join(runDir,'Wildforge.pck')]) if (!existsSync(artifact) || statSync(artifact).size < 1024) throw new Error('Missing or empty build artifact: '+artifact);
       report.exportedSmoke=assessSmoke(await step('exported-smoke',exe,['--headless','--','--smoke'],90000));
       report.build=exe;
+    }
+    if (action === 'controls-review') {
+      const output=await step('controls-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--controls-review'],180000);
+      const line=output.split(/\r?\n/).findLast(x=>x.startsWith('CONTROLS_REVIEW '));
+      if(!line) throw new Error('Missing controls checks');
+      report.controls=JSON.parse(line.slice('CONTROLS_REVIEW '.length));
+      if(Object.values(report.controls).some(v=>v===false)) throw new Error('Controls checks failed');
+      report.capture=['before','custom'].map(name=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','controls-'+name+'.png'),started));
     }
     if (action === 'surface-review') {
       const output=await step('surface-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--surface-review'],180000);

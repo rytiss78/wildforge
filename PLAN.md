@@ -355,7 +355,7 @@ User-provided IceGun mismatch traced to generic elemental GLBs plus independentl
 - [x] Fix co-op ordinary-enemy movement fallthrough and elite material cache growth.
 - [x] Replace solid gravity/poison/ignited discs with animated vortex and mist; inspect rendered before/after.
 - [x] Replace weapon attack sounds with21original profiles and3continuous loops; verify assets/routing.
-- [ ] Remaining acceptance: maximum-crowd optimization across all biomes/hardware, subjective audio mix review, loot probability audit and broader roadmap. Older-build deletion remains blocked from earlier attempts.
+- [ ] Remaining acceptance: maximum-crowd optimization across all biomes/hardware, subjective audio mix review, loot probability audit and broader roadmap. Old-build cleanup was subsequently completed under renewed authorization.
 
 ## Current combined batch — progression and run visibility
 - [x] Mechanic-balanced loot selection and viable Extra Hop rarity progression.
@@ -364,7 +364,7 @@ User-provided IceGun mismatch traced to generic elemental GLBs plus independentl
 - [x] Persistent per-weapon/effect damage and enemy-type kill recap.
 - [x] Eclipse corruption readability (stage-scaled appearance, co-op snapshot check, rendered comparison).
 - [x] Twelve mobility icons depict their objects/effects; card art larger/centered.
-- [ ] Remaining: all-surface climbing, broader semantic/art pass, balance sessions, accessibility and maximum-crowd performance.
+- [ ] Remaining: broader surface traversal playtesting, broader semantic/art pass, balance sessions, accessibility and maximum-crowd performance.
 
 Latest grouped build: [progression/Eclipse/card-art test](https://github.com/rytiss78/wildforge/releases/tag/test-2026-10-08-progression), source78e968b. One export for this continuation. Remaining plan is explicitly open; next all-surface traversal acceptance.
 
@@ -375,3 +375,9 @@ Latest grouped build: [progression/Eclipse/card-art test](https://github.com/ryt
 - [x]15surface checks,55integration checks, real host/client test;125attached-enemy stress scene captured.
 - [ ] Broader world-geometry/species traversal playtesting; bosses/flyers retain existing movement.
 - Next accessibility batch: saved keyboard/controller action rebinding; continue grouped exports.
+
+### Configurable controls checkpoint — 2026-10-08
+- [x] Saved keyboard/mouse/controller bindings for19actions, conflict swapping, cancel/reset, neutral-before-axis capture and dynamic interaction/turret prompts.
+- [x]12controls checks (including2captures),13JS tests/import,55integration assertions, host/client co-op. Rendered settings/binding screens inspected.
+- [ ] Physical controller playtest and wider accessibility (UI scaling, color/contrast options).
+- Combined local export includes climbing and controls. Public progression release remains unchanged to keep uploads less frequent.

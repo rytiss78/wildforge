@@ -23,8 +23,11 @@ Publication/package/cleanup proof JSON in .build-staging/agent-workflow/.
 ## Latest source checkpoint (not yet exported)
 EnemySurface climbing for ordinary grounded enemies pursuing elevated targets. Walls/ceilings/convex ledges/slopes, freeze/detach, rotated targeting and roof-safe contact. Co-op up/forward snapshots; protocol direct-5 (same-build required). Flyers/bosses unchanged. No extra actor bodies.
 Fresh check16-34-46:13JS+parse; surface16-33-54:15booleans/5inspected PNGs; coop16-35-37 bothroles; integration16-36-46:55pass. First surface test failed due old avoidance, fixed. Crowd-surface16-37-40:125attached,max125,framep95=14.122ms,physics43.503ms. Specialized scene, not ground-performance certification.
+## Latest controls / local build checkpoint
+Saved19-action keyboard/mouse/pad remapping, conflict swaps, cancel/reset, neutral-axis capture. Dynamic interaction/turret prompts. Existing Escape/Menu/Back menu behavior retained.
+Fresh controls16-47-33:12booleans (10behavior+2captures); check16-46-16:13JS+parse; integration16-46-33:55pass; coop16-46-56 bothroles. Final source build16-47-19:72smoke+9metadata. test-build16-47-51:controls12,surface15,combat4,progression16,journey21pass; exported controls/wall captures inspected.
+Playable local EXE: G:/game/.build-staging/agent-workflow/2026-10-08T16-47-19-438Z-build/Wildforge.exe (keep adjacent PCK). This is development staging, not a newly packaged public release. Public/stable build remains progression. Grouping uploads as requested.
 ## Next concrete task
-Saved configurable keyboard/controller action bindings with reset/cancel/conflict handling and persistence tests. Continue another source milestone before combined export; current public EXE still progression release, not climbing source.
-Use node scripts/agent-workflow.mjs check|surface-review|integration|coop|crowd-surface|build|test-build. Preserve existing meaningful assertions. Broader art/balance/accessibility/performance remain open.
+Broader world-geometry/species climbing playtest and remaining accessibility (UI scaling/contrast). Physical controller playtest still needed. Broader art/balance/performance open. Use node scripts/agent-workflow.mjs controls-review|surface-review|check|integration|coop|build|test-build. Preserve meaningful assertions and user changes.
 ## Preserve
 Preserve preexisting AGENTS.md changes. The41previously deleted mod files are now intentionally committed for removal under the user’s explicit instruction. Untracked native/docs/golden-scene.png, scenery-review-0.png, scenery-review-2.png and nul remain. Preserve saves/logs/history. No simultaneous agents.

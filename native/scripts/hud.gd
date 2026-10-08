@@ -48,6 +48,11 @@ var lobby_roster_label: Label
 var damage_labels: Array[Label]=[]
 var damage_overlay: Control
 var flash_overlay: ColorRect
+var binding_action=""
+var binding_device=""
+var binding_status: Label
+var binding_axes={}
+var binding_buttons={}
 
 func menu_controls(node: Node=modal) -> Array:
 	var result=[]
@@ -241,6 +246,7 @@ func setup(owner_game):
 	modal.visible = false
 
 func open(title: String, subtitle: String = "") -> VBoxContainer:
+	binding_action=""
 	if offer_tween!=null and offer_tween.is_valid(): offer_tween.kill()
 	preview_id=""
 	for child in modal.get_children(): child.queue_free()
@@ -316,6 +322,9 @@ func update(delta: float):
 	turret_hints.visible=not modal.visible and game.equipped.any(func(w):return w.turret)
 	if hint_device != game.input_kind:
 		hint_device = game.input_kind;hints_until=game.elapsed+8
+		for child in turret_hints.get_children(): turret_hints.remove_child(child);child.queue_free()
+		var device="controller" if game.input_kind=="xbox" else "keyboard"
+		turret_hints.add_child(label(ControlBindings.display(game.career.data.settings,"deploy",device)+" · Place   "+ControlBindings.display(game.career.data.settings,"next_turret",device)+" · Next turret",12))
 		for child in control_hints.get_children():
 			control_hints.remove_child(child)
 			child.queue_free()
@@ -323,7 +332,7 @@ func update(delta: float):
 		# InputGlyph updates itself; rebuilding choices here resets controller focus.
 	control_hints.visible=not modal.visible
 	prompt.visible=not modal.visible and not game.interaction_hint().is_empty()
-	prompt.text = game.interaction_hint().replace("E / X", "X" if game.input_kind=="xbox" else "E")
+	prompt.text = game.interaction_hint().replace("E / X", ControlBindings.display(game.career.data.settings,"interact","controller" if game.input_kind=="xbox" else "keyboard"))
 	alert.visible=false
 	alert.text = "☠  %s" % game.boss_name if game.boss_active() else ""
 	if game.coop.frozen() and game.mode=="playing": alert.text="PARTY PAUSED  ·  A FRIEND IS CHOOSING";alert.visible=true
@@ -833,12 +842,8 @@ func settings_menu():
 	invert.button_pressed=game.career.data.settings.invertLook
 	invert.toggled.connect(func(value): game.career.data.settings.invertLook=value;game.career.dirty=true)
 	box.add_child(invert)
-	var prompts=HBoxContainer.new()
-	box.add_child(prompts)
-	add_prompts(prompts,[["WASD","LS","Move"],["Mouse","RS","Look"],["Space","A","Jump"],["Ctrl","B","Slam"],["Shift","RT","Dash"],["E","X","Interact"],["F","R3","Ping"]])
-	var secondary=HBoxContainer.new()
-	box.add_child(secondary)
-	add_prompts(secondary,[["B","Y","Build"],["T","LB","Place turret"],["G","RB","Next turret"],["Esc","Menu","Pause"]])
+	box.add_child(button("REMAP KEYBOARD / CONTROLLER",bindings_menu))
+	box.add_child(label("Mouse: look · Escape / Menu: pause or back · Enter / A: select",16))
 	box.add_child(button("←  BACK",func(): game.career.save(); start_menu() if not game.run_active else pause_menu(game.run_recorded),true))
 
 func career_menu(scores: bool):
@@ -890,3 +895,51 @@ func add_prompts(parent: HBoxContainer, bindings: Array):
 		backdrop.content_margin_left=3;backdrop.content_margin_right=6
 		caption.add_theme_stylebox_override("normal",backdrop)
 		parent.add_child(caption)
+
+func bindings_menu(message: String="",focus_key: String=""):
+	game.mode="bindings"
+	var box=open("CONTROLS","Select an input to change it. Conflicts swap. Escape / Menu always pause or go back.")
+	binding_buttons.clear()
+	var rows=report_scroll(box)
+	var heading=HBoxContainer.new();rows.add_child(heading)
+	for caption in ["ACTION","KEYBOARD / MOUSE","CONTROLLER"]:
+		var title=label(caption,15);title.custom_minimum_size.x=280;heading.add_child(title)
+	for action in ControlBindings.KEYS:
+		var row=HBoxContainer.new();rows.add_child(row)
+		var name_label=label(ControlBindings.LABELS[action],17);name_label.custom_minimum_size.x=280;row.add_child(name_label)
+		for device in ["keyboard","controller"]:
+			var pick=button(ControlBindings.display(game.career.data.settings,action,device),func():begin_binding(action,device))
+			pick.custom_minimum_size.x=280;row.add_child(pick);binding_buttons[action+":"+device]=pick
+	binding_status=label(message if message!="" else "Choose a binding above. Press Escape or Menu to cancel capture.",15);box.add_child(binding_status)
+	var actions=HBoxContainer.new();box.add_child(actions)
+	actions.add_child(button("RESET DEFAULTS",func():
+		game.career.data.settings.bindings={};ControlBindings.apply(game.career.data.settings);game.career.dirty=true;game.career.save();hint_device="";bindings_menu("Default controls restored")
+	))
+	actions.add_child(button("BACK",settings_menu))
+	if binding_buttons.has(focus_key): binding_buttons[focus_key].grab_focus()
+	else: binding_buttons["move_left:keyboard"].grab_focus()
+
+func begin_binding(action: String,device: String):
+	binding_action=action;binding_device=device;binding_axes.clear()
+	for axis in range(6): binding_axes[axis]=absf(Input.get_joy_axis(game.controller_id,axis))<.25
+	binding_buttons[action+":"+device].text="Press an input…"
+	binding_status.text="Press a key or mouse button. Escape cancels." if device=="keyboard" else "Press a controller button or move a stick / trigger. Menu cancels."
+
+func capture_binding(event: InputEvent) -> bool:
+	if binding_action=="": return false
+	if event is InputEventKey and event.pressed and event.physical_keycode==KEY_ESCAPE or event is InputEventJoypadButton and event.pressed and event.button_index==JOY_BUTTON_START:
+		bindings_menu("Binding unchanged",binding_action+":"+binding_device);return true
+	var value={}
+	if binding_device=="keyboard":
+		if event is InputEventKey and event.pressed and not event.echo: value={"type":"key","code":event.physical_keycode if event.physical_keycode!=0 else event.keycode}
+		elif event is InputEventMouseButton and event.pressed and event.button_index in [1,2,3,8,9]: value={"type":"mouse","code":event.button_index}
+	else:
+		if event is InputEventJoypadButton and event.pressed: value={"type":"button","code":event.button_index}
+		elif event is InputEventJoypadMotion:
+			if absf(event.axis_value)<.25: binding_axes[event.axis]=true
+			elif absf(event.axis_value)>.75 and binding_axes.get(event.axis,false): value={"type":"axis","code":event.axis,"sign":1 if event.axis_value>0 else -1}
+	if not value.is_empty():
+		var key=binding_action+":"+binding_device
+		var result=ControlBindings.bind(game.career.data.settings,binding_action,binding_device,value)
+		game.career.dirty=true;game.career.save();hint_device="";bindings_menu(result,key)
+	return true

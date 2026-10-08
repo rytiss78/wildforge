@@ -146,7 +146,7 @@ func _ready():
 	get_viewport().use_occlusion_culling=true
 	player=CharacterBody3D.new();camera=Camera3D.new();coop=CoopSession.new()
 	profile_crowd=OS.get_cmdline_user_args().has("--crowd-review")
-	smoke = OS.get_cmdline_user_args().has("--surface-review") or profile_crowd or OS.get_cmdline_user_args().has("--progression-review") or OS.get_cmdline_user_args().has("--field-review") or OS.get_cmdline_user_args().has("--smoke") or OS.get_cmdline_user_args().has("--soak") or OS.get_cmdline_user_args().has("--art") or OS.get_cmdline_user_args().has("--style-roundtrip")
+	smoke = OS.get_cmdline_user_args().has("--controls-review") or OS.get_cmdline_user_args().has("--surface-review") or profile_crowd or OS.get_cmdline_user_args().has("--progression-review") or OS.get_cmdline_user_args().has("--field-review") or OS.get_cmdline_user_args().has("--smoke") or OS.get_cmdline_user_args().has("--soak") or OS.get_cmdline_user_args().has("--art") or OS.get_cmdline_user_args().has("--style-roundtrip")
 	smoke=smoke or OS.get_cmdline_user_args().has("--update-check") or OS.get_cmdline_user_args().has("--big-update-check")
 	smoke=smoke or OS.get_cmdline_user_args().has("--presentation-check")
 	smoke=smoke or OS.get_cmdline_user_args().has("--melee-check")
@@ -225,6 +225,7 @@ func _ready():
 	elif OS.get_cmdline_user_args().has("--update-check"): preload("res://scripts/update_checks.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--style-roundtrip"): call_deferred("run_style_roundtrip")
 	elif network_test_role!="": call_deferred("run_coop_test")
+	elif OS.get_cmdline_user_args().has("--controls-review"): preload("res://scripts/controls_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--surface-review"): preload("res://scripts/surface_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--progression-review"): preload("res://scripts/progression_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--field-review"): preload("res://scripts/field_review.gd").run.call_deferred(self)
@@ -239,21 +240,7 @@ func _ready():
 	elif smoke: call_deferred("export_hero_art" if OS.get_cmdline_user_args().has("--art") else "run_soak" if OS.get_cmdline_user_args().has("--soak") else "run_smoke")
 
 func configure_inputs():
-	var keys = {"move_left":KEY_A,"move_right":KEY_D,"move_forward":KEY_W,"move_back":KEY_S,"dash":KEY_SHIFT,"jump":KEY_SPACE,"slam":KEY_CTRL,"interact":KEY_E,"build":KEY_B,"pause_game":KEY_ESCAPE,"deploy":KEY_T,"camera_left":KEY_Q,"camera_right":KEY_R,"ping":KEY_F}
-	for action in keys:
-		if not InputMap.has_action(action): InputMap.add_action(action)
-		var event = InputEventKey.new()
-		event.physical_keycode = keys[action]
-		if not InputMap.action_has_event(action,event): InputMap.action_add_event(action,event)
-	var buttons = {"jump":JOY_BUTTON_A,"slam":JOY_BUTTON_B,"interact":JOY_BUTTON_X,"build":JOY_BUTTON_Y,"pause_game":JOY_BUTTON_START,"deploy":JOY_BUTTON_LEFT_SHOULDER,"ping":JOY_BUTTON_RIGHT_STICK}
-	for action in buttons:
-		var event = InputEventJoypadButton.new()
-		event.button_index = buttons[action]
-		if not InputMap.action_has_event(action,event): InputMap.action_add_event(action,event)
-	var trigger = InputEventJoypadMotion.new()
-	trigger.axis = JOY_AXIS_TRIGGER_RIGHT
-	trigger.axis_value = 1.0
-	if not InputMap.action_has_event("dash",trigger): InputMap.action_add_event("dash",trigger)
+	ControlBindings.apply(career.data.settings)
 
 func run_style_roundtrip():
 	await get_tree().process_frame
@@ -701,6 +688,7 @@ func camera_look(amount: Vector2):
 	pitch = clampf(pitch+amount.y*sensitivity*(-1 if career.data.settings.invertLook else 1),-.2,.45)
 
 func _input(event):
+	if hud.capture_binding(event): get_viewport().set_input_as_handled();return
 	if event is InputEventKey or event is InputEventMouseButton: input_kind = "keyboard"
 	if event is InputEventJoypadButton or (event is InputEventJoypadMotion and absf(event.axis_value)>.25): input_kind = "xbox"
 	if hud.modal.visible and input_kind=="xbox":
@@ -727,11 +715,11 @@ func _input(event):
 			hud.career_menu(false)
 		if event.button_index == JOY_BUTTON_B and mode not in ["playing","start","offer","reveal","replace","level_reveal"]:
 			hud.start_menu() if not run_active else hud.pause_menu(run_recorded)
-		if event.button_index == JOY_BUTTON_RIGHT_SHOULDER: selected_turret += 1
-	if event.is_action_pressed("pause_game"):
+	if event.is_action_pressed("pause_game") or event is InputEventKey and event.pressed and event.physical_keycode==KEY_ESCAPE or event is InputEventJoypadButton and event.pressed and event.button_index==JOY_BUTTON_START:
 		if mode == "playing": hud.pause_menu()
 		elif mode == "paused": hud.close()
-		elif mode in ["settings","career","build","merchant","coop"]: hud.start_menu() if not run_active else hud.pause_menu(run_recorded)
+		elif mode=="bindings": hud.settings_menu()
+		elif mode in ["settings","career","build","merchant","coop","bindings"]: hud.start_menu() if not run_active else hud.pause_menu(run_recorded)
 		get_viewport().set_input_as_handled()
 	if mode == "offer" and event is InputEventKey and event.pressed:
 		if event.physical_keycode==KEY_R and not event.echo: reroll_offers();get_viewport().set_input_as_handled();return
@@ -740,7 +728,7 @@ func _input(event):
 	if mode == "reveal" and (event.is_action_pressed("jump") or event.is_action_pressed("interact")):
 		finish_reveal();get_viewport().set_input_as_handled();return
 	if mode != "playing": return
-	if event is InputEventKey and event.pressed and not event.echo and event.physical_keycode==KEY_G: selected_turret+=1
+	if event.is_action_pressed("next_turret"): selected_turret+=1
 	if event.is_action_pressed("ping"): update.send_ping()
 	if update.downed: return
 	if event.is_action_pressed("interact"): interact()
@@ -1711,15 +1699,10 @@ func _physics_process(delta: float):
 	update_exploration(delta)
 	elapsed+=delta
 	realm_time+=delta
-	var movement = Input.get_vector("move_left","move_right","move_forward","move_back")
+	var movement = Input.get_vector("move_left","move_right","move_forward","move_back",.18)
 	if network_test_role=="client" and player.position.x<4: movement=Vector2.RIGHT
-	if controller_id>=0:
-		var stick = Vector2(Input.get_joy_axis(controller_id,JOY_AXIS_LEFT_X),Input.get_joy_axis(controller_id,JOY_AXIS_LEFT_Y))
-		if stick.length()>.18: movement+=stick.normalized()*minf(1,(stick.length()-.18)/.82)
-		var look = Vector2(Input.get_joy_axis(controller_id,JOY_AXIS_RIGHT_X),Input.get_joy_axis(controller_id,JOY_AXIS_RIGHT_Y))
-		if look.length()>.18:
-			var filtered = look.normalized()*minf(1,(look.length()-.18)/.82)
-			camera_look(filtered*Vector2(2,.65)*delta)
+	var look=Input.get_vector("look_left","look_right","look_up","look_down",.18)
+	if look.length()>.01: camera_look(look*Vector2(2,.65)*delta)
 	if movement.length()>1: movement=movement.normalized()
 	yaw += delta*((1.6 if Input.is_action_pressed("camera_left") else 0)-(1.6 if Input.is_action_pressed("camera_right") else 0))
 	var wish = Vector3(movement.x,0,movement.y).rotated(Vector3.UP,yaw)
@@ -1790,7 +1773,7 @@ func _process(delta: float):
 	if not is_instance_valid(avatar): return
 	coop.tick(delta)
 	menu_repeat=maxf(0,menu_repeat-delta)
-	if hud.modal.visible and input_kind=="xbox" and controller_id>=0 and menu_repeat<=0:
+	if hud.modal.visible and hud.binding_action=="" and input_kind=="xbox" and controller_id>=0 and menu_repeat<=0:
 		var menu_stick=Vector2(Input.get_joy_axis(controller_id,JOY_AXIS_LEFT_X),Input.get_joy_axis(controller_id,JOY_AXIS_LEFT_Y))
 		if menu_stick.length()>.55:
 			hud.controller_move(Vector2(signf(menu_stick.x),0) if absf(menu_stick.x)>absf(menu_stick.y) else Vector2(0,signf(menu_stick.y)));menu_repeat=.22
