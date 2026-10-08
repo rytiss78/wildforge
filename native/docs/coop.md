@@ -12,3 +12,5 @@ For remote friends, use a shared VPN's host address, or forward UDP 29736 on the
 Allow Wildforge through the host firewall. Discovery uses UDP 29737. Guest networks may isolate devices; public-IP connections may be unavailable behind carrier-grade NAT, requiring a shared VPN. The game does not change router or firewall settings.
 
 Running and full parties reject new guests. Choices pause the party together. If the host leaves, guests end the run and can create a new party. Achievements and scores save on each player's PC.
+
+Surface-climbing builds use protocol `wildforge-0.8.2-direct-5`. All players must use the same build; enemy surface orientation is authoritative on the host and replicated to clients.

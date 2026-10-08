@@ -3,7 +3,7 @@ class_name CoopSession
 
 # Transport-independent authoritative world. Important events are reliable;
 # poses/snapshots use unreliable ordered delivery. Never deserialize objects.
-const PROTOCOL="wildforge-0.8.2-direct-4"
+const PROTOCOL="wildforge-0.8.2-direct-5"
 const PORT=29736
 const DISCOVERY_PORT=29737
 var discovery: PacketPeerUDP
@@ -242,7 +242,7 @@ func pose() -> Dictionary:
 func snapshot() -> Dictionary:
 	var actors=[]
 	for enemy in game.enemies:
-		if not enemy.dead: actors.append({"id":enemy.net_id,"position":array(enemy.node.position),"biome":enemy.biome,"species":enemy.species,"height":enemy.height,"radius":enemy.radius,"hp":enemy.hp,"maxHp":enemy.maxHp,"xp_reward":enemy.xp_reward,"boss":enemy.boss,"guardian":enemy.get("guardian",false),"title":enemy.get("title",""),"elite":enemy.elite,"corruption":enemy.get("corruption",0),"fire":enemy.fire,"poison":enemy.poison,"freeze":enemy.freeze,"blind":enemy.blind,"slip_until":enemy.get("slip_until",0),"windup":enemy.get("windup",0)})
+		if not enemy.dead: actors.append({"id":enemy.net_id,"position":array(enemy.node.position),"biome":enemy.biome,"species":enemy.species,"height":enemy.height,"radius":enemy.radius,"hp":enemy.hp,"maxHp":enemy.maxHp,"xp_reward":enemy.xp_reward,"boss":enemy.boss,"guardian":enemy.get("guardian",false),"title":enemy.get("title",""),"elite":enemy.elite,"corruption":enemy.get("corruption",0),"surface_up":array(enemy.node.basis.y),"surface_forward":array(-enemy.node.basis.z),"fire":enemy.fire,"poison":enemy.poison,"freeze":enemy.freeze,"blind":enemy.blind,"slip_until":enemy.get("slip_until",0),"windup":enemy.get("windup",0)})
 	var poses=members.duplicate(true);poses[local_id]=pose()
 	for member in poses.values(): member.erase("stats");member.erase("last_seen")
 	return {"type":"world","actors":actors,"players":poses,"seconds":game.realm_time,"elapsed":game.elapsed,"realm":game.realm,"journey":game.events,"wardens":game.realm_bosses,"pause":frozen() or game.mode not in ["playing","ended"],"big_update":game.update.world_state()}
@@ -396,6 +396,7 @@ func apply_world(message: Dictionary):
 			if enemy.net_id==id: found=enemy;break
 		if found.is_empty(): found=game.spawn_network_enemy(actor)
 		if found.is_empty() or found.dead: continue
+		EnemySurface.replicate(found,vector(actor.get("surface_up",[0,1,0])),vector(actor.get("surface_forward",[0,0,-1])))
 		EclipseCorruption.apply(found,int(actor.get("corruption",0)))
 		found.hp=float(actor.hp);found.target_position=vector(actor.position)
 		for key in ["fire","poison","freeze","blind","slip_until","windup"]: found[key]=float(actor.get(key,0))

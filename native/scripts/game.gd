@@ -146,7 +146,7 @@ func _ready():
 	get_viewport().use_occlusion_culling=true
 	player=CharacterBody3D.new();camera=Camera3D.new();coop=CoopSession.new()
 	profile_crowd=OS.get_cmdline_user_args().has("--crowd-review")
-	smoke = profile_crowd or OS.get_cmdline_user_args().has("--progression-review") or OS.get_cmdline_user_args().has("--field-review") or OS.get_cmdline_user_args().has("--smoke") or OS.get_cmdline_user_args().has("--soak") or OS.get_cmdline_user_args().has("--art") or OS.get_cmdline_user_args().has("--style-roundtrip")
+	smoke = OS.get_cmdline_user_args().has("--surface-review") or profile_crowd or OS.get_cmdline_user_args().has("--progression-review") or OS.get_cmdline_user_args().has("--field-review") or OS.get_cmdline_user_args().has("--smoke") or OS.get_cmdline_user_args().has("--soak") or OS.get_cmdline_user_args().has("--art") or OS.get_cmdline_user_args().has("--style-roundtrip")
 	smoke=smoke or OS.get_cmdline_user_args().has("--update-check") or OS.get_cmdline_user_args().has("--big-update-check")
 	smoke=smoke or OS.get_cmdline_user_args().has("--presentation-check")
 	smoke=smoke or OS.get_cmdline_user_args().has("--melee-check")
@@ -225,6 +225,7 @@ func _ready():
 	elif OS.get_cmdline_user_args().has("--update-check"): preload("res://scripts/update_checks.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--style-roundtrip"): call_deferred("run_style_roundtrip")
 	elif network_test_role!="": call_deferred("run_coop_test")
+	elif OS.get_cmdline_user_args().has("--surface-review"): preload("res://scripts/surface_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--progression-review"): preload("res://scripts/progression_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--field-review"): preload("res://scripts/field_review.gd").run.call_deferred(self)
 	elif profile_crowd: preload("res://scripts/crowd_review.gd").run.call_deferred(self)
@@ -880,6 +881,8 @@ func make_spawn_room() -> bool:
 func steer_enemy(enemy: Dictionary,aim: Vector3,delta: float=1.0/30.0) -> Vector3:
 	# One sweep and a consistent short wall follow; collision does the sliding.
 	if enemy.flying or aim.length_squared()<.01: return aim
+	# Approach a wall directly when pursuing an elevated target; surface acquisition takes over near contact.
+	if not enemy.boss and enemy.get("wants_climb",false): return aim
 	enemy.wall_clock=maxf(0,float(enemy.get("wall_clock",0))-delta)
 	if enemy.wall_clock>0: return enemy.get("wall_direction",aim)
 	var body: CharacterBody3D=enemy.node
@@ -905,13 +908,21 @@ func nearest_enemy(origin: Vector3, distance_value: float, excluded: Array = [])
 	return result
 
 func enemy_center(enemy: Dictionary) -> Vector3:
-	return enemy.node.position+Vector3.UP*float(enemy.get("height",1.7))*.5
+	return enemy.node.position+enemy.node.basis.y*float(enemy.get("height",1.7))*.5
 
 func melee_contact(enemy: Dictionary,origin: Vector3) -> Vector3:
 	var radius_value=float(enemy.get("radius",.6))
 	var height_value=float(enemy.get("height",1.7))
-	var axis=enemy.node.position+Vector3.UP*clampf(origin.y-enemy.node.position.y,radius_value,maxf(radius_value,height_value-radius_value))
+	var up: Vector3=enemy.node.basis.y
+	var axis=enemy.node.position+up*clampf((origin-enemy.node.position).dot(up),radius_value,maxf(radius_value,height_value-radius_value))
 	return axis+(origin-axis).normalized()*minf(radius_value,origin.distance_to(axis))
+
+func enemy_touching(enemy: Dictionary,target: Vector3) -> bool:
+	if enemy.get("surface_attached",false):
+		var center=target+Vector3.UP*.8
+		return melee_contact(enemy,center).distance_squared_to(center)<.65*.65 and target_visible(center,enemy_center(enemy))
+	var offset=target-enemy.node.position
+	return Vector2(offset.x,offset.z).length_squared()<pow(enemy.radius+.85,2) and absf(offset.y)<2.2
 
 func nearest_melee(origin: Vector3,reach: float) -> Dictionary:
 	var closest={};var distance_value=reach
@@ -1456,8 +1467,7 @@ func update_combat(delta: float):
 				ring_node.material_override.emission_energy_multiplier=2.5+sin(elapsed*8)*.8
 				ring_node.rotation.y=elapsed*2
 			enemy.thorn_clock=maxf(0,enemy.get("thorn_clock",0)-enemy_delta)
-			var thorn_offset=player.position-enemy.node.position
-			if hp>0 and stats.thorns>0 and enemy.thorn_clock<=0 and Vector2(thorn_offset.x,thorn_offset.z).length_squared()<pow(enemy.radius+.85,2) and absf(thorn_offset.y)<2.2:
+			if hp>0 and stats.thorns>0 and enemy.thorn_clock<=0 and enemy_touching(enemy,player.position):
 				enemy.thorn_clock=.5;hurt_enemy(enemy,stats.thorns,"thorn")
 			if enemy.boss: enemy.label.text="%s  %d%%" % [enemy.get("title",boss_name),enemy.hp/enemy.maxHp*100]
 			if enemy.get("windup",0)>0: update.eyebrows(enemy)
@@ -1474,6 +1484,7 @@ func update_combat(delta: float):
 			if enemy.dead: continue
 		else: enemy.poison=0;enemy.fire=0;enemy.slow=0
 		var target_player=coop.target(enemy.node.position)
+		enemy.wants_climb=target_player.position.y-enemy.node.position.y>1.5
 		var toward = target_player.position-enemy.node.position
 		toward.y = 0
 		var distance = toward.length()
@@ -1490,7 +1501,7 @@ func update_combat(delta: float):
 		if distance>90 and not enemy.boss and enemy.node.position.distance_to(update.beacon_position)>30:
 			enemy.dead=true;enemy.node.queue_free();continue
 		if distance>55 and not enemy.boss: continue
-		if enemy.freeze<=0: aim=steer_enemy(enemy,aim,enemy_delta)
+		if enemy.freeze<=0 and not enemy.get("surface_attached",false): aim=steer_enemy(enemy,aim,enemy_delta)
 		var cell=Vector2i(floori(enemy.node.position.x/3),floori(enemy.node.position.z/3))
 		var separation=Vector3.ZERO
 		var neighbors=ceili((enemy.radius+1.5)/3.0)
@@ -1517,31 +1528,32 @@ func update_combat(delta: float):
 			if enemy.get("recovery",0)>realm_time: aim=Vector3.ZERO
 		var velocity=(aim*enemy.speed*(2 if enemy.get("charge",0)>0 else 1)*(1-minf(.7,enemy.slow))+separation.limit_length(enemy.speed*.45)) if enemy.freeze<=0 else Vector3.ZERO
 		var body: CharacterBody3D=enemy.node
-		body.velocity.x=velocity.x*(enemy_delta/delta);body.velocity.z=velocity.z*(enemy_delta/delta)
-		var vertical=enemy.get("vertical",0.0)
-		enemy.bubble=maxf(0,enemy.get("bubble",0.0)-enemy_delta)
-		if enemy.bubble>0 and not enemy.boss:
-			vertical=clampf((world.height_at(body.position.x,body.position.z)+1.8-body.position.y)*3,-3,3)
-		elif enemy.get("flying",false):
-			var cruise=enemy.altitude*(.15 if fmod(elapsed+enemy.net_id,9.0)>7 else 1.0)
-			vertical=clampf((world.height_at(body.position.x,body.position.z)+cruise-body.position.y)*3,-6,6)
-		elif not body.is_on_floor(): vertical-=24*enemy_delta
-		if enemy.freeze>0 and (enemy.flying or enemy.bubble>0): vertical=0
-		body.velocity.y=vertical*(enemy_delta/delta)
-		body.move_and_slide()
-		enemy.vertical=body.velocity.y/(enemy_delta/delta)
-		if body.position.y<world.height_at(body.position.x,body.position.z)-4: body.position.y=world.height_at(body.position.x,body.position.z)+.3;body.velocity.y=0
-		if aim.length()>.01: body.rotation.y=lerp_angle(body.rotation.y,atan2(-aim.x,-aim.z),enemy_delta*6)
+		var surface_moved=EnemySurface.tick(self,enemy,target_player.position,enemy_delta)
+		if not surface_moved:
+			body.velocity.x=velocity.x*(enemy_delta/delta);body.velocity.z=velocity.z*(enemy_delta/delta)
+			var vertical=enemy.get("vertical",0.0)
+			enemy.bubble=maxf(0,enemy.get("bubble",0.0)-enemy_delta)
+			if enemy.bubble>0 and not enemy.boss:
+				vertical=clampf((world.height_at(body.position.x,body.position.z)+1.8-body.position.y)*3,-3,3)
+			elif enemy.get("flying",false):
+				var cruise=enemy.altitude*(.15 if fmod(elapsed+enemy.net_id,9.0)>7 else 1.0)
+				vertical=clampf((world.height_at(body.position.x,body.position.z)+cruise-body.position.y)*3,-6,6)
+			elif not body.is_on_floor(): vertical-=24*enemy_delta
+			if enemy.freeze>0 and (enemy.flying or enemy.bubble>0): vertical=0
+			body.velocity.y=vertical*(enemy_delta/delta)
+			body.move_and_slide()
+			enemy.vertical=body.velocity.y/(enemy_delta/delta)
+			if body.position.y<world.height_at(body.position.x,body.position.z)-4: body.position.y=world.height_at(body.position.x,body.position.z)+.3;body.velocity.y=0
+			if aim.length()>.01: body.rotation.y=lerp_angle(body.rotation.y,atan2(-aim.x,-aim.z),enemy_delta*6)
 		if body.has_meta("rig"):
 			var rig: ActorRig=body.get_meta("rig")
 			rig.set_health(enemy.hp/enemy.maxHp,enemy.boss or enemy.health>=1.8)
-			rig.animate(enemy_delta,body.velocity,body.is_on_floor())
+			rig.animate(enemy_delta,body.velocity,body.is_on_floor() or enemy.get("surface_attached",false))
 			rig.statuses(enemy.fire>0,enemy.poison>0,enemy.freeze>0,enemy.blind>0)
 		enemy.contact=maxf(0,enemy.get("contact",0)-enemy_delta)
-		var contact_offset=target_player.position-body.position
 		if enemy.get("slip_until",0)>realm_time: body.get_meta("rig").rotation.z=sin((enemy.slip_until-realm_time)*9)*.4
 		else: body.get_meta("rig").rotation.z=float(enemy.get("corruption_lean",0))
-		var touching=Vector2(contact_offset.x,contact_offset.z).length_squared()<pow(enemy.radius+.85,2) and absf(contact_offset.y)<2.2
+		var touching=enemy_touching(enemy,target_player.position)
 		enemy.thorn_clock=maxf(0,enemy.get("thorn_clock",0)-enemy_delta)
 		if touching and target_player.id==coop.local_id and stats.thorns>0 and enemy.thorn_clock<=0:
 			enemy.thorn_clock=.5;hurt_enemy(enemy,stats.thorns,"thorn")

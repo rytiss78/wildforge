@@ -369,3 +369,9 @@ User-provided IceGun mismatch traced to generic elemental GLBs plus independentl
 Latest grouped build: [progression/Eclipse/card-art test](https://github.com/rytiss78/wildforge/releases/tag/test-2026-10-08-progression), source78e968b. One export for this continuation. Remaining plan is explicitly open; next all-surface traversal acceptance.
 
 - [x] User-requested Megabonk mod removal:41tracked files removed from current source, README promotion removed, both mod releases/assets and2mod tags deleted. Standalone game/latest release preserved.
+
+### Surface traversal checkpoint — 2026-10-08
+- [x] Ordinary grounded enemies climb toward elevated players over walls/ceilings/ledges/slopes; targeting/contact and co-op orientation follow the surface.
+- [x]15surface checks,55integration checks, real host/client test;125attached-enemy stress scene captured.
+- [ ] Broader world-geometry/species traversal playtesting; bosses/flyers retain existing movement.
+- Next accessibility batch: saved keyboard/controller action rebinding; continue grouped exports.

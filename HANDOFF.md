@@ -20,8 +20,11 @@ capture-ui15-59-38:15PNGs/focus/layout, pause/ended/cards inspected unclipped.
 crowd-eclipse15-58-24:125enemies,p50=20.898,p95=49.328ms. Ordinary15-59-08:p50=31.837,p95=52.434ms. Not60fps certification.
 build16-01-28:72exported smoke booleans+9metadata. test-build16-02-34:4combat+16progression+21journey booleans. Exported combat/cards/corruption captures inspected.
 Publication/package/cleanup proof JSON in .build-staging/agent-workflow/.
+## Latest source checkpoint (not yet exported)
+EnemySurface climbing for ordinary grounded enemies pursuing elevated targets. Walls/ceilings/convex ledges/slopes, freeze/detach, rotated targeting and roof-safe contact. Co-op up/forward snapshots; protocol direct-5 (same-build required). Flyers/bosses unchanged. No extra actor bodies.
+Fresh check16-34-46:13JS+parse; surface16-33-54:15booleans/5inspected PNGs; coop16-35-37 bothroles; integration16-36-46:55pass. First surface test failed due old avoidance, fixed. Crowd-surface16-37-40:125attached,max125,framep95=14.122ms,physics43.503ms. Specialized scene, not ground-performance certification.
 ## Next concrete task
-All-surface enemy traversal experiment with real wall/ceiling geometry, co-op orientation and existing pursuit/contact assertions; do not weaken checks. Existing cylinder/steering intentionally retained after earlier capsule/probe experiments failed wall_pursuit three times. Broad semantic/model art, balance playthroughs, accessibility and maximum-crowd performance also remain open.
-Use node scripts/agent-workflow.mjs check|integration|coop|progression-review|journey-review|crowd-review|crowd-eclipse|build|test-build. Wrapper encodes Godot arguments and isolated profiles. Do not export every increment.
+Saved configurable keyboard/controller action bindings with reset/cancel/conflict handling and persistence tests. Continue another source milestone before combined export; current public EXE still progression release, not climbing source.
+Use node scripts/agent-workflow.mjs check|surface-review|integration|coop|crowd-surface|build|test-build. Preserve existing meaningful assertions. Broader art/balance/accessibility/performance remain open.
 ## Preserve
 Preserve preexisting AGENTS.md changes. The41previously deleted mod files are now intentionally committed for removal under the user’s explicit instruction. Untracked native/docs/golden-scene.png, scenery-review-0.png, scenery-review-2.png and nul remain. Preserve saves/logs/history. No simultaneous agents.
