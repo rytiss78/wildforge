@@ -20,7 +20,7 @@ capture-ui15-59-38:15PNGs/focus/layout, pause/ended/cards inspected unclipped.
 crowd-eclipse15-58-24:125enemies,p50=20.898,p95=49.328ms. Ordinary15-59-08:p50=31.837,p95=52.434ms. Not60fps certification.
 build16-01-28:72exported smoke booleans+9metadata. test-build16-02-34:4combat+16progression+21journey booleans. Exported combat/cards/corruption captures inspected.
 Publication/package/cleanup proof JSON in .build-staging/agent-workflow/.
-## Latest source checkpoint (not yet exported)
+## Surface source checkpoint (included in later local exports)
 EnemySurface climbing for ordinary grounded enemies pursuing elevated targets. Walls/ceilings/convex ledges/slopes, freeze/detach, rotated targeting and roof-safe contact. Co-op up/forward snapshots; protocol direct-5 (same-build required). Flyers/bosses unchanged. No extra actor bodies.
 Fresh check16-34-46:13JS+parse; surface16-33-54:15booleans/5inspected PNGs; coop16-35-37 bothroles; integration16-36-46:55pass. First surface test failed due old avoidance, fixed. Crowd-surface16-37-40:125attached,max125,framep95=14.122ms,physics43.503ms. Specialized scene, not ground-performance certification.
 ## Latest controls / local build checkpoint
@@ -30,8 +30,9 @@ Playable local EXE: G:/game/.build-staging/agent-workflow/2026-10-08T16-47-19-43
 ## Player feedback checkpoint — current source
 All8new requests entered PLAN and implemented first pass:6mXP/gold merges with LOS/elevation/value checks; poison hits silent (firing sound retained);3443D-rendered skill PNGs;4synthetic Lithuanian boss curses7sbudget/DOTexcluded/hostrelay; report icons; simple hero summary with optional detailed stats; bottom18skill icons+overflow; co-op ping chime/offscreen distance arrows.
 UI before/after inspected. Fixed overlapping skill strip, repulsion clipping and duplicate art. Several art families reuse models; further individual semantic art and human Lithuanian listening review remain open.
-Fresh check17-03-03:13JS+parse/import; integration17-03-29:57pass including761unique textures; feedback17-03-58:13booleans (6captures); coop17-00-38 bothroles. Earlier integration failed duplicateicons, fixed models; earlier generator count-shadow parse error fixed. Preserve all evidence. Grouped build pending; use wrapper build then test-build (now also runs feedback).
+Fresh check17-03-03:13JS+parse/import; integration17-03-29:57pass including761unique textures; feedback17-03-58:13booleans (6captures); coop17-00-38 bothroles. Earlier integration failed duplicateicons, fixed models; earlier generator count-shadow parse error fixed. Preserve all evidence. Grouped build17-04-40 from d68fc95 passed72smoke+9metadata. test-build17-05-20 passed feedback13,controls12,surface15,combat4,progression16,journey21; exported report/cards inspected.
+Latest local EXE: G:/game/.build-staging/agent-workflow/2026-10-08T17-04-40-673Z-build/Wildforge.exe with adjacent PCK. Public release/stable build unchanged; no push/upload this batch.
 ## Next concrete task
-Finish/test combined feedback local export, record result. Group public uploads as requested; existing public progression unchanged. Then refine semantic skill art/voice listening and remaining accessibility/world-geometry/performance. scripts/generate-boss-lithuanian.py uses bundled local eSpeak NG; render_skill_icons.gd through wrapper skill-icons. No external service/voice clone.
+Combined feedback export complete. Group public uploads as requested; existing public progression unchanged. Next refine semantic skill art/voice listening and remaining accessibility/world-geometry/performance. scripts/generate-boss-lithuanian.py uses bundled local eSpeak NG; render_skill_icons.gd through wrapper skill-icons. No external service/voice clone.
 ## Preserve
 Preserve preexisting AGENTS.md changes. The41previously deleted mod files are now intentionally committed for removal under the user’s explicit instruction. Untracked native/docs/golden-scene.png, scenery-review-0.png, scenery-review-2.png and nul remain. Preserve saves/logs/history. No simultaneous agents.
