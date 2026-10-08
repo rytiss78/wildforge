@@ -42,6 +42,8 @@ var health_bar: ProgressBar
 var hints_until=25.0
 var player_locator: Control
 var journey_overlay: Control
+var damage_overlay: Control
+var flash_overlay: ColorRect
 
 func menu_controls(node: Node=modal) -> Array:
 	var result=[]
@@ -219,6 +221,17 @@ func setup(owner_game):
 	blast.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	root.add_child(blast)
 	blast.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	# Damage number overlay — a transparent container for 3D-to-2D projected labels
+	damage_overlay=Control.new()
+	damage_overlay.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	damage_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	root.add_child(damage_overlay)
+	# Screen flash overlay
+	flash_overlay=ColorRect.new()
+	flash_overlay.color=Color(1,1,1,0)
+	flash_overlay.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	root.add_child(flash_overlay)
+	flash_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	root.add_child(modal)
 	modal.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	modal.visible = false
@@ -340,6 +353,48 @@ func update(delta: float):
 	if toast_time > 0:
 		toast_time -= delta
 		if toast_time <= 0: toast.text = ""
+	# Screen flash overlay
+	if game.screen_flash > 0:
+		flash_overlay.color = game.screen_flash_color
+		flash_overlay.color.a = minf(game.screen_flash * 8.0, 0.35)
+		flash_overlay.visible = true
+	else:
+		flash_overlay.visible = false
+	# Render damage numbers (2D UI - rise from bottom)
+	if game.damage_numbers:
+		var viewport = get_viewport().get_visible_rect()
+		for child in damage_overlay.get_children():
+			child.queue_free()
+		for dn in game.damage_numbers:
+			# Color by damage type
+			var num_color = Color("ffdd44") # default physical
+			if dn.cause == "fire": num_color = Color("ff6633")
+			elif dn.cause == "ice": num_color = Color("66ccff")
+			elif dn.cause == "poison": num_color = Color("66ff33")
+			elif dn.cause == "lightning": num_color = Color("ffff66")
+			elif dn.cause == "explosion": num_color = Color("ff9933")
+			elif dn.cause == "meteor": num_color = Color("ff4422")
+			elif dn.cause == "stomp": num_color = Color("ccaa88")
+			elif dn.cause == "sonic": num_color = Color("ddaaff")
+			elif dn.cause == "coop": num_color = Color("88ff88")
+			elif dn.cause == "burrow": num_color = Color("ddaa55")
+			var life_ratio = dn.life / dn.maxLife
+			var val_text = str(dn.value)
+			var label = Label.new()
+			label.text = val_text
+			label.add_theme_color_override("font_color", num_color)
+			label.add_theme_font_size_override("font_size", 28 if dn.value > 100 else (22 if dn.value > 50 else 18))
+			label.add_theme_color_override("font_outline_color", Color("222222"))
+			label.add_theme_constant_override("outline_size", 2)
+			label.mouse_filter = Control.MOUSE_FILTER_IGNORE
+			# Position: starts at bottom, rises up, fades out
+			var base_x = viewport.position.x + viewport.size.x * dn.screen_x
+			var base_y = viewport.position.y + viewport.size.y
+			var rise_height = (1.0 - life_ratio) * viewport.size.y * 0.35
+			label.position = Vector2(base_x, base_y - rise_height)
+			label.modulate.a = clampf(life_ratio * 2.0, 0.0, 1.0)
+			damage_overlay.add_child(label)
+
 	if blast_time > 0:
 		blast_time -= delta
 		blast.color.a = 0
@@ -503,34 +558,54 @@ func offer_card(item: Dictionary, index: int, select: Callable) -> Button:
 	var accent=RunRules.COLORS[item.tier]
 	card.custom_minimum_size=Vector2(0,360)
 	card.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-	var normal=style(paper.lerp(accent,.08),accent,12);normal.border_width_top=6
+	# Rarity glow: inner shadow + colored top bar
+	var normal=style(paper.lerp(accent,.06),accent,12);normal.border_width_top=5
+	normal.shadow_color=Color(accent,.35);normal.shadow_size=6;normal.shadow_offset=Vector2i(0,3)
 	card.add_theme_stylebox_override("normal",normal)
-	var hover=style(paper.lerp(accent,.18),accent,12);hover.set_border_width_all(3);hover.border_width_top=6
+	var hover=style(paper.lerp(accent,.14),accent,12);hover.set_border_width_all(3);hover.border_width_top=5
+	hover.shadow_color=Color(accent,.5);hover.shadow_size=10;hover.shadow_offset=Vector2i(0,4)
 	card.add_theme_stylebox_override("hover",hover)
 	card.add_theme_stylebox_override("pressed",hover)
-	var focus=StyleBoxFlat.new();focus.bg_color=Color.TRANSPARENT;focus.border_color=ink;focus.set_border_width_all(3);focus.set_corner_radius_all(12)
-	focus.shadow_color=Color(accent,.45);focus.shadow_size=8
+	var focus=StyleBoxFlat.new();focus.bg_color=Color(accent,.08);focus.border_color=accent;focus.set_border_width_all(4);focus.set_corner_radius_all(12)
+	focus.shadow_color=Color(accent,.6);focus.shadow_size=14;focus.shadow_offset=Vector2i(0,0)
 	card.add_theme_stylebox_override("focus",focus)
 	var column=VBoxContainer.new();card.add_child(column)
 	column.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	column.offset_left=16;column.offset_right=-16;column.offset_top=18;column.offset_bottom=-18
-	column.mouse_filter=Control.MOUSE_FILTER_IGNORE;column.add_theme_constant_override("separation",10)
-	var rarity=label(RunRules.RARITIES[item.tier].to_upper()+"   /   "+str(index+1),13,accent.darkened(.48))
+	column.offset_left=16;column.offset_right=-16;column.offset_top=14;column.offset_bottom=-14
+	column.mouse_filter=Control.MOUSE_FILTER_IGNORE;column.add_theme_constant_override("separation",8)
+	# Rarity bar with glow
+	var rarity=label(RunRules.RARITIES[item.tier].to_upper()+"   ·   #"+str(index+1),12,accent.darkened(.4))
+	rarity.add_theme_color_override("font_outline_color",accent);rarity.add_theme_color_override("font_outline_color",accent)
+	rarity.add_theme_font_size_override("font_size",12)
+	rarity.add_theme_color_override("font_color",accent.darkened(.5))
 	column.add_child(rarity)
+	# Icon with subtle background
+	var icon_bg=ColorRect.new()
+	icon_bg.color=Color(paper.r,paper.g,paper.b,.85)
+	icon_bg.custom_minimum_size=Vector2(104,104)
+	var radius=StyleBoxFlat.new();radius.bg_color=Color(accent,.12);radius.set_corner_radius_all(8);radius.set_border_width_all(1);radius.border_color=accent.darkened(.3)
+	icon_bg.add_theme_stylebox_override("normal",radius)
+	column.add_child(icon_bg)
 	var icon=PowerIcon.new();icon.key=icon_key(item);icon.weapon_icon=item.kind=="weapon"
-	icon.custom_minimum_size=Vector2(96,96);icon.size_flags_horizontal=Control.SIZE_SHRINK_CENTER;column.add_child(icon)
-	var title=label(item.name,20);title.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;title.custom_minimum_size.y=48
+	icon.custom_minimum_size=Vector2(88,88);icon.size_flags_horizontal=Control.SIZE_SHRINK_CENTER;icon_bg.add_child(icon)
+	var title=label(item.name,20);title.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;title.custom_minimum_size.y=44
+	title.add_theme_color_override("font_outline_color",ink);title.add_theme_color_override("font_outline_color",ink)
 	column.add_child(title)
 	var text=WeaponDetails.describe(item.id) if item.kind=="weapon" else game.rules.describe(item.effects[0])
-	var description=label(text,15);description.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;description.max_lines_visible=4;description.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS;card.tooltip_text=text;description.size_flags_vertical=Control.SIZE_EXPAND_FILL
+	var description=label(text,14);description.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;description.max_lines_visible=4;description.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS;card.tooltip_text=text;description.size_flags_vertical=Control.SIZE_EXPAND_FILL
 	column.add_child(description)
 	var note=item.kind.capitalize()+" · "+str(item.get("family","Weapon"))
 	if item.kind=="weapon":
 		var owned=game.equipped.filter(func(w):return w.id==item.id)
 		note="Rank %d → %d" % [owned[0].rank,owned[0].rank+1] if not owned.is_empty() else "Choose a slot to replace" if game.equipped.size()>=3 else "New weapon"
 	var footer=label(note,12);footer.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;column.add_child(footer)
+	# Hover scale-up via tween
 	card.mouse_entered.connect(func():
 		if game.input_kind!="xbox": card.grab_focus()
+		card.create_tween().tween_property(card,"scale",Vector2(1.03,1.03),.12).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
+	)
+	card.mouse_exited.connect(func():
+		if game.input_kind!="xbox": card.create_tween().tween_property(card,"scale",Vector2.ONE,.1).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	)
 	card.focus_entered.connect(func(): preview_offer(item))
 	cards.append(card)

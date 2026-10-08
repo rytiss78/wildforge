@@ -46,8 +46,22 @@ func roll(kind: String, luck: float = 0.0, minimum: int = 0) -> Dictionary:
 		result.tier = tier
 		result.strength = strength
 		return result
+	# Weight families inversely by size so rare items aren't drowned out
 	var families = loot_pools[kind].keys()
-	var family = families[rng.randi_range(0, families.size() - 1)]
+	var weights: Array[float] = []
+	for fam in families:
+		var count = loot_pools[kind][fam].size()
+		weights.append(1.0 / maxf(count, 1))
+	# Normalize weights and pick family
+	var total_w = 0.0
+	for w in weights: total_w += w
+	var roll_val = rng.randf() * total_w
+	var family = families[-1]
+	for i in range(weights.size()):
+		roll_val -= weights[i]
+		if roll_val <= 0:
+			family = families[i]
+			break
 	var pool: Array = loot_pools[kind][family]
 	var result: Dictionary = pool[rng.randi_range(0, pool.size() - 1)].duplicate(true)
 	result.effects=[result.effects[0].duplicate()]

@@ -57,7 +57,7 @@ export function assessPng(path, started, minimum=320) {
 }
 
 async function main(action) {
-  if (!['check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'status'].includes(action)) {
+  if (!['check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
     console.error('Usage: node scripts/agent-workflow.mjs check|smoke|capture|capture-ui|combat-review|pace-review|soak|integration|build|status'); return 2;
   }
   const git = (...args) => spawnSync('git', ['-C', root, ...args], {encoding:'utf8', windowsHide:true}).stdout?.trim() ?? '';
@@ -80,6 +80,15 @@ async function main(action) {
     if (action === 'check' || action === 'build' || !existsSync(join(root,'native/.godot/global_script_class_cache.cfg'))) {
       await step('godot-import',godot,['--headless','--path',join(root,'native'),'--editor','--import'],180000);
       await step('gdscript-parse',godot,['--headless','--path',join(root,'native'),'--check-only','--script','res://scripts/game.gd'],45000);
+    }
+    if (action === 'test-build') {
+      const previous=JSON.parse(readFileSync(join(stage,'latest-build.json'),'utf8'));
+      if(!previous.success || !existsSync(previous.build)) throw new Error('No successful current build to test.');
+      const output=await step('exported-combat',previous.build,['--resolution','1440x810','--','--combat-review'],120000);
+      const line=output.split(/\r?\n/).findLast(x=>x.startsWith('COMBAT_REVIEW '));
+      if(!line) throw new Error('Missing exported combat result.');
+      report.combat=JSON.parse(line.slice('COMBAT_REVIEW '.length));report.build=previous.build;
+      report.capture=assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge/combat-review.png'),started);
     }
     if (action === 'weapon-icons') {
       const output=await step('weapon-icons',godot,['--path',join(root,'native'),'--script','res://scripts/render_weapon_icons.gd'],180000);

@@ -276,3 +276,66 @@ All14temporary-drink HUD icons now depict matching bottles/effect symbols; full-
 
 ### Batch15 all weapon model/icon identities fixed
 User-provided IceGun mismatch traced to generic elemental GLBs plus independently illustrated card art. Added elemental model hardware/colors and regenerated all65weapon icons from the exact WeaponModel constructor used in hands/hero previews, including variants and sentries. Weapon image lookup takes precedence over legacy content art. All65PNG hashes distinct; full contact sheets and corrected QueenTea/IceGun preview inspected. See native/docs/weapon-identity.md for regeneration contract. Broader non-weapon item/skill semantics remain open.
+
+## User-directed priorities — 2026-10-08
+
+### New skills / passive skills
+- Hero-pull pulse: card grants a skill that pulses enemies toward the hero (magnet-like attraction).
+- Push-back skill: card grants a skill that pushes nearby enemies away from the hero (knockback aura).
+- Both are card-tiered like other skills; effects scale with tier/strength.
+
+### Pause menu — detailed hero stats
+- Full stat breakdown: HP, shield, armor, attack, crit, speed, etc.
+- Show which stats come from base hero vs equipment vs buffs vs augments.
+- Per-equipment-slot breakdown with individual stat contributions.
+
+### Death / end-of-run stats screen
+- Damage dealt per weapon and per skill type.
+- Enemy kill count (total and per type).
+- Total play time.
+- Local leaderboard ranking based on score (score = kills + gold + time bonus).
+- Stored locally (JSON file), not cloud-dependent.
+
+### Eclipse enemy deformations
+- Stronger enemies on Eclipse get visually deformed: scaled up, stretched, darker palette, extra limbs/limp angles.
+- Deformation intensity scales with enemy tier and Eclipse difficulty.
+- Visual cue that this enemy is "corrupted" — helps readability + atmosphere.
+
+### Drop rate fixes
+- Player not receiving all drops (e.g. Double Jump never seen).
+- Audit drop tables: ensure all items have correct drop rates and are actually in the pool.
+- Fix any weight/probability bugs in chest drops, enemy drops, and level-up offers.
+- Ensure rare items like Double Jump are actually obtainable (not zero-weight or excluded).
+
+### Enemy movement — all-surface climbing
+- Enemies can climb any surface, any angle (spider-like movement).
+- Replace current simple gravity with raycast-based surface detection.
+- Enemies stick to walls, ceilings, and irregular geometry.
+- Maintain performance: reuse existing collision queries, no new physics bodies.
+
+### Enemy tankiness increase
+- Make enemies tankier across the board: more HP, more damage resistance.
+- Scale with run time so late-game feels appropriately tough.
+- Adjust player damage scaling to compensate — maintain engagement.
+- Track kill times and adjust if runs become too long.
+
+### Damage number deduplication
+- Poison and fire damage numbers spam the screen every tick.
+- Solution: only show damage numbers for new damage instances (not ticks on same target within a short window).
+- Show a single number per tick, or aggregate tick damage into one number.
+- Consider showing only critical hits and boss damage as numbers; status damage shown as subtle color flash on enemy.
+
+### Build cleanup and GitHub
+- Remove old builds from repository.
+- Upload new build to GitHub.
+- Abandon and remove the Megabonk mod directory entirely.
+- Clean up any stale assets or build artifacts.
+
+
+## Urgent test build — 2026-10-08
+- [x] Repair Hermes rules.gd syntax and export a playable Windows EXE.
+- [x] Run source checks, exported smoke checks, UI capture and exported rendered combat; inspect images.
+- [x] Promote tested EXE/PCK to build/ and create dated test ZIP in dist/.
+- [ ] Remove obsolete local builds: attempted, blocked by automatic approval review; no deletion performed.
+- [ ] Earlier authorized GitHub release cleanup remains pending; keep latest standalone release and mod releases outside this work.
+- [ ] Follow-up: black-hole/poison visuals, stronger weapon audio, loot probability audit and damage-number aggregation/lifetime.
