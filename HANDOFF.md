@@ -4,7 +4,7 @@ Continue remaining PLAN, single agent. User wants fewer builds/uploads: group mu
 ## Latest delivery
 Source78e968b pushed. Public https://github.com/rytiss78/wildforge/releases/tag/test-2026-10-08-progression
 Local G:/game/build/Wildforge.exe +Wildforge.pck match tested export. ZIP dist/Wildforge-test-2026-10-08-progression-Windows.zip, checksum SHA256SUMS-progression.txt. Both remote assets verified.
-Seven older standalone GitHub releases removed as authorized; new test and2mod releases remain. Tags/history preserved. Local old-build cleanup previously rejected twice by automatic review; no local deletions.
+Seven older standalone GitHub releases removed as authorized; new test and2mod releases remain. Tags/history preserved. Local cleanup completed on renewed user authorization:19obsolete files removed (1,171,961,301bytes); latest stable/staged binaries, latest ZIP/checksums and diagnostic logs preserved.
 ## Implemented this continuation
 - Mechanic-balanced loot and rare ExtraHop scaling.696loot,65weapons.
 - Attraction/Repulsion passive skills with distinct SVG art; host-authoritative co-op pulses, boss resistance.

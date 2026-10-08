@@ -336,7 +336,7 @@ User-provided IceGun mismatch traced to generic elemental GLBs plus independentl
 - [x] Repair Hermes rules.gd syntax and export a playable Windows EXE.
 - [x] Run source checks, exported smoke checks, UI capture and exported rendered combat; inspect images.
 - [x] Promote tested EXE/PCK to build/ and create dated test ZIP in dist/.
-- [ ] Remove obsolete local builds: attempted, blocked by automatic approval review; no deletion performed.
+- [x] Remove obsolete local builds: renewed authorized cleanup removed19old ZIP/checksum/staged binary files; latest build and logs preserved.
 - [x] Older GitHub standalone releases removed after new progression test verified; mod releases and Git tags preserved.
 - [x] Black-hole/poison visuals, stronger weapon audio, loot probability audit and damage-number aggregation/lifetime implemented; subjective audio acceptance remains open.
 
