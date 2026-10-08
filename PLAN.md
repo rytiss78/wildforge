@@ -348,3 +348,11 @@ User-provided IceGun mismatch traced to generic elemental GLBs plus independentl
 - [ ] Export and verify a new Windows test build after each completed milestone.
 
 - [x] Co-op lobby hero selection, synchronized Ready/cancel and host Start Game implemented and tested on2026-10-08. Earlier unchecked entry is superseded. Crowd lag remains open after bounded damage-popup allocation fix.
+
+
+## 2026-10-08 continuation results
+- [x] Implement and measure dense-crowd pacing improvement (125-enemy fixed-seed frame p95 improved148.533ms to33.186ms in latest run; not universal60fps).
+- [x] Fix co-op ordinary-enemy movement fallthrough and elite material cache growth.
+- [x] Replace solid gravity/poison/ignited discs with animated vortex and mist; inspect rendered before/after.
+- [x] Replace weapon attack sounds with21original profiles and3continuous loops; verify assets/routing.
+- [ ] Remaining acceptance: maximum-crowd optimization across all biomes/hardware, subjective audio mix review, loot probability audit and broader roadmap. Older-build deletion remains blocked from earlier attempts.

@@ -1,0 +1,151 @@
+{
+  "author": "Wildforge procedural synthesis",
+  "generator": "scripts/create-weapon-audio.py",
+  "external_samples": false,
+  "samples": {
+    "gun": {
+      "seconds": 0.38,
+      "peak": 0.87,
+      "rms": 0.24310834234288348,
+      "sha256": "429642144bd4f187c023f9a8fe09fa58e8194eec37b7e6a6236995ac32076747"
+    },
+    "shotgun": {
+      "seconds": 0.65,
+      "peak": 0.87,
+      "rms": 0.2719202333923296,
+      "sha256": "29efffbc5cb912c442faf87f9c2f42b88bdbd9d1f205663ff842d59880a8a362"
+    },
+    "turret": {
+      "seconds": 0.3,
+      "peak": 0.87,
+      "rms": 0.2613753962997423,
+      "sha256": "dfbedae98abb6d6198541673cab40446f99de44809ef09fb1f3de553afdef312"
+    },
+    "rocket": {
+      "seconds": 0.85,
+      "peak": 0.87,
+      "rms": 0.23348043021259643,
+      "sha256": "6769b5af7b9ff3aaeeb93b6d48c39d5228786f41d095cb71d486e0b1771a66d2"
+    },
+    "rocket-turret": {
+      "seconds": 0.72,
+      "peak": 0.87,
+      "rms": 0.24576269174290227,
+      "sha256": "944efa29993e6bbc0eac088a2981da61a134e3cf1851f58eb552e0ba65595cc3"
+    },
+    "bomb": {
+      "seconds": 0.8,
+      "peak": 0.87,
+      "rms": 0.24111286503616475,
+      "sha256": "950516be3adaacc70d7c6751f8b76a5216fe6e5f21dd2e7204972a2737b9b52e"
+    },
+    "meteor": {
+      "seconds": 1.0,
+      "peak": 0.87,
+      "rms": 0.22358785111454396,
+      "sha256": "1f35cf9da8a00bc797556ade59f06e0dbb716519ea5980b849bbfea77afc77a5"
+    },
+    "rail": {
+      "seconds": 0.6,
+      "peak": 0.87,
+      "rms": 0.18836725782310762,
+      "sha256": "c041fd7ba2e3d618e3af601d2ddaf46f1a9f947a7ee7c54dc50ada3c6a9ef502"
+    },
+    "lightning": {
+      "seconds": 0.5,
+      "peak": 0.87,
+      "rms": 0.23023227781191025,
+      "sha256": "ef8a535dbac670663811f8fcf1ada563c2abeb2013bca27b46220f5db4e8fa41"
+    },
+    "lightning-turret": {
+      "seconds": 0.45,
+      "peak": 0.87,
+      "rms": 0.22835295886114182,
+      "sha256": "3fb4d418c4aa901ffd718866d5393b2fc9f3d1b72f450a63c2025b578e62a2d7"
+    },
+    "ice": {
+      "seconds": 0.6,
+      "peak": 0.87,
+      "rms": 0.18578924257687968,
+      "sha256": "0e1298ae60bebf19f955752a6d80f46e537e11b83e89039298e020e3d0236307"
+    },
+    "poison": {
+      "seconds": 0.55,
+      "peak": 0.87,
+      "rms": 0.205830048650244,
+      "sha256": "5b662b3ce87fc6c525abb5566d55aa5b2aeb465af26f89060df2e2c1359d950e"
+    },
+    "gravity": {
+      "seconds": 1.1,
+      "peak": 0.87,
+      "rms": 0.22817382114019666,
+      "sha256": "dbc7763f9bd6e1bcafa52bee1a80a58b01bf462299d4d1018574537bc63e56b8"
+    },
+    "harpoon": {
+      "seconds": 0.45,
+      "peak": 0.87,
+      "rms": 0.22709127288639114,
+      "sha256": "5a3f885f151e72f5f4c4729e6f8a9d314222c0f98115985eb2dce6c5bdab40cd"
+    },
+    "boomerang": {
+      "seconds": 0.38,
+      "peak": 0.87,
+      "rms": 0.23402732824737355,
+      "sha256": "64b06d5a19dca89723bc9221cc7dc4eb97d580b371466a02c71e766f99722530"
+    },
+    "disc": {
+      "seconds": 0.4,
+      "peak": 0.87,
+      "rms": 0.22132991515652936,
+      "sha256": "ef54be844d52ab3486b9a42aa6eb45b80e09bb346d35e56184b2a757f44c1b96"
+    },
+    "horn": {
+      "seconds": 0.6,
+      "peak": 0.87,
+      "rms": 0.19308726409707916,
+      "sha256": "5f4a035941338ed7afd564a7a5fef6875e9c5b923ca6c23326aa1e03d488402d"
+    },
+    "bubble": {
+      "seconds": 0.4,
+      "peak": 0.87,
+      "rms": 0.22601913771820298,
+      "sha256": "47f0067053d3e9931c4277f755dfddbad2d1dff1fa8361b2412e74b9975c3f2a"
+    },
+    "saw": {
+      "seconds": 0.4,
+      "peak": 0.87,
+      "rms": 0.311974943213448,
+      "sha256": "d00e8402cb4fcbef14907000d6df6aace909b34bfd76d76138db5dc7df63bf55"
+    },
+    "flame": {
+      "seconds": 0.55,
+      "peak": 0.87,
+      "rms": 0.2804901023163804,
+      "sha256": "b375bd6211fc84b88438cc64eb25d9ef950e4071bcbb5c245a2a591c0fe2cf61"
+    },
+    "fire-turret": {
+      "seconds": 0.5,
+      "peak": 0.87,
+      "rms": 0.28964008967704385,
+      "sha256": "542637afe0609f513795a5f24a7e4df119dd96a085e988831008cc51e2f3b6c5"
+    },
+    "saw-loop": {
+      "seconds": 2.0,
+      "peak": 0.87,
+      "rms": 0.28683276274869424,
+      "sha256": "acb46f2067902cdaf01fee3257dec1590f1242d629ccdc74798e32a8cb6dbcdc"
+    },
+    "flame-loop": {
+      "seconds": 2.0,
+      "peak": 0.87,
+      "rms": 0.3515240938442133,
+      "sha256": "7cf7579569939fa5cd89a471599f5c5f434e1dc7481089bd06cbb8da6d3f83e9"
+    },
+    "fire-turret-loop": {
+      "seconds": 2.0,
+      "peak": 0.87,
+      "rms": 0.36199233668984626,
+      "sha256": "5ec2816c9be77be28e8073f0ffba45500cba07b16ecac0520b4cd8641ee94155"
+    }
+  }
+}

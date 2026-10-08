@@ -127,6 +127,8 @@ var screen_flash=0.0
 var screen_flash_color=Color.WHITE
 const MAX_DAMAGE_NUMBERS=48
 var damage_numbers=[]
+var combat_profile=[]
+var profile_crowd=false
 var menu_repeat=0.0
 var coop: CoopSession
 var network_test_role=""
@@ -140,7 +142,8 @@ func _ready():
 	world=WorldScript.new();hud=HudScript.new();sound=SoundScript.new()
 	get_viewport().use_occlusion_culling=true
 	player=CharacterBody3D.new();camera=Camera3D.new();coop=CoopSession.new()
-	smoke = OS.get_cmdline_user_args().has("--smoke") or OS.get_cmdline_user_args().has("--soak") or OS.get_cmdline_user_args().has("--art") or OS.get_cmdline_user_args().has("--style-roundtrip")
+	profile_crowd=OS.get_cmdline_user_args().has("--crowd-review")
+	smoke = profile_crowd or OS.get_cmdline_user_args().has("--field-review") or OS.get_cmdline_user_args().has("--smoke") or OS.get_cmdline_user_args().has("--soak") or OS.get_cmdline_user_args().has("--art") or OS.get_cmdline_user_args().has("--style-roundtrip")
 	smoke=smoke or OS.get_cmdline_user_args().has("--update-check") or OS.get_cmdline_user_args().has("--big-update-check")
 	smoke=smoke or OS.get_cmdline_user_args().has("--presentation-check")
 	smoke=smoke or OS.get_cmdline_user_args().has("--melee-check")
@@ -219,6 +222,8 @@ func _ready():
 	elif OS.get_cmdline_user_args().has("--update-check"): preload("res://scripts/update_checks.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--style-roundtrip"): call_deferred("run_style_roundtrip")
 	elif network_test_role!="": call_deferred("run_coop_test")
+	elif OS.get_cmdline_user_args().has("--field-review"): preload("res://scripts/field_review.gd").run.call_deferred(self)
+	elif profile_crowd: preload("res://scripts/crowd_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--hunt-review"): preload("res://scripts/hunt_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--scenery-review"): preload("res://scripts/scenery_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--journey-review"): preload("res://scripts/journey_review.gd").run.call_deferred(self)
@@ -1008,8 +1013,7 @@ func fire(weapon: Dictionary, origin: Vector3):
 		beam(origin,origin+aim*effective_range,Color("e5cb98"));burst(origin+aim*3,Color("e5cb98"),8);return
 	if kind=="gravity":
 		var radius_value=3.0*stats.gravitySize*float(mods.get("areaScale",1))
-		var disk=CylinderMesh.new();disk.top_radius=radius_value;disk.bottom_radius=radius_value;disk.height=.08
-		var well=shape(disk,Color("9277b1"),self,target.node.position+Vector3.UP*.12)
+		var well=preload("res://scripts/area_visual.gd").make(self,"gravity",radius_value,target.node.position+Vector3.UP*.12)
 		pools.append({"node":well,"life":3.0*float(mods.get("durationScale",1)),"mechanic":weapon.id,"radius":radius_value,"gravity":true,"damage":base_damage*.65});return
 	if kind=="meteor":
 		for meteor_index in range(1+int(mods.get("extraMeteors",0))+mini(5,int(stats.meteorCount))):
@@ -1049,9 +1053,8 @@ func remote_weapon_effect(id: String,origin: Vector3,target: Vector3,duration: f
 	if id=="saw":
 		melee_attacks.append({"origin":origin,"target":target,"delay":duration*.5,"visual_only":true});return
 	if id=="gravity":
-		var disk=CylinderMesh.new();disk.top_radius=3;disk.bottom_radius=3;disk.height=.08
 		var point=target;point.y=world.height_at(point.x,point.z)+.12
-		var well=shape(disk,Color("9277b1"),self,point)
+		var well=preload("res://scripts/area_visual.gd").make(self,"gravity",3,point)
 		effects.append({"node":well,"life":3.0,"velocity":Vector3.ZERO,"stationary":true})
 	elif id=="meteor":
 		var meteor=shape(orb_mesh,Color("ee986d"),self,target+Vector3.UP*14);meteor.scale=Vector3.ONE*6
@@ -1182,15 +1185,7 @@ func kill_enemy(enemy: Dictionary, cause: String):
 		Journey.defeated(self,enemy)
 	if stats.explosion > 0 and cause != "explosion": damage_area(p,3.0,stats.explosion,"explosion",enemy)
 	if stats.pools > 0:
-		var node = MeshInstance3D.new()
-		var disk = CylinderMesh.new()
-		disk.top_radius = 2.3
-		disk.bottom_radius = 2.3
-		disk.height = .025
-		node.mesh = disk
-		node.material_override = material(Color("74a858"),.2)
-		node.position = p+Vector3.UP*.06
-		add_child(node)
+		var node=preload("res://scripts/area_visual.gd").make(self,"poison",2.3,p+Vector3.UP*.06)
 		pools.append({"node":node,"life":5.0,"damage":stats.pools})
 		if pools.size()>16: pools[0].node.queue_free();pools.pop_front()
 	if rules.rng.randf()<stats.salvage: heal(4)
@@ -1428,9 +1423,10 @@ func update_combat(delta: float):
 			weapon.clock = 1.0/(weapon.rate*(stat("turretRate") if weapon.turret else stat("rate")))
 	for enemy in enemies:
 		if enemy.dead: continue
-		# Keep each actor at 30 Hz, offset across two physics frames instead of one large spike.
-		enemy.simulation_elapsed=float(enemy.get("simulation_elapsed",float(enemy.net_id%2)/60.0))+delta
-		if enemy.simulation_elapsed+.000001<1.0/30.0: continue
+		# Stagger large crowds; bosses and contact-range actors retain 30 Hz.
+		var crowd_stride=3 if enemies.size()>80 and not enemy.boss and enemy.node.position.distance_squared_to(player.position)>16 else 2
+		enemy.simulation_elapsed=float(enemy.get("simulation_elapsed",float(enemy.net_id%crowd_stride)/60.0))+delta
+		if enemy.simulation_elapsed+.000001<float(crowd_stride)/60.0: continue
 		var enemy_delta=float(enemy.simulation_elapsed);enemy.simulation_elapsed=0.0
 		if coop.active and not coop.hosting:
 			var previous=enemy.node.position
@@ -1442,30 +1438,22 @@ func update_combat(delta: float):
 				var hp_ratio=enemy.hp/enemy.maxHp
 				hp_bar.scale.x=2.5*hp_ratio
 				hp_bar.material_override=material(Color("ff3333" if hp_ratio>.3 else "ff8833"),3.0)
-			# Attack windup visual (red glow before attack)
-			if enemy.node.has_meta("attack_windup"):
-				enemy.node.set_meta("attack_windup",enemy.node.get_meta("attack_windup")-enemy_delta)
-				if enemy.node.get_meta("attack_windup")>0:
-					enemy.node.modulate=Color(1,0.3,0.3)
-				else:
-					enemy.node.modulate=Color(1,1,1)
-					enemy.node.remove_meta("attack_windup")
 			# Pulse elite ring
 			if enemy.get("elite",false) and enemy.node.has_meta("elite_ring") and is_instance_valid(enemy.node.get_meta("elite_ring")):
 				var ring_node=enemy.node.get_meta("elite_ring")
 				var ring_scale=.01+sin(elapsed*6)*.005;ring_node.scale=Vector3(1,ring_scale,1)
-				ring_node.material_override=material(Color("ff6633"),2.5+sin(elapsed*8)*.8)
+				ring_node.material_override.emission_energy_multiplier=2.5+sin(elapsed*8)*.8
 				ring_node.rotation.y=elapsed*2
-				enemy.thorn_clock=maxf(0,enemy.get("thorn_clock",0)-enemy_delta)
-				var thorn_offset=player.position-enemy.node.position
-				if hp>0 and stats.thorns>0 and enemy.thorn_clock<=0 and Vector2(thorn_offset.x,thorn_offset.z).length_squared()<pow(enemy.radius+.85,2) and absf(thorn_offset.y)<2.2:
-					enemy.thorn_clock=.5;hurt_enemy(enemy,stats.thorns,"thorn")
-				if enemy.boss: enemy.label.text="%s  %d%%" % [enemy.get("title",boss_name),enemy.hp/enemy.maxHp*100]
-				if enemy.get("windup",0)>0: update.eyebrows(enemy)
-				if enemy.get("slip_until",0)>realm_time:
-					var slip_rig=enemy.node.get_meta("rig")
-					slip_rig.rotation.z=sin((enemy.slip_until-realm_time)*9)*.4
-				continue
+			enemy.thorn_clock=maxf(0,enemy.get("thorn_clock",0)-enemy_delta)
+			var thorn_offset=player.position-enemy.node.position
+			if hp>0 and stats.thorns>0 and enemy.thorn_clock<=0 and Vector2(thorn_offset.x,thorn_offset.z).length_squared()<pow(enemy.radius+.85,2) and absf(thorn_offset.y)<2.2:
+				enemy.thorn_clock=.5;hurt_enemy(enemy,stats.thorns,"thorn")
+			if enemy.boss: enemy.label.text="%s  %d%%" % [enemy.get("title",boss_name),enemy.hp/enemy.maxHp*100]
+			if enemy.get("windup",0)>0: update.eyebrows(enemy)
+			if enemy.get("slip_until",0)>realm_time:
+				var slip_rig=enemy.node.get_meta("rig")
+				slip_rig.rotation.z=sin((enemy.slip_until-realm_time)*9)*.4
+			continue
 		enemy.freeze = maxf(0,enemy.freeze-enemy_delta)
 		enemy.blind = maxf(0,enemy.blind-enemy_delta)
 		if enemy.status_time > 0:
@@ -1759,7 +1747,9 @@ func _physics_process(delta: float):
 		if roundi(gold*stats.interest)>0: achievement_event("INTEREST")
 		gold+=roundi(gold*stats.interest)
 	update_events()
+	var combat_start=Time.get_ticks_usec() if profile_crowd else 0
 	update_combat(delta)
+	if profile_crowd: combat_profile.append((Time.get_ticks_usec()-combat_start)/1000.0)
 	metric_clock+=delta
 	if metric_clock>=1:
 		metric_clock=0
@@ -2611,8 +2601,7 @@ func update_reaction(enemy: Dictionary,kind: String,damage: float):
 	var reacted=false
 	if enemy.fire>0 and enemy.poison>0:
 		enemy.reaction_until=realm_time+3;reacted=true
-		var mesh=CylinderMesh.new();mesh.top_radius=2;mesh.bottom_radius=2;mesh.height=.2
-		var cloud=shape(mesh,Color("d9ae54"),self,enemy.node.position+Vector3.UP*.3)
+		var cloud=preload("res://scripts/area_visual.gd").make(self,"ignited",2,enemy.node.position+Vector3.UP*.3)
 		pools.append({"node":cloud,"life":1.5,"damage":8.0,"radius":2.0,"ignited":true})
 	elif kind=="slam" and enemy.freeze>0:
 		enemy.reaction_until=realm_time+3;reacted=true;enemy.freeze=0

@@ -1,39 +1,31 @@
-# Wildforge handoff — 2026-10-08
+# Wildforge current handoff — 2026-10-08
 
-## Current objective
-User urgently requested fixing Hermes build, producing test EXE and removing old builds. Standalone Wildforge only; one agent. Build repair is complete. Cleanup is blocked. Broader roadmap remains unfinished.
+## Objective
+User said "do the rest" after lobby release. Continued crowd performance, black-hole/poison visuals and weapon sound requests. Single development agent; standalone game only. Broader PLAN is not all complete.
 
-## Tested deliverable
-- G:/game/build/Wildforge.exe; keep Wildforge.pck alongside.
-- G:/game/dist/Wildforge-test-2026-10-08-Windows.zip (8 entries, executable/package plus existing notices).
-- Exact tested source export: .build-staging/agent-workflow/2026-10-08T13-33-24-114Z-build/.
-- Promoted EXE/PCK SHA256 matches staging; proof promoted-test-build.json. ZIP SHA256 in dist/SHA256SUMS.txt.
+## Latest implementation
+- Large crowds (>80): distant ordinary enemies20Hz, contact-range/bosses30Hz. Same elapsed-time damage/motion. Original collision/steering retained after failed experiments.
+- Co-op clients no longer fall through into local enemy movement; elite pulse no longer creates new material per frame.
+- AreaVisual: black-hole animated orange accretion/black core; poison and ignited wispy clouds. Local/remote gravity constructor shared; gameplay radii/lifetimes unchanged.
+- 21original weapon attacks+3loops, preloaded WAVs, modest pitch variation. Generator scripts/create-weapon-audio.py and native/assets/audio/weapons/provenance.json.
+- Existing co-op hero selection/Ready/host Start and bounded48damage labels retained.
 
-## Changes
-Removed 27 accidental leading pipes from rules.gd. Preserved Hermes inverse-family loot weighting and HUD/card/damage overlay edits in this tested checkpoint. Added agent-workflow test-build to run exported EXE with isolated profile and rendered combat capture.
-Previous all-65 weapon icon/model matching complete (fdc19fe), documented native/docs/weapon-identity.md. Broader art and semantic card audit remains open.
+## Fresh evidence (all reports .build-staging/agent-workflow/2026-10-08T...)
+- crowd-review15-15-11 baseline125enemies p50=115.815,p95=148.533ms. Run failed only erroneous150minimum acceptance; actual game cap125, corrected to120. Capture inspected.
+- Capsule/obstacle-probe experiments failed wall_pursuit in integration15-17-04,15-18-16,15-18-58. Both experiments reverted. Integration15-20-09 then passed55.
+- final crowd15-21-59:p50=29.501,p95=45.409ms; repeat15-27-31:p50=19.119,p95=33.186ms,combatp95=11.788ms.125enemies, fixed seed81173. Final screenshot inspected. Improvement, not60fps certification.
+- coop15-23-15:realhost/client gameplay and lobby checks passed.
+- integration15-23-46:55passed after final crowd/VFX changes.
+- check15-26-22:13JS+parse/import passed after audio integration.
+- field-review15-27-17:4booleans passed; before15-21-04 and after15-23-37 images inspected. Clears kill flash in after diagnostic.
+- Audio generator24unique samples, peak0.87, nonzero RMS; in-engine sample and loop playback routing checked. Subjective listening remains open.
 
-## Fresh validation
-All reports under .build-staging/agent-workflow/:
-- check 2026-10-08T13-32-46-694Z: 13 JS tests + Godot import/parse passed.
-- build 2026-10-08T13-33-24-114Z: export + 72 exported smoke booleans passed; 9 metadata fields.
-- capture-ui 2026-10-08T13-33-34-261Z: 11 PNGs and focus/layout assertions passed; offers image inspected.
-- test-build 2026-10-08T13-34-25-338Z: actual exported EXE rendered combat and exited; PNG inspected. Hero/weapons/enemies/HUD visible. Not performance certification.
-Commands: node scripts/agent-workflow.mjs check|build|capture-ui|test-build. Other established actions retained. Isolated APPDATA avoids saves.
+## Next concrete work
+Finish current export/package/publication and record exact results below. Then loot probability audit (inverse-family weighting is suspicious) and broader max-crowd/biome profiling; broader PLAN features remain open.
+Commands: node scripts/agent-workflow.mjs check|integration|coop|crowd-review|field-review|build|test-build. Diagnostic profiles isolated. Do not improvise Godot arguments.
 
-## Blocker and next tasks
-Old local build deletion command was rejected by automatic approval review: "blocked by policy", no detailed reason. No files were deleted. Do not work around this rejection using another tool. Old GitHub releases also still present; earlier user authorized local and old GitHub release removal and git push. Keep latest standalone published release and ignore mod releases.
-Next development batch: black-hole/poison field visuals and punchier gun audio (user requested, not yet implemented). Then audit inverse-family weighting (not proven to improve rare drops), damage-number aggregation and stale labels when array empties. Broader PLAN covers remaining gameplay/art.
+## Preserve
+Preexisting AGENTS.md changes and deleted mods/megabonk-wildforge files belong to another process; do not stage them. Untracked native/docs/golden-scene.png, scenery-review-0.png, scenery-review-2.png and nul remain. Preserve saves/logs/captures/history. Older-build deletion twice blocked by automatic review; no deletion performed.
+Previous public release test-2026-10-08-lobby at3e4a9e3. User authorized test-build publication and source push.
 
-## Preserve unrelated changes
-AGENTS.md modified before this batch. Entire mods/megabonk-wildforge tracked tree deleted by another process/Hermes; not staged here. Untracked native/docs/golden-scene.png, scenery-review-0.png, scenery-review-2.png and nul retained. Never delete saves, logs, captures or history. See PROGRESS.md for prior milestones and exact fresh results.
-
-Cleanup retry after explicit user request on 2026-10-08 was also rejected before execution ('blocked by policy'); no files removed.
-
-Published test build: https://github.com/rytiss78/wildforge/releases/tag/test-2026-10-08 (public prerelease, source 919b5bc). ZIP and SHA256SUMS uploaded and verified; local archived binaries match tested build.
-
-2026-10-08 continuation: new priorities in PLAN: crowd lag and coop hero selection/Ready/Start. Damage popup pool/aggregation completed and four burst checks passed; build14-52-05 passed export/smoke. Soak comparison worsened (see PROGRESS); crowd performance NOT solved. Next: implement synchronized lobby and profile crowd stalls further.
-
-Latest2026-10-08: coop lobby implemented and tested (capture-ui14-54-43, coop14-55-01); build14-56-09 and test-build14-56-56 passed. Source changes in coop.gd/game.gd/hud.gd/ui_review.gd/agent-workflow.mjs are not yet committed. Crowd lag still unresolved; next task deterministic profiling. Combined doc-rewrite/commit command was rejected by automatic review.
-
-Final milestone state: smaller append-only documentation update and explicit-file staging/commit succeeded. Lobby committed and pushed as3e4a9e3; popup fix124a6b7. Stable build/Wildforge.exe now matches tested14-56-09 export. Published https://github.com/rytiss78/wildforge/releases/tag/test-2026-10-08-lobby with verified ZIP/checksums. Both players need this protocol-direct-4 build. Next concrete task: deterministic crowd performance profiling; broader lag not fixed.
+Final build15-28-11 and exported rendered test-build15-30-04 passed; EXE .build-staging/agent-workflow/2026-10-08T15-28-11-141Z-build/Wildforge.exe. Final EXE combat screenshot inspected;4damage-feedback booleans pass.

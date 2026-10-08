@@ -28,9 +28,15 @@ var hurt_source: Node3D
 var last_hurt=-100.0
 var chest_voice=AudioStreamPlayer.new()
 var ui_voice=AudioStreamPlayer.new()
+var weapon_samples={}
+const WEAPON_SFX=["gun","shotgun","turret","rocket","rocket-turret","bomb","meteor","rail","lightning","lightning-turret","ice","poison","gravity","harpoon","boomerang","disc","horn","bubble","saw","flame","fire-turret"]
 
 func setup(options: Dictionary):
 	settings = options
+	for id in WEAPON_SFX:
+		weapon_samples[id]=load("res://assets/audio/weapons/"+id+".wav")
+	for id in ["saw","flame","fire-turret"]:
+		weapon_samples[id+"-loop"]=load("res://assets/audio/weapons/"+id+"-loop.wav")
 	add_child(hurt_voice)
 	hurt_voice.unit_size=8;hurt_voice.max_distance=45;hurt_voice.max_db=0
 	add_child(chest_voice)
@@ -141,6 +147,7 @@ func say(id: String, cooldown: float = 12.0):
 func effect(id: String,position: Vector3=Vector3.ZERO):
 	if float(settings.sfx)<=0 or sfx_pool.is_empty(): return
 	var key="effect_"+id
+	if weapon_samples.has(id): cache[key]=weapon_samples[id]
 	if not cache.has(key):
 		var audio=AudioStreamWAV.new();audio.mix_rate=22050;audio.format=AudioStreamWAV.FORMAT_16_BITS
 		var bass=id in ["shotgun","rocket","turret-rocket","land","blast","saw","meteor","bomb","horn"]
@@ -179,7 +186,7 @@ func effect(id: String,position: Vector3=Vector3.ZERO):
 		cache[key]=audio
 	var channel=sfx_pool[sfx_index%sfx_pool.size()];sfx_index+=1
 	channel.global_position=get_parent().player.position if position==Vector3.ZERO else position
-	channel.stream=cache[key];channel.volume_db=linear_to_db(float(settings.sfx));channel.play()
+	channel.stream=cache[key];channel.pitch_scale=rng.randf_range(.95,1.04) if weapon_samples.has(id) else 1.0;channel.volume_db=linear_to_db(float(settings.sfx));channel.play()
 
 func weapon_loop(id: String,enabled: bool,position: Vector3):
 	if float(settings.sfx)<=0:
@@ -189,7 +196,7 @@ func weapon_loop(id: String,enabled: bool,position: Vector3):
 		if not enabled: return
 		effect(id,position)
 		var channel=AudioStreamPlayer3D.new();channel.unit_size=6;channel.max_distance=50;channel.max_db=-6;add_child(channel)
-		var audio=cache["effect_"+id].duplicate();audio.loop_mode=AudioStreamWAV.LOOP_FORWARD;audio.loop_begin=0;audio.loop_end=audio.data.size()/2
+		var audio=weapon_samples.get(id+"-loop",cache["effect_"+id]).duplicate();audio.loop_mode=AudioStreamWAV.LOOP_FORWARD;audio.loop_begin=0;audio.loop_end=audio.data.size()/2
 		channel.stream=audio;weapon_loops[id]=channel
 	var channel=weapon_loops[id];channel.global_position=position
 	channel.volume_db=linear_to_db(maxf(.0001,float(settings.sfx)))-8

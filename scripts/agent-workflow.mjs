@@ -57,7 +57,7 @@ export function assessPng(path, started, minimum=320) {
 }
 
 async function main(action) {
-  if (!['check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
+  if (!['field-review', 'crowd-review', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
     console.error('Usage: node scripts/agent-workflow.mjs check|smoke|capture|capture-ui|combat-review|pace-review|soak|integration|build|status'); return 2;
   }
   const git = (...args) => spawnSync('git', ['-C', root, ...args], {encoding:'utf8', windowsHide:true}).stdout?.trim() ?? '';
@@ -163,6 +163,21 @@ async function main(action) {
       if (!line) throw new Error('Missing pace measurements.');
       report.pace=JSON.parse(line.slice('PACE_REVIEW '.length));
       report.capture=assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge/pace-review.png'),started);
+    }
+    if (action === 'field-review') {
+      const output=await step('field-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--field-review'],90000);
+      const line=output.split(/\r?\n/).findLast(x=>x.startsWith('FIELD_REVIEW '));
+      if(!line) throw new Error('Missing field result.');
+      report.fields=JSON.parse(line.slice(13));
+      if(Object.values(report.fields).some(v=>v===false)) throw new Error('Field checks failed.');
+      report.capture=assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge/field-review.png'),started);
+    }
+    if (action === 'crowd-review') {
+      const output=await step('crowd-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--crowd-review'],90000);
+      const line=output.split(/\r?\n/).findLast(x=>x.startsWith('CROWD_REVIEW '));
+      if(!line) throw new Error('Missing crowd measurements.');
+      report.crowd=JSON.parse(line.slice(13));
+      report.capture=assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge/crowd-review.png'),started);
     }
     if (action === 'combat-review') {
       const output=await step('combat-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--combat-review'],90000);
