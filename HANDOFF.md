@@ -4,7 +4,7 @@ Continue remaining PLAN, single agent. User wants fewer builds/uploads: group mu
 ## Latest delivery
 Source78e968b pushed. Public https://github.com/rytiss78/wildforge/releases/tag/test-2026-10-08-progression
 Local G:/game/build/Wildforge.exe +Wildforge.pck match tested export. ZIP dist/Wildforge-test-2026-10-08-progression-Windows.zip, checksum SHA256SUMS-progression.txt. Both remote assets verified.
-Seven older standalone GitHub releases removed as authorized; new test and2mod releases remain. Tags/history preserved. Local cleanup completed on renewed user authorization:19obsolete files removed (1,171,961,301bytes); latest stable/staged binaries, latest ZIP/checksums and diagnostic logs preserved.
+Seven older standalone GitHub releases removed. User subsequently requested mod removal: both mod releases and their2tags removed; only progression test release remains. Commit history preserved. Local cleanup completed on renewed user authorization:19obsolete files removed (1,171,961,301bytes); latest stable/staged binaries, latest ZIP/checksums and diagnostic logs preserved.
 ## Implemented this continuation
 - Mechanic-balanced loot and rare ExtraHop scaling.696loot,65weapons.
 - Attraction/Repulsion passive skills with distinct SVG art; host-authoritative co-op pulses, boss resistance.
@@ -24,4 +24,4 @@ Publication/package/cleanup proof JSON in .build-staging/agent-workflow/.
 All-surface enemy traversal experiment with real wall/ceiling geometry, co-op orientation and existing pursuit/contact assertions; do not weaken checks. Existing cylinder/steering intentionally retained after earlier capsule/probe experiments failed wall_pursuit three times. Broad semantic/model art, balance playthroughs, accessibility and maximum-crowd performance also remain open.
 Use node scripts/agent-workflow.mjs check|integration|coop|progression-review|journey-review|crowd-review|crowd-eclipse|build|test-build. Wrapper encodes Godot arguments and isolated profiles. Do not export every increment.
 ## Preserve
-Preexisting AGENTS.md changes and deleted mods/megabonk-wildforge files belong to another process; do not stage. Untracked native/docs/golden-scene.png, scenery-review-0.png, scenery-review-2.png and nul remain. Preserve saves/logs/history. No simultaneous agents.
+Preserve preexisting AGENTS.md changes. The41previously deleted mod files are now intentionally committed for removal under the user’s explicit instruction. Untracked native/docs/golden-scene.png, scenery-review-0.png, scenery-review-2.png and nul remain. Preserve saves/logs/history. No simultaneous agents.

@@ -4,23 +4,14 @@
 
 A bright 3D survival game where a duck, a loaf of bread and an angry granny are perfectly reasonable hero choices. Explore strange places, grab unpredictable upgrades and become outrageously overpowered before the monsters catch you.
 
-**[Download the Windows build](https://github.com/rytiss78/wildforge/releases/tag/v0.8.2)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
+**[Download the Windows build](https://github.com/rytiss78/wildforge/releases/tag/test-2026-10-08-progression)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
 
-The current build is 0.8.2. See [release and validation notes](native/docs/build-0.8.2.md). Run `build/Wildforge.exe` locally, or unpack the Windows download and run `Wildforge.exe`.
+The current test build includes progression improvements, Eclipse corruption and updated card art. See [release notes](https://github.com/rytiss78/wildforge/releases/tag/test-2026-10-08-progression). Run `build/Wildforge.exe` locally, or unpack the Windows download and run `Wildforge.exe`.
 
 ![Two Count Ducks fighting strange creatures together in Clover Woods](docs/screenshots/co-op.png)
 
 *Two ducks are better than one. Probably.*
 
-## Megabonk Wildforge Mod
-
-Bring Wildforge's strange heroes and upgrades into Megabonk: **21 heroes and perks, 694 cards, 65 weapons, 54 enemy forms and 875 icons**. Mix both rosters and upgrade pools. Wildforge actors show HP inside their model orbs; native Megabonk actors keep their original indicators.
-
-[Download mod 0.4.0](https://github.com/rytiss78/wildforge/releases/tag/megabonk-wildforge-v0.4.0) · [Nexus Mods](https://www.nexusmods.com/megabonk/mods/188) · [Mod installation and compatibility](mods/megabonk-wildforge/README.md) · [Source and merge plan](mods/megabonk-wildforge/PLAN.md) · [Validation evidence](mods/megabonk-wildforge/VERIFICATION.md)
-
-![Wildforge heroes alongside native heroes in Megabonk](mods/megabonk-wildforge/docs/screenshots/hero-roster.png)
-
-*Actual Megabonk roster with the Wildforge plugin installed. Version 0.4.0 is a development alpha: weapons and enemy AI use native adapters, and full-run balance is still being refined.*
 ## Your hero. Your chaos.
 
 Choose from 21 ridiculous heroes, each with their own trick. Count Duck steals life. Sir Loaf dashes with a bang. Florist turns footsteps into a dangerous blooming garden. Admiral Bubbles brings a bathtub to the battlefield.
