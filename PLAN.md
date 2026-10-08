@@ -408,3 +408,5 @@ Acceptance: focused gameplay assertions, rendered before/after UI/art inspection
 - [ ] Reproduce and fix enemies standing still on mountain terrain; test descent, same-height obstacles, distance activation and climbing recovery.
 - [ ] Replace poor hero/enemy TTS with intelligible voices; Lithuanian bosses must be understandable, remove destructive pitch processing.
 Acceptance: real host/client checks, rendered ownership/flowers evidence, terrain pursuit scenarios, inspected new art and voice listening review. Group exports/publication.
+
+- [x] Publish requested co-op feedback test download from tested17-35-38 export (source1a96f9b); ZIP/checksum verified on GitHub. Broader five-item fixes remain open above.
