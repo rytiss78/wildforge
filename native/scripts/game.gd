@@ -122,6 +122,10 @@ var enemy_step=0.0
 var pickup_merge_clock=0.0
 var knock_velocity=Vector3.ZERO
 var hit_shake=0.0
+var hit_stop=0.0
+var screen_flash=0.0
+var screen_flash_color=Color.WHITE
+var damage_numbers=[]
 var menu_repeat=0.0
 var coop: CoopSession
 var network_test_role=""
@@ -600,14 +604,14 @@ func equip_weapon(item: Dictionary):
 		if weapon.id == item.id:
 			achievement_event("RANK_UP")
 			weapon.rank += 1
-			weapon.power += item.strength*.3
+			weapon.power += float(item.get("strength",1.0))*.3
 			avatar.sync_equipment(equipped)
 			if weapon.rank in [3,6,9]: update.quip("weapon")
 			return
 	if equipped.size()>=RunRules.WEAPON_CAP: return
 	var weapon = item.duplicate(true)
 	weapon.rank = 1
-	weapon.power = item.strength
+	weapon.power = float(item.get("strength",1.0))
 	weapon.clock = 0
 	weapon.node = null
 	weapon.deploy_clock = 0
@@ -792,6 +796,20 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 	if not boss: rig.bake_enemy()
 	if elite or species.rarity==3:
 		var title=Label3D.new();title.text=("ELITE  ·  " if elite else "MYTHIC  ·  ")+species.name;title.font_size=22;title.position.y=2.3;title.modulate=Color("ffd992");title.billboard=BaseMaterial3D.BILLBOARD_ENABLED;node.add_child(title)
+		# Boss health bar
+		if boss:
+			var hp_bar=MeshInstance3D.new()
+			var hp_mesh=BoxMesh.new();hp_mesh.size=Vector3(2.5,.15,.05)
+			hp_bar.mesh=hp_mesh
+			hp_bar.material_override=material(Color("ff3333"),3.0)
+			hp_bar.position=Vector3(0,height*1.8,0)
+			node.add_child(hp_bar)
+			node.set_meta("boss_hp_bar",hp_bar)
+		# Elite glow ring
+		if elite:
+			var ring=TorusMesh.new();ring.inner_radius=.6;ring.outer_radius=.75
+			var glow_ring=MeshInstance3D.new();glow_ring.mesh=ring;glow_ring.position=Vector3(0,height*.55,0)
+			glow_ring.material_override=material(Color("ff6633"),2.5);glow_ring.scale=Vector3(1,.01,1);node.add_child(glow_ring);node.set_meta("elite_ring",glow_ring)
 	var max_health = (500+realm*400+realm_time*2) if boss else (23+realm*15+realm_time*.065)
 	max_health *= 1+biome*.18
 	if not boss: max_health*=species.health*(.42 if species.behavior=="spit" else 1.0)
@@ -960,7 +978,7 @@ func fire(weapon: Dictionary, origin: Vector3):
 		if victim.is_empty(): return
 		var contact=melee_contact(victim,origin);var duration=clampf(.8/(weapon.rate*stat("rate")),.07,.44)
 		avatar.begin_melee(weapon.id,contact,duration);sound.effect("slash",origin);coop.shot(weapon.id,origin,contact,duration)
-		melee_attacks.append({"origin":origin,"target":contact,"aim":(contact-origin).normalized(),"reach":reach,"damage":stat("damage")*weapon.damage*weapon.power*(1+stats.get("airDamage",0.0) if not player.is_on_floor() else 1.0),"delay":duration*.5,"weapon_id":weapon.id,"payload":mods.get("payload",""),"sweep_dot":mods.get("sweepDot",.45)})
+		melee_attacks.append({"origin":origin,"target":contact,"aim":(contact-origin).normalized(),"reach":reach,"damage":stat("damage")*weapon.damage*float(weapon.get("power",1.0))*(1+stats.get("airDamage",0.0) if not player.is_on_floor() else 1.0),"delay":duration*.5,"weapon_id":weapon.id,"payload":mods.get("payload",""),"sweep_dot":mods.get("sweepDot",.45)})
 		return
 	var effective_range=weapon.range*stat("range")/18.0*(stat("turretRange") if weapon.turret else 1.0)
 	var target = nearest_enemy(origin,effective_range)
@@ -970,10 +988,14 @@ func fire(weapon: Dictionary, origin: Vector3):
 	avatar.aim_weapon(weapon.id,enemy_center(target))
 	if not weapon.turret: origin=avatar.muzzle_position(weapon.id)
 	elif weapon.node.has_meta("model"): weapon.node.get_meta("model").shoot()
+	# Weapon recoil shake
+	hit_shake = maxf(hit_shake, float(weapon.get("recoil", 0.05)) * 0.8)
+	# Weapon bob on fire
+	if is_instance_valid(weapon.node) and weapon.node.has_meta("model"): weapon.node.get_meta("model").recoil = float(weapon.get("recoil", 0.05))
 	coop.shot(weapon.id,origin,enemy_center(target))
 	var shot_count = (3 if kind == "shotgun" else 1)+int(mods.get("extraShots",0))+mini(7,int(stats.multishot))
 	var aim = (enemy_center(target)-origin).normalized()
-	var base_damage=stat("damage")*weapon.damage*weapon.power*stats.get(kind+"Power",1.0)*(1+stats.get("airDamage",0.0) if not player.is_on_floor() else 1.0)
+	var base_damage=stat("damage")*weapon.damage*float(weapon.get("power",1.0))*stats.get(kind+"Power",1.0)*(1+stats.get("airDamage",0.0) if not player.is_on_floor() else 1.0)
 	if kind=="horn":
 		for enemy in enemies:
 			var offset=enemy_center(enemy)-origin
@@ -1092,6 +1114,15 @@ func hit_enemy(enemy: Dictionary, shot: Dictionary,cause: String="hit"):
 func hurt_enemy(enemy: Dictionary, damage: float, cause: String,mechanic: String="",mechanic_origin: Vector3=Vector3.ZERO):
 	if enemy.dead or damage <= 0: return
 	if cause in ["hit","melee","coop","sonic","lightning","explosion","meteor","burrow","stomp"]: blood_hit(enemy)
+	# Spawn damage number (UI overlay) — skip zero-value ticks
+	if damage > 0:
+		damage_numbers.append({"value":maxi(1,roundi(damage)),"screen_x":randf(),"screen_y":0.0,"life":1.2,"maxLife":1.2,"cause":cause})
+	# Hit flash on enemy
+	if enemy.node.has_meta("rig"): enemy.node.set_meta("flash_timer",0.05)
+	# Status effect start sounds
+	if cause=="poison" and enemy.poison<=0: enemy.poison=4;sound.effect("poison",enemy.node.position)
+	elif cause=="fire" and enemy.fire<=0: enemy.fire=3;sound.effect("fire",enemy.node.position)
+	elif cause=="ice" and enemy.freeze<=0: enemy.freeze=3;sound.effect("freeze",enemy.node.position)
 	if coop.active and not coop.hosting:
 		coop.hit(enemy,damage,mechanic if not mechanic.is_empty() else cause,mechanic_origin);enemy.node.get_meta("rig").hurt=.18;return
 	var credited=minf(enemy.hp,damage)
@@ -1118,7 +1149,17 @@ func kill_enemy(enemy: Dictionary, cause: String):
 	var p = enemy.node.position
 	spawn_pickup(p+Vector3.UP*.35,"xp",float(enemy.get("xp_reward",enemy_xp_reward(enemy)))*stat("xpGain"))
 	spawn_pickup(p+Vector3.UP*.4,"gold",roundi((1+enemy.get("biome",0)*.2)*(40 if enemy.boss else (2+realm)*(3 if enemy.get("elite",false) else 1))*stat("goldGain")))
-	burst(p+Vector3.UP*.5,Color("c8aa75"),5)
+	# Kill feedback: elite/boss get big explosion, regular get dust puff
+	if enemy.get("elite",false) or enemy.boss:
+		burst(p+Vector3.UP*.5,Color("ff8844"),10)
+		burst(p+Vector3.UP*.5,Color("ffcc44"),12 if enemy.boss else 6)
+		screen_flash=0.15
+		screen_flash_color=Color("ffaa44")
+		hit_shake=0.2 if enemy.get("elite",false) else 0.35
+		sound.say("kill",25)
+	else:
+		burst(p+Vector3.UP*.3,Color("c8aa75"),4)
+		burst(p+Vector3.UP*.3,Color("888888"),3)
 	if enemy.boss:
 		if hp < stats.maxHp*.25: achievement_event("COMEBACK")
 		if health_damage == enemy.startDamage: achievement_event("NO_HIT_BOSS")
@@ -1151,6 +1192,9 @@ func damage_area(origin: Vector3,radius: float,damage: float,cause: String,exclu
 		if enemy != excluded and not enemy.dead and origin.distance_to(enemy.node.position) < radius:
 			if cause=="slam": update_reaction(enemy,"slam",damage)
 			hurt_enemy(enemy,damage,cause)
+	# Hit stop on heavy hits
+	if damage > 15: hit_stop = .04
+	elif damage > 8: hit_stop = .025
 	if cause in ["explosion","burrow"]: burst(origin+Vector3.UP,Color("f2b777"),8);explosion_fx(origin,radius)
 
 func take_damage(amount: float, source: Vector3=Vector3.ZERO, voice_type: String="hit"):
@@ -1383,14 +1427,36 @@ func update_combat(delta: float):
 			var previous=enemy.node.position
 			enemy.node.position=enemy.node.position.lerp(enemy.get("target_position",previous),1-exp(-enemy_delta*16))
 			var rig=enemy.node.get_meta("rig");rig.set_health(enemy.hp/enemy.maxHp,enemy.boss or enemy.health>=1.8);rig.animate(enemy_delta,(enemy.node.position-previous)/enemy_delta,true);rig.statuses(enemy.fire>0,enemy.poison>0,enemy.freeze>0,enemy.blind>0)
-			enemy.thorn_clock=maxf(0,enemy.get("thorn_clock",0)-enemy_delta)
-			var thorn_offset=player.position-enemy.node.position
-			if hp>0 and stats.thorns>0 and enemy.thorn_clock<=0 and Vector2(thorn_offset.x,thorn_offset.z).length_squared()<pow(enemy.radius+.85,2) and absf(thorn_offset.y)<2.2:
-				enemy.thorn_clock=.5;hurt_enemy(enemy,stats.thorns,"thorn")
-			if enemy.boss: enemy.label.text="%s  %d%%" % [enemy.get("title",boss_name),enemy.hp/enemy.maxHp*100]
-			if enemy.get("windup",0)>0: update.eyebrows(enemy)
-			rig.rotation.z=sin((enemy.slip_until-realm_time)*9)*.4 if enemy.get("slip_until",0)>realm_time else 0
-			continue
+			# Update boss health bar scale
+			if enemy.boss and enemy.node.has_meta("boss_hp_bar") and is_instance_valid(enemy.node.get_meta("boss_hp_bar")):
+				var hp_bar=enemy.node.get_meta("boss_hp_bar")
+				var hp_ratio=enemy.hp/enemy.maxHp
+				hp_bar.scale.x=2.5*hp_ratio
+				hp_bar.material_override=material(Color("ff3333" if hp_ratio>.3 else "ff8833"),3.0)
+			# Attack windup visual (red glow before attack)
+			if enemy.node.has_meta("attack_windup"):
+				enemy.node.set_meta("attack_windup",enemy.node.get_meta("attack_windup")-enemy_delta)
+				if enemy.node.get_meta("attack_windup")>0:
+					enemy.node.modulate=Color(1,0.3,0.3)
+				else:
+					enemy.node.modulate=Color(1,1,1)
+					enemy.node.remove_meta("attack_windup")
+			# Pulse elite ring
+			if enemy.get("elite",false) and enemy.node.has_meta("elite_ring") and is_instance_valid(enemy.node.get_meta("elite_ring")):
+				var ring_node=enemy.node.get_meta("elite_ring")
+				var ring_scale=.01+sin(elapsed*6)*.005;ring_node.scale=Vector3(1,ring_scale,1)
+				ring_node.material_override=material(Color("ff6633"),2.5+sin(elapsed*8)*.8)
+				ring_node.rotation.y=elapsed*2
+				enemy.thorn_clock=maxf(0,enemy.get("thorn_clock",0)-enemy_delta)
+				var thorn_offset=player.position-enemy.node.position
+				if hp>0 and stats.thorns>0 and enemy.thorn_clock<=0 and Vector2(thorn_offset.x,thorn_offset.z).length_squared()<pow(enemy.radius+.85,2) and absf(thorn_offset.y)<2.2:
+					enemy.thorn_clock=.5;hurt_enemy(enemy,stats.thorns,"thorn")
+				if enemy.boss: enemy.label.text="%s  %d%%" % [enemy.get("title",boss_name),enemy.hp/enemy.maxHp*100]
+				if enemy.get("windup",0)>0: update.eyebrows(enemy)
+				if enemy.get("slip_until",0)>realm_time:
+					var slip_rig=enemy.node.get_meta("rig")
+					slip_rig.rotation.z=sin((enemy.slip_until-realm_time)*9)*.4
+				continue
 		enemy.freeze = maxf(0,enemy.freeze-enemy_delta)
 		enemy.blind = maxf(0,enemy.blind-enemy_delta)
 		if enemy.status_time > 0:
@@ -1475,6 +1541,9 @@ func update_combat(delta: float):
 		if touching and enemy.contact<=0 and enemy.freeze<=0 and enemy.blind<=0:
 			enemy.contact=.7
 			enemy.node.get_meta("rig").attack=.25
+			# Attack windup telegraph: enemy glows red before attacking
+			if body.has_meta("rig"):
+				body.set_meta("attack_windup",0.5)
 			coop.damage_player(target_player.id,(18+realm*5 if enemy.boss else 11+realm*4)*enemy.damage*(1+enemy.get("biome",0)*.12),enemy.node.position,enemy.sound)
 			if target_player.id==coop.local_id:
 				if enemy.get("biome",0)==1 and not buffs.has("poison"): player_poison=3
@@ -1485,7 +1554,26 @@ func update_combat(delta: float):
 			enemy.phase = 2 if enemy.hp<enemy.maxHp*.5 else 1
 			enemy.label.text = "%s  %d%%" % [boss_name,enemy.hp/enemy.maxHp*100]
 			enemy.attack -= enemy_delta
-			if enemy.attack<=0 and enemy.blind<=0 and enemy.freeze<=0: telegraph(enemy);enemy.recovery=realm_time+1.3;enemy.attack=2.7 if enemy.phase==2 else 4
+			if enemy.attack<=0 and enemy.blind<=0 and enemy.freeze<=0:
+					# Boss attack telegraph: ground ring before attack
+					var tele_ring=MeshInstance3D.new()
+					var tele_mesh=TorusMesh.new();tele_mesh.inner_radius=1.5;tele_mesh.outer_radius=1.6
+					tele_ring.mesh=tele_mesh
+					var tele_mat=ShaderMaterial.new();tele_mat.shader=preload("res://shaders/portal.gdshader")
+					tele_ring.material_override=tele_mat
+					tele_ring.rotation.x=-PI/2;tele_ring.position.y=.1
+					add_child(tele_ring)
+					effects.append({"node":tele_ring,"life":1.5,"type":"telegraph"})
+					# Flash warning ring
+					var warn_ring=MeshInstance3D.new()
+					var warn_mesh=TorusMesh.new();warn_mesh.inner_radius=1.5;warn_mesh.outer_radius=3.5
+					warn_ring.mesh=warn_mesh
+					warn_ring.material_override=material(Color("ff2200"),3.0)
+					warn_ring.rotation.x=-PI/2;warn_ring.position.y=.15
+					add_child(warn_ring)
+					effects.append({"node":warn_ring,"life":1.0,"type":"telegraph"})
+					sound.say("attack_warn",25)
+					telegraph(enemy);enemy.recovery=realm_time+1.3;enemy.attack=2.7 if enemy.phase==2 else 4
 		if hp>0 and stats.auraDamage>0 and distance<4: hurt_enemy(enemy,stats.auraDamage*enemy_delta,"aura")
 	for shot in projectiles:
 		shot.life -= delta
@@ -1701,6 +1789,13 @@ func _process(delta: float):
 		if not obstacle.is_empty(): desired=obstacle.position+(anchor-obstacle.position).normalized()*.4
 		camera.position=camera.position.lerp(desired,1-exp(-delta*9))
 		hit_shake=maxf(0,hit_shake-delta)
+		# Screen flash overlay
+		screen_flash=maxf(0,screen_flash-delta)
+		# Update damage numbers (UI overlay - rise from bottom)
+		for dn in damage_numbers:
+			dn.life-=delta;dn.screen_y+=delta*0.6
+		# Remove expired damage numbers
+		damage_numbers=damage_numbers.filter(func(dn):return dn.life>0)
 		if hit_shake>0: camera.position+=Vector3(sin(hit_shake*140),cos(hit_shake*110),0)*hit_shake*.32
 		camera.look_at(anchor-Vector3(sin(yaw)*2,0,cos(yaw)*2))
 	for effect in effects:
@@ -2148,7 +2243,7 @@ func plant_flower(position_value: Vector3, weapon: Dictionary):
 		ToonArt.part(node,petal,tone,Vector3(cos(i*TAU/6)*.2,.72,sin(i*TAU/6)*.2))
 	var center=SphereMesh.new();center.radius=.12;center.height=.17
 	ToonArt.part(node,center,Color("fff2a5"),Vector3(0,.74,0))
-	flowers.append({"node":node,"age":0.0,"life":22.0,"bloom":0.0,"power":weapon.power,"ready":false})
+	flowers.append({"node":node,"age":0.0,"life":22.0,"bloom":0.0,"power":float(weapon.get("power",1.0)),"ready":false})
 	achievement_event("GARDEN")
 	garden_patches[Vector2i(roundi(position_value.x/10),roundi(position_value.z/10))]=true
 	if garden_patches.size()>=5: achievement_event("GARDEN_MOVE")
