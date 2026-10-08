@@ -81,6 +81,7 @@ var hazards = []
 var equipped = []
 var owned = []
 var flowers = []
+var flower_serial=0
 var garden_patches = {}
 var visited_ruins = {}
 var last_plant = Vector3(9999,0,9999)
@@ -147,7 +148,7 @@ func _ready():
 	get_viewport().use_occlusion_culling=true
 	player=CharacterBody3D.new();camera=Camera3D.new();coop=CoopSession.new()
 	profile_crowd=OS.get_cmdline_user_args().has("--crowd-review")
-	smoke = OS.get_cmdline_user_args().has("--eclipse-review") or OS.get_cmdline_user_args().has("--feedback-review") or OS.get_cmdline_user_args().has("--controls-review") or OS.get_cmdline_user_args().has("--surface-review") or profile_crowd or OS.get_cmdline_user_args().has("--progression-review") or OS.get_cmdline_user_args().has("--field-review") or OS.get_cmdline_user_args().has("--smoke") or OS.get_cmdline_user_args().has("--soak") or OS.get_cmdline_user_args().has("--art") or OS.get_cmdline_user_args().has("--style-roundtrip")
+	smoke = OS.get_cmdline_user_args().has("--coop-feedback") or OS.get_cmdline_user_args().has("--eclipse-review") or OS.get_cmdline_user_args().has("--feedback-review") or OS.get_cmdline_user_args().has("--controls-review") or OS.get_cmdline_user_args().has("--surface-review") or profile_crowd or OS.get_cmdline_user_args().has("--progression-review") or OS.get_cmdline_user_args().has("--field-review") or OS.get_cmdline_user_args().has("--smoke") or OS.get_cmdline_user_args().has("--soak") or OS.get_cmdline_user_args().has("--art") or OS.get_cmdline_user_args().has("--style-roundtrip")
 	smoke=smoke or OS.get_cmdline_user_args().has("--update-check") or OS.get_cmdline_user_args().has("--big-update-check")
 	smoke=smoke or OS.get_cmdline_user_args().has("--presentation-check")
 	smoke=smoke or OS.get_cmdline_user_args().has("--melee-check")
@@ -226,6 +227,7 @@ func _ready():
 	elif OS.get_cmdline_user_args().has("--update-check"): preload("res://scripts/update_checks.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--style-roundtrip"): call_deferred("run_style_roundtrip")
 	elif network_test_role!="": call_deferred("run_coop_test")
+	elif OS.get_cmdline_user_args().has("--coop-feedback"): preload("res://scripts/coop_feedback_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--eclipse-review"): preload("res://scripts/eclipse_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--feedback-review"): preload("res://scripts/feedback_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--controls-review"): preload("res://scripts/controls_review.gd").run.call_deferred(self)
@@ -291,6 +293,7 @@ func select_hero(item: Dictionary):
 	player.add_child(avatar)
 
 func clear_entities():
+	coop.clear_flower_visuals();flower_serial=0
 	eclipse_run_velocity=Vector3.ZERO;pickup_merge_clock=0;enemy_step=0;crowd.clear();damage_numbers.clear()
 	melee_attacks.clear()
 	if is_instance_valid(avatar): avatar.finish_melee()
@@ -1088,8 +1091,8 @@ func hit_enemy(enemy: Dictionary, shot: Dictionary,cause: String="hit"):
 			var pop=shape(shell,Color("c6e4ed"),self,enemy_center(enemy));pop.material_override=pop.material_override.duplicate();pop.material_override.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA;pop.material_override.albedo_color.a=.22
 			effects.append({"node":pop,"life":enemy.bubble,"velocity":Vector3.ZERO,"bubble_enemy":enemy})
 		enemy.status_time = 4
-		enemy.fire = maxf(enemy.fire,stats.burn + (10.0 if kind.contains("fire") or kind=="flame" else 0.0))
-		enemy.poison = maxf(enemy.poison,stats.poison + (9.0 if kind.contains("poison") else 0.0))
+		set_damage_status(enemy,"fire",stats.burn + (10.0 if kind.contains("fire") or kind=="flame" else 0.0),coop.local_id)
+		set_damage_status(enemy,"poison",stats.poison + (9.0 if kind.contains("poison") else 0.0),coop.local_id)
 		enemy.slow = maxf(enemy.slow,stats.slow + (.35 if kind.contains("ice") else 0.0))
 		if rules.rng.randf()<stats.freeze or kind.contains("ice") and rules.rng.randf()<.3:
 			enemy.freeze = .35 if enemy.boss else 1.6
@@ -1125,13 +1128,15 @@ func hit_enemy(enemy: Dictionary, shot: Dictionary,cause: String="hit"):
 		hurt_enemy(next,damage*.6,"lightning")
 		origin = next.node.position
 
-func record_damage_number(enemy_id: int, damage: float, cause: String):
+func record_damage_number(enemy_id: int, damage: float, cause: String,position_value: Vector3=Vector3.INF):
 	# Coalesce rapid hits on the same enemy without changing damage simulation.
 	for number in damage_numbers:
 		if number.enemy_id==enemy_id and number.cause==cause and number.life>1.0:
-			number.amount+=damage;number.value=maxi(1,roundi(number.amount));return
+			number.amount+=damage;number.value=maxi(1,roundi(number.amount));
+			if position_value.is_finite(): number.world_position=position_value
+			return
 	if damage_numbers.size()>=MAX_DAMAGE_NUMBERS: return
-	damage_numbers.append({"enemy_id":enemy_id,"amount":damage,"value":maxi(1,roundi(damage)),"screen_x":randf_range(.2,.8),"life":1.2,"maxLife":1.2,"cause":cause})
+	damage_numbers.append({"enemy_id":enemy_id,"amount":damage,"value":maxi(1,roundi(damage)),"world_position":position_value,"screen_x":randf_range(.2,.8),"life":1.2,"maxLife":1.2,"cause":cause})
 
 func credit_damage(source: String,amount: float):
 	damage_sources[source]=float(damage_sources.get(source,0))+maxf(0,amount)
@@ -1139,7 +1144,6 @@ func credit_damage(source: String,amount: float):
 func hurt_enemy(enemy: Dictionary, damage: float, cause: String,mechanic: String="",mechanic_origin: Vector3=Vector3.ZERO):
 	if enemy.dead or damage <= 0: return
 	if cause in ["hit","melee","coop","sonic","lightning","explosion","meteor","burrow","stomp"]: blood_hit(enemy)
-	record_damage_number(enemy.net_id,damage,cause)
 	# Hit flash on enemy
 	if enemy.node.has_meta("rig"): enemy.node.set_meta("flash_timer",0.05)
 	# Status effect start sounds
@@ -1152,10 +1156,12 @@ func hurt_enemy(enemy: Dictionary, damage: float, cause: String,mechanic: String
 		var curse=sound.boss_curse(enemy.node.position)
 		if curse>=0 and coop.active: coop.broadcast({"type":"big_boss_voice","realm":realm,"index":curse,"position":CoopSession.array(enemy.node.position)})
 	var credited=minf(enemy.hp,damage)
-	var owner=int(enemy.get("hit_owner",enemy.get("status_owner",coop.local_id) if cause in ["poison","fire"] else coop.local_id))
+	var owner=int(enemy.get("hit_owner",enemy.get(cause+"_owner",enemy.get("status_owner",coop.local_id)) if cause in ["poison","fire"] else coop.local_id))
 	update.party_damage+=credited
-	if owner==coop.local_id: update.run_damage+=credited;credit_damage(mechanic if not mechanic.is_empty() else "effect:"+cause,credited)
-	elif coop.hosting and coop.members.has(owner): coop.send_to(owner,{"type":"big_damage","amount":credited,"source":mechanic if not mechanic.is_empty() else "effect:"+cause,"realm":realm})
+	if owner==coop.local_id:
+		update.run_damage+=credited;credit_damage(mechanic if not mechanic.is_empty() else "effect:"+cause,credited)
+		record_damage_number(enemy.net_id,credited,cause,enemy_center(enemy))
+	elif coop.hosting and coop.members.has(owner): coop.send_to(owner,{"type":"big_damage","enemy_id":enemy.net_id,"position":coop.array(enemy_center(enemy)),"cause":cause,"amount":credited,"source":mechanic if not mechanic.is_empty() else "effect:"+cause,"realm":realm})
 	enemy.hp -= damage
 	enemy.node.get_meta("rig").set_health(enemy.hp/enemy.maxHp,enemy.boss or enemy.health>=1.8)
 	if enemy.node.has_meta("rig"): enemy.node.get_meta("rig").hurt=.18
@@ -2242,7 +2248,7 @@ func check_creative_goals():
 			if stats.get(pair[0],0)>rules.data.stats.get(pair[0],0) and stats.get(pair[1],0)>rules.data.stats.get(pair[1],0):
 				if career.data.total.get(a.key,0)==0: career.bump(a.key)
 
-func plant_flower(position_value: Vector3, weapon: Dictionary):
+func make_flower_visual(position_value: Vector3,tone_index: int) -> Node3D:
 	var node=Node3D.new()
 	node.position=position_value
 	node.position.y=world.height_at(position_value.x,position_value.z)
@@ -2250,13 +2256,18 @@ func plant_flower(position_value: Vector3, weapon: Dictionary):
 	var stem=CylinderMesh.new()
 	stem.top_radius=.025;stem.bottom_radius=.04;stem.height=.7
 	ToonArt.part(node,stem,Color("507e35"),Vector3(0,.35,0))
-	var tone=Color("f49cbd") if flowers.size()%3==0 else Color("e9c954") if flowers.size()%3==1 else Color("ab93ef")
+	var tone=Color("f49cbd") if tone_index%3==0 else Color("e9c954") if tone_index%3==1 else Color("ab93ef")
 	for i in range(6):
 		var petal=SphereMesh.new();petal.radius=.17;petal.height=.13
 		ToonArt.part(node,petal,tone,Vector3(cos(i*TAU/6)*.2,.72,sin(i*TAU/6)*.2))
 	var center=SphereMesh.new();center.radius=.12;center.height=.17
 	ToonArt.part(node,center,Color("fff2a5"),Vector3(0,.74,0))
-	flowers.append({"node":node,"age":0.0,"life":22.0,"bloom":0.0,"power":float(weapon.get("power",1.0)),"ready":false})
+	return node
+
+func plant_flower(position_value: Vector3, weapon: Dictionary):
+	flower_serial+=1
+	var node=make_flower_visual(position_value,flower_serial)
+	flowers.append({"id":flower_serial,"node":node,"age":0.0,"life":22.0,"bloom":0.0,"power":float(weapon.get("power",1.0)),"ready":false})
 	achievement_event("GARDEN")
 	garden_patches[Vector2i(roundi(position_value.x/10),roundi(position_value.z/10))]=true
 	if garden_patches.size()>=5: achievement_event("GARDEN_MOVE")
@@ -2282,7 +2293,7 @@ func update_garden(delta: float):
 		for enemy in enemies:
 			if enemy.dead or not is_instance_valid(enemy.node): continue
 			if enemy.node.position.distance_to(flower.node.position)<3:
-				enemy.slow=maxf(enemy.slow,stats.flowerRoots);enemy.poison=maxf(enemy.poison,stats.flowerPollen);enemy.status_time=3
+				enemy.slow=maxf(enemy.slow,stats.flowerRoots);set_damage_status(enemy,"poison",stats.flowerPollen,coop.local_id);enemy.status_time=3
 				achievement_event("ROOTS");achievement_event("POLLEN")
 		if flower.bloom<=0 and enemies.any(func(e): return not e.dead and e.node.position.distance_to(flower.node.position)<3+e.get("radius",0)):
 			var chain=flowers.filter(func(f):return f.age>=1.5 and f.bloom<=0 and f.node.position.distance_to(flower.node.position)<5)
@@ -2379,12 +2390,18 @@ func run_coop_test():
 		variant.kind="weapon";variant.strength=1;variant.tier=0;equip_weapon(variant)
 		stats["augment-healthy-damage"]=.25
 		stats.enemyPull=2;stats.enemyPush=3
+	var garden_weapon=rules.data.weapons.filter(func(w):return w.id=="flowers")[0].duplicate(true)
+	garden_weapon.kind="weapon";garden_weapon.strength=1;garden_weapon.tier=0;equip_weapon(garden_weapon)
+	plant_flower(player.position,garden_weapon)
 	if network_test_role=="host": stats.damage=2
 	var started=Time.get_ticks_msec();var pause_done=false;var realm_done=false;var moved=false;var shared_enemies=false;var maximum_avatars=0
 	var down_sent=false;var saw_down=false;var saw_rescue=false;var saw_ping=false;var purchase_sent=false;var supply_sent=false;var saw_purchase=false;var saw_supply=false;var gold_before=0
+	var saw_remote_flowers=false;var saw_own_numbers=false
 	var hunt_sent=false;var hunt_seen=false;var hunt_reward=false;var guardian_sent=false;var guardian_seen=false
 	while Time.get_ticks_msec()-started<(19500 if network_test_role=="host" else 17500):
 		var seconds=(Time.get_ticks_msec()-started)/1000.0
+		saw_remote_flowers=saw_remote_flowers or not coop.flower_visuals.is_empty()
+		saw_own_numbers=saw_own_numbers or not damage_numbers.is_empty()
 		shared_enemies=shared_enemies or enemies.size()>0
 		maximum_avatars=maxi(maximum_avatars,coop.avatars.size())
 		moved=moved or player.position.x>2
@@ -2429,8 +2446,8 @@ func run_coop_test():
 			await RenderingServer.frame_post_draw
 			get_viewport().get_texture().get_image().save_png("user://coop-"+network_test_role+".png")
 		await get_tree().create_timer(.1).timeout
-	var checks={"force_pulses":coop.force_requests_received>0 if network_test_role=="host" else coop.saw_force_pulse,"lobby_blocked":lobby_blocked,"hero_change_clears_ready":hero_reset,"lobby_hero_ready_synced":lobby_synced,"role":network_test_role,"standalone":not Engine.has_singleton("Steam"),"discovery":discovered_party if network_test_role=="client" else true,"connected":coop.active,"avatars":maximum_avatars,"members":coop.members.size(),"same_enemies":shared_enemies,"remote_hits":coop.remote_hits,"kills_received":coop.kills_received,"snapshots":coop.snapshots_received,"moved":moved,"party_pause":coop.saw_pause,"realm":realm,"realm_received":coop.saw_realm,"downed":saw_down,"rescued":saw_rescue,"ping":saw_ping,"merchant":saw_purchase,"supply":saw_supply,"hunt_started":hunt_seen,"hunt_reward":hunt_reward,"guardian_defeated":guardian_seen}
-	var passed=checks.force_pulses and lobby_blocked and hero_reset and lobby_synced and checks.hunt_started and checks.hunt_reward and checks.guardian_defeated and checks.downed and checks.rescued and checks.ping and checks.merchant and checks.supply and checks.standalone and checks.discovery and checks.connected and checks.avatars>0 and shared_enemies and realm==1 and (coop.remote_hits>0 if network_test_role=="host" else coop.snapshots_received>20 and coop.saw_pause and coop.saw_realm and moved)
+	var checks={"remote_flowers":saw_remote_flowers,"own_damage_numbers":saw_own_numbers,"force_pulses":coop.force_requests_received>0 if network_test_role=="host" else coop.saw_force_pulse,"lobby_blocked":lobby_blocked,"hero_change_clears_ready":hero_reset,"lobby_hero_ready_synced":lobby_synced,"role":network_test_role,"standalone":not Engine.has_singleton("Steam"),"discovery":discovered_party if network_test_role=="client" else true,"connected":coop.active,"avatars":maximum_avatars,"members":coop.members.size(),"same_enemies":shared_enemies,"remote_hits":coop.remote_hits,"kills_received":coop.kills_received,"snapshots":coop.snapshots_received,"moved":moved,"party_pause":coop.saw_pause,"realm":realm,"realm_received":coop.saw_realm,"downed":saw_down,"rescued":saw_rescue,"ping":saw_ping,"merchant":saw_purchase,"supply":saw_supply,"hunt_started":hunt_seen,"hunt_reward":hunt_reward,"guardian_defeated":guardian_seen}
+	var passed=checks.remote_flowers and checks.own_damage_numbers and checks.force_pulses and lobby_blocked and hero_reset and lobby_synced and checks.hunt_started and checks.hunt_reward and checks.guardian_defeated and checks.downed and checks.rescued and checks.ping and checks.merchant and checks.supply and checks.standalone and checks.discovery and checks.connected and checks.avatars>0 and shared_enemies and realm==1 and (coop.remote_hits>0 if network_test_role=="host" else coop.snapshots_received>20 and coop.saw_pause and coop.saw_realm and moved)
 	print("COOP_TEST "+JSON.stringify(checks));var report=FileAccess.open("user://coop-"+network_test_role+"-results.json",FileAccess.WRITE);report.store_string(JSON.stringify(checks,"  "));report.close();coop.leave()
 	mode="test_finished";clear_entities();sound.active=false
 	for channel in sound.get_children():
@@ -2455,7 +2472,7 @@ func check_landing(was_grounded: bool):
 			heal(stats.slamHeal)
 			for enemy in enemies:
 				if not enemy.dead and enemy.node.position.distance_to(player.position)<4*stats.slamRadius+enemy.radius:
-					enemy.fire=maxf(enemy.fire,stats.slamFire);enemy.poison=maxf(enemy.poison,stats.slamPoison);enemy.status_time=4
+					set_damage_status(enemy,"fire",stats.slamFire,coop.local_id);set_damage_status(enemy,"poison",stats.slamPoison,coop.local_id);enemy.status_time=4
 		heal(stats.landingHeal)
 		if drop>7: take_damage(fall_damage(drop))
 		if slamming and stats.bounceJump>0: player.velocity.y=8.5*sqrt(1+stats.bounceJump);air_jumps=0
@@ -2642,3 +2659,7 @@ func eclipse_running(wish: Vector3,delta: float,grounded: bool) -> Vector3:
 		if target.is_zero_approx() and eclipse_run_velocity.length()<.02: eclipse_run_velocity=Vector3.ZERO
 	else: eclipse_run_velocity=target
 	return eclipse_run_velocity
+
+func set_damage_status(enemy: Dictionary,key: String,power: float,owner: int):
+	if power>0 and power>=float(enemy.get(key,0)):
+		enemy[key]=power;enemy[key+"_owner"]=owner

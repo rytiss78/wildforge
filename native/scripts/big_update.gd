@@ -309,7 +309,11 @@ func receive(sender: int,message: Dictionary) -> bool:
 		if sender!=game.coop.owner_id: return true
 		if type=="big_memory": note(str(message.key));return true
 		if int(message.get("realm",-1))!=game.realm: return true
-		if type=="big_damage": run_damage+=float(message.get("amount",0));game.credit_damage(str(message.get("source","effect:coop")),float(message.get("amount",0)))
+		if type=="big_damage":
+			var amount=float(message.get("amount",0));var position_value=CoopSession.vector(message.get("position",[]))
+			if not is_finite(amount) or amount<=0 or not position_value.is_finite(): return true
+			run_damage+=amount;game.credit_damage(str(message.get("source","effect:coop")),amount)
+			game.record_damage_number(int(message.get("enemy_id",-1)),amount,str(message.get("cause","hit")),position_value)
 		elif type=="big_boss_voice": game.sound.boss_curse(CoopSession.vector(message.get("position",[])),int(message.get("index",0)))
 		elif type=="big_ping": show_ping(message)
 		elif type=="big_revive": revived()

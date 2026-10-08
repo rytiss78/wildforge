@@ -1,9 +1,12 @@
 extends Node
+
 class_name CoopSession
+
+var flower_visuals={}
 
 # Transport-independent authoritative world. Important events are reliable;
 # poses/snapshots use unreliable ordered delivery. Never deserialize objects.
-const PROTOCOL="wildforge-0.8.2-direct-5"
+const PROTOCOL="wildforge-0.8.2-direct-6"
 const PORT=29736
 const DISCOVERY_PORT=29737
 var discovery: PacketPeerUDP
@@ -110,6 +113,7 @@ func join_lan(address: String):
 	)
 
 func leave():
+	clear_flower_visuals()
 	local_ready=false;lobby_roster.clear()
 	if peer!=null: peer.close();peer=null
 	if discovery!=null: discovery.close();discovery=null
@@ -124,6 +128,7 @@ func connection_lost():
 	game.hud.tell(status,8)
 
 func remove_member(id: int):
+	sync_flowers(id,{"flower_realm":game.realm})
 	members.erase(id)
 	if avatars.has(id): avatars[id].queue_free();avatars.erase(id)
 	for key in turret_models.keys():
@@ -237,7 +242,7 @@ func pose() -> Dictionary:
 	for key in effective.keys():
 		if str(key).begins_with("augment-"): effective.erase(key)
 	for key in game.conditional_bonuses: effective[key]=game.stat(key)
-	return {"type":"pose","position":array(game.player.position),"yaw":game.avatar.rotation.y,"model":game.hero.model,"name":game.hero.name,"mode":"ended" if game.run_recorded else game.mode,"weapons":weapons,"hp":game.hp,"shield_hp":game.shield_hp,"stats":effective,"gold":game.gold,"rescue_hold":game.update.rescue_hold}
+	return {"type":"pose","flower_realm":game.realm,"flowers":flower_state(),"position":array(game.player.position),"yaw":game.avatar.rotation.y,"model":game.hero.model,"name":game.hero.name,"mode":"ended" if game.run_recorded else game.mode,"weapons":weapons,"hp":game.hp,"shield_hp":game.shield_hp,"stats":effective,"gold":game.gold,"rescue_hold":game.update.rescue_hold}
 
 func snapshot() -> Dictionary:
 	var actors=[]
@@ -272,7 +277,7 @@ func receive(sender: int,message):
 		elif kind=="pose":
 			var p=vector(message.get("position",[]))
 			if not p.is_finite() or maxf(absf(p.x),absf(p.z))>RealmWorld.EXTENT+10: return
-			for key in ["position","yaw","model","name","mode","weapons","hp","shield_hp","stats","gold","rescue_hold"]:
+			for key in ["position","yaw","model","name","mode","weapons","hp","shield_hp","stats","gold","rescue_hold","flower_realm","flowers"]:
 				if message.has(key): members[sender][key]=message[key]
 			if game.run_active: ensure_avatar(sender,members[sender])
 			if game.update.downed_ids.has(sender): members[sender].hp=0
@@ -311,7 +316,7 @@ func receive(sender: int,message):
 				var damage=clampf(float(message.get("damage",0)),0,limit)
 				if not is_finite(damage): return
 				enemy.hit_owner=sender
-				game.hurt_enemy(enemy,damage,"coop");remote_hits+=1
+				game.hurt_enemy(enemy,damage,"coop",str(message.get("mechanic","")));remote_hits+=1
 				enemy.erase("hit_owner");enemy.status_owner=sender
 				if not enemy.dead:
 					var owned_ids=state.get("weapons",[]).map(func(w):return str(w.id))
@@ -326,7 +331,7 @@ func receive(sender: int,message):
 							var pull=p if mechanic=="harpoon" else vector(message.get("origin",[]))
 							if pull.is_finite() and pull.distance_to(p)<65:
 								enemy.node.move_and_collide((pull-enemy.node.position).normalized()*minf(3,.05 if mechanic=="gravity" else .15+float(stats.get("harpoonPull",0))))
-					enemy.status_time=4;enemy.fire=maxf(enemy.fire,float(stats.get("burn",0))+(10 if ids.any(func(id):return id.contains("flame") or id.contains("fire")) else 0));enemy.poison=maxf(enemy.poison,float(stats.get("poison",0))+(9 if ids.any(func(id):return id.contains("poison")) else 0));enemy.slow=maxf(enemy.slow,float(stats.get("slow",0)) + (.35 if ids.any(func(id):return id.contains("ice")) else 0))
+					enemy.status_time=4;game.set_damage_status(enemy,"fire",float(stats.get("burn",0))+(10 if ids.any(func(id):return id.contains("flame") or id.contains("fire")) else 0),sender);game.set_damage_status(enemy,"poison",float(stats.get("poison",0))+(9 if ids.any(func(id):return id.contains("poison")) else 0),sender);enemy.slow=maxf(enemy.slow,float(stats.get("slow",0)) + (.35 if ids.any(func(id):return id.contains("ice")) else 0))
 					if game.rules.rng.randf()<float(stats.get("freeze",0)): enemy.freeze=1.6
 					if game.rules.rng.randf()<float(stats.get("blind",0)): enemy.blind=3
 					game.update_reaction(enemy,mechanic,damage)
@@ -358,6 +363,7 @@ func receive(sender: int,message):
 		elif kind=="finish": game.end_run(bool(message.win))
 
 func ensure_avatar(id: int,state: Dictionary):
+	sync_flowers(id,state)
 	if id==local_id or not state.has("model"): return
 	if not avatars.has(id):
 		var model=str(state.model)
@@ -447,3 +453,31 @@ func show_shot(message: Dictionary):
 	else: avatars[actor].get_meta("rig").shot(weapon)
 	if weapon.contains("turret") and turret_models.has(str(actor)+":"+weapon): turret_models[str(actor)+":"+weapon].shoot()
 	game.remote_weapon_effect(weapon,origin,target_position,duration);game.sound.effect("slash" if weapon=="saw" else weapon,origin)
+
+func flower_state() -> PackedFloat32Array:
+	var result=PackedFloat32Array()
+	for flower in game.flowers:
+		var p: Vector3=flower.node.position
+		result.append_array(PackedFloat32Array([flower.id,p.x,p.y,p.z,flower.age,flower.bloom,flower.power]))
+	return result
+
+func clear_flower_visuals():
+	for flower in flower_visuals.values():
+		if is_instance_valid(flower): flower.queue_free()
+	flower_visuals.clear()
+
+func sync_flowers(actor: int,state: Dictionary):
+	if actor==local_id: return
+	var wanted={};var entries=state.get("flowers",PackedFloat32Array())
+	if not entries is PackedFloat32Array or entries.size()>48*7 or entries.size()%7!=0: return
+	if int(state.get("flower_realm",-1))==game.realm:
+		for i in range(0,entries.size(),7):
+			var p=Vector3(entries[i+1],entries[i+2],entries[i+3])
+			if not p.is_finite() or absf(p.x)>RealmWorld.EXTENT+10 or absf(p.z)>RealmWorld.EXTENT+10: continue
+			var key=str(actor)+":"+str(int(entries[i]));wanted[key]=true
+			if not flower_visuals.has(key): flower_visuals[key]=game.make_flower_visual(p,int(entries[i]))
+			var node=flower_visuals[key];node.position=p
+			node.scale=Vector3.ONE*clampf(entries[i+4]/1.5,0,1)*(1.12 if entries[i+5]>0 else 1.)
+			node.rotation.z=sin(game.elapsed*TAU*144/60)*(.22 if entries[i+6]>=1.5 else .045)
+	for key in flower_visuals.keys():
+		if key.begins_with(str(actor)+":") and not wanted.has(key): flower_visuals[key].queue_free();flower_visuals.erase(key)

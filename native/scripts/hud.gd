@@ -380,7 +380,6 @@ func update(delta: float):
 	# Render damage numbers (2D UI - rise from bottom)
 	for damage_label in damage_labels: damage_label.visible=false
 	if game.damage_numbers:
-		var viewport = get_viewport().get_visible_rect()
 		for index in range(game.damage_numbers.size()):
 			var dn=game.damage_numbers[index]
 			# Color by damage type
@@ -409,10 +408,10 @@ func update(delta: float):
 			label.add_theme_constant_override("outline_size", 2)
 			label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			# Position: starts at bottom, rises up, fades out
-			var base_x = viewport.position.x + viewport.size.x * dn.screen_x
-			var base_y = viewport.position.y + viewport.size.y
-			var rise_height = (1.0 - life_ratio) * viewport.size.y * 0.35
-			label.position = Vector2(base_x, base_y - rise_height)
+			var screen_size=get_viewport().get_visible_rect().size
+			var inset=maxf(32,label.get_combined_minimum_size().y+6)
+			label.position=Vector2(screen_size.x*dn.screen_x,screen_size.y-inset-(1.0-life_ratio)*screen_size.y*.35)
+
 			label.modulate.a = clampf(life_ratio * 2.0, 0.0, 1.0)
 
 	if blast_time > 0:

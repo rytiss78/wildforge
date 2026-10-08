@@ -400,3 +400,11 @@ Acceptance: focused gameplay assertions, rendered before/after UI/art inspection
 - [x] Transcribe supplied M:/Music/Phonk/PARANOIA.mp3 into editable MIDI, render a MIDI-instrument arrangement and play it only during Eclipse.
 - [x] Slight grounded running inertia during Eclipse; preserve normal movement, dash, air control and knockback.
 - [x] Verify music transitions/pause/volume/loop and frame-rate-independent movement; grouped local test build.
+
+## Co-op reliability and rejected presentation — 2026-10-08
+- [x] Replicate every player's flowers (growth/bloom/removal) as visual-only replicas; no duplicated damage/healing.
+- [ ] Display host-confirmed damage numbers only to the player who dealt that damage, including DOT; keep the user-requested bottom-edge rising animation; make the first frame visible inside the screen.
+- [ ] Completely replace rejected skill art with detailed, readable illustrations.3Dprocedural thumbnails are not accepted quality; allow2D.
+- [ ] Reproduce and fix enemies standing still on mountain terrain; test descent, same-height obstacles, distance activation and climbing recovery.
+- [ ] Replace poor hero/enemy TTS with intelligible voices; Lithuanian bosses must be understandable, remove destructive pitch processing.
+Acceptance: real host/client checks, rendered ownership/flowers evidence, terrain pursuit scenarios, inspected new art and voice listening review. Group exports/publication.

@@ -1,41 +1,28 @@
 # Wildforge handoff — 2026-10-08
-## Objective
-Continue remaining PLAN, single agent. User wants fewer builds/uploads: group multiple tested source milestones. Full roadmap is not complete.
-## Latest delivery
-Source78e968b pushed. Public https://github.com/rytiss78/wildforge/releases/tag/test-2026-10-08-progression
-Local G:/game/build/Wildforge.exe +Wildforge.pck match tested export. ZIP dist/Wildforge-test-2026-10-08-progression-Windows.zip, checksum SHA256SUMS-progression.txt. Both remote assets verified.
-Seven older standalone GitHub releases removed. User subsequently requested mod removal: both mod releases and their2tags removed; only progression test release remains. Commit history preserved. Local cleanup completed on renewed user authorization:19obsolete files removed (1,171,961,301bytes); latest stable/staged binaries, latest ZIP/checksums and diagnostic logs preserved.
-## Implemented this continuation
-- Mechanic-balanced loot and rare ExtraHop scaling.696loot,65weapons.
-- Attraction/Repulsion passive skills with distinct SVG art; host-authoritative co-op pulses, boss resistance.
-- Detailed pause stats with base/hero/gear-run/buff/augment contributions and equipment. Persistent damage-by-weapon/effect and enemy-type run recap, time/gold/local rank. DOT grouped by effect; overkill excluded.
-- Eclipse corruption: stage/tier-scaled dark tint, mild stretch/lean and cached thorn mesh. Existing/new enemies, client snapshot state, collision dimensions unchanged.
--12semantic mobility SVG icons; larger centered card art. Broader icon/model art still open.
-## Fresh evidence
-Reports under .build-staging/agent-workflow/2026-10-08T...:
-check15-55-31:13JS+parse/import. integration15-55-58:55checks. coop15-58-45:realhost/client passed.
-progression15-55-47:16booleans,138ExtraHop/12000rolls. Rendered stats/cards/mobility reviewed.
-journey15-53-25:21booleans, includes corruption replication and final victory. Before/after inspected.
-capture-ui15-59-38:15PNGs/focus/layout, pause/ended/cards inspected unclipped.
-crowd-eclipse15-58-24:125enemies,p50=20.898,p95=49.328ms. Ordinary15-59-08:p50=31.837,p95=52.434ms. Not60fps certification.
-build16-01-28:72exported smoke booleans+9metadata. test-build16-02-34:4combat+16progression+21journey booleans. Exported combat/cards/corruption captures inspected.
-Publication/package/cleanup proof JSON in .build-staging/agent-workflow/.
-## Surface source checkpoint (included in later local exports)
-EnemySurface climbing for ordinary grounded enemies pursuing elevated targets. Walls/ceilings/convex ledges/slopes, freeze/detach, rotated targeting and roof-safe contact. Co-op up/forward snapshots; protocol direct-5 (same-build required). Flyers/bosses unchanged. No extra actor bodies.
-Fresh check16-34-46:13JS+parse; surface16-33-54:15booleans/5inspected PNGs; coop16-35-37 bothroles; integration16-36-46:55pass. First surface test failed due old avoidance, fixed. Crowd-surface16-37-40:125attached,max125,framep95=14.122ms,physics43.503ms. Specialized scene, not ground-performance certification.
-## Latest controls / local build checkpoint
-Saved19-action keyboard/mouse/pad remapping, conflict swaps, cancel/reset, neutral-axis capture. Dynamic interaction/turret prompts. Existing Escape/Menu/Back menu behavior retained.
-Fresh controls16-47-33:12booleans (10behavior+2captures); check16-46-16:13JS+parse; integration16-46-33:55pass; coop16-46-56 bothroles. Final source build16-47-19:72smoke+9metadata. test-build16-47-51:controls12,surface15,combat4,progression16,journey21pass; exported controls/wall captures inspected.
-Playable local EXE: G:/game/.build-staging/agent-workflow/2026-10-08T16-47-19-438Z-build/Wildforge.exe (keep adjacent PCK). This is development staging, not a newly packaged public release. Public/stable build remains progression. Grouping uploads as requested.
-## Player feedback checkpoint — current source
-All8new requests entered PLAN and implemented first pass:6mXP/gold merges with LOS/elevation/value checks; poison hits silent (firing sound retained);3443D-rendered skill PNGs;4synthetic Lithuanian boss curses7sbudget/DOTexcluded/hostrelay; report icons; simple hero summary with optional detailed stats; bottom18skill icons+overflow; co-op ping chime/offscreen distance arrows.
-UI before/after inspected. Fixed overlapping skill strip, repulsion clipping and duplicate art. Several art families reuse models; further individual semantic art and human Lithuanian listening review remain open.
-Fresh check17-03-03:13JS+parse/import; integration17-03-29:57pass including761unique textures; feedback17-03-58:13booleans (6captures); coop17-00-38 bothroles. Earlier integration failed duplicateicons, fixed models; earlier generator count-shadow parse error fixed. Preserve all evidence. Grouped build17-04-40 from d68fc95 passed72smoke+9metadata. test-build17-05-20 passed feedback13,controls12,surface15,combat4,progression16,journey21; exported report/cards inspected.
-Latest local EXE: G:/game/.build-staging/agent-workflow/2026-10-08T17-04-40-673Z-build/Wildforge.exe with adjacent PCK. Public release/stable build unchanged; no push/upload this batch.
-## Latest Eclipse music / movement source
-User-supplied PARANOIA.mp3 transcribed locally into MIDI (75bass+814bell+894drum notes),116.4s synthesized PCM. Approximation, not exact recording; original MP3 unchanged.3-track native/assets/music/eclipse_paranoia.mid plus WAV/JSON; scripts transcribe-eclipse-music.py and render-eclipse-midi.py use tools/music-env. Cached inference/20s preview under .build-staging/music-transcription. Initial Ogg native encode failure caught by test; PCM fallback verified. No listening-quality claim.
-Eclipse-only music swaps/restores soundtrack and honors pause/volume/loop. Grounded slight turn drift14/s, faster release22/s, frame-independent; normal/air/dash/knockback preserved. check17-16-49:13JS+parse; eclipse-review17-17-31:13checks; integration17-17-44:57pass.
-## Next concrete task
-Eclipse local build complete: ea27ae6, build17-19-21 passed72smoke+9metadata; test-build17-20-03 passed eclipse13,feedback13,controls12,surface15,combat4,progression16,journey21. Latest local EXE G:/game/.build-staging/agent-workflow/2026-10-08T17-19-21-808Z-build/Wildforge.exe with adjacent PCK. MIDI native/assets/music/eclipse_paranoia.mid; preview .build-staging/music-transcription/eclipse-preview.wav. No public upload/push. Next existing art/voice/accessibility/performance roadmap; music listening/likeness and drift feel require human playtest. Preserve source track/saves.
-## Preserve
-Preserve preexisting AGENTS.md changes. The41previously deleted mod files are now intentionally committed for removal under the user’s explicit instruction. Untracked native/docs/golden-scene.png, scenery-review-0.png, scenery-review-2.png and nul remain. Preserve saves/logs/history. No simultaneous agents.
+## Current objective
+User's latest correction: damage labels must rise from bottom edge. Implemented and verified in current local export. Continue five requests in PLAN section Co-op reliability and rejected presentation: flowers, owned damage, complete icon remake, stationary enemies, intelligible hero/boss voices. One agent only; group builds/uploads.
+## Current delivery
+Public release remains https://github.com/rytiss78/wildforge/releases/tag/test-2026-10-08-progression (78e968b). Stable build/ZIP unchanged. Old release/build cleanup and Megabonk mod removal completed earlier; preserve history/saves/logs. No upload/push this batch.
+Latest playable local: G:/game/.build-staging/agent-workflow/2026-10-08T17-35-38-980Z-build/Wildforge.exe with adjacent Wildforge.pck. Development staging, not fully packaged public release.
+## Latest source batch
+Remote flowers: compact per-peer state, growth/bloom/removal/realm cleanup, visual-only replicas (no duplicate healing/damage). Protocol direct-6 requires matching builds.
+Damage: host-confirmed owner-only ordinary hits and fire/poison DOT; no client predicted duplicates. Per-status ownership. Bottom-edge labels begin just inside screen and rise35%screen height, fade unchanged. World position metadata retained but labels aren't target-anchored.
+New coop_feedback_review.gd diagnostic and wrapper coop-feedback; exported test-build includes it. Real co-op scenario verifies remote flowers/own numbers on both roles.
+## Fresh validation
+Commands: node scripts/agent-workflow.mjs ACTION. Logs/results .build-staging/agent-workflow/2026-10-08T... and latest-ACTION.json.
+check17-35-23:13JS+Godot import/parse. Earlier17-26-51 class_name placement failure fixed;17-27-52 also passed.
+coop-feedback17-31-14:13booleans including PNG, bottom start/upward animation. Source PNG visually inspected. Earlier17-29-47 target-label layout superseded.
+coop17-29-58:both real roles pass including remote_flowers and own_damage_numbers.
+build17-35-38:72exported smoke booleans+9metadata.
+test-build17-36-01:combat4,coopFeedback13,eclipse13,feedback13,controls12,surface15,progression16,journey21; zero false. Exported coop-feedback PNG inspected: lower rising label visible. No claim of multiplayer ownership coverage for every special mechanic yet.
+## Next concrete work
+Audit remote stomp shortcut in coop.gd301: currently kill_enemy directly / boss hurt without hit_owner; not covered by ownership tests. Keep damage PLAN checkbox open until audit.
+Stationary enemies: confirmed explicit game.gd1503 distance>55 ordinary-enemy continue; enemy steering875 and EnemySurface acquire only elevated targets>=1.5. Reproduce far60m and same-height/downhill mountain scenarios, implement/test before broadening. Existing surface-review15 must remain meaningful.
+Voices: lt-LT-LeonasNeural generation succeeded through edge_tts in tools/music-env; preview .build-staging/boss-neural-preview.mp3. Not listened/shipped. Current boss assets still eSpeak with runtime pitch.88, hero mixed Kokoro/Pocket. Need natural-pitch clearer replacements and accurate provenance. Official Azure language support lists Lithuanian neural voices.
+Icons: user explicitly rejected344procedural3D thumbnails. Complete detailed2D remake still open. Read imagegen skill already (C:/Users/rytis/.codex/skills/.system/imagegen/SKILL.md); tool not yet invoked. Announce skill before use, inspect actual result, avoid declaring templates/distinct hashes proof of quality.
+## Prior implemented systems retained
+800m organic island/deadly sea24chests,5choices,65weapons/696loot. Attraction/repulsion, progression/ExtraHop balancing. Surface wall/ceiling/ledge/slope climbing toward elevated players, co-op orientation.19saved bindings.6mXP/coin merge; poison hit SFX removed. Simplified stats/report icons/bottom skill strip/ping sound+offscreen direction. Boss curses7sbudget.
+Eclipse PARANOIA approximate3-track MIDI+116.4sPCM, slight grounded drift14/s and braking22/s. Original M:/Music/Phonk/PARANOIA.mp3 unchanged; no listening/likeness claim. Scripts transcribe-eclipse-music.py/render-eclipse-midi.py use tools/music-env. Earlier Ogg encode crash fixed using stdlibPCM. Broader art/voices/performance/fun remain open.
+## Preserve / tools
+Preexisting modified AGENTS.md; untracked native/docs/golden-scene.png, scenery-review-0.png, scenery-review-2.png and nul. Do not stage these. Current intended batch includes PLAN/PROGRESS/HANDOFF, native/docs/coop.md, big_update.gd/coop.gd/game.gd/hud.gd/coop_feedback_review.gd, scripts/agent-workflow.mjs.
+Use wrapper actions check/smoke/capture/build; no improvised engine flags. node on PATH works; fallback C:/Users/rytis/AppData/Local/hermes/tools/node-26.7.0-win32-x64/node.exe. Bundled Python for PIL, tools/music-env Python for music/edge_tts. No simultaneous agents. Fresh build diagnostics isolate APPDATA.
