@@ -42,6 +42,7 @@ var health_bar: ProgressBar
 var hints_until=25.0
 var player_locator: Control
 var journey_overlay: Control
+var damage_labels: Array[Label]=[]
 var damage_overlay: Control
 var flash_overlay: ColorRect
 
@@ -361,11 +362,11 @@ func update(delta: float):
 	else:
 		flash_overlay.visible = false
 	# Render damage numbers (2D UI - rise from bottom)
+	for damage_label in damage_labels: damage_label.visible=false
 	if game.damage_numbers:
 		var viewport = get_viewport().get_visible_rect()
-		for child in damage_overlay.get_children():
-			child.queue_free()
-		for dn in game.damage_numbers:
+		for index in range(game.damage_numbers.size()):
+			var dn=game.damage_numbers[index]
 			# Color by damage type
 			var num_color = Color("ffdd44") # default physical
 			if dn.cause == "fire": num_color = Color("ff6633")
@@ -380,7 +381,11 @@ func update(delta: float):
 			elif dn.cause == "burrow": num_color = Color("ddaa55")
 			var life_ratio = dn.life / dn.maxLife
 			var val_text = str(dn.value)
-			var label = Label.new()
+			if index>=damage_labels.size():
+				var pooled=Label.new();pooled.mouse_filter=Control.MOUSE_FILTER_IGNORE
+				damage_overlay.add_child(pooled);damage_labels.append(pooled)
+			var label=damage_labels[index]
+			label.visible=true
 			label.text = val_text
 			label.add_theme_color_override("font_color", num_color)
 			label.add_theme_font_size_override("font_size", 28 if dn.value > 100 else (22 if dn.value > 50 else 18))
@@ -393,7 +398,6 @@ func update(delta: float):
 			var rise_height = (1.0 - life_ratio) * viewport.size.y * 0.35
 			label.position = Vector2(base_x, base_y - rise_height)
 			label.modulate.a = clampf(life_ratio * 2.0, 0.0, 1.0)
-			damage_overlay.add_child(label)
 
 	if blast_time > 0:
 		blast_time -= delta

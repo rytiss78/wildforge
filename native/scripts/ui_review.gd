@@ -13,6 +13,9 @@ static func run(game):
 	AudioServer.set_bus_volume_db(0,-80)
 	game.set_physics_process(false)
 	var okay=await capture(game,"menu")
+	game.hud.coop_menu()
+	okay=await capture(game,"coop") and okay
+	game.hud.start_menu()
 	var original_hero=game.hero
 	var hero_button=game.hud.menu_controls().filter(func(c):return c is Button and c.text=="Tank Potato")[0]
 	hero_button.grab_focus();game.hud.controller_accept()

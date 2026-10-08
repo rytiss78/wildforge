@@ -31,3 +31,5 @@ AGENTS.md modified before this batch. Entire mods/megabonk-wildforge tracked tre
 Cleanup retry after explicit user request on 2026-10-08 was also rejected before execution ('blocked by policy'); no files removed.
 
 Published test build: https://github.com/rytiss78/wildforge/releases/tag/test-2026-10-08 (public prerelease, source 919b5bc). ZIP and SHA256SUMS uploaded and verified; local archived binaries match tested build.
+
+2026-10-08 continuation: new priorities in PLAN: crowd lag and coop hero selection/Ready/Start. Damage popup pool/aggregation completed and four burst checks passed; build14-52-05 passed export/smoke. Soak comparison worsened (see PROGRESS); crowd performance NOT solved. Next: implement synchronized lobby and profile crowd stalls further.

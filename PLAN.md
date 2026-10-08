@@ -341,3 +341,8 @@ User-provided IceGun mismatch traced to generic elemental GLBs plus independentl
 - [ ] Follow-up: black-hole/poison visuals, stronger weapon audio, loot probability audit and damage-number aggregation/lifetime.
 
 - [x] Publish the tested Windows ZIP and checksums to GitHub: test-2026-10-08 prerelease (2026-10-08).
+
+## Latest user priorities — crowd performance and co-op lobby (2026-10-08)
+- [ ] Reduce lag with many enemies; profile rendered crowd combat, bound damage-feedback overhead, compare measurements and preserve combat rules.
+- [ ] Co-op lobby: choose a hero inside the lobby, synchronized per-player Ready state, host-only Start Game gated on readiness; hero changes clear readiness. Validate real host/client flow and keyboard/controller UI.
+- [ ] Export and verify a new Windows test build after each completed milestone.

@@ -125,6 +125,7 @@ var hit_shake=0.0
 var hit_stop=0.0
 var screen_flash=0.0
 var screen_flash_color=Color.WHITE
+const MAX_DAMAGE_NUMBERS=48
 var damage_numbers=[]
 var menu_repeat=0.0
 var coop: CoopSession
@@ -289,7 +290,7 @@ func select_hero(item: Dictionary):
 	player.add_child(avatar)
 
 func clear_entities():
-	pickup_merge_clock=0;enemy_step=0;crowd.clear()
+	pickup_merge_clock=0;enemy_step=0;crowd.clear();damage_numbers.clear()
 	melee_attacks.clear()
 	if is_instance_valid(avatar): avatar.finish_melee()
 	for id in sound.weapon_loops: sound.weapon_loop(id,false,player.position)
@@ -1111,12 +1112,18 @@ func hit_enemy(enemy: Dictionary, shot: Dictionary,cause: String="hit"):
 		hurt_enemy(next,damage*.6,"lightning")
 		origin = next.node.position
 
+func record_damage_number(enemy_id: int, damage: float, cause: String):
+	# Coalesce rapid hits on the same enemy without changing damage simulation.
+	for number in damage_numbers:
+		if number.enemy_id==enemy_id and number.cause==cause and number.life>1.0:
+			number.amount+=damage;number.value=maxi(1,roundi(number.amount));return
+	if damage_numbers.size()>=MAX_DAMAGE_NUMBERS: return
+	damage_numbers.append({"enemy_id":enemy_id,"amount":damage,"value":maxi(1,roundi(damage)),"screen_x":randf_range(.2,.8),"life":1.2,"maxLife":1.2,"cause":cause})
+
 func hurt_enemy(enemy: Dictionary, damage: float, cause: String,mechanic: String="",mechanic_origin: Vector3=Vector3.ZERO):
 	if enemy.dead or damage <= 0: return
 	if cause in ["hit","melee","coop","sonic","lightning","explosion","meteor","burrow","stomp"]: blood_hit(enemy)
-	# Spawn damage number (UI overlay) — skip zero-value ticks
-	if damage > 0:
-		damage_numbers.append({"value":maxi(1,roundi(damage)),"screen_x":randf(),"screen_y":0.0,"life":1.2,"maxLife":1.2,"cause":cause})
+	record_damage_number(enemy.net_id,damage,cause)
 	# Hit flash on enemy
 	if enemy.node.has_meta("rig"): enemy.node.set_meta("flash_timer",0.05)
 	# Status effect start sounds
@@ -1778,6 +1785,8 @@ func _process(delta: float):
 	if mode=="level_reveal":
 		level_reveal-=delta
 		if level_reveal<=0: mode="offer";hud.show_offers(offers,"level")
+	for dn in damage_numbers: dn.life-=delta
+	damage_numbers=damage_numbers.filter(func(dn):return dn.life>0)
 	if not camera_locked:
 		var anchor=player.position+Vector3.UP*1.2
 		var offset=Vector3(sin(yaw)*camera_distance,7.5+camera_distance*.25+pitch*4,cos(yaw)*camera_distance)
@@ -1791,11 +1800,6 @@ func _process(delta: float):
 		hit_shake=maxf(0,hit_shake-delta)
 		# Screen flash overlay
 		screen_flash=maxf(0,screen_flash-delta)
-		# Update damage numbers (UI overlay - rise from bottom)
-		for dn in damage_numbers:
-			dn.life-=delta;dn.screen_y+=delta*0.6
-		# Remove expired damage numbers
-		damage_numbers=damage_numbers.filter(func(dn):return dn.life>0)
 		if hit_shake>0: camera.position+=Vector3(sin(hit_shake*140),cos(hit_shake*110),0)*hit_shake*.32
 		camera.look_at(anchor-Vector3(sin(yaw)*2,0,cos(yaw)*2))
 	for effect in effects:
