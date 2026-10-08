@@ -3,7 +3,7 @@ class_name CoopSession
 
 # Transport-independent authoritative world. Important events are reliable;
 # poses/snapshots use unreliable ordered delivery. Never deserialize objects.
-const PROTOCOL="wildforge-0.8.2-direct-3"
+const PROTOCOL="wildforge-0.8.2-direct-4"
 const PORT=29736
 const DISCOVERY_PORT=29737
 var discovery: PacketPeerUDP
@@ -11,6 +11,8 @@ var search: PacketPeerUDP
 var discovered={}
 var discovery_clock=0.0
 var connection_clock=0.0
+var local_ready=false
+var lobby_roster=[]
 var welcomed=false
 var game
 var peer: ENetMultiplayerPeer
@@ -90,6 +92,7 @@ func host_lan():
 	peer.peer_connected.connect(func(id):
 		if game.run_active: peer.disconnect_peer(id)
 	)
+	publish_lobby()
 	peer.peer_disconnected.connect(remove_member);status="Party ready · %s · UDP %d. Friends join before you start." % [", ".join(local_addresses()),PORT]
 
 func join_lan(address: String):
@@ -105,6 +108,7 @@ func join_lan(address: String):
 	)
 
 func leave():
+	local_ready=false;lobby_roster.clear()
 	if peer!=null: peer.close();peer=null
 	if discovery!=null: discovery.close();discovery=null
 	for actor in avatars.values(): actor.queue_free()
@@ -123,6 +127,7 @@ func remove_member(id: int):
 	for key in turret_models.keys():
 		if key.begins_with(str(id)+":"): turret_models[key].queue_free();turret_models.erase(key)
 	if not hosting and id==owner_id: connection_lost()
+	elif hosting: publish_lobby()
 
 func send_to(id: int,message: Dictionary,reliable: bool=true):
 	var bytes=var_to_bytes(message)
@@ -132,6 +137,40 @@ func send_to(id: int,message: Dictionary,reliable: bool=true):
 
 func broadcast(message: Dictionary,reliable: bool=true):
 	for id in members: send_to(id,message,reliable)
+
+func hero_changed():
+	local_ready=false
+	publish_lobby_choice()
+
+func set_ready(value: bool):
+	if not active or game.run_active or (not hosting and not welcomed): return
+	local_ready=value
+	publish_lobby_choice()
+
+func publish_lobby_choice():
+	if not active or game.run_active: return
+	if hosting: publish_lobby()
+	elif welcomed: send_to(owner_id,{"type":"lobby_choice","hero":game.hero.id,"ready":local_ready})
+
+func publish_lobby():
+	if not hosting or game.run_active: return
+	lobby_roster=[{"id":local_id,"hero":game.hero.id,"name":game.hero.name,"ready":local_ready,"host":true}]
+	for id in members:
+		var member=members[id]
+		lobby_roster.append({"id":id,"hero":member.get("hero",""),"name":member.get("hero_name","Choosing hero…"),"ready":member.get("ready",false),"host":false})
+	broadcast({"type":"lobby_state","players":lobby_roster})
+
+func can_start() -> bool:
+	if not active or not hosting or game.run_active or not local_ready: return false
+	for member in members.values():
+		if not member.get("ready",false) or str(member.get("hero","")).is_empty(): return false
+	return true
+
+func start_party(shared_seed: int=-1) -> bool:
+	if not can_start(): return false
+	game.start_run(shared_seed)
+	if shared_seed>=0: run_started()
+	return game.run_active
 
 func run_started():
 	if not active or not hosting: return
@@ -219,15 +258,21 @@ func receive(sender: int,message):
 		if kind=="hello":
 			if game.run_active or message.get("protocol","")!=PROTOCOL or members.size()>=3: send_to(sender,{"type":"reject","reason":"Party is full, already playing, or on a different version."});return
 			members[sender]={"mode":"loading","last_seen":Time.get_ticks_msec()/1000.0};status="%d / 4 players. Ready to start." % (members.size()+1)
-			send_to(sender,{"type":"welcome"});return
+			send_to(sender,{"type":"welcome"});publish_lobby();return
 		if not members.has(sender): return
 		members[sender].last_seen=Time.get_ticks_msec()/1000.0
-		if kind=="pose":
+		if kind=="lobby_choice" and not game.run_active:
+			var choices=game.rules.data.heroes.filter(func(h):return h.id==str(message.get("hero","")))
+			if choices.is_empty(): return
+			members[sender].hero=choices[0].id;members[sender].hero_name=choices[0].name
+			members[sender].ready=message.get("ready",false)==true
+			publish_lobby()
+		elif kind=="pose":
 			var p=vector(message.get("position",[]))
 			if not p.is_finite() or maxf(absf(p.x),absf(p.z))>RealmWorld.EXTENT+10: return
 			for key in ["position","yaw","model","name","mode","weapons","hp","shield_hp","stats","gold","rescue_hold"]:
 				if message.has(key): members[sender][key]=message[key]
-			ensure_avatar(sender,members[sender])
+			if game.run_active: ensure_avatar(sender,members[sender])
 			if game.update.downed_ids.has(sender): members[sender].hp=0
 		elif kind=="shot":
 			var weapon=str(message.get("weapon",""))
@@ -283,7 +328,8 @@ func receive(sender: int,message):
 		if sender!=owner_id: return
 		last_snapshot=Time.get_ticks_msec()/1000.0
 		if kind=="reject": leave();status=str(message.reason);game.hud.tell(status,8)
-		elif kind=="welcome": welcomed=true;status="Joined. Waiting for the host to start."
+		elif kind=="welcome": welcomed=true;status="Joined. Choose your hero and mark Ready.";publish_lobby_choice()
+		elif kind=="lobby_state" and not game.run_active: lobby_roster=message.get("players",[])
 		elif kind=="start": game.start_run(int(message.seed));game.hud.close()
 		elif kind=="realm": game.enter_realm(int(message.realm));saw_realm=true
 		elif kind=="world": apply_world(message)

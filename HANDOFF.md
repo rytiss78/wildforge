@@ -33,3 +33,5 @@ Cleanup retry after explicit user request on 2026-10-08 was also rejected before
 Published test build: https://github.com/rytiss78/wildforge/releases/tag/test-2026-10-08 (public prerelease, source 919b5bc). ZIP and SHA256SUMS uploaded and verified; local archived binaries match tested build.
 
 2026-10-08 continuation: new priorities in PLAN: crowd lag and coop hero selection/Ready/Start. Damage popup pool/aggregation completed and four burst checks passed; build14-52-05 passed export/smoke. Soak comparison worsened (see PROGRESS); crowd performance NOT solved. Next: implement synchronized lobby and profile crowd stalls further.
+
+Latest2026-10-08: coop lobby implemented and tested (capture-ui14-54-43, coop14-55-01); build14-56-09 and test-build14-56-56 passed. Source changes in coop.gd/game.gd/hud.gd/ui_review.gd/agent-workflow.mjs are not yet committed. Crowd lag still unresolved; next task deterministic profiling. Combined doc-rewrite/commit command was rejected by automatic review.

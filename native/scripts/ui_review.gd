@@ -14,7 +14,15 @@ static func run(game):
 	game.set_physics_process(false)
 	var okay=await capture(game,"menu")
 	game.hud.coop_menu()
+	okay=game.hud.lobby_ready.disabled and game.hud.lobby_start.disabled and okay
+	game.coop.host_lan();game.hud.update_lobby_controls()
+	okay=not game.hud.lobby_ready.disabled and game.hud.lobby_start.disabled and okay
+	game.hud.lobby_ready.grab_focus();game.hud.controller_accept();game.hud.update_lobby_controls()
+	okay=game.coop.local_ready and not game.hud.lobby_start.disabled and okay
 	okay=await capture(game,"coop") and okay
+	game.select_hero(game.rules.data.heroes[2]);game.hud.update_lobby_controls()
+	okay=not game.coop.local_ready and game.hud.lobby_start.disabled and okay
+	game.coop.leave()
 	game.hud.start_menu()
 	var original_hero=game.hero
 	var hero_button=game.hud.menu_controls().filter(func(c):return c is Button and c.text=="Tank Potato")[0]

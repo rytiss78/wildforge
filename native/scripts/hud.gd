@@ -42,6 +42,9 @@ var health_bar: ProgressBar
 var hints_until=25.0
 var player_locator: Control
 var journey_overlay: Control
+var lobby_ready: Button
+var lobby_start: Button
+var lobby_roster_label: Label
 var damage_labels: Array[Label]=[]
 var damage_overlay: Control
 var flash_overlay: ColorRect
@@ -281,7 +284,7 @@ func update(delta: float):
 	level_plate.text="LEVEL %d  ·  NEW POWER!" % game.level
 	biome_label.text=RealmWorld.BIOMES[game.current_biome]
 	if is_instance_valid(party_label): party_label.text=game.coop.status
-	if game.mode=="coop" and is_instance_valid(party_list): update_party_list()
+	if game.mode=="coop" and is_instance_valid(party_list): update_party_list();update_lobby_controls()
 	var active_buffs=[]
 	for key in game.buffs:
 		active_buffs.append("%s  %ds" % [PotionBook.TYPES[key].name,ceil(game.buffs[key])])
@@ -506,24 +509,55 @@ func start_menu(focus_hero: bool=false):
 
 func coop_menu():
 	game.mode="coop"
-	var box=open("PLAY WITH FRIENDS","Up to 4 heroes · Shared enemies · Personal loot · Party pauses for choices")
-	party_label=label(game.coop.status,16);party_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;box.add_child(party_label)
-	var host=button("HOST PARTY",func():game.coop.host_lan());box.add_child(host)
-	box.add_child(button("COPY HOST ADDRESS",func():
+	var box=open("PLAY WITH FRIENDS","Choose a hero → Ready up → Host starts · Up to 4 players")
+	var columns=HBoxContainer.new();columns.add_theme_constant_override("separation",24);box.add_child(columns)
+	var heroes=VBoxContainer.new();heroes.custom_minimum_size.x=250;columns.add_child(heroes)
+	heroes.add_child(label("YOUR HERO",14))
+	var portrait=HeroPortrait.new();portrait.custom_minimum_size=Vector2(250,165);heroes.add_child(portrait)
+	portrait.setup(game.hero.model,game.hero.weapon,0,0)
+	var scroll=ScrollContainer.new();scroll.custom_minimum_size=Vector2(250,280);scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;heroes.add_child(scroll)
+	var choices=VBoxContainer.new();choices.size_flags_horizontal=Control.SIZE_EXPAND_FILL;scroll.add_child(choices)
+	var selected: Button
+	for hero in game.rules.data.heroes:
+		var pick=button(("✓ " if hero.id==game.hero.id else "")+hero.name,func():game.select_hero(hero);coop_menu())
+		pick.disabled=game.run_active;choices.add_child(pick)
+		if hero.id==game.hero.id: selected=pick
+	var connection=VBoxContainer.new();connection.size_flags_horizontal=Control.SIZE_EXPAND_FILL;connection.add_theme_constant_override("separation",8);columns.add_child(connection)
+	party_label=label(game.coop.status,14);party_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;connection.add_child(party_label)
+	var hosting_row=HBoxContainer.new();connection.add_child(hosting_row)
+	hosting_row.add_child(button("HOST PARTY",func():game.coop.host_lan()))
+	hosting_row.add_child(button("COPY ADDRESS",func():
 		var addresses=game.coop.local_addresses()
-		if not addresses.is_empty(): DisplayServer.clipboard_set(addresses[0]);game.hud.tell("Host address copied")
+		if not addresses.is_empty(): DisplayServer.clipboard_set(addresses[0]);tell("Host address copied")
 	))
-	var row=HBoxContainer.new();box.add_child(row)
-	var address=LineEdit.new();address.text=game.career.data.settings.get("coopAddress","");address.placeholder_text="Host IP / hostname / VPN address";address.custom_minimum_size=Vector2(360,32);row.add_child(address)
-	row.add_child(button("JOIN ADDRESS",func():game.coop.join_lan(address.text)))
+	var row=HBoxContainer.new();connection.add_child(row)
+	var address=LineEdit.new();address.text=game.career.data.settings.get("coopAddress","");address.placeholder_text="Host IP / hostname / VPN";address.custom_minimum_size=Vector2(300,32);row.add_child(address)
+	row.add_child(button("JOIN",func():game.coop.join_lan(address.text)))
 	address.text_submitted.connect(func(value):game.coop.join_lan(value))
-	box.add_child(label("SAME-NETWORK PARTIES",14));party_list=VBoxContainer.new();box.add_child(party_list);party_list_key=""
+	connection.add_child(label("NEARBY PARTIES",13));party_list=VBoxContainer.new();connection.add_child(party_list);party_list_key=""
 	game.coop.begin_discovery();update_party_list()
-	var help=label("Same Wi-Fi/LAN: join a party below. Remote friends: use the host's public IP with UDP 29736 forwarded, or a shared VPN address. Allow Wildforge through the firewall.",14)
+	connection.add_child(label("PARTY · HERO / STATUS",14))
+	lobby_roster_label=label("",16);lobby_roster_label.custom_minimum_size.y=98;connection.add_child(lobby_roster_label)
+	var actions=HBoxContainer.new();connection.add_child(actions)
+	lobby_ready=button("READY",func():game.coop.set_ready(not game.coop.local_ready));actions.add_child(lobby_ready)
+	lobby_start=button("START GAME",func():game.coop.start_party(),true);actions.add_child(lobby_start)
+	connection.add_child(button("Leave party",func():game.coop.leave();game.coop.status="Solo"))
+	var help=label("LAN: join a nearby party. Internet: use a VPN or forward UDP 29736 on the host. Hero changes clear your Ready status.",13)
 	help.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;box.add_child(help)
-	box.add_child(button("Leave party",func():game.coop.leave();game.coop.status="Solo"))
-	box.add_child(button("Back to hero selection",start_menu))
-	host.grab_focus()
+	box.add_child(button("Back",start_menu))
+	update_lobby_controls()
+	if selected!=null: selected.grab_focus();scroll.ensure_control_visible.call_deferred(selected)
+
+func update_lobby_controls():
+	if not is_instance_valid(lobby_ready): return
+	lobby_ready.disabled=not game.coop.active or game.run_active or (not game.coop.hosting and not game.coop.welcomed)
+	lobby_ready.text="READY ✓ · CANCEL" if game.coop.local_ready else "READY"
+	lobby_start.disabled=not game.coop.can_start()
+	lobby_start.text="START GAME" if game.coop.hosting else "HOST STARTS GAME"
+	var lines=[]
+	for member in game.coop.lobby_roster:
+		lines.append(("Host" if member.host else "Player")+" · "+str(member.name)+" · "+("READY" if member.ready else "Not ready"))
+	lobby_roster_label.text="Host or join a party to ready up." if lines.is_empty() else "\n".join(lines)
 
 func update_party_list():
 	var entries=[]

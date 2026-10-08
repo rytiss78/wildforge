@@ -284,6 +284,7 @@ func shape(mesh_value: Mesh, color: Color, parent: Node3D, position_value: Vecto
 
 func select_hero(item: Dictionary):
 	hero=item
+	if coop!=null: coop.hero_changed()
 	if is_instance_valid(avatar): avatar.queue_free()
 	avatar=world.model(hero.model,1.65)
 	avatar.rotation.y=PI
@@ -306,6 +307,7 @@ func clear_entities():
 	if is_instance_valid(gate): gate.queue_free()
 
 func start_run(shared_seed: int=-1):
+	if coop.active and coop.hosting and not run_active and not coop.can_start(): hud.tell("Every player must be Ready before starting.");return
 	if shared_seed<0 and coop.active and not coop.hosting: hud.tell("The party host starts the run.");return
 	record_run(false,true)
 	clear_entities()
@@ -2345,8 +2347,22 @@ func run_coop_test():
 			get_viewport().get_texture().get_image().save_png("user://standalone-coop-menu.png")
 		coop.join_lan("127.0.0.1")
 	var deadline=Time.get_ticks_msec()+14000
+	var lobby_blocked=not coop.can_start();var hero_reset=false;var lobby_synced=false;var ready_sent=false
 	while Time.get_ticks_msec()<deadline:
-		if network_test_role=="host" and not coop.members.is_empty(): start_run(91731);coop.run_started();break
+		if network_test_role=="client" and coop.welcomed and not ready_sent:
+			coop.set_ready(true)
+			select_hero(rules.data.heroes[2])
+			hero_reset=not coop.local_ready
+			coop.set_ready(true);ready_sent=true
+		if network_test_role=="client":
+			lobby_synced=lobby_synced or coop.lobby_roster.any(func(m):return m.id==coop.local_id and m.hero==hero.id and m.ready)
+		if network_test_role=="host" and not coop.members.is_empty():
+			coop.set_ready(true)
+			if coop.can_start():
+				lobby_synced=coop.members.values().any(func(m):return m.get("hero","")==rules.data.heroes[2].id and m.get("ready",false))
+				hero_reset=true
+				await get_tree().create_timer(.5).timeout
+				coop.start_party(91731);break
 		if network_test_role=="client" and run_active: break
 		await get_tree().create_timer(.1).timeout
 	if not run_active: print("COOP_TEST failure: connection/start");get_tree().quit(1);return
@@ -2405,8 +2421,8 @@ func run_coop_test():
 			await RenderingServer.frame_post_draw
 			get_viewport().get_texture().get_image().save_png("user://coop-"+network_test_role+".png")
 		await get_tree().create_timer(.1).timeout
-	var checks={"role":network_test_role,"standalone":not Engine.has_singleton("Steam"),"discovery":discovered_party if network_test_role=="client" else true,"connected":coop.active,"avatars":maximum_avatars,"members":coop.members.size(),"same_enemies":shared_enemies,"remote_hits":coop.remote_hits,"kills_received":coop.kills_received,"snapshots":coop.snapshots_received,"moved":moved,"party_pause":coop.saw_pause,"realm":realm,"realm_received":coop.saw_realm,"downed":saw_down,"rescued":saw_rescue,"ping":saw_ping,"merchant":saw_purchase,"supply":saw_supply,"hunt_started":hunt_seen,"hunt_reward":hunt_reward,"guardian_defeated":guardian_seen}
-	var passed=checks.hunt_started and checks.hunt_reward and checks.guardian_defeated and checks.downed and checks.rescued and checks.ping and checks.merchant and checks.supply and checks.standalone and checks.discovery and checks.connected and checks.avatars>0 and shared_enemies and realm==1 and (coop.remote_hits>0 if network_test_role=="host" else coop.snapshots_received>20 and coop.saw_pause and coop.saw_realm and moved)
+	var checks={"lobby_blocked":lobby_blocked,"hero_change_clears_ready":hero_reset,"lobby_hero_ready_synced":lobby_synced,"role":network_test_role,"standalone":not Engine.has_singleton("Steam"),"discovery":discovered_party if network_test_role=="client" else true,"connected":coop.active,"avatars":maximum_avatars,"members":coop.members.size(),"same_enemies":shared_enemies,"remote_hits":coop.remote_hits,"kills_received":coop.kills_received,"snapshots":coop.snapshots_received,"moved":moved,"party_pause":coop.saw_pause,"realm":realm,"realm_received":coop.saw_realm,"downed":saw_down,"rescued":saw_rescue,"ping":saw_ping,"merchant":saw_purchase,"supply":saw_supply,"hunt_started":hunt_seen,"hunt_reward":hunt_reward,"guardian_defeated":guardian_seen}
+	var passed=lobby_blocked and hero_reset and lobby_synced and checks.hunt_started and checks.hunt_reward and checks.guardian_defeated and checks.downed and checks.rescued and checks.ping and checks.merchant and checks.supply and checks.standalone and checks.discovery and checks.connected and checks.avatars>0 and shared_enemies and realm==1 and (coop.remote_hits>0 if network_test_role=="host" else coop.snapshots_received>20 and coop.saw_pause and coop.saw_realm and moved)
 	print("COOP_TEST "+JSON.stringify(checks));var report=FileAccess.open("user://coop-"+network_test_role+"-results.json",FileAccess.WRITE);report.store_string(JSON.stringify(checks,"  "));report.close();coop.leave()
 	mode="test_finished";clear_entities();sound.active=false
 	for channel in sound.get_children():

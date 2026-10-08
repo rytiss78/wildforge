@@ -346,3 +346,5 @@ User-provided IceGun mismatch traced to generic elemental GLBs plus independentl
 - [ ] Reduce lag with many enemies; profile rendered crowd combat, bound damage-feedback overhead, compare measurements and preserve combat rules.
 - [ ] Co-op lobby: choose a hero inside the lobby, synchronized per-player Ready state, host-only Start Game gated on readiness; hero changes clear readiness. Validate real host/client flow and keyboard/controller UI.
 - [ ] Export and verify a new Windows test build after each completed milestone.
+
+- [x] Co-op lobby hero selection, synchronized Ready/cancel and host Start Game implemented and tested on2026-10-08. Earlier unchecked entry is superseded. Crowd lag remains open after bounded damage-popup allocation fix.
