@@ -13,6 +13,7 @@ var saw_parts=[]
 var rank_parts=Node3D.new()
 var shown_rank=0
 var variant_base: Node3D
+var recoil=0.05
 
 func block(parent: Node3D,color: Color,pos: Vector3,dimensions: Vector3):
 	var mesh=BoxMesh.new();mesh.size=dimensions

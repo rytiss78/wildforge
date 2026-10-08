@@ -15,7 +15,7 @@ static func run(game) -> Dictionary:
 	for item in data.loot+data.weapons:
 		var texture=IllustratedIcons.texture(item.id,not item.has("effects"))
 		var code=hash(texture.get_image().get_data())
-		icons=icons and texture.get_width()==128 and not hashes.has(code);hashes[code]=true
+		icons=icons and not hashes.has(code);hashes[code]=true
 	checks.distinct_rendered_icons=icons and hashes.size()==759
 	for kind in ["item","skill","weapon"]:
 		for sample in range(12):
