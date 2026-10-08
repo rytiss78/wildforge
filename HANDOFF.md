@@ -29,3 +29,5 @@ Preexisting AGENTS.md changes and deleted mods/megabonk-wildforge files belong t
 Previous public release test-2026-10-08-lobby at3e4a9e3. User authorized test-build publication and source push.
 
 Final build15-28-11 and exported rendered test-build15-30-04 passed; EXE .build-staging/agent-workflow/2026-10-08T15-28-11-141Z-build/Wildforge.exe. Final EXE combat screenshot inspected;4damage-feedback booleans pass.
+
+Delivery: source committed/pushed f98214b. Stable G:/game/build/Wildforge.exe and dist/Wildforge-test-2026-10-08-combat-Windows.zip match tested export; ZIP CRC and archived binary hashes verified. Creating/uploading GitHub combat release was rejected before execution by automatic approval review ('blocked by policy'); no new binary release published. Previous lobby release remains latest published test. Do not claim combat release exists.
