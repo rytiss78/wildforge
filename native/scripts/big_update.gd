@@ -212,7 +212,8 @@ func show_ping(message: Dictionary):
 	caption(marker,str(message.get("label","DESTINATION")),3)
 	var ring=TorusMesh.new();ring.inner_radius=.7;ring.outer_radius=1.0
 	game.shape(ring,Color("edbf56"),marker,Vector3(0,.15,0),.3)
-	pings.append({"position":p,"node":marker,"life":8.0})
+	pings.append({"position":p,"node":marker,"life":8.0,"label":str(message.get("label","PING"))})
+	game.sound.ui_effect("party_ping")
 	if pings.size()>8: pings[0].node.queue_free();pings.pop_front()
 
 func rescue_target(p: Vector3,helper: int) -> int:
@@ -309,6 +310,7 @@ func receive(sender: int,message: Dictionary) -> bool:
 		if type=="big_memory": note(str(message.key));return true
 		if int(message.get("realm",-1))!=game.realm: return true
 		if type=="big_damage": run_damage+=float(message.get("amount",0));game.credit_damage(str(message.get("source","effect:coop")),float(message.get("amount",0)))
+		elif type=="big_boss_voice": game.sound.boss_curse(CoopSession.vector(message.get("position",[])),int(message.get("index",0)))
 		elif type=="big_ping": show_ping(message)
 		elif type=="big_revive": revived()
 		elif type=="big_rescued": downed_ids.erase(int(message.id))

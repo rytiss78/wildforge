@@ -146,7 +146,7 @@ func _ready():
 	get_viewport().use_occlusion_culling=true
 	player=CharacterBody3D.new();camera=Camera3D.new();coop=CoopSession.new()
 	profile_crowd=OS.get_cmdline_user_args().has("--crowd-review")
-	smoke = OS.get_cmdline_user_args().has("--controls-review") or OS.get_cmdline_user_args().has("--surface-review") or profile_crowd or OS.get_cmdline_user_args().has("--progression-review") or OS.get_cmdline_user_args().has("--field-review") or OS.get_cmdline_user_args().has("--smoke") or OS.get_cmdline_user_args().has("--soak") or OS.get_cmdline_user_args().has("--art") or OS.get_cmdline_user_args().has("--style-roundtrip")
+	smoke = OS.get_cmdline_user_args().has("--feedback-review") or OS.get_cmdline_user_args().has("--controls-review") or OS.get_cmdline_user_args().has("--surface-review") or profile_crowd or OS.get_cmdline_user_args().has("--progression-review") or OS.get_cmdline_user_args().has("--field-review") or OS.get_cmdline_user_args().has("--smoke") or OS.get_cmdline_user_args().has("--soak") or OS.get_cmdline_user_args().has("--art") or OS.get_cmdline_user_args().has("--style-roundtrip")
 	smoke=smoke or OS.get_cmdline_user_args().has("--update-check") or OS.get_cmdline_user_args().has("--big-update-check")
 	smoke=smoke or OS.get_cmdline_user_args().has("--presentation-check")
 	smoke=smoke or OS.get_cmdline_user_args().has("--melee-check")
@@ -225,6 +225,7 @@ func _ready():
 	elif OS.get_cmdline_user_args().has("--update-check"): preload("res://scripts/update_checks.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--style-roundtrip"): call_deferred("run_style_roundtrip")
 	elif network_test_role!="": call_deferred("run_coop_test")
+	elif OS.get_cmdline_user_args().has("--feedback-review"): preload("res://scripts/feedback_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--controls-review"): preload("res://scripts/controls_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--surface-review"): preload("res://scripts/surface_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--progression-review"): preload("res://scripts/progression_review.gd").run.call_deferred(self)
@@ -1140,11 +1141,14 @@ func hurt_enemy(enemy: Dictionary, damage: float, cause: String,mechanic: String
 	# Hit flash on enemy
 	if enemy.node.has_meta("rig"): enemy.node.set_meta("flash_timer",0.05)
 	# Status effect start sounds
-	if cause=="poison" and enemy.poison<=0: enemy.poison=4;sound.effect("poison",enemy.node.position)
+	if cause=="poison" and enemy.poison<=0: enemy.poison=4 # Cloud/DOT hits are silent; the firing sound marks the attack.
 	elif cause=="fire" and enemy.fire<=0: enemy.fire=3;sound.effect("fire",enemy.node.position)
 	elif cause=="ice" and enemy.freeze<=0: enemy.freeze=3;sound.effect("freeze",enemy.node.position)
 	if coop.active and not coop.hosting:
 		coop.hit(enemy,damage,mechanic if not mechanic.is_empty() else cause,mechanic_origin);enemy.node.get_meta("rig").hurt=.18;return
+	if enemy.boss and cause not in ["poison","fire"]:
+		var curse=sound.boss_curse(enemy.node.position)
+		if curse>=0 and coop.active: coop.broadcast({"type":"big_boss_voice","realm":realm,"index":curse,"position":CoopSession.array(enemy.node.position)})
 	var credited=minf(enemy.hp,damage)
 	var owner=int(enemy.get("hit_owner",enemy.get("status_owner",coop.local_id) if cause in ["poison","fire"] else coop.local_id))
 	update.party_damage+=credited
@@ -1293,14 +1297,14 @@ func merge_xp_orbs():
 	for pickup in pickups:
 		if not pickup.settled or pickup.attracted or pickup.age<0: continue
 		var p: Vector3=pickup.node.position
-		var cell=Vector3i(floori(p.x/2),floori(p.y/2),floori(p.z/2))
+		var cell=Vector3i(floori(p.x/6),floori(p.y/6),floori(p.z/6))
 		var survivor={}
 		for x in range(-1,2):
 			for y in range(-1,2):
 				for z in range(-1,2):
 					for other in buckets.get(cell+Vector3i(x,y,z),[]):
-						if other.kind!=pickup.kind or absf(other.base_y-pickup.base_y)>.25: continue
-						if other.node.position.distance_to(p)>1.5: continue
+						if other.kind!=pickup.kind or absf(other.base_y-pickup.base_y)>1.25: continue
+						if other.node.position.distance_to(p)>6.0: continue
 						var query=PhysicsRayQueryParameters3D.create(p+Vector3.UP*.3,other.node.position+Vector3.UP*.3,1)
 						if not get_world_3d().direct_space_state.intersect_ray(query).is_empty(): continue
 						survivor=other;break

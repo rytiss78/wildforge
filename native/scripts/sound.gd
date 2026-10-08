@@ -23,6 +23,9 @@ var sfx_pool=[]
 var sfx_index=0
 var pending_biome=""
 var weapon_loops={}
+var boss_voice=AudioStreamPlayer3D.new()
+var boss_voice_last=-100.0
+var boss_voice_count=0
 var hurt_voice=AudioStreamPlayer3D.new()
 var hurt_source: Node3D
 var last_hurt=-100.0
@@ -37,6 +40,7 @@ func setup(options: Dictionary):
 		weapon_samples[id]=load("res://assets/audio/weapons/"+id+".wav")
 	for id in ["saw","flame","fire-turret"]:
 		weapon_samples[id+"-loop"]=load("res://assets/audio/weapons/"+id+"-loop.wav")
+	add_child(boss_voice);boss_voice.unit_size=12;boss_voice.max_distance=65;boss_voice.max_db=0
 	add_child(hurt_voice)
 	hurt_voice.unit_size=8;hurt_voice.max_distance=45;hurt_voice.max_db=0
 	add_child(chest_voice)
@@ -83,7 +87,7 @@ func start(seed_value: int):
 	phrase = 0
 	clock = 0
 	active = true
-	last_hurt=-100;hurt_voice.stop();hurt_source=null;pending_biome=""
+	boss_voice_last=-100;boss_voice.stop();last_hurt=-100;hurt_voice.stop();hurt_source=null;pending_biome=""
 	theme_realm=-1;atmosphere.stop()
 	play_phrase()
 
@@ -112,6 +116,7 @@ func tick(delta: float, playing: bool, has_boss: bool):
 	voice.global_position=get_parent().player.global_position+Vector3.UP*32
 	if hurt_voice.playing and is_instance_valid(hurt_source): hurt_voice.global_position=hurt_source.global_position+Vector3.UP
 	hurt_voice.stream_paused=not playing
+	boss_voice.stream_paused=not playing
 	for channel in weapon_loops.values(): channel.stream_paused=not playing
 	if playing and not voice.playing and not pending_biome.is_empty():
 		var id=pending_biome;pending_biome="";say(id,0)
@@ -207,7 +212,7 @@ func ui_effect(id: String):
 	if float(settings.sfx)<=0: return
 	var key="ui_"+id
 	if not cache.has(key):
-		var frequencies={"fire":220.0,"poison":196.0,"ice":880.0,"engineering":330.0,"armour":440.0,"coins":1046.5,"garden":587.3,"healing":659.3,"lightning":784.0,"magic":622.3,"movement":740.0,"damage":293.7,"reroll":392.0,"card":523.3,"reel_tick":1350.0,"reel_lock":783.99,"chest_latch":135.0,"sneeze":90.0}
+		var frequencies={"fire":220.0,"poison":196.0,"ice":880.0,"engineering":330.0,"armour":440.0,"coins":1046.5,"garden":587.3,"healing":659.3,"lightning":784.0,"magic":622.3,"movement":740.0,"damage":293.7,"reroll":392.0,"card":523.3,"party_ping":1174.66,"reel_tick":1350.0,"reel_lock":783.99,"chest_latch":135.0,"sneeze":90.0}
 		var frequency=float(frequencies.get(id,523.3));var duration=.055 if id=="reel_tick" else .12 if id=="card" else .32
 		var audio=AudioStreamWAV.new();audio.mix_rate=22050;audio.format=AudioStreamWAV.FORMAT_16_BITS
 		var bytes=PackedByteArray();bytes.resize(int(duration*22050)*2)
@@ -240,3 +245,13 @@ func hero_quip(id: String,context: String,source: Node3D):
 	hurt_source=source;hurt_voice.global_position=source.global_position+Vector3.UP
 	hurt_voice.stream=cache[path];hurt_voice.pitch_scale=1.0
 	hurt_voice.volume_db=linear_to_db(maxf(.0001,float(settings.voice)));hurt_voice.play()
+
+func boss_curse(position: Vector3,index: int=-1) -> int:
+	var now=Time.get_ticks_msec()/1000.0
+	if now-boss_voice_last<7.0: return -1
+	boss_voice_last=now;boss_voice_count+=1
+	var selected=rng.randi_range(0,3) if index<0 else clampi(index,0,3)
+	if float(settings.voice)>0:
+		boss_voice.global_position=position;boss_voice.stream=load("res://assets/voices/boss_lt_%d.wav" % selected)
+		boss_voice.volume_db=linear_to_db(maxf(.0001,float(settings.voice)));boss_voice.pitch_scale=.88;boss_voice.play()
+	return selected

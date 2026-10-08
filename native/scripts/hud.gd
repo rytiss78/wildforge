@@ -48,6 +48,8 @@ var lobby_roster_label: Label
 var damage_labels: Array[Label]=[]
 var damage_overlay: Control
 var flash_overlay: ColorRect
+var skill_strip=HBoxContainer.new()
+var skill_strip_key=""
 var binding_action=""
 var binding_device=""
 var binding_status: Label
@@ -143,6 +145,7 @@ func button(text: String, action: Callable, accent: bool = false, radius_key: St
 
 func setup(owner_game):
 	game = owner_game
+	skill_strip.position=Vector2(730,755);skill_strip.add_theme_constant_override("separation",3);root.add_child(skill_strip)
 	player_locator=preload("res://scripts/player_locator.gd").new();player_locator.game=game;player_locator.mouse_filter=Control.MOUSE_FILTER_IGNORE;root.add_child(player_locator)
 	buff_icons=HBoxContainer.new();buff_icons.position=Vector2(750,685);root.add_child(buff_icons)
 	buff_label=label("",14);buff_label.position=Vector2(760,702);root.add_child(buff_label)
@@ -283,6 +286,7 @@ func level_flash():
 
 func update(delta: float):
 	player_locator.queue_redraw()
+	update_skill_strip()
 	journey_overlay.queue_redraw()
 	for widget in root.get_children():
 		if widget is CanvasItem and widget!=modal and widget!=blast: widget.visible=not modal.visible
@@ -760,26 +764,34 @@ func stat_table_row(rows: VBoxContainer, values: Array, heading: bool=false):
 		cell.custom_minimum_size.x=210 if i==0 else 105
 		row.add_child(cell)
 
-func build_menu(return_to_pause: bool=false):
+func build_menu(return_to_pause: bool=false,detailed: bool=false):
 	game.mode="build"
-	var box=open("HERO STATS & EQUIPMENT","Live values · Base + Hero + Gear/run + Buffs + Active augments = Total")
+	var box=open("YOUR HERO","Current combat stats and equipment" if not detailed else "Base + Hero + Gear/run + Buffs + Augments = Total")
 	var rows=report_scroll(box)
 	rows.add_child(label("%s · HP %d / %d · Shield %d" % [game.hero.name,game.hp,game.stats.maxHp,game.shield_hp],20))
-	stat_table_row(rows,["STAT","BASE","HERO","GEAR/RUN","BUFFS","AUGMENTS","TOTAL"],true)
-	for entry in RunReport.stat_rows(game):
-		stat_table_row(rows,[entry.name,snappedf(entry.base,.01),snappedf(entry.hero,.01),snappedf(entry.gear,.01),snappedf(entry.buff,.01),snappedf(entry.augment,.01),snappedf(entry.total,.01)])
-	rows.add_child(label("WEAPON SLOTS · base power before conditional, critical and target bonuses",18))
+	if detailed:
+		stat_table_row(rows,["STAT","BASE","HERO","GEAR/RUN","BUFFS","AUGMENTS","TOTAL"],true)
+		for entry in RunReport.stat_rows(game): stat_table_row(rows,[entry.name,snappedf(entry.base,.01),snappedf(entry.hero,.01),snappedf(entry.gear,.01),snappedf(entry.buff,.01),snappedf(entry.augment,.01),snappedf(entry.total,.01)])
+	else:
+		var grid=GridContainer.new();grid.columns=3;grid.add_theme_constant_override("h_separation",28);rows.add_child(grid)
+		for entry in RunReport.stat_rows(game):
+			if entry.key in ["damage","rate","speed","armor","regen","airJumps"]:
+				var stat_label=label({"rate":"Attack rate","speed":"Move speed","regen":"Regeneration"}.get(entry.key,entry.name)+"   "+str(snappedf(entry.total,.01)),18);stat_label.custom_minimum_size.x=275;grid.add_child(stat_label)
+	box.add_child(button("SHOW ALL STAT DETAILS" if not detailed else "SIMPLE VIEW",func():build_menu(return_to_pause,not detailed)))
+	rows.add_child(label("WEAPONS",18))
 	for i in range(game.equipped.size()):
 		var weapon=game.equipped[i]
 		var kind=ContentExpansion.kind(weapon.id)
 		var power=game.stat("damage")*weapon.damage*weapon.power*float(game.stats.get(kind+"Power",1))*(game.stat("turretDamage") if weapon.turret else 1.)
 		var rate=weapon.rate*game.stat("turretRate" if weapon.turret else "rate")
 		var reach=weapon.range*game.stat("range")/18.*(game.stat("turretRange") if weapon.turret else 1.)
-		rows.add_child(label("Slot %d · %s · Rank %d · Power %.1f · Rate %.2f/s · Reach %.1fm" % [i+1,weapon.name,weapon.rank,power,rate,reach],16))
-		var detail=label(WeaponDetails.describe(weapon.id),14);detail.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;rows.add_child(detail)
+		icon_text_row(rows,weapon.id,true,"%s · Rank %d" % [weapon.name,weapon.rank])
+		if detailed: rows.add_child(label("Power %.1f · Rate %.2f/s · Reach %.1fm" % [power,rate,reach],16))
+		if detailed:
+			var detail=label(WeaponDetails.describe(weapon.id),14);detail.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;rows.add_child(detail)
 	rows.add_child(label("OWNED ITEMS & SKILLS",18))
 	for item in game.owned:
-		var text=label(item.name+" · "+game.rules.describe(item.effects[0]),15);text.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;rows.add_child(text)
+		icon_text_row(rows,icon_key(item),false,item.name+(" · "+game.rules.describe(item.effects[0]) if detailed else ""))
 	var back=button("BACK",func():pause_menu(game.run_recorded) if return_to_pause else close(),true);box.add_child(back);back.grab_focus()
 
 func run_report_menu():
@@ -789,7 +801,18 @@ func run_report_menu():
 	if not score.is_empty(): summary+=" · Score %d · Local rank #%d" % [score[0].score,game.career.data.scores.find(score[0])+1]
 	var box=open("RUN REPORT",summary);var rows=report_scroll(box)
 	rows.add_child(label("YOUR DAMAGE BY WEAPON / EFFECT",18))
-	for entry in RunReport.ranked_damage(game): rows.add_child(label("%s · %d damage" % [entry.name,entry.amount],17))
+	for entry in RunReport.ranked_damage(game):
+		var weapon=game.rules.data.weapons.any(func(w):return w.id==entry.source)
+		var key=str(entry.source).trim_prefix("effect:")
+		key={"fire":"burn","stomp":"slamPower","melee":"damage","hit":"damage"}.get(key,key)
+		if not weapon:
+			var matching=game.rules.data.loot.filter(func(i):return i.kind=="skill" and i.effects[0].key==key)
+			if not matching.is_empty(): key=matching[0].id
+		icon_text_row(rows,key,weapon,"%s · %d damage" % [entry.name,entry.amount])
+	rows.add_child(label("CHOSEN SKILLS",18))
+	for item in game.owned:
+		if item.kind=="skill": icon_text_row(rows,icon_key(item),false,item.name)
+
 	if game.damage_sources.is_empty(): rows.add_child(label("No damage recorded yet.",16))
 	rows.add_child(label("ENEMY TYPES DEFEATED · party kills in co-op",18))
 	for key in game.kill_types: rows.add_child(label("%s · %d" % [key,game.kill_types[key]],16))
@@ -943,3 +966,29 @@ func capture_binding(event: InputEvent) -> bool:
 		var result=ControlBindings.bind(game.career.data.settings,binding_action,binding_device,value)
 		game.career.dirty=true;game.career.save();hint_device="";bindings_menu(result,key)
 	return true
+
+func icon_text_row(rows: VBoxContainer,key: String,weapon: bool,text: String):
+	var row=HBoxContainer.new();rows.add_child(row)
+	var icon=PowerIcon.new();icon.key=key;icon.weapon_icon=weapon;icon.custom_minimum_size=Vector2(38,38);row.add_child(icon)
+	var title=label(text,17);title.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;title.size_flags_horizontal=Control.SIZE_EXPAND_FILL;row.add_child(title)
+
+func update_skill_strip():
+	skill_strip.visible=not modal.visible and game.run_active
+	var skills={}
+	for item in game.owned:
+		if item.kind=="skill":
+			if not skills.has(item.id): skills[item.id]={"item":item,"count":0}
+			skills[item.id].count+=1
+	var signature=str(skills.keys())+str(skills.values().map(func(v):return v.count))
+	if signature==skill_strip_key: return
+	skill_strip_key=signature
+	for child in skill_strip.get_children(): skill_strip.remove_child(child);child.queue_free()
+	var index=0
+	for entry in skills.values():
+		if index>=18: break
+		var tile=Control.new();tile.custom_minimum_size=Vector2(30,34);tile.tooltip_text=entry.item.name+" ×"+str(entry.count);skill_strip.add_child(tile)
+		var icon=PowerIcon.new();icon.key=icon_key(entry.item);icon.size=Vector2(30,30);tile.add_child(icon)
+		if entry.count>1:
+			var count_label=label(str(entry.count),12);count_label.position=Vector2(20,20);tile.add_child(count_label)
+		index+=1
+	if skills.size()>18: skill_strip.add_child(label("+"+str(skills.size()-18),14))

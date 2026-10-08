@@ -67,6 +67,16 @@ static func run(game: Node3D):
 	game.merge_xp_orbs()
 	checks.merge_conservation=game.pickups.size()==3 and is_equal_approx(game.pickups.filter(func(p):return p.kind=="xp").reduce(func(v,p):return v+p.value,0),16) and game.pickups.filter(func(p):return p.kind=="gold")[0].value==9
 	checks.merge_units=game.pickups.filter(func(p):return p.kind=="gold")[0].units==2
+	game.spawn_pickup(Vector3(12,.3,0),"gold",7)
+	var distant=game.pickups[-1];distant.node.position=Vector3(12,.3,0);distant.settled=true;distant.base_y=0
+	game.merge_xp_orbs()
+	checks.distant_coin_merge=game.pickups.filter(func(p):return p.kind=="gold").size()==1 and game.pickups.filter(func(p):return p.kind=="gold")[0].value==16 and game.pickups.filter(func(p):return p.kind=="gold")[0].units==3
+	game.spawn_pickup(Vector3(12,.3,0),"xp",7)
+	distant=game.pickups[-1];distant.node.position=Vector3(12,.3,0);distant.settled=true;distant.base_y=0
+	game.merge_xp_orbs()
+	checks.distant_xp_merge=game.pickups.filter(func(p):return p.kind=="xp").size()==2 and game.pickups.filter(func(p):return p.kind=="xp").reduce(func(v,p):return v+p.value,0)==23
+
+
 	game.clear_entities();game.update.realm_started()
 	game.gold=500;game.mode="merchant";var gold=game.gold
 	game.update.purchase(1);var owned=game.owned.size()

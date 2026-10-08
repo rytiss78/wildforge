@@ -381,3 +381,17 @@ Latest grouped build: [progression/Eclipse/card-art test](https://github.com/ryt
 - [x]12controls checks (including2captures),13JS tests/import,55integration assertions, host/client co-op. Rendered settings/binding screens inspected.
 - [ ] Physical controller playtest and wider accessibility (UI scaling, color/contrast options).
 - Combined local export includes climbing and controls. Public progression release remains unchanged to keep uploads less frequent.
+
+## Player feedback batch — 2026-10-08
+- [x] Merge XP orbs and coins from farther away, preserving total value and coin-heal units; reduce ground clutter without changing pickup reach.
+- [x] Stop poison-cloud status sound spam; retain weapon firing feedback.
+- [x] Replace simple skill icons with detailed3D-rendered representations of their effects/objects.
+- [x] Bosses curse in Lithuanian when hit, with throttled reactions rather than every damage tick.
+- [x] Show weapon/skill icons beside names in the run report.
+- [x] Simplify Hero Stats & Equipment; put detailed breakdowns behind an optional view.
+- [x] Show chosen skills as compact icons at the bottom during play.
+- [x] Co-op ping sound and edge indicator for off-camera pings.
+Acceptance: focused gameplay assertions, rendered before/after UI/art inspection and co-op tests. Group exports/uploads after multiple fixes.
+
+- [ ] Art follow-up: first3D pass covers344skill cards; several families still reuse base geometry. Make conditional augments and remaining offense effects more individually recognizable; retain rendered comparison checks.
+- [ ] Audio follow-up: human listening review of synthesized Lithuanian pronunciation/monster timbre and final combat mix.

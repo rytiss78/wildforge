@@ -1,0 +1,33 @@
+{
+  "engine": "eSpeak NG Lithuanian, local synthetic monster voice; no voice cloning",
+  "lines": [
+    {
+      "id": "boss_lt_0",
+      "text": "Po velnių!",
+      "language": "lt",
+      "duration": 1.0229931972789115,
+      "sha256": "4ec88695b0bd09b28dbbd4eb2b1cbf47643b681ba5d7723c5be49e2b6384dd48"
+    },
+    {
+      "id": "boss_lt_1",
+      "text": "Kad tave perkūnas!",
+      "language": "lt",
+      "duration": 1.5885260770975056,
+      "sha256": "b0e3d9062c4b971093631511cb18ddf11cbad15b5022ade8e35eae48c0acfac8"
+    },
+    {
+      "id": "boss_lt_2",
+      "text": "Šūdas! Dar atsiimsi!",
+      "language": "lt",
+      "duration": 2.03718820861678,
+      "sha256": "6c2185a570a5d2b75504a89c6560e13cb0db9d59f5900d0f7390aba44e290d3b"
+    },
+    {
+      "id": "boss_lt_3",
+      "text": "Eik tu velniop!",
+      "language": "lt",
+      "duration": 1.2131519274376417,
+      "sha256": "b5d563159a843e0ded8ca5662e5e0e0f7e2bcafe46deca45fd04a339855c7c2a"
+    }
+  ]
+}

@@ -36,6 +36,10 @@ const POWERS = {
 }
 
 static func texture(key: String, weapon: bool=false) -> Texture2D:
+	var skill_art="res://assets/illustrated/skill-icons/"+key+".png"
+	if not weapon and ResourceLoader.exists(skill_art):
+		if not textures.has(skill_art): textures[skill_art]=load(skill_art)
+		return textures[skill_art]
 	# Weapon images are rendered from the very same WeaponModel used by ActorRig.
 	var matching="res://assets/illustrated/weapon-icons/"+key+".png"
 	if weapon and ResourceLoader.exists(matching):
