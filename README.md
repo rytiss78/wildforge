@@ -54,9 +54,11 @@ For Windows packaging, place the console editor at `tools/godot/Godot_v4.7.2-sta
 ```powershell
 node scripts/native.mjs
 ./scripts/package-native.ps1
-./scripts/package-release.ps1
+./scripts/package-release.ps1 -BuildNumber 2
 ./scripts/test-coop.ps1 -Packaged -RenderedClient
 ```
+
+Published downloads use sequential build numbers: `Wildforge 0.8.2 — Build 1`, tag `build-1`, and `Wildforge-0.8.2-Build-1-Windows.zip`. Increment the build number for each new published build; do not use test labels or GitHub's prerelease flag. Packaging includes `build-info.json` and a build-specific checksum. Build 1 is published; 2 is the next number. When packaging an already verified staging directory, pass `-BuildDirectory` and its exact `-SourceCommit`.
 
 WASD / left stick moves; mouse / right stick looks; Space / A jumps; Shift / RT dashes; Ctrl / B slams; E / X interacts; B / Y opens your build; Escape / Menu pauses. Weapons attack automatically. Florist plants while moving.
 

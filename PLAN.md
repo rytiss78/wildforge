@@ -412,3 +412,5 @@ Acceptance: real host/client checks, rendered ownership/flowers evidence, terrai
 - [x] Publish requested co-op feedback test download from tested17-35-38 export (source1a96f9b); ZIP/checksum verified on GitHub. Broader five-item fixes remain open above.
 
 - [x] Number GitHub release/tag/download: v0.8.2-test.1. Continue numbered versions for future releases.
+
+- [x] Superseding release naming rule: sequential Build N everywhere; normal GitHub releases, no test/pre-release labels. Current Build 1, next Build 2. Old GitHub releases/tags cleaned. Package script requires positive build number, refuses existing archive overwrite, and embeds build-info.json.
