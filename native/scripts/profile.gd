@@ -61,7 +61,7 @@ func save():
 
 func score(run: Dictionary):
 	if data.scores.any(func(s): return s.id == run.id): return
-	run.score = int(run.kills * 20 + run.seconds * 2 + run.level * 100 + run.bosses * 750 + run.chests * 150 + (10000 if run.win else 0))
+	run.score = int(run.kills * 20 + int(run.get("gold",0)) + run.seconds * 2 + run.level * 100 + run.bosses * 750 + run.chests * 150 + (10000 if run.win else 0))
 	run.date = Time.get_datetime_string_from_system()
 	run.player = data.settings.name
 	data.scores.append(run)

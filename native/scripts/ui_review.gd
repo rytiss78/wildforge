@@ -38,6 +38,7 @@ static func run(game):
 	game.camera.look_at(Vector3(0,0,-5));game.gold=75;game.hp=game.stats.maxHp*.7
 	game.hud.update(0)
 	okay=await capture(game,"hud") and okay
+	game.hud.build_menu();okay=await capture(game,"build") and okay;game.hud.close()
 	for kind in ["speed","xp","stone","fire"]: game.activate_consumable(kind)
 	game.hud.update(0)
 	okay=await capture(game,"potions") and okay

@@ -579,6 +579,8 @@ func pause_menu(ended: bool = false, win: bool = false):
 	var box = open("YOU WON" if win else "TRY AGAIN" if ended else "PAUSED", "%s · %d coins · %d enemies · ★ %d" % [game.hero.name,game.gold,game.kills,game.level])
 	if ended: box.add_child(label(game.update.recap(),15))
 	if not ended: box.add_child(button("▶  CONTINUE",close,true))
+	box.add_child(button("HERO STATS & EQUIPMENT",func():build_menu(true)))
+	box.add_child(button("RUN REPORT",run_report_menu))
 	box.add_child(button("↻  NEW RUN",game.start_run,ended))
 	box.add_child(button("★  ACHIEVEMENTS",func(): career_menu(false)))
 	box.add_child(button("♛  LOCAL SCORES",func(): career_menu(true)))
@@ -733,25 +735,56 @@ func replace_menu(item: Dictionary):
 	box.add_child(button("←  CHOOSE ANOTHER",func(): game.mode="offer"; show_offers(game.offers,game.offer_source)))
 	box.get_child(2).grab_focus()
 
-func build_menu():
-	game.mode = "build"
-	var box = open("⚔  YOUR BUILD", "Weapons use three slots. Items and skills are unlimited.")
-	for weapon in game.equipped:
-		box.add_child(label("⚔  %s  ·  Lv. %d" % [weapon.name,weapon.rank],21,Color("e8d08a")))
-		var mechanic=label(WeaponDetails.describe(weapon.id),16)
-		mechanic.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
-		box.add_child(mechanic)
-	var scroll = ScrollContainer.new()
-	scroll.custom_minimum_size.y = 180
-	scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
-	box.add_child(scroll)
-	var rows = VBoxContainer.new()
-	scroll.add_child(rows)
+func report_scroll(box: VBoxContainer) -> VBoxContainer:
+	var scroll=ScrollContainer.new();scroll.custom_minimum_size.y=420;scroll.size_flags_vertical=Control.SIZE_EXPAND_FILL;box.add_child(scroll)
+	var rows=VBoxContainer.new();rows.size_flags_horizontal=Control.SIZE_EXPAND_FILL;rows.add_theme_constant_override("separation",8);scroll.add_child(rows)
+	var paging=HBoxContainer.new();box.add_child(paging)
+	paging.add_child(button("PAGE UP",func():scroll.scroll_vertical=maxi(0,scroll.scroll_vertical-300)))
+	paging.add_child(button("PAGE DOWN",func():scroll.scroll_vertical+=300))
+	return rows
+
+func stat_table_row(rows: VBoxContainer, values: Array, heading: bool=false):
+	var row=HBoxContainer.new();rows.add_child(row)
+	for i in range(values.size()):
+		var cell=label(str(values[i]),14 if heading else 15)
+		cell.custom_minimum_size.x=210 if i==0 else 105
+		row.add_child(cell)
+
+func build_menu(return_to_pause: bool=false):
+	game.mode="build"
+	var box=open("HERO STATS & EQUIPMENT","Live values · Base + Hero + Gear/run + Buffs + Active augments = Total")
+	var rows=report_scroll(box)
+	rows.add_child(label("%s · HP %d / %d · Shield %d" % [game.hero.name,game.hp,game.stats.maxHp,game.shield_hp],20))
+	stat_table_row(rows,["STAT","BASE","HERO","GEAR/RUN","BUFFS","AUGMENTS","TOTAL"],true)
+	for entry in RunReport.stat_rows(game):
+		stat_table_row(rows,[entry.name,snappedf(entry.base,.01),snappedf(entry.hero,.01),snappedf(entry.gear,.01),snappedf(entry.buff,.01),snappedf(entry.augment,.01),snappedf(entry.total,.01)])
+	rows.add_child(label("WEAPON SLOTS · base power before conditional, critical and target bonuses",18))
+	for i in range(game.equipped.size()):
+		var weapon=game.equipped[i]
+		var kind=ContentExpansion.kind(weapon.id)
+		var power=game.stat("damage")*weapon.damage*weapon.power*float(game.stats.get(kind+"Power",1))*(game.stat("turretDamage") if weapon.turret else 1.)
+		var rate=weapon.rate*game.stat("turretRate" if weapon.turret else "rate")
+		var reach=weapon.range*game.stat("range")/18.*(game.stat("turretRange") if weapon.turret else 1.)
+		rows.add_child(label("Slot %d · %s · Rank %d · Power %.1f · Rate %.2f/s · Reach %.1fm" % [i+1,weapon.name,weapon.rank,power,rate,reach],16))
+		var detail=label(WeaponDetails.describe(weapon.id),14);detail.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;rows.add_child(detail)
+	rows.add_child(label("OWNED ITEMS & SKILLS",18))
 	for item in game.owned:
-		var descriptions = []
-		for effect in item.effects: descriptions.append(game.rules.describe(effect))
-		rows.add_child(label("%s  ·  %s" % [item.name," / ".join(descriptions)],17,RunRules.COLORS[item.tier]))
-	box.add_child(button("▶  BACK",close,true))
+		var text=label(item.name+" · "+game.rules.describe(item.effects[0]),15);text.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;rows.add_child(text)
+	var back=button("BACK",func():pause_menu(game.run_recorded) if return_to_pause else close(),true);box.add_child(back);back.grab_focus()
+
+func run_report_menu():
+	game.mode="build"
+	var score=game.career.data.scores.filter(func(entry):return entry.id==game.run_id)
+	var summary="%d:%02d played · %d kills · %d gold" % [int(game.elapsed)/60,int(game.elapsed)%60,game.kills,game.gold]
+	if not score.is_empty(): summary+=" · Score %d · Local rank #%d" % [score[0].score,game.career.data.scores.find(score[0])+1]
+	var box=open("RUN REPORT",summary);var rows=report_scroll(box)
+	rows.add_child(label("YOUR DAMAGE BY WEAPON / EFFECT",18))
+	for entry in RunReport.ranked_damage(game): rows.add_child(label("%s · %d damage" % [entry.name,entry.amount],17))
+	if game.damage_sources.is_empty(): rows.add_child(label("No damage recorded yet.",16))
+	rows.add_child(label("ENEMY TYPES DEFEATED · party kills in co-op",18))
+	for key in game.kill_types: rows.add_child(label("%s · %d" % [key,game.kill_types[key]],16))
+	rows.add_child(label("Score: 20×kills + gold + 2×seconds + level/boss/chest/victory bonuses.",14))
+	var back=button("BACK",func():pause_menu(game.run_recorded,not score.is_empty() and score[0].win),true);box.add_child(back);back.grab_focus()
 
 func settings_menu():
 	game.mode = "settings"

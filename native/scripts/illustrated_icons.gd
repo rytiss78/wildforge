@@ -41,6 +41,10 @@ static func texture(key: String, weapon: bool=false) -> Texture2D:
 	if weapon and ResourceLoader.exists(matching):
 		if not textures.has(matching): textures[matching]=load(matching)
 		return textures[matching]
+	var vector_art="res://assets/illustrated/content/"+key+".svg"
+	if ResourceLoader.exists(vector_art):
+		if not textures.has(vector_art): textures[vector_art]=load(vector_art)
+		return textures[vector_art]
 	var content="res://assets/illustrated/content/"+key+".png"
 	if ResourceLoader.exists(content):
 		if not textures.has(content): textures[content]=load(content)

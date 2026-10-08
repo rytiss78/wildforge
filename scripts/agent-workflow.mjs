@@ -57,7 +57,7 @@ export function assessPng(path, started, minimum=320) {
 }
 
 async function main(action) {
-  if (!['field-review', 'crowd-review', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
+  if (!['progression-review', 'field-review', 'crowd-review', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
     console.error('Usage: node scripts/agent-workflow.mjs check|smoke|capture|capture-ui|combat-review|pace-review|soak|integration|build|status'); return 2;
   }
   const git = (...args) => spawnSync('git', ['-C', root, ...args], {encoding:'utf8', windowsHide:true}).stdout?.trim() ?? '';
@@ -163,6 +163,14 @@ async function main(action) {
       if (!line) throw new Error('Missing pace measurements.');
       report.pace=JSON.parse(line.slice('PACE_REVIEW '.length));
       report.capture=assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge/pace-review.png'),started);
+    }
+    if (action === 'progression-review') {
+      const output=await step('progression-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--progression-review'],120000);
+      const line=output.split(/\r?\n/).findLast(x=>x.startsWith('PROGRESSION_REVIEW '));
+      if(!line) throw new Error('Missing progression result.');
+      report.progression=JSON.parse(line.slice(19));
+      if(Object.values(report.progression.checks).some(v=>v===false)) throw new Error('Progression assertions failed.');
+      report.capture=['stats','cards','recap'].map(name=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge/progression-'+name+'.png'),started));
     }
     if (action === 'field-review') {
       const output=await step('field-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--field-review'],90000);

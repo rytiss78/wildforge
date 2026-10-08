@@ -308,7 +308,7 @@ func receive(sender: int,message: Dictionary) -> bool:
 		if sender!=game.coop.owner_id: return true
 		if type=="big_memory": note(str(message.key));return true
 		if int(message.get("realm",-1))!=game.realm: return true
-		if type=="big_damage": run_damage+=float(message.get("amount",0))
+		if type=="big_damage": run_damage+=float(message.get("amount",0));game.credit_damage(str(message.get("source","effect:coop")),float(message.get("amount",0)))
 		elif type=="big_ping": show_ping(message)
 		elif type=="big_revive": revived()
 		elif type=="big_rescued": downed_ids.erase(int(message.id))

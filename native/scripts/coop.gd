@@ -30,6 +30,8 @@ var status="Solo"
 var kills_received=0
 var snapshots_received=0
 var remote_hits=0
+var force_requests_received=0
+var saw_force_pulse=false
 var last_snapshot=0.0
 var test_mode=false
 var joined=false
@@ -274,6 +276,14 @@ func receive(sender: int,message):
 				if message.has(key): members[sender][key]=message[key]
 			if game.run_active: ensure_avatar(sender,members[sender])
 			if game.update.downed_ids.has(sender): members[sender].hp=0
+		elif kind=="force_pulse" and int(message.get("realm",-1))==game.realm and game.run_active and not frozen():
+			var key=str(message.get("key",""));var member=members[sender]
+			if not ForcePulse.PERIODS.has(key) or float(member.get("hp",0))<=0: return
+			if game.elapsed-float(member.get("last_"+key,-100))<ForcePulse.PERIODS[key]-.1: return
+			var power=clampf(float(member.get("stats",{}).get(key,0)),0,8)
+			if power<=0: return
+			member["last_"+key]=game.elapsed;force_requests_received+=1
+			ForcePulse.apply(game,vector(member.get("position",[])),key,power)
 		elif kind=="shot":
 			var weapon=str(message.get("weapon",""))
 			if members[sender].get("weapons",[]).any(func(w):return w.get("id","")==weapon):
@@ -332,6 +342,7 @@ func receive(sender: int,message):
 		elif kind=="lobby_state" and not game.run_active: lobby_roster=message.get("players",[])
 		elif kind=="start": game.start_run(int(message.seed));game.hud.close()
 		elif kind=="realm": game.enter_realm(int(message.realm));saw_realm=true
+		elif kind=="force_pulse_fx" and int(message.get("realm",-1))==game.realm: ForcePulse.visual(game,vector(message.position),str(message.key));saw_force_pulse=true
 		elif kind=="world": apply_world(message)
 		elif kind=="journey_announcement": game.Journey.announce(game,str(message.title),str(message.detail))
 		elif kind=="shot": show_shot(message)

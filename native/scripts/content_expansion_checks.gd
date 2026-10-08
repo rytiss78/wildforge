@@ -2,8 +2,8 @@ extends RefCounted
 
 static func run(game) -> Dictionary:
 	var checks={};var data=game.rules.data
-	checks.content_count=data.loot.size()==694 and data.weapons.size()==65 and data.augments.size()==360
-	checks.unique_ids=(data.loot+data.weapons).map(func(i):return i.id).size()==759
+	checks.content_count=data.loot.size()==696 and data.weapons.size()==65 and data.augments.size()==360
+	checks.unique_ids=(data.loot+data.weapons).map(func(i):return i.id).size()==761
 	var positions=game.chests.map(func(c):return c.node.position)
 	var per_biome=[0,0,0,0,0,0];var spacing=1000.0
 	for p in positions:
@@ -16,7 +16,7 @@ static func run(game) -> Dictionary:
 		var texture=IllustratedIcons.texture(item.id,not item.has("effects"))
 		var code=hash(texture.get_image().get_data())
 		icons=icons and not hashes.has(code);hashes[code]=true
-	checks.distinct_rendered_icons=icons and hashes.size()==759
+	checks.distinct_rendered_icons=icons and hashes.size()==761
 	for kind in ["item","skill","weapon"]:
 		for sample in range(12):
 			var choices=game.rules.offers(kind,0,false,game.stats,game.equipped)

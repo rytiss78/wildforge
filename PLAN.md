@@ -345,7 +345,7 @@ User-provided IceGun mismatch traced to generic elemental GLBs plus independentl
 ## Latest user priorities — crowd performance and co-op lobby (2026-10-08)
 - [ ] Reduce lag with many enemies; profile rendered crowd combat, bound damage-feedback overhead, compare measurements and preserve combat rules.
 - [ ] Co-op lobby: choose a hero inside the lobby, synchronized per-player Ready state, host-only Start Game gated on readiness; hero changes clear readiness. Validate real host/client flow and keyboard/controller UI.
-- [ ] Export and verify a new Windows test build after each completed milestone.
+- [ ] Export/publish only after a larger combined batch passes; use source checks and local checkpoints between batches (user preference2026-10-08).
 
 - [x] Co-op lobby hero selection, synchronized Ready/cancel and host Start Game implemented and tested on2026-10-08. Earlier unchecked entry is superseded. Crowd lag remains open after bounded damage-popup allocation fix.
 
@@ -356,3 +356,10 @@ User-provided IceGun mismatch traced to generic elemental GLBs plus independentl
 - [x] Replace solid gravity/poison/ignited discs with animated vortex and mist; inspect rendered before/after.
 - [x] Replace weapon attack sounds with21original profiles and3continuous loops; verify assets/routing.
 - [ ] Remaining acceptance: maximum-crowd optimization across all biomes/hardware, subjective audio mix review, loot probability audit and broader roadmap. Older-build deletion remains blocked from earlier attempts.
+
+## Current combined batch — progression and run visibility
+- [x] Mechanic-balanced loot selection and viable Extra Hop rarity progression.
+- [x] Pull/push passive skills, matching icons and host-authoritative co-op.
+- [x] Detailed pause stats with source contributions.
+- [x] Persistent per-weapon/effect damage and enemy-type kill recap.
+- [ ] Eclipse corruption readability and remaining roadmap audits.

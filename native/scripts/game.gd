@@ -127,6 +127,9 @@ var screen_flash=0.0
 var screen_flash_color=Color.WHITE
 const MAX_DAMAGE_NUMBERS=48
 var damage_numbers=[]
+var force_clocks={}
+var damage_sources={}
+var kill_types={}
 var combat_profile=[]
 var profile_crowd=false
 var menu_repeat=0.0
@@ -143,7 +146,7 @@ func _ready():
 	get_viewport().use_occlusion_culling=true
 	player=CharacterBody3D.new();camera=Camera3D.new();coop=CoopSession.new()
 	profile_crowd=OS.get_cmdline_user_args().has("--crowd-review")
-	smoke = profile_crowd or OS.get_cmdline_user_args().has("--field-review") or OS.get_cmdline_user_args().has("--smoke") or OS.get_cmdline_user_args().has("--soak") or OS.get_cmdline_user_args().has("--art") or OS.get_cmdline_user_args().has("--style-roundtrip")
+	smoke = profile_crowd or OS.get_cmdline_user_args().has("--progression-review") or OS.get_cmdline_user_args().has("--field-review") or OS.get_cmdline_user_args().has("--smoke") or OS.get_cmdline_user_args().has("--soak") or OS.get_cmdline_user_args().has("--art") or OS.get_cmdline_user_args().has("--style-roundtrip")
 	smoke=smoke or OS.get_cmdline_user_args().has("--update-check") or OS.get_cmdline_user_args().has("--big-update-check")
 	smoke=smoke or OS.get_cmdline_user_args().has("--presentation-check")
 	smoke=smoke or OS.get_cmdline_user_args().has("--melee-check")
@@ -222,6 +225,7 @@ func _ready():
 	elif OS.get_cmdline_user_args().has("--update-check"): preload("res://scripts/update_checks.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--style-roundtrip"): call_deferred("run_style_roundtrip")
 	elif network_test_role!="": call_deferred("run_coop_test")
+	elif OS.get_cmdline_user_args().has("--progression-review"): preload("res://scripts/progression_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--field-review"): preload("res://scripts/field_review.gd").run.call_deferred(self)
 	elif profile_crowd: preload("res://scripts/crowd_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--hunt-review"): preload("res://scripts/hunt_review.gd").run.call_deferred(self)
@@ -318,6 +322,7 @@ func start_run(shared_seed: int=-1):
 	clear_entities()
 	conditional_bonuses.clear();condition_times.clear();condition_clock=0
 	update.new_run()
+	force_clocks.clear();damage_sources.clear();kill_types.clear()
 	seed_value = randi() if shared_seed<0 else shared_seed
 	rules.rng.seed = seed_value
 	run_id = str(Time.get_unix_time_from_system())+"-"+str(seed_value)
@@ -668,7 +673,7 @@ func record_run(win: bool, abandoned: bool = false):
 	if run_recorded or not run_active: return
 	run_recorded = true
 	if elapsed < 2 and abandoned: return
-	career.score({"id":run_id,"hero":hero.id,"seconds":elapsed,"kills":kills,"level":level,"bosses":run_bosses,"chests":run_chests,"win":win,"abandoned":abandoned,"healthDamage":health_damage,"realm":realm,"gold":gold,"seed":seed_value,"recap":update.recap(),"localDamage":update.run_damage,"partyDamage":update.party_damage})
+	career.score({"id":run_id,"hero":hero.id,"seconds":elapsed,"kills":kills,"level":level,"bosses":run_bosses,"chests":run_chests,"win":win,"abandoned":abandoned,"healthDamage":health_damage,"realm":realm,"gold":gold,"seed":seed_value,"recap":update.recap(),"localDamage":update.run_damage,"partyDamage":update.party_damage,"damageSources":damage_sources.duplicate(),"killTypes":kill_types.duplicate()})
 
 func end_run(win: bool):
 	if coop.active and coop.hosting and win: coop.broadcast({"type":"finish","win":true})
@@ -1021,7 +1026,7 @@ func fire(weapon: Dictionary, origin: Vector3):
 			position_value.y=world.height_at(position_value.x,position_value.z)
 			var marker=CylinderMesh.new();marker.top_radius=3*float(mods.get("areaScale",1));marker.bottom_radius=marker.top_radius;marker.height=.04
 			var warning=shape(marker,Color("f3c27f"),self,position_value+Vector3.UP*.08)
-			hazards.append({"node":warning,"life":.85+meteor_index*.12,"radius":3.0*float(mods.get("areaScale",1)),"damage":base_damage,"friendly":true})
+			hazards.append({"node":warning,"life":.85+meteor_index*.12,"radius":3.0*float(mods.get("areaScale",1)),"damage":base_damage,"weapon_id":weapon.id,"friendly":true})
 			var meteor=shape(orb_mesh,Color("ee986d"),self,position_value+Vector3.UP*14,1.0);meteor.scale=Vector3.ONE*6
 			effects.append({"node":meteor,"life":.85,"velocity":Vector3(0,-13,0),"meteor":true})
 		return
@@ -1103,9 +1108,9 @@ func hit_enemy(enemy: Dictionary, shot: Dictionary,cause: String="hit"):
 		if stats.execute > 0 and not enemy.boss and enemy.hp < enemy.maxHp*stats.execute: hurt_enemy(enemy,enemy.hp+1,"hit")
 	heal(damage*stat("lifesteal"))
 	if kind=="bomb":
-		damage_area(enemy.node.position,3.5*stats.bombSize*float(shot.get("area_scale",1)),damage,"explosion",enemy)
+		damage_area(enemy.node.position,3.5*stats.bombSize*float(shot.get("area_scale",1)),damage,"explosion",enemy,str(shot.get("weapon_id",kind)))
 	if stats.splash>0 or kind.contains("rocket"):
-		damage_area(enemy.node.position,2.2,damage*maxf(stats.splash,0.75 if kind.contains("rocket") else 0),"explosion",enemy)
+		damage_area(enemy.node.position,2.2,damage*maxf(stats.splash,0.75 if kind.contains("rocket") else 0),"explosion",enemy,str(shot.get("weapon_id",kind)))
 	var chains = mini(8,int(stats.chain)+(2 if kind.contains("lightning") else 0))
 	var excluded = [enemy.net_id]
 	var origin = enemy.node.position
@@ -1125,6 +1130,9 @@ func record_damage_number(enemy_id: int, damage: float, cause: String):
 	if damage_numbers.size()>=MAX_DAMAGE_NUMBERS: return
 	damage_numbers.append({"enemy_id":enemy_id,"amount":damage,"value":maxi(1,roundi(damage)),"screen_x":randf_range(.2,.8),"life":1.2,"maxLife":1.2,"cause":cause})
 
+func credit_damage(source: String,amount: float):
+	damage_sources[source]=float(damage_sources.get(source,0))+maxf(0,amount)
+
 func hurt_enemy(enemy: Dictionary, damage: float, cause: String,mechanic: String="",mechanic_origin: Vector3=Vector3.ZERO):
 	if enemy.dead or damage <= 0: return
 	if cause in ["hit","melee","coop","sonic","lightning","explosion","meteor","burrow","stomp"]: blood_hit(enemy)
@@ -1140,8 +1148,8 @@ func hurt_enemy(enemy: Dictionary, damage: float, cause: String,mechanic: String
 	var credited=minf(enemy.hp,damage)
 	var owner=int(enemy.get("hit_owner",enemy.get("status_owner",coop.local_id) if cause in ["poison","fire"] else coop.local_id))
 	update.party_damage+=credited
-	if owner==coop.local_id: update.run_damage+=credited
-	elif coop.hosting and coop.members.has(owner): coop.send_to(owner,{"type":"big_damage","amount":credited,"realm":realm})
+	if owner==coop.local_id: update.run_damage+=credited;credit_damage(mechanic if not mechanic.is_empty() else "effect:"+cause,credited)
+	elif coop.hosting and coop.members.has(owner): coop.send_to(owner,{"type":"big_damage","amount":credited,"source":mechanic if not mechanic.is_empty() else "effect:"+cause,"realm":realm})
 	enemy.hp -= damage
 	enemy.node.get_meta("rig").set_health(enemy.hp/enemy.maxHp,enemy.boss or enemy.health>=1.8)
 	if enemy.node.has_meta("rig"): enemy.node.get_meta("rig").hurt=.18
@@ -1156,6 +1164,8 @@ func kill_enemy(enemy: Dictionary, cause: String):
 	Hunt.defeated(self,enemy)
 	if enemy.get("elite",false): drop_consumable(enemy.node.position)
 	kills += 1
+	var enemy_kind="Boss" if enemy.boss else str(enemy.get("name",enemy.get("model","Unknown")))
+	kill_types[enemy_kind]=int(kill_types.get(enemy_kind,0))+1
 	career.bump("kills")
 	if cause != "hit" and cause != "melee": career.bump(cause+"Kills")
 	var p = enemy.node.position
@@ -1191,11 +1201,11 @@ func kill_enemy(enemy: Dictionary, cause: String):
 	if rules.rng.randf()<stats.salvage: heal(4)
 	var death=create_tween();death.tween_property(enemy.node,"scale",Vector3(.9,.08,.9),.24);death.tween_callback(enemy.node.queue_free)
 
-func damage_area(origin: Vector3,radius: float,damage: float,cause: String,excluded: Dictionary = {}):
+func damage_area(origin: Vector3,radius: float,damage: float,cause: String,excluded: Dictionary = {},source: String=""):
 	for enemy in enemies.duplicate():
 		if enemy != excluded and not enemy.dead and origin.distance_to(enemy.node.position) < radius:
 			if cause=="slam": update_reaction(enemy,"slam",damage)
-			hurt_enemy(enemy,damage,cause)
+			hurt_enemy(enemy,damage,cause,source)
 	# Hit stop on heavy hits
 	if damage > 15: hit_stop = .04
 	elif damage > 8: hit_stop = .025
@@ -1585,7 +1595,7 @@ func update_combat(delta: float):
 		if shot.kind=="bomb":
 			shot.node.position.y=world.height_at(shot.node.position.x,shot.node.position.z)+.3;shot.node.rotation.x+=delta*9
 		if shot.life<=0:
-			if shot.kind=="bomb": damage_area(shot.node.position,3.5*stats.bombSize,shot.damage,"explosion")
+			if shot.kind=="bomb": damage_area(shot.node.position,3.5*stats.bombSize,shot.damage,"explosion",{},str(shot.get("weapon_id","bomb")))
 			continue
 		for enemy in enemies:
 			if enemy.dead or shot.hit.has(enemy.net_id): continue
@@ -1612,7 +1622,7 @@ func update_combat(delta: float):
 		if hazard.get("style","")=="void" and hazard.node.position.distance_to(player.position)<hazard.radius*1.8:
 			player.move_and_collide((hazard.node.position-player.position).normalized()*delta*2)
 		if hazard.life<=0:
-			if hazard.get("friendly",false): damage_area(hazard.node.position,hazard.radius,hazard.damage,"meteor")
+			if hazard.get("friendly",false): damage_area(hazard.node.position,hazard.radius,hazard.damage,"meteor",{},str(hazard.get("weapon_id","meteor")))
 			elif player.position.distance_to(hazard.node.position)<hazard.radius: take_damage(hazard.damage)
 			if not hazard.get("friendly",false) and coop.active and coop.hosting:
 				for id in coop.members:
@@ -1749,6 +1759,7 @@ func _physics_process(delta: float):
 	update_events()
 	var combat_start=Time.get_ticks_usec() if profile_crowd else 0
 	update_combat(delta)
+	preload("res://scripts/force_pulse.gd").tick(self,delta)
 	if profile_crowd: combat_profile.append((Time.get_ticks_usec()-combat_start)/1000.0)
 	metric_clock+=delta
 	if metric_clock>=1:
@@ -2274,7 +2285,7 @@ func update_garden(delta: float):
 				bloom.bloom=3.5
 				for enemy in enemies:
 					if not enemy.dead and enemy.boss and enemy.node.position.distance_to(bloom.node.position)<3.5: achievement_event("FLOWER_BOSS")
-				damage_area(bloom.node.position,3.5,stat("damage")*stats.flowerPower*bloom.power*.8,"bloom")
+				damage_area(bloom.node.position,3.5,stat("damage")*stats.flowerPower*bloom.power*.8,"bloom",{},"flowers")
 				burst(bloom.node.position+Vector3.UP*.85,Color("f5a8c4"),5)
 				if player.position.distance_to(bloom.node.position)<4 and hp<stats.maxHp: heal(stats.flowerHeal);achievement_event("FLOWER_HEAL")
 	for flower in flowers:
@@ -2361,6 +2372,7 @@ func run_coop_test():
 		var variant=rules.data.weapons.filter(func(w):return w.id=="venom-candle")[0].duplicate(true)
 		variant.kind="weapon";variant.strength=1;variant.tier=0;equip_weapon(variant)
 		stats["augment-healthy-damage"]=.25
+		stats.enemyPull=2;stats.enemyPush=3
 	if network_test_role=="host": stats.damage=2
 	var started=Time.get_ticks_msec();var pause_done=false;var realm_done=false;var moved=false;var shared_enemies=false;var maximum_avatars=0
 	var down_sent=false;var saw_down=false;var saw_rescue=false;var saw_ping=false;var purchase_sent=false;var supply_sent=false;var saw_purchase=false;var saw_supply=false;var gold_before=0
@@ -2411,8 +2423,8 @@ func run_coop_test():
 			await RenderingServer.frame_post_draw
 			get_viewport().get_texture().get_image().save_png("user://coop-"+network_test_role+".png")
 		await get_tree().create_timer(.1).timeout
-	var checks={"lobby_blocked":lobby_blocked,"hero_change_clears_ready":hero_reset,"lobby_hero_ready_synced":lobby_synced,"role":network_test_role,"standalone":not Engine.has_singleton("Steam"),"discovery":discovered_party if network_test_role=="client" else true,"connected":coop.active,"avatars":maximum_avatars,"members":coop.members.size(),"same_enemies":shared_enemies,"remote_hits":coop.remote_hits,"kills_received":coop.kills_received,"snapshots":coop.snapshots_received,"moved":moved,"party_pause":coop.saw_pause,"realm":realm,"realm_received":coop.saw_realm,"downed":saw_down,"rescued":saw_rescue,"ping":saw_ping,"merchant":saw_purchase,"supply":saw_supply,"hunt_started":hunt_seen,"hunt_reward":hunt_reward,"guardian_defeated":guardian_seen}
-	var passed=lobby_blocked and hero_reset and lobby_synced and checks.hunt_started and checks.hunt_reward and checks.guardian_defeated and checks.downed and checks.rescued and checks.ping and checks.merchant and checks.supply and checks.standalone and checks.discovery and checks.connected and checks.avatars>0 and shared_enemies and realm==1 and (coop.remote_hits>0 if network_test_role=="host" else coop.snapshots_received>20 and coop.saw_pause and coop.saw_realm and moved)
+	var checks={"force_pulses":coop.force_requests_received>0 if network_test_role=="host" else coop.saw_force_pulse,"lobby_blocked":lobby_blocked,"hero_change_clears_ready":hero_reset,"lobby_hero_ready_synced":lobby_synced,"role":network_test_role,"standalone":not Engine.has_singleton("Steam"),"discovery":discovered_party if network_test_role=="client" else true,"connected":coop.active,"avatars":maximum_avatars,"members":coop.members.size(),"same_enemies":shared_enemies,"remote_hits":coop.remote_hits,"kills_received":coop.kills_received,"snapshots":coop.snapshots_received,"moved":moved,"party_pause":coop.saw_pause,"realm":realm,"realm_received":coop.saw_realm,"downed":saw_down,"rescued":saw_rescue,"ping":saw_ping,"merchant":saw_purchase,"supply":saw_supply,"hunt_started":hunt_seen,"hunt_reward":hunt_reward,"guardian_defeated":guardian_seen}
+	var passed=checks.force_pulses and lobby_blocked and hero_reset and lobby_synced and checks.hunt_started and checks.hunt_reward and checks.guardian_defeated and checks.downed and checks.rescued and checks.ping and checks.merchant and checks.supply and checks.standalone and checks.discovery and checks.connected and checks.avatars>0 and shared_enemies and realm==1 and (coop.remote_hits>0 if network_test_role=="host" else coop.snapshots_received>20 and coop.saw_pause and coop.saw_realm and moved)
 	print("COOP_TEST "+JSON.stringify(checks));var report=FileAccess.open("user://coop-"+network_test_role+"-results.json",FileAccess.WRITE);report.store_string(JSON.stringify(checks,"  "));report.close();coop.leave()
 	mode="test_finished";clear_entities();sound.active=false
 	for channel in sound.get_children():

@@ -6086,6 +6086,34 @@
       ]
     },
     {
+      "id": "attraction-pulse-skill",
+      "name": "Attraction Pulse",
+      "title": "Attraction Pulse",
+      "family": "Arcane",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "enemyPull",
+          "amount": 2,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "repulsion-pulse-skill",
+      "name": "Repulsion Pulse",
+      "title": "Repulsion Pulse",
+      "family": "Arcane",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "enemyPush",
+          "amount": 3,
+          "mode": "add"
+        }
+      ]
+    },
+    {
       "id": "augment-air-damage",
       "name": "Skybound Gauntlet",
       "title": "Skybound Gauntlet",
@@ -13032,6 +13060,8 @@
     "coinHeal": 0,
     "chestHeal": 0,
     "banana": 0,
+    "enemyPull": 0,
+    "enemyPush": 0,
     "augment-air-damage": 0,
     "augment-air-rate": 0,
     "augment-air-speed": 0,
@@ -13491,6 +13521,8 @@
     "coinHeal": "Coin Heal",
     "chestHeal": "Chest Heal",
     "banana": "Banana Business",
+    "enemyPull": "Attraction Pulse",
+    "enemyPush": "Repulsion Pulse",
     "augment-air-damage": "Skybound Gauntlet",
     "augment-air-rate": "Skybound Metronome",
     "augment-air-speed": "Skybound Boots",
