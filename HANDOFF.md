@@ -27,3 +27,7 @@ Next development batch: black-hole/poison field visuals and punchier gun audio (
 
 ## Preserve unrelated changes
 AGENTS.md modified before this batch. Entire mods/megabonk-wildforge tracked tree deleted by another process/Hermes; not staged here. Untracked native/docs/golden-scene.png, scenery-review-0.png, scenery-review-2.png and nul retained. Never delete saves, logs, captures or history. See PROGRESS.md for prior milestones and exact fresh results.
+
+Cleanup retry after explicit user request on 2026-10-08 was also rejected before execution ('blocked by policy'); no files removed.
+
+Published test build: https://github.com/rytiss78/wildforge/releases/tag/test-2026-10-08 (public prerelease, source 919b5bc). ZIP and SHA256SUMS uploaded and verified; local archived binaries match tested build.

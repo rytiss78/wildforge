@@ -339,3 +339,5 @@ User-provided IceGun mismatch traced to generic elemental GLBs plus independentl
 - [ ] Remove obsolete local builds: attempted, blocked by automatic approval review; no deletion performed.
 - [ ] Earlier authorized GitHub release cleanup remains pending; keep latest standalone release and mod releases outside this work.
 - [ ] Follow-up: black-hole/poison visuals, stronger weapon audio, loot probability audit and damage-number aggregation/lifetime.
+
+- [x] Publish the tested Windows ZIP and checksums to GitHub: test-2026-10-08 prerelease (2026-10-08).
