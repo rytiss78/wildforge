@@ -1241,7 +1241,7 @@ func kill_enemy(enemy: Dictionary, cause: String):
 		screen_flash=maxf(screen_flash,.03)
 		vibrate(.1,.1,.05)
 	# Kill sparks for all kills
- burst(p+Vector3.UP*.2,Color("ffcc44"),2)
+	burst(p+Vector3.UP*.2,Color("ffcc44"),2)
 	# Multi-kill camera pulse
 	if kills_in_window>=2:
 		hit_shake=maxf(hit_shake,.15*kills_in_window)
