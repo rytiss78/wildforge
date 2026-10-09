@@ -1210,6 +1210,8 @@ func kill_enemy(enemy: Dictionary, cause: String):
 		burst(p+Vector3.UP*.3,Color("888888"),3)
 		hit_shake=maxf(hit_shake, 0.06)
 		screen_flash=0.03
+	# Kill sparks for all kills
+	burst(p+Vector3.UP*.2,Color("ffcc44"),2)
 	if enemy.boss:
 		if hp < stats.maxHp*.25: achievement_event("COMEBACK")
 		if health_damage == enemy.startDamage: achievement_event("NO_HIT_BOSS")
