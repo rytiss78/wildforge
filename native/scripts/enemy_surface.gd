@@ -46,24 +46,18 @@ static func tick(game, enemy: Dictionary, target: Vector3, delta: float) -> bool
 
 	if not enemy.get("surface_attached", false):
 		enemy.surface_probe = maxf(0, float(enemy.get("surface_probe", 0)) - delta)
-		if enemy.surface_probe > 0:
+		if target.y - body.position.y < 1.5 or enemy.surface_probe > 0:
 			return false
 		enemy.surface_probe = .15
+		# Slope acquisition: only climb genuinely steep slopes (>45°) leading toward target
 		var aim = (target - body.position)
 		aim.y = 0
 		aim = aim.normalized()
-		var cast_y = body.position.y + 1.5
-		var hit = ray(game, enemy, body.position + Vector3.UP * cast_y, body.position + Vector3.UP * cast_y + aim * 10)
-		if not hit.is_empty():
-			attach(enemy, hit, Vector3.UP)
-			return true
-		# Slope acquisition: cast downward-forward to find ground leading toward target
 		var ground_hit = ray(game, enemy, body.position + Vector3.UP * 1.5, body.position + Vector3.UP * 1.5 + aim * 8 - Vector3.UP * 4)
-		if not ground_hit.is_empty() and ground_hit.normal.y > .3:
-			var slope_angle = 1.0 - ground_hit.normal.y
-			if slope_angle > .15 and slope_angle < .7:
-				attach(enemy, ground_hit, aim)
-				return true
+		# normal.y < 0.5 means slope angle > 45° — only attach for genuinely steep ground
+		if not ground_hit.is_empty() and ground_hit.normal.y < 0.5:
+			attach(enemy, ground_hit, aim)
+			return true
 		return false
 
 	var normal: Vector3 = enemy.surface_up
@@ -89,7 +83,8 @@ static func tick(game, enemy: Dictionary, target: Vector3, delta: float) -> bool
 
 	var nose = body.position + normal * (enemy.radius + .12)
 	var front = ray(game, enemy, nose, nose + direction * (enemy.radius + .25 + travel.length()))
-	if not front.is_empty() and front.normal.dot(normal) < .7:
+	# Only re-attach to genuinely steep surfaces (>45° from vertical = normal.y < 0.5)
+	if not front.is_empty() and front.normal.y < 0.5:
 		attach(enemy, front, direction)
 		normal = enemy.surface_up
 		direction = (target - body.position).slide(normal).normalized()

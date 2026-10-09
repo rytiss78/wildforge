@@ -21,8 +21,8 @@ static func thorns() -> ArrayMesh:
 
 static func apply(enemy: Dictionary,stage: int):
 	if enemy.dead or stage<=0 or int(enemy.get("corruption",0))==stage: return
-	enemy.corruption=stage
 	var rig=enemy.node.get_meta("rig")
+	if rig==null: return
 	var intensity=clampf(.22+stage*.065+(.18 if enemy.elite else .10 if enemy.boss else 0.),0,.85)
 	if not rig.has_meta("uncorrupted_scale"): rig.set_meta("uncorrupted_scale",rig.scale)
 	# Mild whole-rig distortion retains health-core alignment and collision readability.
@@ -34,6 +34,7 @@ static func apply(enemy: Dictionary,stage: int):
 		var crown=MeshInstance3D.new();crown.mesh=thorns();crown.material_override=thorn_paint
 		crown.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;rig.add_child(crown);rig.set_meta("corruption_thorns",crown)
 	var crown=rig.get_meta("corruption_thorns")
+	if crown==null: return
 	var local_height=float(enemy.height)/float(rig.get_meta("uncorrupted_scale").y)
 	crown.scale=Vector3.ONE*local_height*.65*(.7+intensity*.5)
 	crown.position.y=local_height*.32
