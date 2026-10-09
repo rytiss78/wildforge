@@ -132,6 +132,9 @@ var damage_numbers=[]
 var force_clocks={}
 var damage_sources={}
 var kill_types={}
+var combo_count=0
+var combo_timer=0.0
+var enemy_hit_stuns={}
 var combat_profile=[]
 var profile_crowd=false
 var menu_repeat=0.0
@@ -295,6 +298,7 @@ func select_hero(item: Dictionary):
 func clear_entities():
 	coop.clear_flower_visuals();flower_serial=0
 	eclipse_run_velocity=Vector3.ZERO;pickup_merge_clock=0;enemy_step=0;crowd.clear();damage_numbers.clear()
+	combo_count=0;combo_timer=0;enemy_hit_stuns.clear()
 	melee_attacks.clear()
 	if is_instance_valid(avatar): avatar.finish_melee()
 	for id in sound.weapon_loops: sound.weapon_loop(id,false,player.position)
@@ -1082,6 +1086,10 @@ func hit_enemy(enemy: Dictionary, shot: Dictionary,cause: String="hit"):
 	var damage = shot.damage
 	if enemy.boss: damage *= stat("bossDamage")
 	hurt_enemy(enemy,damage,cause,str(shot.get("weapon_id",kind)))
+	# Combo tracking
+	combo_count+=1
+	combo_timer=2.0
+	enemy_hit_stuns[enemy.net_id]=realm_time+0.15
 	# Combat juice: screen shake + hit stop on hits
 	if not enemy.dead:
 		hit_shake = maxf(hit_shake, minf(.15, damage / 40.0))
@@ -1502,6 +1510,9 @@ func update_combat(delta: float):
 			continue
 		enemy.freeze = maxf(0,enemy.freeze-enemy_delta)
 		enemy.blind = maxf(0,enemy.blind-enemy_delta)
+		# Hit stun: briefly freeze enemy on hit for combat feedback
+		if enemy_hit_stuns.has(enemy.net_id) and realm_time<enemy_hit_stuns[enemy.net_id]:
+			enemy.hit_stun_realm=enemy_hit_stuns[enemy.net_id]
 		if enemy.status_time > 0:
 			enemy.status_time -= enemy_delta
 			if enemy.poison>0: hurt_enemy(enemy,enemy.poison*enemy_delta,"poison")
@@ -1551,7 +1562,8 @@ func update_combat(delta: float):
 			var cycle=fmod(realm_time+enemy.net_id,8.0)
 			if cycle>5: aim=aim.rotated(Vector3.UP,1.1)*.5
 			if enemy.get("recovery",0)>realm_time: aim=Vector3.ZERO
-		var velocity=(aim*enemy.speed*(2 if enemy.get("charge",0)>0 else 1)*(1-minf(.7,enemy.slow))+separation.limit_length(enemy.speed*.45)) if enemy.freeze<=0 else Vector3.ZERO
+		var is_stunned=enemy.freeze>0 or (enemy_hit_stuns.has(enemy.net_id) and realm_time<enemy_hit_stuns[enemy.net_id])
+		var velocity=(aim*enemy.speed*(2 if enemy.get("charge",0)>0 else 1)*(1-minf(.7,enemy.slow))+separation.limit_length(enemy.speed*.45)) if not is_stunned else Vector3.ZERO
 		var body: CharacterBody3D=enemy.node
 		var surface_moved=EnemySurface.tick(self,enemy,target_player.position,enemy_delta)
 		if not surface_moved:
@@ -1835,6 +1847,14 @@ func _process(delta: float):
 		if level_reveal<=0: mode="offer";hud.show_offers(offers,"level")
 	for dn in damage_numbers: dn.life-=delta
 	damage_numbers=damage_numbers.filter(func(dn):return dn.life>0)
+	# Combo timer decay
+	if combo_timer>0:
+		combo_timer-=delta
+		if combo_timer<=0: combo_count=0
+	# Enemy hit stun cleanup
+	for id in enemy_hit_stuns.keys():
+		if realm_time>enemy_hit_stuns[id]:
+			enemy_hit_stuns.erase(id)
 	if not camera_locked:
 		var anchor=player.position+Vector3.UP*1.2
 		var offset=Vector3(sin(yaw)*camera_distance,7.5+camera_distance*.25+pitch*4,cos(yaw)*camera_distance)
@@ -1874,6 +1894,8 @@ func _process(delta: float):
 		if reveal_clock>=.8: hud.chest_reveal(reveal_tier,minf(1,(reveal_clock-.8)/(reveal_duration-.8)))
 		if reveal_clock>=reveal_duration: finish_reveal()
 	sound.tick(delta,mode in ["playing","settings"],boss_active() or events.get("eclipse",false))
+	hud.combo_count=combo_count
+	hud.combo_timer=combo_timer
 	hud.update(delta)
 	next_save+=delta
 	if next_save>10:
