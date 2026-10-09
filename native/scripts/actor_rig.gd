@@ -274,6 +274,11 @@ func animate(delta: float,movement: Vector3,on_floor: bool=true,slamming: bool=f
 		batched.set_shader_parameter("attack",1 if attack>0 else 0)
 		batched.set_shader_parameter("airborne",0 if on_floor else 1)
 		hurt=maxf(0,hurt-delta)
+		# Hit flash
+		if has_meta("flash_timer") and get_meta("flash_timer")>0:
+			var ft=get_meta("flash_timer")
+			set_meta("flash_timer",ft-delta)
+			hit_material.albedo_color=Color.WHITE
 		return
 	var walk=clampf(Vector2(movement.x,movement.z).length()/8,0,1)
 	if illustrated:

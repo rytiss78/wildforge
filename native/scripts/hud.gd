@@ -401,18 +401,8 @@ func update(delta: float):
 	if game.damage_numbers:
 		for index in range(game.damage_numbers.size()):
 			var dn=game.damage_numbers[index]
-			# Color by damage type
-			var num_color = Color("ffdd44") # default physical
-			if dn.cause == "fire": num_color = Color("ff6633")
-			elif dn.cause == "ice": num_color = Color("66ccff")
-			elif dn.cause == "poison": num_color = Color("66ff33")
-			elif dn.cause == "lightning": num_color = Color("ffff66")
-			elif dn.cause == "explosion": num_color = Color("ff9933")
-			elif dn.cause == "meteor": num_color = Color("ff4422")
-			elif dn.cause == "stomp": num_color = Color("ccaa88")
-			elif dn.cause == "sonic": num_color = Color("ddaaff")
-			elif dn.cause == "coop": num_color = Color("88ff88")
-			elif dn.cause == "burrow": num_color = Color("ddaa55")
+			# Color by damage type (from game.gd source of truth)
+			var num_color = dn.get("color", Color("ffdd44"))
 			var life_ratio = dn.life / dn.maxLife
 			var val_text = str(dn.value)
 			if index>=damage_labels.size():

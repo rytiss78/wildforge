@@ -1161,7 +1161,17 @@ func record_damage_number(enemy_id: int, damage: float, cause: String,position_v
 	damage_sources[dedup_key]=damage_numbers.size()
 	damage_sources[dedup_key+"_time"]=now
 	if damage_numbers.size()>=MAX_DAMAGE_NUMBERS: return
-	damage_numbers.append({"enemy_id":enemy_id,"amount":damage,"value":maxi(1,roundi(damage)),"world_position":position_value,"screen_x":randf_range(.2,.8),"life":1.2,"maxLife":1.2,"cause":cause})
+	var dmg_color=Color.WHITE
+	if cause=="crit": dmg_color=Color("#ff4444")
+	elif cause=="fire": dmg_color=Color("#ff8833")
+	elif cause=="poison": dmg_color=Color("#88ff44")
+	elif cause=="ice": dmg_color=Color("#88ddff")
+	elif cause=="lightning": dmg_color=Color("#ffff44")
+	elif cause=="explosion": dmg_color=Color("#ffaa44")
+	elif cause=="slam": dmg_color=Color("#ffffff")
+	elif cause=="melee": dmg_color=Color("#ffcc88")
+	elif cause=="sonic": dmg_color=Color("#dd88ff")
+	damage_numbers.append({"enemy_id":enemy_id,"amount":damage,"value":maxi(1,roundi(damage)),"world_position":position_value,"screen_x":randf_range(.2,.8),"life":1.2,"maxLife":1.2,"cause":cause,"color":dmg_color})
 
 func credit_damage(source: String,amount: float):
 	damage_sources[source]=float(damage_sources.get(source,0))+maxf(0,amount)
