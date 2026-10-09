@@ -2693,13 +2693,21 @@ func update_reaction(enemy: Dictionary,kind: String,damage: float):
 		enemy.reaction_until=realm_time+3;reacted=true
 		var cloud=preload("res://scripts/area_visual.gd").make(self,"ignited",2,enemy.node.position+Vector3.UP*.3)
 		pools.append({"node":cloud,"life":1.5,"damage":8.0,"radius":2.0,"ignited":true})
+		burst(enemy.node.position+Vector3.UP*.3,Color("ff6622"),8)
+		burst(enemy.node.position+Vector3.UP*.3,Color("ffcc44"),6)
+		hit_shake=maxf(hit_shake,.12)
+		hit_stop=maxf(hit_stop,.04)
 	elif kind=="slam" and enemy.freeze>0:
 		enemy.reaction_until=realm_time+3;reacted=true;enemy.freeze=0
 		damage_area(enemy.node.position,3,damage*.4,"shatter",enemy);burst(enemy_center(enemy),Color("a8eaf4"),6)
+		hit_shake=maxf(hit_shake,.1)
+		hit_stop=maxf(hit_stop,.03)
 	elif kind.contains("lightning") and enemy.get("bubble",0)>0:
 		enemy.reaction_until=realm_time+3;reacted=true
 		var target=nearest_enemy(enemy_center(enemy),8,[enemy.net_id])
 		if not target.is_empty(): beam(enemy_center(enemy),enemy_center(target),Color("a8eaf4"));hurt_enemy(target,damage*.5,"wet_chain")
+		burst(enemy_center(enemy),Color("8be7ef"),6)
+		hit_shake=maxf(hit_shake,.08)
 	if reacted: update.note("REACTION")
 
 func target_visible(origin: Vector3,target: Vector3) -> bool:
