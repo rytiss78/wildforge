@@ -954,6 +954,10 @@ func blood_hit(enemy: Dictionary):
 	for i in range(5):
 		var drop=update.effect_node(orb_mesh,material(color),position_value);drop.scale=Vector3(.14,.10,.14)
 		effects.append({"node":drop,"life":.38,"velocity":Vector3(randf_range(-2,2),randf_range(1,3),randf_range(-2,2)),"blood":true,"base_scale":drop.scale})
+	# Hit sparks for instant feedback
+	for i in range(3):
+		var spark=update.effect_node(orb_mesh,material(Color("ffcc44")),position_value);spark.scale=Vector3(.04,.04,.04)
+		effects.append({"node":spark,"life":.15,"velocity":Vector3(randf_range(-3,3),randf_range(1,4),randf_range(-3,3)),"spark":true})
 	var mesh=PlaneMesh.new();mesh.size=Vector2(1.25,1.25)
 	var paint=ShaderMaterial.new();paint.shader=preload("res://shaders/melee_marks.gdshader");paint.set_shader_parameter("color",color);paint.set_shader_parameter("splatter",true)
 	var stain=MeshInstance3D.new();stain.mesh=mesh;stain.material_override=paint;stain.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;add_child(stain)
@@ -1075,10 +1079,11 @@ func hit_enemy(enemy: Dictionary, shot: Dictionary,cause: String="hit"):
 	hurt_enemy(enemy,damage,cause,str(shot.get("weapon_id",kind)))
 	# Combat juice: screen shake + hit stop on hits
 	if not enemy.dead:
-		hit_shake = maxf(hit_shake, minf(.12, damage / 50.0))
-		hit_stop = maxf(hit_stop, .015 if damage > 3 else .008)
-		if damage > 10: screen_flash = .06
-		if damage > 20: screen_flash = .1
+		hit_shake = maxf(hit_shake, minf(.15, damage / 40.0))
+		hit_stop = maxf(hit_stop, .02 if damage > 5 else .01)
+		if damage > 10: screen_flash = .07
+		if damage > 20: screen_flash = .12
+		if damage > 30: screen_flash = .18
 	ContentExpansion.payload(enemy,str(shot.get("payload","")))
 	if not enemy.dead:
 		if kind=="harpoon" and not enemy.boss: enemy.node.move_and_collide((player.position-enemy.node.position).normalized()*minf(4,1+stats.harpoonPull))
@@ -1232,6 +1237,7 @@ func damage_area(origin: Vector3,radius: float,damage: float,cause: String,exclu
 	# Hit stop on heavy hits
 	if damage > 15: hit_stop = .04
 	elif damage > 8: hit_stop = .025
+	elif damage > 3: hit_stop = .012
 	if cause in ["explosion","burrow"]: burst(origin+Vector3.UP,Color("f2b777"),8);explosion_fx(origin,radius)
 
 func take_damage(amount: float, source: Vector3=Vector3.ZERO, voice_type: String="hit"):
