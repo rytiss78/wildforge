@@ -930,6 +930,8 @@ func update_melee(delta: float):
 			sound.effect("melee_hit",swing.target);vibrate(.12,.22,.08)
 			hit_shake=maxf(hit_shake,.08)
 			hit_stop=maxf(hit_stop,.025)
+			screen_flash=maxf(screen_flash,.04)
+			screen_flash_color=Color("ffffff")
 	melee_attacks=melee_attacks.filter(func(swing):return swing.delay>0)
 
 func slash_fx(origin: Vector3,target: Vector3):
@@ -1639,6 +1641,8 @@ func update_combat(delta: float):
 			if closest.distance_squared_to(center) < pow(maxf(enemy.get("radius",.7),enemy.get("height",1.7)*.35)+shot.get("hit_radius",.1),2):
 				shot.hit.append(enemy.net_id)
 				hit_enemy(enemy,shot)
+				burst(closest,Color("ffcc44"),5)
+				hit_shake=maxf(hit_shake,.04)
 				if shot.bounce>0:
 					var target=nearest_enemy(shot.node.position,12,shot.hit)
 					if not target.is_empty(): shot.velocity=(enemy_center(target)-shot.node.position).normalized()*stat("projectileSpeed");shot.bounce-=1;break
