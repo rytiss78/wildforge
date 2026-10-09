@@ -303,8 +303,13 @@ func receive(sender: int,message):
 				if enemy.dead or enemy.net_id!=int(message.get("id",-1)): continue
 				var p=vector(members[sender].get("position",[]));var top=enemy.node.position.y+enemy.height
 				if Vector2(p.x-enemy.node.position.x,p.z-enemy.node.position.z).length()<enemy.radius+.5 and absf(p.y-top)<1.5:
-					if enemy.boss: game.hurt_enemy(enemy,float(members[sender].get("stats",{}).get("damage",15))*4,"stomp")
-					else: game.kill_enemy(enemy,"stomp")
+					enemy.hit_owner=sender
+					if enemy.boss:
+						game.hurt_enemy(enemy,float(members[sender].get("stats",{}).get("damage",15))*4,"stomp")
+						enemy.erase("hit_owner")
+					else:
+						game.kill_enemy(enemy,"stomp")
+						enemy.erase("hit_owner")
 				return
 		elif kind=="hit" and game.mode=="playing" and not frozen():
 			for enemy in game.enemies:

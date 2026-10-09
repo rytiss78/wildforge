@@ -818,7 +818,7 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 			var ring=TorusMesh.new();ring.inner_radius=.6;ring.outer_radius=.75
 			var glow_ring=MeshInstance3D.new();glow_ring.mesh=ring;glow_ring.position=Vector3(0,height*.55,0)
 			glow_ring.material_override=material(Color("ff6633"),2.5);glow_ring.scale=Vector3(1,.01,1);node.add_child(glow_ring);node.set_meta("elite_ring",glow_ring)
-	var max_health = (500+realm*400+realm_time*2) if boss else (23+realm*15+realm_time*.065)
+	var max_health = (500+realm*500+realm_time*3) if boss else (35+realm*22+realm_time*.12)
 	max_health *= 1+biome*.18
 	if not boss: max_health*=species.health*(.42 if species.behavior=="spit" else 1.0)
 	if elite: max_health*=2.5
@@ -873,24 +873,10 @@ func make_spawn_room() -> bool:
 	return true
 
 func steer_enemy(enemy: Dictionary,aim: Vector3,delta: float=1.0/30.0) -> Vector3:
-	# One sweep and a consistent short wall follow; collision does the sliding.
+	# Let EnemySurface handle all climbing/ceiling/ledge traversal.
+	# Just return straight aim for non-flying enemies; surface tick moves them up/over obstacles.
 	if enemy.flying or aim.length_squared()<.01: return aim
-	# Approach a wall directly when pursuing an elevated target; surface acquisition takes over near contact.
-	if not enemy.boss and enemy.get("wants_climb",false): return aim
-	enemy.wall_clock=maxf(0,float(enemy.get("wall_clock",0))-delta)
-	if enemy.wall_clock>0: return enemy.get("wall_direction",aim)
-	var body: CharacterBody3D=enemy.node
-	var collision=KinematicCollision3D.new()
-	var mask=body.collision_mask;body.collision_mask=1
-	var probe=body.global_transform;probe.origin.y+=.35
-	var blocked=body.test_move(probe,aim*maxf(.8,enemy.speed*.35),collision)
-	body.collision_mask=mask
-	if not blocked or collision.get_normal().y>cos(body.floor_max_angle): return aim
-	var normal=collision.get_normal();normal.y=0;normal=normal.normalized()
-	var side=float(enemy.get("wall_side",1.0 if enemy.net_id%2==0 else -1.0))
-	enemy.wall_side=side;enemy.wall_clock=.45
-	enemy.wall_direction=(normal.cross(Vector3.UP)*side+normal*.2).normalized()
-	return enemy.wall_direction
+	return aim
 
 func nearest_enemy(origin: Vector3, distance_value: float, excluded: Array = []) -> Dictionary:
 	var result = {}
@@ -1129,12 +1115,22 @@ func hit_enemy(enemy: Dictionary, shot: Dictionary,cause: String="hit"):
 		origin = next.node.position
 
 func record_damage_number(enemy_id: int, damage: float, cause: String,position_value: Vector3=Vector3.INF):
-	# Coalesce rapid hits on the same enemy without changing damage simulation.
-	for number in damage_numbers:
-		if number.enemy_id==enemy_id and number.cause==cause and number.life>1.0:
-			number.amount+=damage;number.value=maxi(1,roundi(number.amount));
-			if position_value.is_finite(): number.world_position=position_value
+	var dedup_key=str(enemy_id)+"/"+cause
+	var now=Time.get_ticks_msec()
+	var last_time=damage_sources.get(dedup_key+"_time",0)
+	var last_idx=damage_sources.get(dedup_key,-1)
+	var elapsed_ms=now-last_time
+	# Only aggregate if same enemy+cause within 300ms and the target entry still exists and is visible
+	if elapsed_ms<300 and last_idx>=0 and last_idx<damage_numbers.size():
+		var entry=damage_numbers[last_idx]
+		if entry.life>0 and entry.enemy_id==enemy_id:
+			entry.value+=maxi(1,roundi(damage))
+			entry.life=1.2
+			damage_sources[dedup_key+"_time"]=now
 			return
+	# Mark this as the latest entry for this enemy+cause
+	damage_sources[dedup_key]=damage_numbers.size()
+	damage_sources[dedup_key+"_time"]=now
 	if damage_numbers.size()>=MAX_DAMAGE_NUMBERS: return
 	damage_numbers.append({"enemy_id":enemy_id,"amount":damage,"value":maxi(1,roundi(damage)),"world_position":position_value,"screen_x":randf_range(.2,.8),"life":1.2,"maxLife":1.2,"cause":cause})
 

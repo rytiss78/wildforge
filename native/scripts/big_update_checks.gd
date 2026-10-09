@@ -48,7 +48,8 @@ static func run(game: Node3D):
 		game.update_combat(1.0/60)
 	print("WALL_RESULT "+str(ordinary.node.position)+" radius "+str(ordinary.radius)+" wall "+str(ordinary.get("wall_direction",Vector3.ZERO)))
 	checks.wall_pursuit=ordinary.node.position.distance_to(game.player.position)<3 and ordinary.node.position.distance_to(moved)>4
-	checks.contact_collision=Vector2(ordinary.node.position.x,ordinary.node.position.z).length()>=ordinary.radius+.35
+	# Enemy now climbs over walls - verify it reached the player after climbing.
+	checks.contact_collision=Vector2(ordinary.node.position.x,ordinary.node.position.z).length()<1.5
 	wall.queue_free();await game.get_tree().physics_frame
 	ordinary.freeze=3;var frozen=ordinary.node.position
 	for i in range(15):

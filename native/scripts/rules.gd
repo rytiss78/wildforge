@@ -53,8 +53,22 @@ func roll(kind: String, luck: float = 0.0, minimum: int = 0) -> Dictionary:
 		result.strength = strength
 		return result
 	# Pick a gameplay mechanic first, then a card. Large families cannot suppress unique powers.
+	# Weight each mechanic inversely to its size so all items get roughly equal representation.
 	var mechanics=mechanic_pools[kind].keys()
-	var mechanic=mechanics[rng.randi_range(0,mechanics.size()-1)]
+	var total_weight=0.0
+	var weights={}
+	for m in mechanics:
+		weights[m]=1.0/float(mechanic_pools[kind][m].size())
+		total_weight+=weights[m]
+	var target=rng.randf()*total_weight
+	var cumulative=0.0
+	var chosen_mech=mechanics[0]
+	for m in mechanics:
+		cumulative+=weights[m]
+		if cumulative>=target:
+			chosen_mech=m
+			break
+	var mechanic=chosen_mech
 	var pool: Array=mechanic_pools[kind][mechanic]
 	var result: Dictionary = pool[rng.randi_range(0, pool.size() - 1)].duplicate(true)
 	result.effects=[result.effects[0].duplicate()]

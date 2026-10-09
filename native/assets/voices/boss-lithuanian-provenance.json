@@ -1,33 +1,38 @@
 {
-  "engine": "eSpeak NG Lithuanian, local synthetic monster voice; no voice cloning",
+  "engine": "Kokoro-82M v1.0, offline Kokoro neural voice; no voice cloning",
+  "type": "Original Lithuanian boss lines rendered with synthetic neural voice; not a human recording or voice clone",
+  "modelLicense": "Apache-2.0",
+  "source": "https://huggingface.co/hexgrad/Kokoro-82M",
+  "runtime": "kokoro-onnx 0.6.1 (MIT), offline rendering only",
+  "voice": "af_heart",
   "lines": [
     {
       "id": "boss_lt_0",
       "text": "Po velnių!",
       "language": "lt",
-      "duration": 1.0229931972789115,
-      "sha256": "4ec88695b0bd09b28dbbd4eb2b1cbf47643b681ba5d7723c5be49e2b6384dd48"
+      "duration": 0.96,
+      "sha256": "007af928e6def6a8b04e6143ea2ff4a7953b1d0ed18299d50140d32b38c89dcc"
     },
     {
       "id": "boss_lt_1",
       "text": "Kad tave perkūnas!",
       "language": "lt",
-      "duration": 1.5885260770975056,
-      "sha256": "b0e3d9062c4b971093631511cb18ddf11cbad15b5022ade8e35eae48c0acfac8"
+      "duration": 1.387,
+      "sha256": "42bcd081171c14c1344597f981b82c7e60398fbcee191d2a5413388af3c22948"
     },
     {
       "id": "boss_lt_2",
       "text": "Šūdas! Dar atsiimsi!",
       "language": "lt",
-      "duration": 2.03718820861678,
-      "sha256": "6c2185a570a5d2b75504a89c6560e13cb0db9d59f5900d0f7390aba44e290d3b"
+      "duration": 1.621,
+      "sha256": "ee79f9eb7ff94d156165c51ac29088f91d277324332823eaa1e5b479bc555855"
     },
     {
       "id": "boss_lt_3",
       "text": "Eik tu velniop!",
       "language": "lt",
-      "duration": 1.2131519274376417,
-      "sha256": "b5d563159a843e0ded8ca5662e5e0e0f7e2bcafe46deca45fd04a339855c7c2a"
+      "duration": 1.173,
+      "sha256": "92b80307260b78b0d49380684c6f68d78d7927a6d9ba964a379ae9322866ac84"
     }
   ]
 }
