@@ -1202,19 +1202,20 @@ func kill_enemy(enemy: Dictionary, cause: String):
 	spawn_pickup(p+Vector3.UP*.4,"gold",roundi((1+enemy.get("biome",0)*.2)*(40 if enemy.boss else (2+realm)*(3 if enemy.get("elite",false) else 1))*stat("goldGain")))
 	# Kill feedback: elite/boss get big explosion, regular get dust puff
 	if enemy.get("elite",false) or enemy.boss:
-		burst(p+Vector3.UP*.5,Color("ff8844"),10)
-		burst(p+Vector3.UP*.5,Color("ffcc44"),12 if enemy.boss else 6)
-		screen_flash=0.15
+		for i in range(12): burst(p+Vector3.UP*randf(),Color("ff8844"),1)
+		for i in range(14 if enemy.boss else 8): burst(p+Vector3.UP*randf(),Color("ffcc44"),1)
+		screen_flash=maxf(screen_flash,.2 if enemy.boss else .15)
 		screen_flash_color=Color("ffaa44")
-		hit_shake=0.2 if enemy.get("elite",false) else 0.35
-		hit_stop=0.08
+		hit_shake=maxf(hit_shake,.35 if enemy.boss else .2)
+		hit_stop=maxf(hit_stop,.08)
 		sound.say("kill",25)
+		vibrate(.3,.3,.2)
 	else:
-		# Regular kills get a small burst + screen flash for feedback
-		burst(p+Vector3.UP*.3,Color("c8aa75"),4)
-		burst(p+Vector3.UP*.3,Color("888888"),3)
-		hit_shake=maxf(hit_shake, 0.06)
-		screen_flash=0.03
+		for i in range(5): burst(p+Vector3.UP*randf(),Color("c8aa75"),1)
+		for i in range(4): burst(p+Vector3.UP*randf(),Color("888888"),1)
+		hit_shake=maxf(hit_shake,.06)
+		screen_flash=maxf(screen_flash,.03)
+		vibrate(.1,.1,.05)
 	# Kill sparks for all kills
 	burst(p+Vector3.UP*.2,Color("ffcc44"),2)
 	if enemy.boss:
