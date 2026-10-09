@@ -135,6 +135,9 @@ var kill_types={}
 var combo_count=0
 var combo_timer=0.0
 var enemy_hit_stuns={}
+var kill_timer=0.0
+var kills_in_window=0
+var camera_pulse=0.0
 var combat_profile=[]
 var profile_crowd=false
 var menu_repeat=0.0
@@ -1219,6 +1222,9 @@ func kill_enemy(enemy: Dictionary, cause: String):
 	spawn_pickup(p+Vector3.UP*.35,"xp",float(enemy.get("xp_reward",enemy_xp_reward(enemy)))*stat("xpGain"))
 	spawn_pickup(p+Vector3.UP*.4,"gold",roundi((1+enemy.get("biome",0)*.2)*(40 if enemy.boss else (2+realm)*(3 if enemy.get("elite",false) else 1))*stat("goldGain")))
 	# Kill feedback: elite/boss get big explosion, regular get dust puff
+	# Multi-kill tracking
+	kill_timer=1.0
+	kills_in_window+=1
 	if enemy.get("elite",false) or enemy.boss:
 		for i in range(12): burst(p+Vector3.UP*randf(),Color("ff8844"),1)
 		for i in range(14 if enemy.boss else 8): burst(p+Vector3.UP*randf(),Color("ffcc44"),1)
@@ -1235,7 +1241,13 @@ func kill_enemy(enemy: Dictionary, cause: String):
 		screen_flash=maxf(screen_flash,.03)
 		vibrate(.1,.1,.05)
 	# Kill sparks for all kills
-	burst(p+Vector3.UP*.2,Color("ffcc44"),2)
+ burst(p+Vector3.UP*.2,Color("ffcc44"),2)
+	# Multi-kill camera pulse
+	if kills_in_window>=2:
+		hit_shake=maxf(hit_shake,.15*kills_in_window)
+		camera_pulse=maxf(camera_pulse,.1*kills_in_window)
+	if kills_in_window>=3:
+		for i in range(8): burst(p+Vector3.UP*randf(),Color("#ffdd44"),1)
 	if enemy.boss:
 		if hp < stats.maxHp*.25: achievement_event("COMEBACK")
 		if health_damage == enemy.startDamage: achievement_event("NO_HIT_BOSS")
@@ -1865,6 +1877,9 @@ func _process(delta: float):
 	for id in enemy_hit_stuns.keys():
 		if realm_time>enemy_hit_stuns[id]:
 			enemy_hit_stuns.erase(id)
+	# Kill timer decay for multi-kill detection
+	kill_timer-=delta
+	if kill_timer<=0: kills_in_window=0
 	if not camera_locked:
 		var anchor=player.position+Vector3.UP*1.2
 		var offset=Vector3(sin(yaw)*camera_distance,7.5+camera_distance*.25+pitch*4,cos(yaw)*camera_distance)
@@ -1879,6 +1894,10 @@ func _process(delta: float):
 		# Screen flash overlay
 		screen_flash=maxf(0,screen_flash-delta)
 		if hit_shake>0: camera.position+=Vector3(sin(hit_shake*140),cos(hit_shake*110),0)*hit_shake*.32
+		# Camera pulse (pulls back on multi-kills)
+		if camera_pulse>0:
+			camera_distance+=camera_pulse*.3
+			camera_pulse-=delta
 		camera.look_at(anchor-Vector3(sin(yaw)*2,0,cos(yaw)*2))
 	for effect in effects:
 		effect.life-=delta
