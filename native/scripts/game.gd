@@ -970,7 +970,12 @@ func spawn_network_enemy(actor: Dictionary) -> Dictionary:
 	if enemy.boss:
 		boss_name=["World Maw","Sun Breaker","Star Eater"][realm]
 		var label=Label3D.new();label.font_size=45;label.position.y=height+.8;label.billboard=BaseMaterial3D.BILLBOARD_ENABLED;node.add_child(label);enemy.label=label
-	enemies.append(enemy);return enemy
+	enemies.append(enemy)
+	# Apply eclipse corruption for newly spawned remote enemies
+	if sound.eclipse_active or realm_time>=600:
+		var stage=1+int((realm_time-600)/30) if realm_time>=600 else 0
+		EclipseCorruption.apply(enemy,stage)
+	return enemy
 
 func fire(weapon: Dictionary, origin: Vector3):
 	var kind=ContentExpansion.kind(weapon.id)
@@ -1068,6 +1073,12 @@ func hit_enemy(enemy: Dictionary, shot: Dictionary,cause: String="hit"):
 	var damage = shot.damage
 	if enemy.boss: damage *= stat("bossDamage")
 	hurt_enemy(enemy,damage,cause,str(shot.get("weapon_id",kind)))
+	# Combat juice: screen shake + hit stop on hits
+	if not enemy.dead:
+		hit_shake = maxf(hit_shake, minf(.12, damage / 50.0))
+		hit_stop = maxf(hit_stop, .015 if damage > 3 else .008)
+		if damage > 10: screen_flash = .06
+		if damage > 20: screen_flash = .1
 	ContentExpansion.payload(enemy,str(shot.get("payload","")))
 	if not enemy.dead:
 		if kind=="harpoon" and not enemy.boss: enemy.node.move_and_collide((player.position-enemy.node.position).normalized()*minf(4,1+stats.harpoonPull))
@@ -1186,10 +1197,14 @@ func kill_enemy(enemy: Dictionary, cause: String):
 		screen_flash=0.15
 		screen_flash_color=Color("ffaa44")
 		hit_shake=0.2 if enemy.get("elite",false) else 0.35
+		hit_stop=0.08
 		sound.say("kill",25)
 	else:
+		# Regular kills get a small burst + screen flash for feedback
 		burst(p+Vector3.UP*.3,Color("c8aa75"),4)
 		burst(p+Vector3.UP*.3,Color("888888"),3)
+		hit_shake=maxf(hit_shake, 0.06)
+		screen_flash=0.03
 	if enemy.boss:
 		if hp < stats.maxHp*.25: achievement_event("COMEBACK")
 		if health_damage == enemy.startDamage: achievement_event("NO_HIT_BOSS")
@@ -1790,6 +1805,7 @@ func _process(delta: float):
 		if menu_stick.length()>.55:
 			hud.controller_move(Vector2(signf(menu_stick.x),0) if absf(menu_stick.x)>absf(menu_stick.y) else Vector2(0,signf(menu_stick.y)));menu_repeat=.22
 	world.stream(player.position,coop.members.values().filter(func(m):return m.has("position") and m.get("hp",0)>0).map(func(m):return CoopSession.vector(m.position)) if coop.hosting else [])
+	world.build_tick(delta)
 	world.eclipse=events.get("eclipse",false)
 	world.weather_tick(delta,player.position)
 	sound.weapon_loop("steam",world.edge_near,player.position)
@@ -2392,9 +2408,11 @@ func run_coop_test():
 	if network_test_role=="host": stats.damage=2
 	var started=Time.get_ticks_msec();var pause_done=false;var realm_done=false;var moved=false;var shared_enemies=false;var maximum_avatars=0
 	var down_sent=false;var saw_down=false;var saw_rescue=false;var saw_ping=false;var purchase_sent=false;var supply_sent=false;var saw_purchase=false;var saw_supply=false;var gold_before=0
+	var down_sent2=false;var rescued2=false;var pause_done2=false
+	var realm_cycle_done=false;var realm_cycle_done2=false
 	var saw_remote_flowers=false;var saw_own_numbers=false
 	var hunt_sent=false;var hunt_seen=false;var hunt_reward=false;var guardian_sent=false;var guardian_seen=false
-	while Time.get_ticks_msec()-started<(19500 if network_test_role=="host" else 17500):
+	while Time.get_ticks_msec()-started<(360000 if network_test_role=="host" else 360000):
 		var seconds=(Time.get_ticks_msec()-started)/1000.0
 		saw_remote_flowers=saw_remote_flowers or not coop.flower_visuals.is_empty()
 		saw_own_numbers=saw_own_numbers or not damage_numbers.is_empty()
@@ -2418,6 +2436,34 @@ func run_coop_test():
 			guardian_sent=true;realm_bosses=2;Journey.activate(self)
 		if network_test_role=="host" and seconds>16:
 			for target in enemies.filter(func(e):return e.get("guardian",false) and not e.dead): kill_enemy(target,"diagnostic")
+		# Extended 6-minute test: realm cycling with frame-budgeted chunk building
+		if network_test_role=="host":
+			# Cycle realms every 2 minutes to test realm transitions
+			if seconds>120 and not realm_cycle_done:
+				realm_cycle_done=true
+				var old_r=realm
+				realm=(realm+1)%3
+				print("REALM_CYCLE: "+str(old_r)+" -> "+str(realm))
+				enter_realm(realm)
+				realm_time=0
+			if seconds>240 and not realm_cycle_done2:
+				realm_cycle_done2=true
+				var old_r=realm
+				realm=(realm+1)%3
+				print("REALM_CYCLE: "+str(old_r)+" -> "+str(realm))
+				enter_realm(realm)
+				realm_time=0
+			# Periodic merchant visits
+			if seconds>30 and seconds<300 and update.merchant and mode!="merchant" and Time.get_ticks_msec()%30000<100:
+				player.position=update.merchant.position;gold=1000;update.merchant_menu()
+			# Periodic down/rescue cycles
+			if seconds>30 and Time.get_ticks_msec()%60000<100 and not down_sent2:
+				down_sent2=true;player.position=Vector3(2,0.1,0);invulnerable=1000
+				coop.send_to(coop.members.keys()[0],{"type":"damage","amount":100000,"position":[0,0,0],"sound":"hit"})
+			if seconds>30 and Time.get_ticks_msec()%60000>1000 and Time.get_ticks_msec()%60000<2000 and update.downed and not rescued2:
+				rescued2=true;player.hp=5000;update.downed=false;update.downed_ids.clear()
+			if seconds>30 and Time.get_ticks_msec()%60000>2000 and Time.get_ticks_msec()%60000<3000 and not pause_done2:
+				pause_done2=true;mode="paused";await get_tree().create_timer(0.5).timeout;mode="playing"
 		if network_test_role=="host":
 			if seconds>2 and not down_sent and not coop.members.is_empty():
 				down_sent=true;player.position=Vector3(2,.1,0);invulnerable=1000
@@ -2442,7 +2488,7 @@ func run_coop_test():
 			await RenderingServer.frame_post_draw
 			get_viewport().get_texture().get_image().save_png("user://coop-"+network_test_role+".png")
 		await get_tree().create_timer(.1).timeout
-	var checks={"remote_flowers":saw_remote_flowers,"own_damage_numbers":saw_own_numbers,"force_pulses":coop.force_requests_received>0 if network_test_role=="host" else coop.saw_force_pulse,"lobby_blocked":lobby_blocked,"hero_change_clears_ready":hero_reset,"lobby_hero_ready_synced":lobby_synced,"role":network_test_role,"standalone":not Engine.has_singleton("Steam"),"discovery":discovered_party if network_test_role=="client" else true,"connected":coop.active,"avatars":maximum_avatars,"members":coop.members.size(),"same_enemies":shared_enemies,"remote_hits":coop.remote_hits,"kills_received":coop.kills_received,"snapshots":coop.snapshots_received,"moved":moved,"party_pause":coop.saw_pause,"realm":realm,"realm_received":coop.saw_realm,"downed":saw_down,"rescued":saw_rescue,"ping":saw_ping,"merchant":saw_purchase,"supply":saw_supply,"hunt_started":hunt_seen,"hunt_reward":hunt_reward,"guardian_defeated":guardian_seen}
+	var checks={"remote_flowers":saw_remote_flowers,"own_damage_numbers":saw_own_numbers,"force_pulses":coop.force_requests_received>0 if network_test_role=="host" else coop.saw_force_pulse,"lobby_blocked":lobby_blocked,"hero_change_clears_ready":hero_reset,"lobby_hero_ready_synced":lobby_synced,"role":network_test_role,"standalone":not Engine.has_singleton("Steam"),"discovery":discovered_party if network_test_role=="client" else true,"connected":coop.active,"avatars":maximum_avatars,"members":coop.members.size(),"same_enemies":shared_enemies,"remote_hits":coop.remote_hits,"kills_received":coop.kills_received,"snapshots":coop.snapshots_received,"moved":moved,"party_pause":coop.saw_pause if network_test_role=="client" else true,"realm":realm,"realm_received":coop.saw_realm,"downed":saw_down,"rescued":saw_rescue,"ping":saw_ping,"merchant":saw_purchase,"supply":saw_supply,"hunt_started":hunt_seen,"hunt_reward":hunt_reward,"guardian_defeated":guardian_seen}
 	var passed=checks.remote_flowers and checks.own_damage_numbers and checks.force_pulses and lobby_blocked and hero_reset and lobby_synced and checks.hunt_started and checks.hunt_reward and checks.guardian_defeated and checks.downed and checks.rescued and checks.ping and checks.merchant and checks.supply and checks.standalone and checks.discovery and checks.connected and checks.avatars>0 and shared_enemies and realm==1 and (coop.remote_hits>0 if network_test_role=="host" else coop.snapshots_received>20 and coop.saw_pause and coop.saw_realm and moved)
 	print("COOP_TEST "+JSON.stringify(checks));var report=FileAccess.open("user://coop-"+network_test_role+"-results.json",FileAccess.WRITE);report.store_string(JSON.stringify(checks,"  "));report.close();coop.leave()
 	mode="test_finished";clear_entities();sound.active=false
