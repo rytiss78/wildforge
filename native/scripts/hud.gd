@@ -48,9 +48,6 @@ var lobby_roster_label: Label
 var damage_labels: Array[Label]=[]
 var damage_overlay: Control
 var flash_overlay: ColorRect
-var combo_count=0
-var combo_timer=0.0
-var combo_label: Label
 var skill_strip=HBoxContainer.new()
 var skill_strip_key=""
 var binding_action=""
@@ -230,12 +227,6 @@ func setup(owner_game):
 	toast.position = Vector2(440,540)
 	toast.add_theme_stylebox_override("normal",style())
 	root.add_child(toast)
-	# Combo counter
-	combo_label = label("",20,ThemeTokens.STAR_GOLD)
-	combo_label.position = Vector2(600,700)
-	combo_label.add_theme_stylebox_override("normal",style())
-	combo_label.visible = false
-	root.add_child(combo_label)
 	blast = ColorRect.new()
 	blast.color = Color(1,.8,.3,0)
 	blast.visible=false
@@ -331,16 +322,6 @@ func update(delta: float):
 	xp_text.text="XP  %d / %d to next level" % [floori(game.xp),game.xp_target]
 	coins.text = "%d gold  ·  Chest %d  ·  %d left" % [game.gold,game.rules.chest_price(game.paid_chests,game.stats.discount),game.chests.filter(func(c):return not c.opened and not c.get("destroyed",false)).size()]
 	box_counter.visible=false
-	# Combo counter display
-	if combo_count > 1 and combo_timer > 0:
-		combo_label.visible = true
-		combo_label.text = "%dx COMBO" % combo_count
-		# Pulse effect as timer runs out
-		if combo_timer < 0.5:
-			combo_label.modulate = Color(1, 0.7, 0.3, 0.5 + sin(combo_timer * 20) * 0.5)
-	else:
-		combo_label.visible = false
-	combo_label.modulate = Color.WHITE if combo_timer >= 0.5 else combo_label.modulate
 	weapons.refresh()
 	turret_hints.visible=not modal.visible and game.equipped.any(func(w):return w.turret)
 	if hint_device != game.input_kind:

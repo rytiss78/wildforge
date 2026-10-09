@@ -125,19 +125,11 @@ var eclipse_run_velocity=Vector3.ZERO
 var knock_velocity=Vector3.ZERO
 var hit_shake=0.0
 var hit_stop=0.0
-var screen_flash=0.0
-var screen_flash_color=Color.WHITE
 const MAX_DAMAGE_NUMBERS=48
 var damage_numbers=[]
 var force_clocks={}
 var damage_sources={}
 var kill_types={}
-var combo_count=0
-var combo_timer=0.0
-var enemy_hit_stuns={}
-var kill_timer=0.0
-var kills_in_window=0
-var camera_pulse=0.0
 var combat_profile=[]
 var profile_crowd=false
 var menu_repeat=0.0
@@ -301,7 +293,6 @@ func select_hero(item: Dictionary):
 func clear_entities():
 	coop.clear_flower_visuals();flower_serial=0
 	eclipse_run_velocity=Vector3.ZERO;pickup_merge_clock=0;enemy_step=0;crowd.clear();damage_numbers.clear()
-	combo_count=0;combo_timer=0;enemy_hit_stuns.clear()
 	melee_attacks.clear()
 	if is_instance_valid(avatar): avatar.finish_melee()
 	for id in sound.weapon_loops: sound.weapon_loop(id,false,player.position)
@@ -937,9 +928,7 @@ func update_melee(delta: float):
 			sound.effect("melee_hit",swing.target);vibrate(.12,.22,.08)
 			hit_shake=maxf(hit_shake,.08)
 			hit_stop=maxf(hit_stop,.025)
-			screen_flash=maxf(screen_flash,.04)
-			screen_flash_color=Color("ffffff")
-	melee_attacks=melee_attacks.filter(func(swing):return swing.delay>0)
+			melee_attacks=melee_attacks.filter(func(swing):return swing.delay>0)
 
 func slash_fx(origin: Vector3,target: Vector3):
 	if effects.size()>220: return
@@ -1089,17 +1078,10 @@ func hit_enemy(enemy: Dictionary, shot: Dictionary,cause: String="hit"):
 	var damage = shot.damage
 	if enemy.boss: damage *= stat("bossDamage")
 	hurt_enemy(enemy,damage,cause,str(shot.get("weapon_id",kind)))
-	# Combo tracking
-	combo_count+=1
-	combo_timer=2.0
-	enemy_hit_stuns[enemy.net_id]=realm_time+0.15
 	# Combat juice: screen shake + hit stop on hits
 	if not enemy.dead:
 		hit_shake = maxf(hit_shake, minf(.15, damage / 40.0))
 		hit_stop = maxf(hit_stop, .02 if damage > 5 else .01)
-		if damage > 10: screen_flash = .07
-		if damage > 20: screen_flash = .12
-		if damage > 30: screen_flash = .18
 	ContentExpansion.payload(enemy,str(shot.get("payload","")))
 	if not enemy.dead:
 		if kind=="harpoon" and not enemy.boss: enemy.node.move_and_collide((player.position-enemy.node.position).normalized()*minf(4,1+stats.harpoonPull))
@@ -1223,13 +1205,9 @@ func kill_enemy(enemy: Dictionary, cause: String):
 	spawn_pickup(p+Vector3.UP*.4,"gold",roundi((1+enemy.get("biome",0)*.2)*(40 if enemy.boss else (2+realm)*(3 if enemy.get("elite",false) else 1))*stat("goldGain")))
 	# Kill feedback: elite/boss get big explosion, regular get dust puff
 	# Multi-kill tracking
-	kill_timer=1.0
-	kills_in_window+=1
 	if enemy.get("elite",false) or enemy.boss:
 		for i in range(12): burst(p+Vector3.UP*randf(),Color("ff8844"),1)
 		for i in range(14 if enemy.boss else 8): burst(p+Vector3.UP*randf(),Color("ffcc44"),1)
-		screen_flash=maxf(screen_flash,.2 if enemy.boss else .15)
-		screen_flash_color=Color("ffaa44")
 		hit_shake=maxf(hit_shake,.35 if enemy.boss else .2)
 		hit_stop=maxf(hit_stop,.08)
 		sound.say("kill",25)
@@ -1238,16 +1216,9 @@ func kill_enemy(enemy: Dictionary, cause: String):
 		for i in range(5): burst(p+Vector3.UP*randf(),Color("c8aa75"),1)
 		for i in range(4): burst(p+Vector3.UP*randf(),Color("888888"),1)
 		hit_shake=maxf(hit_shake,.06)
-		screen_flash=maxf(screen_flash,.03)
 		vibrate(.1,.1,.05)
 	# Kill sparks for all kills
 	burst(p+Vector3.UP*.2,Color("ffcc44"),2)
-	# Multi-kill camera pulse
-	if kills_in_window>=2:
-		hit_shake=maxf(hit_shake,.15*kills_in_window)
-		camera_pulse=maxf(camera_pulse,.1*kills_in_window)
-	if kills_in_window>=3:
-		for i in range(8): burst(p+Vector3.UP*randf(),Color("#ffdd44"),1)
 	if enemy.boss:
 		if hp < stats.maxHp*.25: achievement_event("COMEBACK")
 		if health_damage == enemy.startDamage: achievement_event("NO_HIT_BOSS")
@@ -1533,8 +1504,6 @@ func update_combat(delta: float):
 		enemy.freeze = maxf(0,enemy.freeze-enemy_delta)
 		enemy.blind = maxf(0,enemy.blind-enemy_delta)
 		# Hit stun: briefly freeze enemy on hit for combat feedback
-		if enemy_hit_stuns.has(enemy.net_id) and realm_time<enemy_hit_stuns[enemy.net_id]:
-			enemy.hit_stun_realm=enemy_hit_stuns[enemy.net_id]
 		if enemy.status_time > 0:
 			enemy.status_time -= enemy_delta
 			if enemy.poison>0: hurt_enemy(enemy,enemy.poison*enemy_delta,"poison")
@@ -1584,7 +1553,7 @@ func update_combat(delta: float):
 			var cycle=fmod(realm_time+enemy.net_id,8.0)
 			if cycle>5: aim=aim.rotated(Vector3.UP,1.1)*.5
 			if enemy.get("recovery",0)>realm_time: aim=Vector3.ZERO
-		var is_stunned=enemy.freeze>0 or (enemy_hit_stuns.has(enemy.net_id) and realm_time<enemy_hit_stuns[enemy.net_id])
+		var is_stunned=enemy.freeze>0
 		var velocity=(aim*enemy.speed*(2 if enemy.get("charge",0)>0 else 1)*(1-minf(.7,enemy.slow))+separation.limit_length(enemy.speed*.45)) if not is_stunned else Vector3.ZERO
 		var body: CharacterBody3D=enemy.node
 		var surface_moved=EnemySurface.tick(self,enemy,target_player.position,enemy_delta)
@@ -1869,17 +1838,6 @@ func _process(delta: float):
 		if level_reveal<=0: mode="offer";hud.show_offers(offers,"level")
 	for dn in damage_numbers: dn.life-=delta
 	damage_numbers=damage_numbers.filter(func(dn):return dn.life>0)
-	# Combo timer decay
-	if combo_timer>0:
-		combo_timer-=delta
-		if combo_timer<=0: combo_count=0
-	# Enemy hit stun cleanup
-	for id in enemy_hit_stuns.keys():
-		if realm_time>enemy_hit_stuns[id]:
-			enemy_hit_stuns.erase(id)
-	# Kill timer decay for multi-kill detection
-	kill_timer-=delta
-	if kill_timer<=0: kills_in_window=0
 	if not camera_locked:
 		var anchor=player.position+Vector3.UP*1.2
 		var offset=Vector3(sin(yaw)*camera_distance,7.5+camera_distance*.25+pitch*4,cos(yaw)*camera_distance)
@@ -1892,12 +1850,8 @@ func _process(delta: float):
 		camera.position=camera.position.lerp(desired,1-exp(-delta*9))
 		hit_shake=maxf(0,hit_shake-delta)
 		# Screen flash overlay
-		screen_flash=maxf(0,screen_flash-delta)
 		if hit_shake>0: camera.position+=Vector3(sin(hit_shake*140),cos(hit_shake*110),0)*hit_shake*.32
 		# Camera pulse (pulls back on multi-kills)
-		if camera_pulse>0:
-			camera_distance+=camera_pulse*.3
-			camera_pulse-=delta
 		camera.look_at(anchor-Vector3(sin(yaw)*2,0,cos(yaw)*2))
 	for effect in effects:
 		effect.life-=delta
@@ -1923,8 +1877,6 @@ func _process(delta: float):
 		if reveal_clock>=.8: hud.chest_reveal(reveal_tier,minf(1,(reveal_clock-.8)/(reveal_duration-.8)))
 		if reveal_clock>=reveal_duration: finish_reveal()
 	sound.tick(delta,mode in ["playing","settings"],boss_active() or events.get("eclipse",false))
-	hud.combo_count=combo_count
-	hud.combo_timer=combo_timer
 	hud.update(delta)
 	next_save+=delta
 	if next_save>10:
