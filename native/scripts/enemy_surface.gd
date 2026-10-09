@@ -105,8 +105,13 @@ static func tick(game, enemy: Dictionary, target: Vector3, delta: float) -> bool
 		detach(enemy)
 		return true
 
-	attach(enemy, support, direction)
-	body.velocity = (body.position - previous) / maxf(.001, delta)
+	# Only reattach to steep surfaces; flat ground means the enemy fell off
+	if support.normal.y < 0.5:
+		attach(enemy, support, direction)
+		body.velocity = (body.position - previous) / maxf(.001, delta)
+	else:
+		detach(enemy)
+		return true
 
 	if enemy.surface_up.y > .8:
 		var offset_to_target = target - body.position
