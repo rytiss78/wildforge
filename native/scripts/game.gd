@@ -1752,6 +1752,11 @@ func _physics_process(delta: float):
 	if dash_time>0:
 		eclipse_run_velocity=direction*stat("speed")
 		player.velocity.x=direction.x*stat("speed")*3;player.velocity.z=direction.z*stat("speed")*3
+		# Dash trail particles
+		if randf()<.4:
+			var trail=update.effect_node(orb_mesh,material(Color("b0d9ea")),player.position+Vector3.UP*.6)
+			trail.scale=Vector3(.08,.08,.08)
+			effects.append({"node":trail,"life":.25,"velocity":Vector3.ZERO,"stationary":true,"trail":true})
 	else:
 		var running=eclipse_running(wish,delta,player.is_on_floor())
 		player.velocity.x=running.x;player.velocity.z=running.z
