@@ -926,7 +926,10 @@ func update_melee(delta: float):
 			var critical=rules.rng.randf()<stat("crit")
 			if critical: career.bump("crits")
 			hit_enemy(enemy,{"kind":"saw","weapon_id":swing.get("weapon_id","saw"),"payload":swing.get("payload",""),"damage":swing.damage*(stat("critPower") if critical else 1.0)},"melee");hits+=1
-		if hits>0: sound.effect("melee_hit",swing.target);vibrate(.12,.22,.08)
+		if hits>0:
+			sound.effect("melee_hit",swing.target);vibrate(.12,.22,.08)
+			hit_shake=maxf(hit_shake,.08)
+			hit_stop=maxf(hit_stop,.025)
 	melee_attacks=melee_attacks.filter(func(swing):return swing.delay>0)
 
 func slash_fx(origin: Vector3,target: Vector3):
