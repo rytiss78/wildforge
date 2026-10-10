@@ -22,6 +22,9 @@ var scenery_material: ShaderMaterial
 var last_cell=Vector2i(999,999)
 var stream_signature=""
 var sky_paint: ShaderMaterial
+var build_in_progress=false
+var build_cells=[]
+var build_cell_index=0
 var sky_top=Color("76c8e6")
 var sky_horizon=Color("dfedda")
 var environment: Environment
@@ -152,9 +155,13 @@ func build(index: int,world_seed: int):
 	chunks.clear();pending.clear();landmarks.clear();last_cell=Vector2i(999,999);stream_signature=""
 	clouds.clear();border_steam.clear();border_patches.clear()
 	make_environment();make_material();make_boundaries();make_landmarks()
-	# Synchronous collision cover at spawn; later chunks are budgeted across frames.
+	# Frame-budgeted chunk building: schedule 49 chunks, process ~6 per frame
+	build_in_progress=true
+	build_cell_index=0
+	build_cells=[]
 	for x in range(-2,3):
-		for z in range(-2,3): make_chunk(Vector2i(x,z))
+		for z in range(-2,3):
+			build_cells.append(Vector2i(x,z))
 	stream(Vector3.ZERO)
 
 func make_material():
@@ -308,6 +315,20 @@ func stream(position_value: Vector3,party: Array=[]):
 		for key in chunks.keys():
 			if centers.all(func(c):return maxi(absi(key.x-c.x),absi(key.y-c.y))>3): chunks[key].queue_free();chunks.erase(key)
 	if not pending.is_empty(): make_chunk(pending.pop_front())
+
+# Frame-budgeted chunk building for realm transitions
+func build_tick(delta: float):
+	if not build_in_progress: return
+	var budget=mini(2,int(delta*60))
+	for i in range(budget):
+		if build_cell_index<build_cells.size():
+			make_chunk(build_cells[build_cell_index])
+			build_cell_index+=1
+		else: break
+	if build_cell_index>=build_cells.size():
+		build_in_progress=false
+		build_cells.clear()
+		build_cell_index=0
 
 func ensure_ground(p: Vector3):
 	make_chunk(Vector2i(floori(p.x/CHUNK),floori(p.z/CHUNK)))

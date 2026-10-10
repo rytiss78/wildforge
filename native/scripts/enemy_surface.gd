@@ -54,8 +54,8 @@ static func tick(game, enemy: Dictionary, target: Vector3, delta: float) -> bool
 		aim.y = 0
 		aim = aim.normalized()
 		var ground_hit = ray(game, enemy, body.position + Vector3.UP * 1.5, body.position + Vector3.UP * 1.5 + aim * 8 - Vector3.UP * 4)
-		# normal.y < 0.5 means slope angle > 45° — only attach for genuinely steep ground
-		if not ground_hit.is_empty() and ground_hit.normal.y < 0.5:
+		# normal.y < 0.71 means slope angle > 45° — only attach for genuinely steep ground
+		if not ground_hit.is_empty() and ground_hit.normal.y < 0.71:
 			attach(enemy, ground_hit, aim)
 			return true
 		return false
@@ -83,8 +83,8 @@ static func tick(game, enemy: Dictionary, target: Vector3, delta: float) -> bool
 
 	var nose = body.position + normal * (enemy.radius + .12)
 	var front = ray(game, enemy, nose, nose + direction * (enemy.radius + .25 + travel.length()))
-	# Only re-attach to genuinely steep surfaces (>45° from vertical = normal.y < 0.5)
-	if not front.is_empty() and front.normal.y < 0.5:
+	# Only re-attach to genuinely steep surfaces (>45° from vertical = normal.y < 0.71)
+	if not front.is_empty() and front.normal.y < 0.71:
 		attach(enemy, front, direction)
 		normal = enemy.surface_up
 		direction = (target - body.position).slide(normal).normalized()
@@ -105,8 +105,8 @@ static func tick(game, enemy: Dictionary, target: Vector3, delta: float) -> bool
 		detach(enemy)
 		return true
 
-	# Only reattach to steep surfaces; flat ground means the enemy fell off
-	if support.normal.y < 0.5:
+	# Only reattach to steep surfaces; flat ground means the fell off
+	if support.normal.y < 0.71:
 		attach(enemy, support, direction)
 		body.velocity = (body.position - previous) / maxf(.001, delta)
 	else:

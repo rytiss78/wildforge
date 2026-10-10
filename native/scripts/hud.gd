@@ -370,13 +370,6 @@ func update(delta: float):
 	if toast_time > 0:
 		toast_time -= delta
 		if toast_time <= 0: toast.text = ""
-	# Screen flash overlay
-	if game.screen_flash > 0:
-		flash_overlay.color = game.screen_flash_color
-		flash_overlay.color.a = minf(game.screen_flash * 8.0, 0.35)
-		flash_overlay.visible = true
-	else:
-		flash_overlay.visible = false
 	# Render damage numbers (2D UI - rise from bottom)
 	for damage_label in damage_labels: damage_label.visible=false
 	if game.damage_numbers:

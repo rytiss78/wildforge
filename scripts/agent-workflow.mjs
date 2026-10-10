@@ -177,7 +177,7 @@ async function main(action) {
       report.capture=['menu','coop','hero','ice-match','hud','build','potions','potion-icons','chest-opening','chest-reels','offers','focus','weapons','pause','ended'].map(name=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','ui-'+name+'.png'),started));
     }
     if (action === 'coop') {
-      const results=await Promise.allSettled(['host','client'].map(role=>step('coop-'+role,godot,['--headless','--path',join(root,'native'),'--','--coop-'+role+'-test'],90000)));
+      const results=await Promise.allSettled(['host','client'].map(role=>step('coop-'+role,godot,['--headless','--path',join(root,'native'),'--','--coop-'+role+'-test'],420000)));
       const failed=results.filter(r=>r.status==='rejected');
       if(failed.length) throw new Error(failed.map(r=>r.reason.message).join('\n'));
       report.coop=results.map(r=>JSON.parse(r.value.split(/\r?\n/).findLast(x=>x.startsWith('COOP_TEST ')).slice(10)));

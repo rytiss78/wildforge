@@ -390,3 +390,14 @@ User requested version number on GitHub. Renamed the existing release/tag/title 
 ## 2026-10-08 — clean numbered builds
 User rejected test/prerelease naming and authorized GitHub version cleanup. Current release is Wildforge 0.8.2 — Build 1, tag build-1, prerelease=false, Latest=true. Repackaged verified binaries with numbered README/build-info.json; uploaded Wildforge-0.8.2-Build-1-Windows.zip and SHA256SUMS-Build-1.txt; both remote digests verified. ZIP EXE/PCK hashes match17-35-38 tested export, manifest source1a96f9b. Removed old-named assets, progression release and10obsolete GitHub tags; API confirms exactly one release and tag, build-1, and latest endpoint resolves build-1. Commit history preserved. Local historical tags remain; do not bulk-push them.
 Packaging script now requires positive BuildNumber, optionally accepts verified BuildDirectory and exact SourceCommit, writes build-info.json, numbers archive/checksum and refuses overwriting a previously packaged number. Executed package-release.ps1 -BuildNumber 1 -BuildDirectory G:/game/.build-staging/release-coop-feedback -SourceCommit 1a96f9b999cf3a9adef85154eff8b551742cca14 successfully. No gameplay changes or new gameplay test claim. README/PLAN document next Build 2 and normal-release policy. URL https://github.com/rytiss78/wildforge/releases/tag/build-1.
+
+## 2026-10-10 — bug fixes: dictionary corruption access, slope-climb threshold, corruption stage storage
+User: look over code, do tests, fix bugs. Versions from now on are bare numbers (0.8.1+), no test/build suffix. All six diagnostics pass fresh this batch: check (13 JS + Godot import/parse), combat-review, coop-feedback, journey-review, surface-review, controls-review.
+
+Fixed three real defects:
+1. journey_review.gd — Dictionary dot-access crashes (`Invalid access to property or key corruption`). `specimen.corruption`/`actor.corruption`/`remote.corruption` are Dictionary keys; changed all three to `.get("corruption",0)` (lines 30, 37, 38).
+2. eclipse_corruption.gd — `EclipseCorruption.apply()` never stored the stage back on the enemy dict, so `corruption_existing`/`corruption_new`/`corruption_scales` were always false. Added `enemy["corruption"]=stage` at the top of apply().
+3. enemy_surface.gd — steep-surface reattach gates used `normal.y < 0.5` (steeper than 60°), which rejects 45° slopes even though the code comments and surface-review test expect 45° to hold. Changed the three gates (lines 58, 87, 109) to `normal.y < 0.71`. slope check now passes.
+
+Version already at 0.8.2 in native/project.godot; no change needed. Unrelated to this batch: pre-existing modified voices (boss_lt_4..9), hud.gd, world.gd, agent-workflow.mjs, generate-boss-lithuanian.py — left untouched.
+`git diff --check` clean except preexisting line-ending warnings.

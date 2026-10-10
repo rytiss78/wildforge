@@ -21,6 +21,7 @@ static func thorns() -> ArrayMesh:
 
 static func apply(enemy: Dictionary,stage: int):
 	if enemy.dead or stage<=0 or int(enemy.get("corruption",0))==stage: return
+	enemy["corruption"]=stage
 	var rig=enemy.node.get_meta("rig")
 	if rig==null: return
 	var intensity=clampf(.22+stage*.065+(.18 if enemy.elite else .10 if enemy.boss else 0.),0,.85)

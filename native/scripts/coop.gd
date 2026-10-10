@@ -392,7 +392,14 @@ func apply_world(message: Dictionary):
 	if not game.run_active or int(message.realm)!=game.realm: return
 	game.update.apply_state(message.get("big_update",{}))
 	game.events=message.get("journey",game.events).duplicate(true);game.realm_bosses=int(message.get("wardens",game.realm_bosses))
-	snapshots_received+=1;paused=bool(message.pause);saw_pause=saw_pause or paused;game.realm_time=float(message.seconds);game.elapsed=float(message.elapsed)
+	snapshots_received+=1;paused=bool(message.pause);saw_pause=saw_pause or paused
+	# Smooth time sync: lerp client time toward host to prevent jumps
+	var target_time=float(message.seconds)
+	if game.realm_time>0:
+		game.realm_time=lerp(game.realm_time,target_time,0.18)
+	else:
+		game.realm_time=target_time
+	game.elapsed=float(message.elapsed)
 	for id in message.players:
 		var number=int(id)
 		if number==local_id: continue

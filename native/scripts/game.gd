@@ -1138,7 +1138,8 @@ func record_damage_number(enemy_id: int, damage: float, cause: String,position_v
 	if elapsed_ms<300 and last_idx>=0 and last_idx<damage_numbers.size():
 		var entry=damage_numbers[last_idx]
 		if entry.life>0 and entry.enemy_id==enemy_id:
-			entry.value+=maxi(1,roundi(damage))
+			entry.amount+=damage
+			entry.value=maxi(1,roundi(entry.amount))
 			entry.life=1.2
 			damage_sources[dedup_key+"_time"]=now
 			return

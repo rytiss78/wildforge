@@ -1,38 +1,75 @@
 {
-  "engine": "Kokoro-82M v1.0, offline Kokoro neural voice; no voice cloning",
-  "type": "Original Lithuanian boss lines rendered with synthetic neural voice; not a human recording or voice clone",
-  "modelLicense": "Apache-2.0",
-  "source": "https://huggingface.co/hexgrad/Kokoro-82M",
-  "runtime": "kokoro-onnx 0.6.1 (MIT), offline rendering only",
-  "voice": "af_heart",
+  "engine": "edge-tts lt-LT-LeonasNeural, native Lithuanian TTS",
   "lines": [
     {
       "id": "boss_lt_0",
       "text": "Po velnių!",
       "language": "lt",
-      "duration": 0.96,
-      "sha256": "007af928e6def6a8b04e6143ea2ff4a7953b1d0ed18299d50140d32b38c89dcc"
+      "duration": 2.232,
+      "sha256": "f724e656889380f070b295ebe28918d7b8e5f06b6e1d33b3a719c8c0a06e3e9a"
     },
     {
       "id": "boss_lt_1",
       "text": "Kad tave perkūnas!",
       "language": "lt",
-      "duration": 1.387,
-      "sha256": "42bcd081171c14c1344597f981b82c7e60398fbcee191d2a5413388af3c22948"
+      "duration": 3.0,
+      "sha256": "d5c2d86db43e7b58b05dfe950978d1fb021fe44eeaee4a86cabf36f79cdf17e2"
     },
     {
       "id": "boss_lt_2",
       "text": "Šūdas! Dar atsiimsi!",
       "language": "lt",
-      "duration": 1.621,
-      "sha256": "ee79f9eb7ff94d156165c51ac29088f91d277324332823eaa1e5b479bc555855"
+      "duration": 5.112,
+      "sha256": "f9f5f4fbee6c3e8685eb09c4f0450eb0f0fe9d5c8b23d2dd3a5135b231fc3ffd"
     },
     {
       "id": "boss_lt_3",
       "text": "Eik tu velniop!",
       "language": "lt",
-      "duration": 1.173,
-      "sha256": "92b80307260b78b0d49380684c6f68d78d7927a6d9ba964a379ae9322866ac84"
+      "duration": 2.688,
+      "sha256": "c77f2729c6ec29bee1ebca4d56e83b74312767f54b37ca77f383b3f01c6778ac"
+    },
+    {
+      "id": "boss_lt_4",
+      "text": "Aš jus visus sugniušku!",
+      "language": "lt",
+      "duration": 3.216,
+      "sha256": "cc138a405145c1552c513200c9c4afa8aa860a16a3db674f15feadb0fb7badfd"
+    },
+    {
+      "id": "boss_lt_5",
+      "text": "Jūnų negalėsite pabėgti!",
+      "language": "lt",
+      "duration": 3.24,
+      "sha256": "e7f2dae0943320bad62c14e40293bf6d8b6d2a4c031389de339465e13438f8e1"
+    },
+    {
+      "id": "boss_lt_6",
+      "text": "Šiame pasaulyje nėra vietos baimingiesiems!",
+      "language": "lt",
+      "duration": 4.44,
+      "sha256": "b5825ff11df5d4750a047b55a364275629a426b668d72408172977a0b0f238d6"
+    },
+    {
+      "id": "boss_lt_7",
+      "text": "Jėga manimi rūpinasi!",
+      "language": "lt",
+      "duration": 3.144,
+      "sha256": "93c9910e5ee8878065cdcae16bae3bc77c645de5a15ae9949a7a316f03411a42"
+    },
+    {
+      "id": "boss_lt_8",
+      "text": "Aš esu amžinas!",
+      "language": "lt",
+      "duration": 2.832,
+      "sha256": "53eaa821c58e48b9a9356fa84baa38e9ae186d5e5b421e38162e45b01713bd94"
+    },
+    {
+      "id": "boss_lt_9",
+      "text": "Jūsų pasaulis man nepatinka!",
+      "language": "lt",
+      "duration": 3.528,
+      "sha256": "d8e9db0406bb4bdc1b38aa114fdeef5ae378e187f63c0a0ca1a70ed304aa41f3"
     }
   ]
 }

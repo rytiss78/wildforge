@@ -116,8 +116,10 @@ func tick(delta: float, playing: bool, has_boss: bool):
 	if eclipse_wanted!=eclipse_active:
 		eclipse_active=eclipse_wanted
 		if eclipse_active:
-			var track=load("res://assets/music/eclipse_paranoia.wav").duplicate() as AudioStreamWAV
-			track.loop_mode=AudioStreamWAV.LOOP_FORWARD;track.loop_begin=0;track.loop_end=track.data.size()/4;eclipse_music.stream=track;eclipse_music.play()
+			if not is_instance_valid(eclipse_music.stream): eclipse_music.stream=load("res://assets/music/eclipse_paranoia.wav") as AudioStreamWAV
+			if is_instance_valid(eclipse_music.stream):
+				eclipse_music.stream.loop_mode=AudioStreamWAV.LOOP_FORWARD;eclipse_music.stream.loop_begin=0;eclipse_music.stream.loop_end=eclipse_music.stream.data.size()/4
+				eclipse_music.play()
 		else:
 			eclipse_music.stop();clock=0
 			if active: play_phrase()
@@ -265,8 +267,10 @@ func boss_curse(position: Vector3,index: int=-1) -> int:
 	var now=Time.get_ticks_msec()/1000.0
 	if now-boss_voice_last<7.0: return -1
 	boss_voice_last=now;boss_voice_count+=1
-	var selected=rng.randi_range(0,3) if index<0 else clampi(index,0,3)
+	var selected=rng.randi_range(0,9) if index<0 else clampi(index,0,9)
 	if float(settings.voice)>0:
 		boss_voice.global_position=position;boss_voice.stream=load("res://assets/voices/boss_lt_%d.wav" % selected)
-		boss_voice.volume_db=linear_to_db(maxf(.0001,float(settings.voice)));boss_voice.pitch_scale=.88;boss_voice.play()
+		# Fixed: boss voice at -10dB relative to voice setting (was -80dB)
+		boss_voice.volume_db=linear_to_db(maxf(.0001,float(settings.voice)))-10
+		boss_voice.pitch_scale=.88;boss_voice.play()
 	return selected
