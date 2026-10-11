@@ -34,4 +34,4 @@ func _draw():
 		for bulb in range(5): draw_circle(Vector2(start+i*172+16+bulb*31,34),3,RunRules.COLORS[items[i].tier] if locked else Color("6c735f"))
 	draw_string(font,Vector2(start,330),"Five prizes revealed · Choose ONE to keep",HORIZONTAL_ALIGNMENT_CENTER,850,18,Color("374e56"))
 func box(color: Color,border: Color) -> StyleBoxFlat:
-	var style=StyleBoxFlat.new();style.bg_color=color;style.border_color=border;style.set_border_width_all(3);style.set_corner_radius_all(12);return style
+	var style=StyleBoxFlat.new();style.bg_color=color;style.border_color=border;style.set_border_width_all(3);style.set_corner_radius_all(12);style.set_corner_radius_top(22);style.set_corner_radius_bottom(22);style.shadow_color=Color("3a2f1e",.32);style.shadow_size=16;return style

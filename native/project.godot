@@ -12,7 +12,8 @@ window/size/viewport_width=1440
 window/size/viewport_height=810
 window/size/window_width_override=1920
 window/size/window_height_override=1080
-window/stretch/mode="canvas_items"
+window/stretch/mode="keep_aspect_covered"
+window/stretch/aspect="keep"
 
 [rendering]
 renderer/rendering_method="forward_plus"

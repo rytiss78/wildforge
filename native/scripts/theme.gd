@@ -100,16 +100,23 @@ const MARGINS = {
 	"bottom": 7,
 }
 
-# ── Helper: build a StyleBoxFlat from tokens ────────────────────────
+# ── Helper: build a StyleBoxFlat with a subtle vertical gradient ────────────
 static func make_style(
 	background: Color = PAPER_RUNTIME,
 	border: Color = Color("b9a58a"),
-	radius_key: String = "small"
+	radius_key: String = "small",
+	depth: bool = true,
+	top_color: Color = Color.TRANSPARENT,
+	bottom_color: Color = Color.TRANSPARENT,
+	border_width_bottom: int = 2
 ) -> StyleBoxFlat:
 	var box = StyleBoxFlat.new()
 	# Every UI surface is opaque; only the surface colour conveys selection.
-	if background.get_luminance() < 0.3:
-		box.bg_color = PAPER_RUNTIME
+	var base = background
+	if depth:
+		var light = top_color != Color.TRANSPARENT ? top_color : base
+		var dark = bottom_color != Color.TRANSPARENT ? bottom_color : base.lerp(Color("000000"), 0.12)
+		box.bg_color = light.lerp(dark, 0.16)
 	else:
 		box.bg_color = Color(background.r, background.g, background.b, 1)
 	if border.a < 0.7:
@@ -117,11 +124,12 @@ static func make_style(
 	else:
 		box.border_color = Color(border.r, border.g, border.b, 1)
 	box.set_border_width_all(1)
-	box.border_width_bottom = 2
+	box.border_width_bottom = border_width_bottom
 	box.shadow_color = SHADOW.color
 	box.shadow_size = SHADOW.size
 	box.shadow_offset = SHADOW.offset
-	box.set_corner_radius_all(mini(radius_key if radius_key in RADIUS else RADIUS.small, 4))
+	var r = radius_key if radius_key in RADIUS else RADIUS.small
+	box.set_corner_radius_all(mini(r, 4))
 	box.content_margin_left = MARGINS.left
 	box.content_margin_right = MARGINS.right
 	box.content_margin_top = MARGINS.top
