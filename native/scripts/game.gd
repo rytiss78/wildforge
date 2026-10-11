@@ -712,7 +712,7 @@ func _input(event):
 		camera_look(event.relative*Vector2(.004,.002))
 	if event is InputEventMouseButton and event.pressed and mode == "playing":
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP: camera_distance=maxf(4,camera_distance-.5)
-			if event.button_index == MOUSE_BUTTON_WHEEL_DOWN: camera_distance=minf(8,camera_distance+.5)
+		if event.button_index == MOUSE_BUTTON_WHEEL_DOWN: camera_distance=minf(8,camera_distance+.5)
 	if event is InputEventJoypadButton and event.pressed:
 		controller_id = event.device
 		if event.button_index == JOY_BUTTON_BACK:
@@ -2007,6 +2007,7 @@ func run_smoke():
 	checks.opaque_ui=is_equal_approx(hud.style(Color(0,0,0,.2)).bg_color.a,1.0)
 	var _gun_tex=IllustratedIcons.texture("gun",true)
 	checks.illustrated_icons=(_gun_tex is AtlasTexture and _gun_tex.atlas.get_width()==768) or (_gun_tex is Texture2D and _gun_tex.get_width() in [128, 256, 768])
+	yaw=0;pitch=0
 	var before_yaw=yaw
 	camera_look(Vector2(.12,.08))
 	checks.camera_look=yaw<before_yaw and pitch>0
