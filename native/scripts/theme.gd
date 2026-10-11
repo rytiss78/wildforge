@@ -114,8 +114,8 @@ static func make_style(
 	# Every UI surface is opaque; only the surface colour conveys selection.
 	var base = background
 	if depth:
-		var light = top_color != Color.TRANSPARENT ? top_color : base
-		var dark = bottom_color != Color.TRANSPARENT ? bottom_color : base.lerp(Color("000000"), 0.12)
+		var light = top_color if top_color != Color.TRANSPARENT else base
+		var dark = bottom_color if bottom_color != Color.TRANSPARENT else base.lerp(Color("000000"), 0.12)
 		box.bg_color = light.lerp(dark, 0.16)
 	else:
 		box.bg_color = Color(background.r, background.g, background.b, 1)

@@ -8,7 +8,7 @@ var realm = 0
 func _draw():
 	var font=ThemeDB.fallback_font
 	var text="%02d:%02d" % [int(seconds)/60,int(seconds)%60]
-	var frame_time=Engine.get_frame_time_msec()*TAU/30000.0
+	var frame_time=Time.get_ticks_msec()*TAU/30000.0
 	var plate=StyleBoxFlat.new();plate.bg_color=Color("17293d");plate.set_corner_radius_all(9)
 	# Warning glow when time is low
 	if seconds<60:

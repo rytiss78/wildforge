@@ -4,9 +4,9 @@
 
 A bright 3D survival game where a duck, a loaf of bread and an angry granny are perfectly reasonable hero choices. Explore strange places, grab unpredictable upgrades and become outrageously overpowered before the monsters catch you.
 
-**[Download the Windows build](https://github.com/rytiss78/wildforge/releases/tag/build-3)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
+**[Download the Windows build](https://github.com/rytiss78/wildforge/releases/tag/build-4)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
 
-The current release is **0.8.3**: a bugfix release on top of the 0.8.2 content — fixed a late-game corruption crash, corrected 45° slope enemy climbing, fixed boss voice volume and eclipse music, and smoothed co-op realm timing. See [release notes](https://github.com/rytiss78/wildforge/releases/tag/build-3). Run `build/Wildforge.exe` locally, or unpack the Windows download and run `Wildforge.exe`.
+The current release is **0.8.4**: Half XP curve so levels feel like milestones, 5 banishes per realm (not shared in co-op), and vertical camera movement (mouse/stick now tilts up and down). Full changelog in [release notes](https://github.com/rytiss78/wildforge/releases/tag/build-4). Run `build/Wildforge.exe` locally, or unpack the Windows download and run `Wildforge.exe`.
 
 ![Two Count Ducks fighting strange creatures together in Clover Woods](docs/screenshots/co-op.png)
 
@@ -58,7 +58,7 @@ node scripts/native.mjs
 ./scripts/test-coop.ps1 -Packaged -RenderedClient
 ```
 
-Published downloads use sequential build numbers: `Wildforge 0.8.3 — Build 3`, tag `build-3`, and `Wildforge-0.8.3-Build-3-Windows.zip`. Increment the build number for each new published build; do not use test labels or GitHub's prerelease flag. Packaging includes `build-info.json` and a build-specific checksum. Build 3 is published; 4 is the next number. When packaging an already verified staging directory, pass `-BuildDirectory` and its exact `-SourceCommit`.
+Published downloads use sequential build numbers: `Wildforge 0.8.4 — Build 4`, tag `build-4`, and `Wildforge-0.8.4-Build-4-Windows.zip`. Increment the build number for each new published build; do not use test labels or GitHub's prerelease flag. Packaging includes `build-info.json` and a build-specific checksum. Build 4 is published; 5 is the next number. When packaging an already verified staging directory, pass `-BuildDirectory` and its exact `-SourceCommit`.
 
 WASD / left stick moves; mouse / right stick looks; Space / A jumps; Shift / RT dashes; Ctrl / B slams; E / X interacts; B / Y opens your build; Escape / Menu pauses. Weapons attack automatically. Florist plants while moving.
 

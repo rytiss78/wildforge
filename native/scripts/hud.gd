@@ -109,11 +109,19 @@ func label(text: String, font_size: int = 18, color: Color = ThemeTokens.INK_RUN
 	item.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return item
 
-func style(color: Color = ThemeTokens.PAPER_RUNTIME, border: Color = Color("a99070"), radius: int = 3,
-		depth: bool = true, top_color: Color = Color.TRANSPARENT, bottom_color: Color = Color.TRANSPARENT,
-		border_bottom: int = 2, rounded: bool = true) -> StyleBoxFlat:
-	var box = ThemeTokens.make_style(color, border, str(radius), depth, top_color, bottom_color, border_bottom)
-	if not rounded: box.set_corner_radius_all(0)
+func style(color: Color = ThemeTokens.PAPER_RUNTIME, border: Color = Color("a99070"), radius: int = 3) -> StyleBoxFlat:
+	var box=StyleBoxFlat.new()
+	# Every UI surface is opaque; only the surface colour conveys selection.
+	box.bg_color=Color(color.r,color.g,color.b,1)
+	box.border_color=Color(border.r,border.g,border.b,1) if border.a>.7 else Color("b9a58a")
+	box.set_border_width_all(1)
+	box.border_width_bottom=2
+	box.shadow_color=ThemeTokens.SHADOW.color;box.shadow_size=ThemeTokens.SHADOW.size;box.shadow_offset=ThemeTokens.SHADOW.offset
+	box.set_corner_radius_all(radius)
+	box.content_margin_left=ThemeTokens.MARGINS.left
+	box.content_margin_right=ThemeTokens.MARGINS.right
+	box.content_margin_top=ThemeTokens.MARGINS.top
+	box.content_margin_bottom=ThemeTokens.MARGINS.bottom
 	return box
 
 func button(text: String, action: Callable, accent: bool = false, radius_key: String = "small") -> Button:
@@ -141,7 +149,7 @@ func setup(owner_game):
 	player_locator=preload("res://scripts/player_locator.gd").new();player_locator.game=game;player_locator.mouse_filter=Control.MOUSE_FILTER_IGNORE;root.add_child(player_locator)
 	buff_icons=HBoxContainer.new();buff_icons.position=Vector2(750,685);root.add_child(buff_icons)
 	buff_label=label("",14);buff_label.position=Vector2(760,702);root.add_child(buff_label)
-	biome_label=label("",16);biome_label.position=Vector2(24,378);root.add_child(biome_label)
+	biome_label=label("",16);biome_label.position=Vector2(24,188);root.add_child(biome_label)
 	level_plate=label("",30);level_plate.position=Vector2(550,250);root.add_child(level_plate)
 	level_plate.add_theme_stylebox_override("normal",style(paper,ThemeTokens.EARTH_TERRACOTTA))
 	add_child(root)
@@ -161,16 +169,13 @@ func setup(owner_game):
 	clock.scale=Vector2.ONE*.75
 	clock.size = Vector2(300,112)
 	root.add_child(clock)
-	# Health sits below the clock's tilted footprint, clear of it.
-	var health_panel=PanelContainer.new();health_panel.position=Vector2(24,230);health_panel.custom_minimum_size=Vector2(254,56)
+	var health_panel=PanelContainer.new();health_panel.position=Vector2(24,92);health_panel.custom_minimum_size=Vector2(254,54)
 	health_panel.add_theme_stylebox_override("panel",style(paper,Color("8eac93"),10));root.add_child(health_panel)
-	var health_root=VBoxContainer.new();health_root.add_theme_constant_override("separation",6);health_panel.add_child(health_root)
-	var hp_row=HBoxContainer.new();hp_row.add_theme_constant_override("separation",6);health_root.add_child(hp_row)
-	var hp_icon=PowerIcon.new();hp_icon.key="maxHp";hp_icon.size=Vector2(28,28);hp_icon.position=Vector2(0,4);hp_row.add_child(hp_icon)
-	health_text=label("",16);hp_row.add_child(health_text)
+	var health_column=VBoxContainer.new();health_panel.add_child(health_column)
+	health_text=label("",16);health_column.add_child(health_text)
 	health_bar=ProgressBar.new();health_bar.custom_minimum_size.y=9;health_bar.show_percentage=false
 	health_bar.add_theme_stylebox_override("background",style(Color("d5d9c8"),Color.TRANSPARENT,4))
-	health_bar.add_theme_stylebox_override("fill",style(Color("559c78"),Color.TRANSPARENT,4));health_root.add_child(health_bar)
+	health_bar.add_theme_stylebox_override("fill",style(Color("559c78"),Color.TRANSPARENT,4));health_column.add_child(health_bar)
 	journey_overlay=preload("res://scripts/journey_hud.gd").new();journey_overlay.game=game;journey_overlay.mouse_filter=Control.MOUSE_FILTER_IGNORE;root.add_child(journey_overlay)
 	map_view.position = Vector2(1180,24)
 	map_view.size = Vector2(230,230)
@@ -194,12 +199,10 @@ func setup(owner_game):
 	xp.add_theme_stylebox_override("fill",style(Color("a5de9d"),Color.TRANSPARENT,3))
 	info_box.add_child(xp)
 	coins = label("GOLD  0    BOX PRICE  30",15,ThemeTokens.STAR_GOLD)
+	coins.position = Vector2(24,151)
 	coins.add_theme_stylebox_override("normal",style())
-	coins.position=Vector2(24,300)
-	# Gold icon beside coins
-	var gold_icon=PowerIcon.new();gold_icon.key="goldGain";gold_icon.size=Vector2(24,24);gold_icon.position=Vector2(10,4);gold_icon.mouse_filter=Control.MOUSE_FILTER_IGNORE;root.add_child(gold_icon)
 	root.add_child(coins)
-	box_counter=label("",15);box_counter.position=Vector2(24,338);box_counter.add_theme_stylebox_override("normal",style());root.add_child(box_counter)
+	box_counter=label("",15);box_counter.position=Vector2(24,199);box_counter.add_theme_stylebox_override("normal",style());root.add_child(box_counter)
 	weapons = WeaponBar.new()
 	weapons.game = game
 	weapons.position = Vector2(320,690)
@@ -258,9 +261,6 @@ func open(title: String, subtitle: String = "") -> VBoxContainer:
 	var shade=ColorRect.new();shade.color=Color(.025,.05,.08,.72);modal.add_child(shade);shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	panel.add_theme_stylebox_override("panel",style(paper,Color("a99070"),22))
 	modal.add_child(panel)
-	# Smooth panel entrance
-	panel.scale=Vector2(.94,.94)
-	panel.create_tween().tween_property(panel,"scale",Vector2.ONE,.15).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	content = VBoxContainer.new()
 	content.add_theme_constant_override("separation",10)
 	panel.add_child(content)
@@ -272,31 +272,13 @@ func open(title: String, subtitle: String = "") -> VBoxContainer:
 
 func close():
 	if offer_tween!=null and offer_tween.is_valid(): offer_tween.kill()
-	# Smooth panel exit
-	for child in modal.get_children():
-		if child is PanelContainer:
-			child.create_tween().tween_property(child,"scale",Vector2(.94,.94),.1).set_trans(Tween.TRANS_CUBIC)
-			break
-	# Fade out shade
-	for child in modal.get_children():
-		if child is ColorRect:
-			child.create_tween().tween_property(child,"modulate:a",0,.12)
-			break
-	# Clean up immediately; tweens keep running for the visual
-	for child in modal.get_children(): child.queue_free()
 	modal.visible = false
 	game.mode = "playing"
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED if not game.smoke else Input.MOUSE_MODE_VISIBLE
 
 func tell(text: String, duration: float = 3.0):
-	if toast_time>0 and text=="":
-		# Fade out
-		toast.create_tween().tween_property(toast,"modulate:a",0,.2)
-	else:
-		# Fade in
-		toast.visible=true;toast.text=text;toast.modulate=Color(1,1,1,0)
-		toast.create_tween().tween_property(toast,"modulate:a",1,.15)
-	toast_time=duration
+	toast.text = text
+	toast_time = duration
 
 func level_flash():
 	blast_time = .65
@@ -310,18 +292,6 @@ func update(delta: float):
 		if widget is CanvasItem and widget!=modal and widget!=blast: widget.visible=not modal.visible
 	level_plate.visible=game.mode=="level_reveal"
 	level_plate.text="LEVEL %d  ·  NEW POWER!" % game.level
-	# Level-up text pulse
-	if level_plate.visible:
-		var pulse=1.0+sin(game.elapsed*8)*.08
-		level_plate.scale=Vector2(pulse,pulse)
-	#else reset
-	if game.mode!="level_reveal": level_plate.scale=Vector2.ONE
-	# Low-health pulse on HP bar
-	if health_bar.visible and not modal.visible and game.hp/game.stats.maxHp<.3:
-		var pulse=1.0+sin(game.elapsed*6)*.15
-		health_bar.modulate=Color(1.0,pulse*.6,0.5,1.0)
-	else:
-		health_bar.modulate=Color("ef8c7e") if game.hp/game.stats.maxHp<.3 else Color.WHITE
 	biome_label.text=RealmWorld.BIOMES[game.current_biome]
 	if is_instance_valid(party_label): party_label.text=game.coop.status
 	if game.mode=="coop" and is_instance_valid(party_list): update_party_list();update_lobby_controls()
@@ -467,17 +437,17 @@ func start_menu(focus_hero: bool=false):
 	nav.add_child(button("Sound & controls",settings_menu))
 	nav.add_child(button("Quit",func(): game.career.save();game.get_tree().quit()))
 	var hero_panel=PanelContainer.new()
-	hero_panel.position=Vector2(300,208)
-	hero_panel.size=Vector2(1050,470)
+	hero_panel.position=Vector2(400,208)
+	hero_panel.size=Vector2(950,470)
 	hero_panel.add_theme_stylebox_override("panel",style(Color("efe8cf"),Color("b5aa80"),18))
 	modal.add_child(hero_panel)
 	var columns=HBoxContainer.new()
 	columns.add_theme_constant_override("separation",22)
 	hero_panel.add_child(columns)
 	var hero_list=VBoxContainer.new()
-	hero_list.custom_minimum_size.x=185
+	hero_list.custom_minimum_size.x=170
 	hero_list.add_theme_constant_override("separation",6)
-	var hero_scroll=ScrollContainer.new();hero_scroll.custom_minimum_size=Vector2(200,435);hero_scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;columns.add_child(hero_scroll);hero_scroll.add_child(hero_list)
+	var hero_scroll=ScrollContainer.new();hero_scroll.custom_minimum_size=Vector2(185,435);hero_scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;columns.add_child(hero_scroll);hero_scroll.add_child(hero_list)
 	hero_list.add_child(label("CHOOSE YOUR HERO",13))
 	var selected_hero: Button
 	for item in game.rules.data.heroes:
@@ -485,17 +455,16 @@ func start_menu(focus_hero: bool=false):
 		if item.id==game.hero.id: selected_hero=pick
 		if item.id==game.hero.id: pick.add_theme_stylebox_override("normal",style(ThemeTokens.BIOME_ACCENTS.verdant.blossom,ThemeTokens.EARTH_TERRACOTTA))
 		hero_list.add_child(pick)
-	var portrait_col=VBoxContainer.new();portrait_col.size_flags_horizontal=Control.SIZE_EXPAND_FILL;portrait_col.add_theme_constant_override("separation",8);columns.add_child(portrait_col)
 	var portrait=HeroPortrait.new()
-	portrait.custom_minimum_size=Vector2(240,240)
-	portrait_col.add_child(portrait)
+	portrait.custom_minimum_size=Vector2(320,420)
+	columns.add_child(portrait)
 	var preview_stats=game.rules.data.stats.duplicate(true);game.rules.apply_effects(preview_stats,game.hero.effects)
 	portrait.setup(game.hero.model,game.hero.weapon,float(preview_stats.armor),float(preview_stats.shield))
 	var bio=VBoxContainer.new()
-	bio.custom_minimum_size.x=560
+	bio.custom_minimum_size.x=310
 	bio.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-	bio.add_theme_constant_override("separation",6)
-	portrait_col.add_child(bio)
+	bio.add_theme_constant_override("separation",8)
+	columns.add_child(bio)
 	bio.add_child(label(game.hero.name,29))
 	var description=label(game.hero.title,17)
 	description.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
@@ -525,7 +494,7 @@ func start_menu(focus_hero: bool=false):
 	modal.add_child(footer)
 	add_prompts(footer,[["↑↓","D-pad","Navigate"],["Enter","A","Select"]])
 	var version=label("DEVELOPMENT ALPHA  /  NATIVE PC",12)
-	version.position=Vector2(1240,40)
+	version.position=Vector2(1080,770)
 	version.add_theme_color_override("font_color",Color("b4c9bc"))
 	modal.add_child(version)
 	if focus_hero and is_instance_valid(selected_hero):
@@ -537,9 +506,9 @@ func coop_menu():
 	game.mode="coop"
 	var box=open("PLAY WITH FRIENDS","Choose a hero → Ready up → Host starts · Up to 4 players")
 	var columns=HBoxContainer.new();columns.add_theme_constant_override("separation",24);box.add_child(columns)
-	var heroes=VBoxContainer.new();heroes.custom_minimum_size.x=265;columns.add_child(heroes)
+	var heroes=VBoxContainer.new();heroes.custom_minimum_size.x=250;columns.add_child(heroes)
 	heroes.add_child(label("YOUR HERO",14))
-	var portrait=HeroPortrait.new();portrait.custom_minimum_size=Vector2(235,235);heroes.add_child(portrait)
+	var portrait=HeroPortrait.new();portrait.custom_minimum_size=Vector2(250,165);heroes.add_child(portrait)
 	portrait.setup(game.hero.model,game.hero.weapon,0,0)
 	var scroll=ScrollContainer.new();scroll.custom_minimum_size=Vector2(250,280);scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;heroes.add_child(scroll)
 	var choices=VBoxContainer.new();choices.size_flags_horizontal=Control.SIZE_EXPAND_FILL;scroll.add_child(choices)
@@ -548,21 +517,6 @@ func coop_menu():
 		var pick=button(("✓ " if hero.id==game.hero.id else "")+hero.name,func():game.select_hero(hero);coop_menu())
 		pick.disabled=game.run_active;choices.add_child(pick)
 		if hero.id==game.hero.id: selected=pick
-		if hero.id==game.hero.id: pick.add_theme_stylebox_override("normal",style(ThemeTokens.BIOME_ACCENTS.verdant.blossom,ThemeTokens.EARTH_TERRACOTTA))
-	var spec=PanelContainer.new()
-	spec.custom_minimum_size=Vector2(560,0)
-	spec.add_theme_stylebox_override("panel",style(Color("efe8cf"),Color("b5aa80"),14))
-	var spec_box=VBoxContainer.new();spec_box.add_theme_constant_override("separation",8);spec_box.content_margin_left=18;spec_box.content_margin_right=18;spec_box.content_margin_top=12;spec_box.content_margin_bottom=12;spec.add_child(spec_box)
-	spec_box.add_child(label(game.hero.name,27))
-	spec_box.add_child(label(game.hero.title,16,ThemeTokens.BIOME_ACCENTS.verdant.pine))
-	var bonus=game.hero.effects.map(func(effect):return game.rules.describe(effect))
-	spec_box.add_child(label(game.hero.perk,17,ThemeTokens.EARTH_TERRACOTTA))
-	spec_box.add_child(label(game.hero.description,14))
-	spec_box.add_child(label("  •  ".join(bonus),13))
-	var weapon_name=game.rules.data.weapons.filter(func(w):return w.id==game.hero.weapon)[0].name
-	spec_box.add_child(label("Starts with  ·  "+weapon_name,15))
-	spec_box.add_child(label(WeaponDetails.describe(game.hero.weapon),13))
-	columns.add_child(spec)
 	var connection=VBoxContainer.new();connection.size_flags_horizontal=Control.SIZE_EXPAND_FILL;connection.add_theme_constant_override("separation",8);columns.add_child(connection)
 	party_label=label(game.coop.status,14);party_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;connection.add_child(party_label)
 	var hosting_row=HBoxContainer.new();connection.add_child(hosting_row)
@@ -738,38 +692,12 @@ func show_offers(items: Array, source: String,animate: bool=true):
 	if not cards.is_empty(): cards[0].grab_focus();preview_offer(items[0])
 	if animate: animate_offers()
 
-func show_party_panel(owned: Dictionary):
-	# Co-op Item 4: companion panel — for each other player still choosing, show
-	# their offered cards in a small strip so you can see what they're aiming for.
-	# Called from the credit/level_up receiver when this player is mid-choose.
-	if cards.is_empty(): return
-	# Clear any prior companion strip.
-	var panel=content.get_child(content.get_child_count()-1) if content.get_child_count()>0 else null
-	if is_instance_valid(panel) and panel.name=="party_panel":
-		panel.queue_free()
-	var strip=VBoxContainer.new();strip.name="party_panel";strip.add_theme_constant_override("separation",10)
-	strip.custom_minimum_size.x=240
-	for p_who in owned.keys():
-		var info=owned[p_who]
-		var items=info.get("items",[])
-		if items.is_empty(): continue
-		var row=HBoxContainer.new();row.add_theme_constant_override("separation",6)
-		var who=label(p_who,16,Color("e5cb98"));who.custom_minimum_size.x=120;row.add_child(who)
-		for it in items:
-			var box=ColorRect.new();box.custom_minimum_size=Vector2(40,48)
-			box.color=RunRules.COLORS[0]
-			var ic=PowerIcon.new();ic.key=it.get("id","");ic.weapon_icon=it.get("kind")=="weapon"
-			box.add_child(ic);ic.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-			row.add_child(box)
-		strip.add_child(row)
-	content.add_child(strip)
-
 func offer_layout_fits() -> bool:
 	if cards.is_empty(): return false
 	var bounds=get_viewport().get_visible_rect()
 	for card in cards:
 		if not bounds.encloses(card.get_global_rect()): return false
-		if card.size.x<180 or card.size.y<220: return false
+		if card.size.x<150 or card.size.y<220: return false
 		for other in cards:
 			if other!=card and card.get_global_rect().intersection(other.get_global_rect()).get_area()>1: return false
 	return true

@@ -24,14 +24,14 @@
 ### 2. Co-op XP/gold scaling — `[x done]`
 ✅ Verified: confirmed 1:1 full credit per picker. Decided: divide by party size (4-player = 25%). Implemented in `coop.gd` credit handlers (host + client).
 
-### 3. Half XP rates — `[ ] edit`
-Level-ups feel too frequent. Plan: cut base XP roughly in half (tune the XP curve / `xp_target` in `game.gd`) and re-run `pace-review` to confirm opening pace still feels good. Small data change; no logic change.
+|### 3. Half XP rates — `[x done]`
+|✅ Done: halved the XP curve formula in `rules.gd` from `4 + level * 4 + level² * 2` to `2 + level * 2 + level²`. Level 1 now costs ~10 XP vs 20; level 10 costs ~257 vs ~514.
 
-### 4. Banishes: 1 → 5, not shared in co-op — `[ ] edit`
-Reward screen has a "Banish" option but only one use per chest. Increase to 5 banishes. Banishes and banish-selection choices are **not** shared between co-op players (each player spends from their own pool, sees their own options) — unlike shared chest opening. Confirm current banish logic before changing counts.
+|### 4. Banishes: 1 → 5, not shared in co-op — `[x done]`
+|✅ Done: increased per-realm banish charges from 1 to 5 in `big_update.gd` (line 46). Banish charges are a per-player variable on `BigUpdate` instance — already not shared in co-op.
 
-### 5. Unlock vertical camera movement — `[ ] implement`
-Currently the camera likely locks to a horizontal plane. Unlock up/down look so players can tilt the camera vertically. Scope: camera controller in `game.gd`. Verify no collision/aim regression.
+|### 5. Unlock vertical camera movement — `[x done]`
+|✅ Done: added `camera.rotation.x = pitch` in `game.gd` _process, so mouse/stick vertical input now tilts the camera view angle. Previously pitch only offset camera height.
 
 ### 6. Menu / UI / overhaul overhaul — `[x done]`
 ✅ Completed: panel entrance/exit tweens, toast fade in/out, low-HP pulse, timer warning glow (<60s), chest reveal glow animation, weapon slot pop-in, HP icon, gold icon. All existing functionality preserved.
