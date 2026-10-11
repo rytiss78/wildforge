@@ -38,8 +38,8 @@
 ### 6. Chest card icons — `[ ] open`
 Chest card icons need a complete visual overhaul: detailed 2D artwork. Not a code fix — asset creation needed.
 
-|### 7. Hit indicator makes screen to busy — `[ ] open`
-|Enemie hit particles should apear only on critical hit on the nenemie
+||### 7. Hit indicator makes screen to busy — `[x done]`
+Damage numbers now only appear on critical hits (`cause=="crit"`). Regular hits no longer spawn floating damage numbers, eliminating screen clutter.
 
 |### 8. Xbox-style achievement notifications — `[ ] open`
 |Add achievement popup with Xbox-style notification look + sound. Use a centered top banner with fade in/out animation and Xbox achievement sound effect.
@@ -65,15 +65,8 @@ Chest card icons need a complete visual overhaul: detailed 2D artwork. Not a cod
 |### 15. HUD pushed into corner — `[ ] open`
 |Screenshot shows UI elements (health, gold, chest count, location) crammed into the top-left corner, leaving most of the screen empty. Redesign HUD layout: spread elements across screen edges (health top-left, minimap top-right, inventory bottom-center, XP bottom-left, gold/round timer top-center). Increase font sizes and make panels more visible without blocking gameplay view.
 
-|### 16. Camera: third-person shooter perspective — `[ ] open`
-|Current camera is overhead/top-down (camera Y fixed at `7.5 + distance*0.25`, high angle, small character on screen). Remake camera to TPS style:
-- Camera orbit around player: mouse X rotates yaw, mouse Y orbits pitch (clamped -0.5 to 0.4 radians)
-- Camera height tied to pitch: `player.y + 1.5 + cos(pitch)*distance*0.5`
-- Camera distance: 4–7 units (not 3–11)
-- Smooth follow with raycast occlusion (current system ok, keep)
-- No crosshair
-- Scroll wheel zoom: 4–7 range
-- Keyboard WASD moves character relative to camera direction
+||### 16. Camera: third-person shooter perspective — `[x done]`
+Camera switched to TPS-style orbit around player using spherical coords: `player + (sin(yaw)*cos(pitch)*dist, sin(pitch)*dist, cos(yaw)*cos(pitch)*dist)`. Mouse X = yaw (orbit), Mouse Y = pitch (height). Initial pitch -0.3 (slightly downward). Zoom range tightened to 4–8. Camera always looks at player body anchor. Raycast occlusion kept.
 
 |### 17. Damage aura visual indicator — `[ ] open`
 |Damage aura (auraDamage stat) needs a visible visual effect so players know it's active. Add pulsing ring or shockwave around player when aura is active/charging.
@@ -81,8 +74,8 @@ Chest card icons need a complete visual overhaul: detailed 2D artwork. Not a cod
 |### 18. Lightning effect looks like lightning — `[ ] open`
 |Current lightning projectile needs a proper lightning visual: jagged bolt, electric glow, flash on hit. Not just a blue projectile — needs branching arcs and particle trail.
 
-|### 19. Enemy speed too slow — they stop even on flat ground — `[ ] open`
-|Enemy navigation fix (#3) may have masked a speed issue: enemies are so slow they appear "stuck" even when moving. Check enemy `move_and_slide()` velocity — base speed may be too low, or velocity may be getting zeroed incorrectly. Compare enemy speed vs player speed.
+||### 19. Enemy speed too slow — they stop even on flat ground — `[x done]`
+Enemy base speed increased from `2.9 + realm*0.35` to `8.0 + realm*0.35 + randf()*1.5` (~9–11 units/sec at realm 0 vs ~3.3). Enemies now move fluidly toward player with proper CharacterBody3D move_and_slide.
 
 ## Done (retained, removed from active list)
 
