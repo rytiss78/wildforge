@@ -169,7 +169,7 @@ func setup(owner_game):
 	clock.scale=Vector2.ONE*.75
 	clock.size = Vector2(300,112)
 	root.add_child(clock)
-	var health_panel=PanelContainer.new();health_panel.position=Vector2(24,92);health_panel.custom_minimum_size=Vector2(254,54)
+	var health_panel=PanelContainer.new();health_panel.position=Vector2(24,92);health_panel.custom_minimum_size=Vector2(310,54)
 	health_panel.add_theme_stylebox_override("panel",style(paper,Color("8eac93"),10));root.add_child(health_panel)
 	var health_column=VBoxContainer.new();health_panel.add_child(health_column)
 	health_text=label("",16);health_column.add_child(health_text)
@@ -198,11 +198,13 @@ func setup(owner_game):
 	xp.show_percentage = false
 	xp.add_theme_stylebox_override("fill",style(Color("a5de9d"),Color.TRANSPARENT,3))
 	info_box.add_child(xp)
-	coins = label("GOLD  0    BOX PRICE  30",15,ThemeTokens.STAR_GOLD)
+	coins = label("GOLD  0    BOX PRICE  30",18,ThemeTokens.STAR_GOLD)
 	coins.position = Vector2(24,151)
 	coins.add_theme_stylebox_override("normal",style())
 	root.add_child(coins)
 	box_counter=label("",15);box_counter.position=Vector2(24,199);box_counter.add_theme_stylebox_override("normal",style());root.add_child(box_counter)
+	var coins_panel=PanelContainer.new();coins_panel.position=Vector2(24,130);coins_panel.custom_minimum_size=Vector2(310,36)
+	coins_panel.add_theme_stylebox_override("panel",style(ThemeTokens.STAR_GOLD,Color("c8a840"),8));root.add_child(coins_panel)
 	weapons = WeaponBar.new()
 	weapons.game = game
 	weapons.position = Vector2(320,690)

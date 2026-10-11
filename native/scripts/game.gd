@@ -131,6 +131,7 @@ var force_clocks={}
 var damage_sources={}
 var kill_types={}
 var combat_profile=[]
+var blood_rain: GPUParticles3D = null
 var profile_crowd=false
 var menu_repeat=0.0
 var coop: CoopSession
@@ -208,6 +209,32 @@ func _ready():
 	add_child(hud)
 	hud.setup(self)
 	hud.start_menu()
+	# Blood rain particle system for Eclipse
+	blood_rain=GPUParticles3D.new()
+	var bp=ParticleProcessMaterial.new()
+	bp.gravity=Vector3(0,-8,0)
+	bp.initial_velocity_min=80
+	bp.initial_velocity_max=120
+	bp.direction=Vector3(0,-1,0)
+	bp.spread=180
+	bp.pre_process_time=0.5
+	bp.emission_shape=ParticleProcessMaterial.EMISSION_SHAPE_BOX
+	bp.emission_box_extents=Vector3(60,0,60)
+	bp.age_range=3.5
+	blood_rain.process_material=bp
+	blood_rain.emitting=true
+	blood_rain.amount=200
+	blood_rain.lifetime=3.5
+	blood_rain.forward_by_limits=true
+	blood_rain.one_shot=false
+	var mat=StandardMaterial3D.new()
+	mat.albedo_color=Color("#8b0000")
+	mat.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.albedo_texture=load("res://assets/illustrated/paper.png")
+	blood_rain.material_override=mat
+	blood_rain.cull_mask=0x7FFFFFFF
+	add_child(blood_rain)
+	blood_rain.visible=false
 	add_child(coop);coop.setup(self)
 	add_child(update);update.setup(self)
 	configure_inputs()
@@ -307,6 +334,7 @@ func clear_entities():
 		if weapon.has("node") and is_instance_valid(weapon.node): weapon.node.queue_free()
 	if is_instance_valid(gate): gate.queue_free()
 	if is_instance_valid(get_meta("aura_node",null)): get_meta("aura_node",null).queue_free();set_meta("aura_node",null)
+	if is_instance_valid(blood_rain): blood_rain.visible=false
 
 func start_run(shared_seed: int=-1):
 	if coop.active and coop.hosting and not run_active and not coop.can_start(): hud.tell("Every player must be Ready before starting.");return
@@ -1887,6 +1915,13 @@ func _process(delta: float):
 	world.stream(player.position,coop.members.values().filter(func(m):return m.has("position") and m.get("hp",0)>0).map(func(m):return CoopSession.vector(m.position)) if coop.hosting else [])
 	world.build_tick(delta)
 	world.eclipse=events.get("eclipse",false)
+	# Blood rain: positioned high above player, follows horizontally with camera
+	if is_instance_valid(blood_rain):
+		blood_rain.visible=events.get("eclipse",false) and run_active
+		if blood_rain.visible:
+			blood_rain.position.x=player.position.x+sin(yaw)*camera_distance*.3
+			blood_rain.position.z=player.position.z+cos(yaw)*camera_distance*.3
+			blood_rain.position.y=55
 	world.weather_tick(delta,player.position)
 	sound.weapon_loop("steam",world.edge_near,player.position)
 	if mode=="level_reveal":
@@ -2788,8 +2823,8 @@ func target_visible(origin: Vector3,target: Vector3) -> bool:
 func eclipse_running(wish: Vector3,delta: float,grounded: bool) -> Vector3:
 	var target=wish*stat("speed")
 	if events.get("eclipse",false) and grounded:
-		# Short, frame-rate-independent turn drift; releasing input brakes faster.
-		var response=22.0 if wish.length_squared()<.01 else 14.0
+		# Slippery turn drift during Eclipse; momentum lingers, turning is sluggish.
+		var response=6.0 if wish.length_squared()<.01 else 4.0
 		eclipse_run_velocity=eclipse_run_velocity.lerp(target,1-exp(-response*delta))
 		if target.is_zero_approx() and eclipse_run_velocity.length()<.02: eclipse_run_velocity=Vector3.ZERO
 	else: eclipse_run_velocity=target
