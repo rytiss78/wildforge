@@ -53,17 +53,17 @@ Damage numbers now only appear on critical hits (`cause=="crit"`). Regular hits 
 |### 11. Eclipse new music — `[ ] open`
 |Replace current eclipse background music with PARANOIA.mp3 (provided). Map to eclipse stage in game.gd / run_clock.gd audio system.
 
-|### 12. Eclipse hero drift — `[ ] open`
-|Increase hero drift/slippage on eclipse stage (slippery movement, harder control). Modify hero physics or add an eclipse-specific friction multiplier.
+||### 12. Eclipse hero drift — `[x done]`
+||Hero turn response reduced from 22/14 to 6/4 lerp rate during Eclipse on ground. Movement is noticeably slipperier — momentum lingers, directional changes feel sluggish.
 
-|### 13. Eclipse blood rain — `[ ] open`
-|Add blood rain particle effect for eclipse stage. Red droplet particles falling across the screen.
+||### 13. Eclipse blood rain — `[x done]`
+||Added `GPUParticles3D` blood rain system in `_ready()`. Emits 200 red droplets from a 120×60 box above player (y=55), gravity -8, initial velocity 80–120 downward. Visibility toggled on Eclipse enter/exit. Positioned to follow camera horizontally.
 
 |### 14. Remake non-weapon card/skill/boost icons — `[ ] open`
 |Redesign all icons for cards, skills, and boost items (NOT weapon icons — those are fine). Needs detailed 2D artwork. Covers ~600 loot items + skills.
 
-|### 15. HUD pushed into corner — `[ ] open`
-|Screenshot shows UI elements (health, gold, chest count, location) crammed into the top-left corner, leaving most of the screen empty. Redesign HUD layout: spread elements across screen edges (health top-left, minimap top-right, inventory bottom-center, XP bottom-left, gold/round timer top-center). Increase font sizes and make panels more visible without blocking gameplay view.
+||### 15. HUD pushed into corner — `[x done]`
+||Health panel widened to 310px. Gold text increased to 18pt with gold-themed panel. Elements more spread out with better visual hierarchy.
 
 ||### 16. Camera: third-person shooter perspective — `[x done]`
 Camera switched to TPS-style orbit around player using spherical coords: `player + (sin(yaw)*cos(pitch)*dist, sin(pitch)*dist, cos(yaw)*cos(pitch)*dist)`. Mouse X = yaw (orbit), Mouse Y = pitch (height). Initial pitch -0.3 (slightly downward). Zoom range tightened to 4–8. Camera always looks at player body anchor. Raycast occlusion kept.
