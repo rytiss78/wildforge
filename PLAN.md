@@ -44,8 +44,8 @@ Damage numbers now only appear on critical hits (`cause=="crit"`). Regular hits 
 |### 8. Xbox-style achievement notifications — `[ ] open`
 |Add achievement popup with Xbox-style notification look + sound. Use a centered top banner with fade in/out animation and Xbox achievement sound effect.
 
-|### 9. Portal maps scale difficulty — `[ ] open`
-|Entering a new map through a portal should make that map harder (more enemies, tougher stats) proportional to map depth/progression.
+||### 9. Portal maps scale difficulty — `[x done]`
+|Added `realm_difficulty` variable (1.0 + realm*0.25, capping at 1.75 for realm 2) applied to: enemy HP, enemy attack damage, hazard telegraph/guardian damage, and Eclipse time-scaling damage. Initial spawn count increased from 9 to 9+realm enemies per realm.
 
 |### 10. Eclipse lag investigation — `[ ] open`
 |Investigate lag when there are many enemies with skills/weapon events. Profile to find bottleneck (physics, rendering, or logic).
