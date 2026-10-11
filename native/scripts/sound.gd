@@ -118,7 +118,7 @@ func tick(delta: float, playing: bool, has_boss: bool):
 		if eclipse_active:
 			if not is_instance_valid(eclipse_music.stream): eclipse_music.stream=load("res://assets/music/eclipse_paranoia.wav") as AudioStreamWAV
 			if is_instance_valid(eclipse_music.stream):
-				eclipse_music.stream.loop_mode=AudioStreamWAV.LOOP_FORWARD;eclipse_music.stream.loop_begin=0;eclipse_music.stream.loop_end=eclipse_music.stream.data.size()/4
+				eclipse_music.stream.loop_mode=AudioStreamWAV.LOOP_FORWARD;eclipse_music.stream.loop_begin=0;eclipse_music.stream.loop_end=eclipse_music.stream.data.size()
 				eclipse_music.play()
 		else:
 			eclipse_music.stop();clock=0
