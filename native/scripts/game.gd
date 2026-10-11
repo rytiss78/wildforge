@@ -1160,7 +1160,7 @@ func hit_enemy(enemy: Dictionary, shot: Dictionary,cause: String="hit"):
 		origin = next.node.position
 
 func record_damage_number(enemy_id: int, damage: float, cause: String,position_value: Vector3=Vector3.INF):
-	var dedup_key=str(enemy_id)+"/"+cause
+	var dedup_key="dedup_"+str(enemy_id)+"/"+cause
 	var now=Time.get_ticks_msec()
 	var last_time=damage_sources.get(dedup_key+"_time",0)
 	var last_idx=damage_sources.get(dedup_key,-1)
