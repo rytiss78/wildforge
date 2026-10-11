@@ -68,11 +68,11 @@ Damage numbers now only appear on critical hits (`cause=="crit"`). Regular hits 
 ||### 16. Camera: third-person shooter perspective — `[x done]`
 Camera switched to TPS-style orbit around player using spherical coords: `player + (sin(yaw)*cos(pitch)*dist, sin(pitch)*dist, cos(yaw)*cos(pitch)*dist)`. Mouse X = yaw (orbit), Mouse Y = pitch (height). Initial pitch -0.3 (slightly downward). Zoom range tightened to 4–8. Camera always looks at player body anchor. Raycast occlusion kept.
 
-|### 17. Damage aura visual indicator — `[ ] open`
-|Damage aura (auraDamage stat) needs a visible visual effect so players know it's active. Add pulsing ring or shockwave around player when aura is active/charging.
+||### 17. Damage aura visual indicator — `[x done]`
+Golden pulsing ring appears around player when `auraDamage > 0`. Ring scales with sinusoidal pulse (15% oscillation, 5 Hz). Emission glow oscillates 2.0–2.8×. Cleans up when no enemies nearby.
 
-|### 18. Lightning effect looks like lightning — `[ ] open`
-|Current lightning projectile needs a proper lightning visual: jagged bolt, electric glow, flash on hit. Not just a blue projectile — needs branching arcs and particle trail.
+||### 18. Lightning effect looks like lightning — `[x done]`
+Replaced simple blue beam with `lightning_bolt()`: 6-segment jagged zigzag using perpendicular offsets, electric glow (`#d0e8ff`, emission 3×), 0.22s lifetime. Each chain segment is a separate bolt segment with decreasing width toward the target.
 
 ||### 19. Enemy speed too slow — they stop even on flat ground — `[x done]`
 Enemy base speed increased from `2.9 + realm*0.35` to `8.0 + realm*0.35 + randf()*1.5` (~9–11 units/sec at realm 0 vs ~3.3). Enemies now move fluidly toward player with proper CharacterBody3D move_and_slide.
