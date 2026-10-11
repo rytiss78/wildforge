@@ -33,7 +33,7 @@ func free_chance(power: float) -> float:
 	return clampf(power,0,.75)
 
 func next_xp(level: int) -> int:
-	return 2 + level * 2 + level * level
+	return 8 + level * 6 + level * level * 2
 
 func can_weapon(equipped: Array, id: String) -> bool:
 	return equipped.any(func(w): return w.id == id) or equipped.size() < WEAPON_CAP

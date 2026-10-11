@@ -35,6 +35,11 @@ static func attach(enemy: Dictionary, hit: Dictionary, forward: Vector3):
 
 static func tick(game, enemy: Dictionary, target: Vector3, delta: float) -> bool:
 	var body: CharacterBody3D = enemy.node
+	# Regular enemies only climb when player is significantly elevated (>3 units)
+	# Small height diffs → regular ground walking via CharacterBody3D
+	var height_diff = target.y - body.position.y
+	if not enemy.boss and height_diff <= 3.0:
+		return false
 	if enemy.flying or enemy.boss or enemy.get("bubble", 0) > 0:
 		if enemy.get("surface_attached", false):
 			detach(enemy)

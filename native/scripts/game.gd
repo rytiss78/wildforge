@@ -689,7 +689,7 @@ func camera_look(amount: Vector2):
 	if mode != "playing": return
 	var sensitivity = float(career.data.settings.lookSensitivity)
 	yaw -= amount.x*sensitivity
-	pitch = clampf(pitch+amount.y*sensitivity*(-1 if career.data.settings.invertLook else 1),-.2,.45)
+	pitch = clampf(pitch+amount.y*sensitivity*2*(-1 if career.data.settings.invertLook else 1),-.8,.6)
 
 func _input(event):
 	if hud.capture_binding(event): get_viewport().set_input_as_handled();return
@@ -710,9 +710,6 @@ func _input(event):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT: dragging = event.pressed
 	if event is InputEventMouseMotion and (dragging or Input.mouse_mode == Input.MOUSE_MODE_CAPTURED):
 		camera_look(event.relative*Vector2(.004,.002))
-	if event is InputEventMouseButton and event.pressed and mode == "playing":
-		if event.button_index == MOUSE_BUTTON_WHEEL_UP: camera_distance=maxf(3,camera_distance-.5)
-		if event.button_index == MOUSE_BUTTON_WHEEL_DOWN: camera_distance=minf(11,camera_distance+.5)
 	if event is InputEventJoypadButton and event.pressed:
 		controller_id = event.device
 		if event.button_index == JOY_BUTTON_BACK:
@@ -1841,7 +1838,7 @@ func _process(delta: float):
 	damage_numbers=damage_numbers.filter(func(dn):return dn.life>0)
 	if not camera_locked:
 		var anchor=player.position+Vector3.UP*1.2
-		var offset=Vector3(sin(yaw)*camera_distance,7.5+camera_distance*.25+pitch*4,cos(yaw)*camera_distance)
+		var offset=Vector3(sin(yaw)*camera_distance,7.5+camera_distance*.25,cos(yaw)*camera_distance)
 		var desired=player.position+offset
 		var ray=PhysicsRayQueryParameters3D.create(anchor,desired)
 		ray.collision_mask=1
@@ -1853,7 +1850,10 @@ func _process(delta: float):
 		# Screen flash overlay
 		if hit_shake>0: camera.position+=Vector3(sin(hit_shake*140),cos(hit_shake*110),0)*hit_shake*.32
 		# Camera pulse (pulls back on multi-kills)
-		camera.look_at(anchor-Vector3(sin(yaw)*2,0,cos(yaw)*2))
+		# Pitch tilts camera look angle (not just height)
+		var look_offset = Vector3(sin(yaw)*2, pitch*6, cos(yaw)*2)
+		var look_anchor = anchor - look_offset
+		camera.look_at(look_anchor)
 	for effect in effects:
 		effect.life-=delta
 		effect.node.position+=effect.velocity*delta

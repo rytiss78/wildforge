@@ -254,10 +254,12 @@ func open(title: String, subtitle: String = "") -> VBoxContainer:
 	preview_id=""
 	for child in modal.get_children(): child.queue_free()
 	modal.visible = true
+	var vp_size = get_viewport().get_visible_rect().size
 	var panel = PanelContainer.new()
 	Input.mouse_mode = Input.MOUSE_MODE_VISIBLE
-	panel.position = Vector2(220,80)
-	panel.size = Vector2(1000,640)
+	var panel_w := 1000.0; var panel_h := 640.0
+	panel.position = Vector2((vp_size.x-panel_w)/2,(vp_size.y-panel_h)/2)
+	panel.size = Vector2(panel_w,panel_h)
 	var shade=ColorRect.new();shade.color=Color(.025,.05,.08,.72);modal.add_child(shade);shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	panel.add_theme_stylebox_override("panel",style(paper,Color("a99070"),22))
 	modal.add_child(panel)
@@ -630,10 +632,15 @@ func offer_card(item: Dictionary, index: int, select: Callable) -> Button:
 	var text=WeaponDetails.describe(item.id) if item.kind=="weapon" else game.rules.describe(item.effects[0])
 	var description=label(text,14);description.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;description.max_lines_visible=4;description.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS;card.tooltip_text=text;description.size_flags_vertical=Control.SIZE_EXPAND_FILL
 	column.add_child(description)
-	var note=item.kind.capitalize()+" · "+str(item.get("family","Weapon"))
+	var note=item.kind.capitalize()+""" · """+str(item.get("family","Weapon"))
 	if item.kind=="weapon":
 		var owned=game.equipped.filter(func(w):return w.id==item.id)
-		note="Rank %d → %d" % [owned[0].rank,owned[0].rank+1] if not owned.is_empty() else "Choose a slot to replace" if game.equipped.size()>=3 else "New weapon"
+		if not owned.is_empty():
+			note="Equipped: Rank %d → %d" % [owned[0].rank,owned[0].rank+1]
+		elif game.equipped.size()>=3:
+			note="New weapon — full slot required"
+		else:
+			note="New weapon — fills empty slot"
 	var footer=label(note,12);footer.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;column.add_child(footer)
 	# Hover scale-up via tween
 	card.mouse_entered.connect(func():
