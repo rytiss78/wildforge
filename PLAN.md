@@ -16,36 +16,28 @@
 
 ---
 
-## Review items (new from 2026-10-10 — decide each one)
+## Bugs to fix (new from 2026-10-11)
 
-|### 1. Co-op: does one player opening a chest remove it from everyone's map? — `[x done]`
-|✅ Verified: `chest_open` + `chest_hide` broadcast to all co-op members; chests are hidden from everyone's world and mini-map.
+|### 1. UI offcentered, no visual update — `[x done]`
+|Modal panels now dynamically center based on `get_viewport().get_visible_rect().size` instead of fixed `Vector2(220,80)`. Panels stay centered at any resolution.
 
-### 2. Co-op XP/gold scaling — `[x done]`
-✅ Verified: confirmed 1:1 full credit per picker. Decided: divide by party size (4-player = 25%). Implemented in `coop.gd` credit handlers (host + client).
+|### 2. Hero gets way too much XP — `[x done]`
+|Changed XP curve from `2 + level*2 + level²` to `8 + level*6 + level²*2`. Level 1 now costs ~16 XP vs 5; level 8 costs ~184 vs 82.
 
-|### 3. Half XP rates — `[x done]`
-|✅ Done: halved the XP curve formula in `rules.gd` from `4 + level * 4 + level² * 2` to `2 + level * 2 + level²`. Level 1 now costs ~10 XP vs 20; level 10 costs ~257 vs ~514.
+|### 3. Enemies stuck on flat ground — `[x done]`
+|Added early return in `EnemySurface.tick()`: regular enemies only use surface climbing when player is >3 units higher. On flat ground, enemies walk via standard CharacterBody3D `move_and_slide()`.
 
-|### 4. Banishes: 1 → 5, not shared in co-op — `[x done]`
-|✅ Done: increased per-realm banish charges from 1 to 5 in `big_update.gd` (line 46). Banish charges are a per-player variable on `BigUpdate` instance — already not shared in co-op.
+|### 4. Mouse up/down zooms instead of looks up/down — `[x done]`
+|Removed scroll wheel zoom. Vertical mouse now tilts camera look angle (pitch). Increased Y sensitivity ×2, pitch range expanded to -.8/.6. Camera height fixed (no longer affected by pitch).
 
-|### 5. Unlock vertical camera movement — `[x done]`
-|✅ Done: added `camera.rotation.x = pitch` in `game.gd` _process, so mouse/stick vertical input now tilts the camera view angle. Previously pitch only offset camera height.
+|### 5. Card picker: weapon upgrade not matched to equipped weapon — `[x done]`
+|Upgrade cards now show "Equipped: Rank X → X+1" when the upgrade applies to an owned weapon, "New weapon — fills empty slot" or "New weapon — full slot required" for new weapons.
 
-### 6. Menu / UI / overhaul overhaul — `[x done]`
-✅ Completed: panel entrance/exit tweens, toast fade in/out, low-HP pulse, timer warning glow (<60s), chest reveal glow animation, weapon slot pop-in, HP icon, gold icon. All existing functionality preserved.
+### 6. Chest card icons — `[ ] open`
+Chest card icons need a complete visual overhaul: detailed 2D artwork. Not a code fix — asset creation needed.
 
-### 9. UI polish (spacing, icons, animations) — `[x done]`
-See item 6. All polish applied.
-
-### 7. Sole-developer process — `[x done 2026-10-10]`
-Rytis is now the only developer. Multi-agent orchestration dropped; dev rules simplified. One agent, direct edits, group exports. This plan file itself is the streamlined workflow.
-
-### 8. Rewrite GitHub page — `[x done]`
-Updated `community/README.md` with full feature list, download link, 6 current UI screenshots, and build instructions. Updated `community/about.md` with co-op scaling note.
-
----
+### 7. Hit indicator makes screen to busy — `[ ] open`
+Enemie hit particles should apear only on critical hit on the nenemie
 
 ## Done (retained, removed from active list)
 
@@ -62,4 +54,5 @@ Updated `community/README.md` with full feature list, download link, 6 current U
 - After edits: `node scripts/agent-workflow.mjs check` (JS + Godot import/parse) then `integration`.
 - Feature-specific: `pace-review` (XP/level pace), `capture-ui` / `controls-review` (menus, camera, HUD), `coop` / `coop-feedback` (co-op), `combat-review` (combat).
 - Build after several milestones: `node scripts/agent-workflow.mjs build` → `.build-staging/.../Wildforge.exe`, then package with `scripts/package-release.ps1 -BuildNumber N -BuildDirectory <dir> -SourceCommit <sha>`.
-- Preserve history, saves, logs, screenshots; delete old builds only with explicit authorization.
+- Test new builds in solo and coop. Make and inspect new screenshots.
+- Preserve history, saves, logs; delete old builds only with explicit authorization.
