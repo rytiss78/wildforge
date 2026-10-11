@@ -47,8 +47,9 @@ static func tick(g):
 		g.events.guardian_attack=g.realm_time+8
 		for i in range(6):
 			var p=g.player.position+Vector3.RIGHT.rotated(Vector3.UP,i*TAU/7+g.realm_time)*6
-			g.warn_at(p,2.2,1.8,22+g.realm*8,"void")
-			if g.coop.active: g.coop.broadcast({"type":"hazard","realm":g.realm,"position":g.coop.array(p),"radius":2.2,"delay":1.8,"damage":22+g.realm*8,"style":"void"})
+			var dmg=roundi((22+g.realm*8)*g.realm_difficulty)
+			g.warn_at(p,2.2,1.8,dmg,"void")
+			if g.coop.active: g.coop.broadcast({"type":"hazard","realm":g.realm,"position":g.coop.array(p),"radius":2.2,"delay":1.8,"damage":dmg,"style":"void"})
 
 static func defeated(g,enemy):
 	if enemy.get("guardian",false):

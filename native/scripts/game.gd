@@ -386,6 +386,7 @@ func start_run(shared_seed: int=-1):
 	if shared_seed<0: coop.run_started()
 
 var kills = 0
+var realm_difficulty = 1.0
 
 func enter_realm(index: int):
 	clear_entities()
@@ -406,6 +407,7 @@ func enter_realm(index: int):
 	nova_clock = 6
 	yaw = 0
 	pitch = -0.3
+	realm_difficulty = 1.0 + realm * 0.25
 	world.build(realm,seed_value)
 	player.position = Vector3(0,1.2,0)
 	player.velocity = Vector3.ZERO
@@ -423,7 +425,7 @@ func enter_realm(index: int):
 		weapon.clock = 0
 		if weapon.turret: deploy_turret(weapon)
 	# A ring already converges on you at spawn. No free minute of idling.
-	for i in range(9): spawn_enemy(11.0+randf()*5.0)
+	for i in range(9+realm): spawn_enemy(11.0+randf()*5.0)
 	hud.tell("%d / 3  ·  %s" % [realm+1,RealmWorld.NAMES[realm]],4)
 	if realm > 0: sound.say("realm",0)
 	if index>0: coop.realm_changed()
@@ -845,11 +847,11 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 			var ring=TorusMesh.new();ring.inner_radius=.6;ring.outer_radius=.75
 			var glow_ring=MeshInstance3D.new();glow_ring.mesh=ring;glow_ring.position=Vector3(0,height*.55,0)
 			glow_ring.material_override=material(Color("ff6633"),2.5);glow_ring.scale=Vector3(1,.01,1);node.add_child(glow_ring);node.set_meta("elite_ring",glow_ring)
-	var max_health = (500+realm*500+realm_time*3) if boss else (35+realm*22+realm_time*.12)
+	var max_health = ((500+realm*500+realm_time*3) if boss else (35+realm*22+realm_time*.12))*realm_difficulty
 	max_health *= 1+biome*.18
 	if not boss: max_health*=species.health*(.42 if species.behavior=="spit" else 1.0)
 	if elite: max_health*=2.5
-	var enemy = {"biome":biome,"elite":elite,"node":node,"hp":max_health,"maxHp":max_health,"speed":8.0+realm*.35+randf()*1.5,"boss":boss,"fire":0.0,"poison":0.0,"status_time":0.0,"freeze":0.0,"blind":0.0,"slow":0.0,"attack":2.5,"telegraph":0.0,"dead":false,"contact":0.0,"phase":1,"startDamage":health_damage}
+	var enemy = {"biome":biome,"elite":elite,"node":node,"hp":max_health,"maxHp":max_health,"speed":8.0+realm*.35+randf()*1.5,"boss":boss,"fire":0.0,"poison":0.0,"status_time":0.0,"freeze":0.0,"blind":0.0,"slow":0.0,"attack":2.5*realm_difficulty,"telegraph":0.0,"dead":false,"contact":0.0,"phase":1,"startDamage":health_damage}
 	enemy.guardian=guardian
 	enemy.merge(species);enemy.speed*=species.speed
 	enemy.height=height;enemy.radius=radius_value;enemy.flying=species.flying and not boss
@@ -858,7 +860,7 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 	if enemy.flying: node.floor_snap_length=0;node.position.y+=species.altitude
 	enemy.net_id=coop.next_entity;coop.next_entity+=1
 	if not boss and realm_time>=600:
-		var threat=1+int((realm_time-600)/30);enemy.speed*=1+minf(.75,threat*.08);enemy.damage*=1+minf(3,threat*.15)
+		var threat=1+int((realm_time-600)/30);enemy.speed*=1+minf(.75,threat*.08);enemy.damage*=realm_difficulty*(1+minf(3,threat*.15))
 	if realm_time>=600: EclipseCorruption.apply(enemy,1+int((realm_time-600)/30))
 	enemy.xp_reward=enemy_xp_reward(enemy)
 	if boss:
@@ -1481,8 +1483,9 @@ func telegraph(enemy: Dictionary):
 	for i in range(count):
 		var p=target+Vector3.RIGHT.rotated(Vector3.UP,i*TAU/count+elapsed)*(0 if i==0 else 3.5+enemy.phase)
 		var radius_value=3.0 if count>1 else 5.0+enemy.phase
-		warn_at(p,radius_value,1.4+i*.18,25+realm*10,style_name)
-		if coop.active and coop.hosting: coop.broadcast({"type":"hazard","position":CoopSession.array(p),"radius":radius_value,"delay":1.4+i*.18,"damage":25+realm*10,"style":style_name,"realm":realm})
+		var dmg=roundi((25+realm*10)*realm_difficulty)
+		warn_at(p,radius_value,1.4+i*.18,dmg,style_name)
+		if coop.active and coop.hosting: coop.broadcast({"type":"hazard","position":CoopSession.array(p),"radius":radius_value,"delay":1.4+i*.18,"damage":dmg,"style":style_name,"realm":realm})
 
 func warn_at(p: Vector3,radius_value: float,delay: float,damage_value: float,style_name: String):
 	p.y=world.height_at(p.x,p.z)
