@@ -718,7 +718,7 @@ func camera_look(amount: Vector2):
 	if mode != "playing": return
 	var sensitivity = float(career.data.settings.lookSensitivity)
 	yaw -= amount.x*sensitivity
-	pitch = clampf(pitch+amount.y*sensitivity*(-1 if career.data.settings.invertLook else 1),-.2,.45)
+	pitch = clampf(pitch+amount.y*sensitivity*(-1 if career.data.settings.invertLook else 1),-.55,1.1)
 
 func _input(event):
 	if hud.capture_binding(event): get_viewport().set_input_as_handled();return

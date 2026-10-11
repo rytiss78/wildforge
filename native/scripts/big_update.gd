@@ -1,7 +1,7 @@
 extends Node3D
 # Local presentation with host-authoritative optional events and rescue channels.
 var game
-var banish_charges=1
+var banish_charges=5
 var focused_offer=0
 var downed=false
 var rescue_hold=false
