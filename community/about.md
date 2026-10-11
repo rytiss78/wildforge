@@ -8,6 +8,10 @@ Carry three weapons and grow a third arm when your hands are full. Burn, freeze,
 
 Wander from Clover Woods to Moon Craters, climb through Cloud City and find trouble in Candy Hell and Starfall Space. Hunt for chests, leap over enemies and face huge bosses as the clock runs down. Discover **108 achievements** built around strange combinations, exploration and unexpected victories.
 
-Play alone or bring up to three friends. Each player runs their own run, keeps their own loot and rewards and sees the fight unfold together. No store account is needed.
+Play alone or bring up to three friends. Each player runs their own run, keeps their own loot and rewards and sees the fight unfold together. Co-op rewards are divided by party size — a 4-player run moves at the same pace as solo.
 
-Wildforge is an unfinished alpha, growing with player feedback. Tell us what broke, what made you laugh and what you want to try next. Selected changes are tested and explained in build notes. In-game suggestions currently stay on your PC; automatic online sharing is still planned.
+Wildforge is an unfinished alpha, growing with player feedback. Tell us what broke, what made you laugh and what you want to try next. Selected changes are tested and explained in build notes. No store account needed.
+
+---
+
+*Steam publication was cancelled by the owner on 5 October 2026. `ai-content-provenance.md` records asset origins.*

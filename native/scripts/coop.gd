@@ -295,10 +295,13 @@ func receive(sender: int,message):
 			if members[sender].get("weapons",[]).any(func(w):return w.get("id","")==weapon):
 				message.actor=sender;show_shot(message);broadcast(message,false)
 		elif kind=="credit":
-			# Host runs its own sim; apply the shared credit locally.
+			# Divide by party size so a 4-player run doesn't 4x the pace.
+			var party_size=members.size()+1
 			var g=int(message.get("gold",0))
+			if party_size>1: g=maxi(1,int(g/party_size))
 			if g>0: game.gold+=g; game.update.run_coins+=g
 			var xp=int(message.get("xp",0))
+			if party_size>1: xp=maxi(1,int(xp/party_size))
 			if xp>0: game.update.run_xp+=xp; game.xp+=xp
 			if game.xp>=game.xp_target: game.level_up()
 		elif kind=="reward_chosen":
@@ -403,10 +406,14 @@ func receive(sender: int,message):
 		elif kind=="damage":
 			game.take_damage(float(message.amount),vector(message.position),str(message.sound))
 		elif kind=="credit":
-			if int(message.get("gold",0))>0: game.gold+=int(message.get("gold",0)); game.update.run_coins+=int(message.get("gold",0))
-			var gained_xp=int(message.get("xp",0))
-			if gained_xp>0: game.update.run_xp+=gained_xp; game.xp+=gained_xp
-			# Level up chain runs on each client's own sim.
+			# Divide by party size so a 4-player run doesn't 4x the pace.
+			var party_size=members.size()+1
+			var g=int(message.get("gold",0))
+			if party_size>1: g=maxi(1,int(g/party_size))
+			if g>0: game.gold+=g; game.update.run_coins+=g
+			var xp=int(message.get("xp",0))
+			if party_size>1: xp=maxi(1,int(xp/party_size))
+			if xp>0: game.update.run_xp+=xp; game.xp+=xp
 			if game.xp>=game.xp_target: game.level_up()
 		elif kind=="reward_chosen":
 			# Co-op Item 4: the others are choosing rewards too — record this
