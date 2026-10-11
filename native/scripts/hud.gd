@@ -692,6 +692,32 @@ func show_offers(items: Array, source: String,animate: bool=true):
 	if not cards.is_empty(): cards[0].grab_focus();preview_offer(items[0])
 	if animate: animate_offers()
 
+func show_party_panel(owned: Dictionary):
+	# Co-op Item 4: companion panel — for each other player still choosing, show
+	# their offered cards in a small strip so you can see what they're aiming for.
+	# Called from the credit/level_up receiver when this player is mid-choose.
+	if cards.is_empty(): return
+	# Clear any prior companion strip.
+	var panel=content.get_child(content.get_child_count()-1) if content.get_child_count()>0 else null
+	if is_instance_valid(panel) and panel.name=="party_panel":
+		panel.queue_free()
+	var strip=VBoxContainer.new();strip.name="party_panel";strip.add_theme_constant_override("separation",10)
+	strip.custom_minimum_size.x=240
+	for p_who in owned.keys():
+		var info=owned[p_who]
+		var items=info.get("items",[])
+		if items.is_empty(): continue
+		var row=HBoxContainer.new();row.add_theme_constant_override("separation",6)
+		var who=label(p_who,16,Color("e5cb98"));who.custom_minimum_size.x=120;row.add_child(who)
+		for it in items:
+			var box=ColorRect.new();box.custom_minimum_size=Vector2(40,48)
+			box.color=RunRules.COLORS[0]
+			var ic=PowerIcon.new();ic.key=it.get("id","");ic.weapon_icon=it.get("kind")=="weapon"
+			box.add_child(ic);ic.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+			row.add_child(box)
+		strip.add_child(row)
+	content.add_child(strip)
+
 func offer_layout_fits() -> bool:
 	if cards.is_empty(): return false
 	var bounds=get_viewport().get_visible_rect()

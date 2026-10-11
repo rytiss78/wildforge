@@ -2672,6 +2672,22 @@
     "sha256": "4d19d8b4b5c2120132b65858d8d2c845e3f58a47e0fdfc4dc20ecc278603d180"
   },
   {
+    "id": "attraction-pulse-skill",
+    "path": "res://assets/illustrated/content/attraction-pulse-skill.svg",
+    "shape": 14,
+    "condition": 8,
+    "source": "Original editable vector geometry",
+    "sha256": "376c45ef7d4abc5b1b6206a56e94e8564c1006a85c86f082bc65527888d42119"
+  },
+  {
+    "id": "repulsion-pulse-skill",
+    "path": "res://assets/illustrated/content/repulsion-pulse-skill.svg",
+    "shape": 13,
+    "condition": 8,
+    "source": "Original editable vector geometry",
+    "sha256": "fb2f211c866b3ec204721789d0101294e98a96669f470b2c83f4ec85402a68c7"
+  },
+  {
     "id": "augment-air-damage",
     "path": "res://assets/illustrated/content/augment-air-damage.svg",
     "shape": 0,

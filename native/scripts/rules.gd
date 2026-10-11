@@ -39,6 +39,18 @@ func next_xp(level: int) -> int:
 func can_weapon(equipped: Array, id: String) -> bool:
 	return equipped.any(func(w): return w.id == id) or equipped.size() < WEAPON_CAP
 
+func card_targets_weapon(item: Dictionary, weapon_id: String) -> bool:
+	# Item 5: a card "targets" the given equipped weapon when it is either
+	# that weapon itself, a generic upgrade, or a weapon-specific +Power boost.
+	if item.kind == "weapon":
+		return item.id == weapon_id
+	var key = item.effects[0].key if item.effects and item.effects.size() > 0 else ""
+	# Generic upgrades (damage, rate, range, etc.) apply to every weapon.
+	if key in ["damage","rate","range","crit","critPower","multishot","pierce","splash","ricochet","chain","fire","freeze","poison","slow","stun","lifesteal","thorns","airDamage","airJumps","revive","boomerangPierce","discBounces","turretCount","turretDamage","turretRate","turretRange","turretLife","repair"]:
+		return true
+	# Weapon-specific power boosts, keyed to the equipped weapon's id.
+	return key == weapon_id + "Power"
+
 func rarity(luck: float) -> int:
 	var chance = rng.randf() + minf(luck, 0.75) * 0.18
 	return 3 if chance > 0.987 else 2 if chance > 0.91 else 1 if chance > 0.66 else 0
@@ -81,7 +93,7 @@ func roll(kind: String, luck: float = 0.0, minimum: int = 0) -> Dictionary:
 	if result.family in ["Economy","Mobility"]: result.name = result.title
 	return result
 
-func offers(kind: String, luck: float, elite: bool = false, current_stats: Dictionary = {}, equipped: Array = [],excluded_ids: Array=[]) -> Array:
+func offers(kind: String, luck: float, elite: bool = false, current_stats: Dictionary = {}, equipped: Array = [],excluded_ids: Array=[],filtered_weapon: String="") -> Array:
 	var result = []
 	var attempts = 0
 	if kind=="weapon" and equipped.size()>=WEAPON_CAP:
@@ -91,6 +103,12 @@ func offers(kind: String, luck: float, elite: bool = false, current_stats: Dicti
 	while result.size() < OFFER_COUNT and attempts<1000:
 		var item = roll(kind, luck, 1 if elite else 0)
 		attempts += 1
+		# Item 5: when a specific equipped weapon is given, keep only cards that
+		# apply to that weapon (weapon upgrades and +Power boosts), plus the weapon
+		# itself when it matches. This keeps a shared party pool relevant to each
+		# player's own loadout instead of offering unrelated power cards.
+		if filtered_weapon != "":
+			if not card_targets_weapon(item, filtered_weapon): continue
 		if item.kind!="weapon" and banished.has(item.effects[0].key): continue
 		if attempts<80 and excluded_ids.has(item.id): continue
 		if item.kind!="weapon" and not current_stats.is_empty():

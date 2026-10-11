@@ -3,6 +3,7 @@ extends Node
 class_name CoopSession
 
 var flower_visuals={}
+var party_seen={}
 
 # Transport-independent authoritative world. Important events are reliable;
 # poses/snapshots use unreliable ordered delivery. Never deserialize objects.
@@ -293,6 +294,42 @@ func receive(sender: int,message):
 			var weapon=str(message.get("weapon",""))
 			if members[sender].get("weapons",[]).any(func(w):return w.get("id","")==weapon):
 				message.actor=sender;show_shot(message);broadcast(message,false)
+		elif kind=="credit":
+			# Host runs its own sim; apply the shared credit locally.
+			var g=int(message.get("gold",0))
+			if g>0: game.gold+=g; game.update.run_coins+=g
+			var xp=int(message.get("xp",0))
+			if xp>0: game.update.run_xp+=xp; game.xp+=xp
+			if game.xp>=game.xp_target: game.level_up()
+		elif kind=="reward_chosen":
+			# Co-op Item 4: the others are choosing rewards too — record this
+			# player's offered cards + name so they can be shown in the companion panel.
+			var who=message.get("name","Friend")
+			var items=message.get("items",[])
+			var copies=[]
+			for it in items: copies.append(it.duplicate())
+			party_seen[who]={"name":who,"items":copies}
+			if is_instance_valid(game) and game.mode=="offer":
+				game.hud.show_party_panel(party_seen)
+		elif kind=="level_up":
+			# Shared level-up reward: every member opens the same pool locally,
+			# each filtered to their own loadout, with the others cards in a panel.
+			game.open_shared_offer(message.get("offers",[]),message.get("kind","skill"),bool(message.get("elite",false)),"level")
+		elif kind=="chest_open":
+			# Shared chest reward: opener paid; everyone opens the same pool.
+			game.open_shared_offer(message.get("offers",[]),message.get("kind","item"),bool(message.get("elite",false)),"chest")
+		elif kind=="chest_hide":
+			# The opener opened a chest — remove it from everyone else's world and mini-map.
+			var pos=message.get("pos",[])
+			for ch in game.chests:
+				if ch is Dictionary and ch.get("node"):
+					var cp=ch.node.position
+					if int(cp.x)==int(pos[0]) and int(cp.y)==int(pos[1]) and int(cp.z)==int(pos[2]):
+						if not ch.get("opened",false):
+							ch.opened=true
+							if is_instance_valid(ch.node): ch.node.visible=false
+						break
+
 		elif kind=="hunt_start" and int(message.get("realm",-1))==game.realm and not frozen() and float(members[sender].get("hp",0))>0:
 			game.Hunt.activate(game,vector(members[sender].get("position",[])))
 		elif kind=="travel" and game.mode=="playing" and not frozen():
@@ -365,6 +402,38 @@ func receive(sender: int,message):
 			if message.has("actor"): game.kill_enemy(game.spawn_network_enemy(message.actor),str(message.cause))
 		elif kind=="damage":
 			game.take_damage(float(message.amount),vector(message.position),str(message.sound))
+		elif kind=="credit":
+			if int(message.get("gold",0))>0: game.gold+=int(message.get("gold",0)); game.update.run_coins+=int(message.get("gold",0))
+			var gained_xp=int(message.get("xp",0))
+			if gained_xp>0: game.update.run_xp+=gained_xp; game.xp+=gained_xp
+			# Level up chain runs on each client's own sim.
+			if game.xp>=game.xp_target: game.level_up()
+		elif kind=="reward_chosen":
+			# Co-op Item 4: the others are choosing rewards too — record this
+			# player's offered cards + name so they can be shown in the companion panel.
+			var who=message.get("name","Friend")
+			var items=message.get("items",[])
+			var copies=[]
+			for it in items: copies.append(it.duplicate())
+			party_seen[who]={"name":who,"items":copies}
+			if is_instance_valid(game) and game.mode=="offer":
+				game.hud.show_party_panel(party_seen)
+		elif kind=="level_up":
+			game.open_shared_offer(message.get("offers",[]),message.get("kind","skill"),bool(message.get("elite",false)),"level")
+		elif kind=="chest_open":
+			game.open_shared_offer(message.get("offers",[]),message.get("kind","item"),bool(message.get("elite",false)),"chest")
+		elif kind=="chest_hide":
+			# The opener opened a chest — remove it from everyone else's world and mini-map.
+			var pos=message.get("pos",[])
+			for ch in game.chests:
+				if ch is Dictionary and ch.get("node"):
+					var cp=ch.node.position
+					if int(cp.x)==int(pos[0]) and int(cp.y)==int(pos[1]) and int(cp.z)==int(pos[2]):
+						if not ch.get("opened",false):
+							ch.opened=true
+							if is_instance_valid(ch.node): ch.node.visible=false
+						break
+
 		elif kind=="finish": game.end_run(bool(message.win))
 
 func ensure_avatar(id: int,state: Dictionary):

@@ -96,6 +96,15 @@ var reveal_clock = 0.0
 var reveal_duration = 0.0
 var reveal_tier = 0
 var next_save = 0.0
+# Shared co-op reward state: when chest/level rewards are opened by everyone,
+# each player filters the same offered pool to cards that apply to their own loadout,
+# and sees the other players' cards in a companion panel.
+var party_shown_offer = []
+var party_shown_source = ""
+var party_offers = []
+var party_source = ""
+# Co-op Item 4: names -> offered cards for the companion panel (keyed by player name).
+var party_seen = {}
 var projectile_mesh = SphereMesh.new()
 var brass_mesh: Mesh
 var painted_shot: ShaderMaterial
@@ -501,7 +510,7 @@ func interact():
 		if coop.active and not coop.hosting: coop.send_to(coop.owner_id,{"type":"travel"});return
 		Journey.activate(self)
 
-func buy_chest(chest: Dictionary):
+func buy_chest(chest: Dictionary, free_in_party: bool=false):
 	if update.start_mimic(chest): return
 	if chest.opened: return
 	# Key outcome is rolled once per chest, preventing repeated-interaction rerolls.
@@ -509,13 +518,16 @@ func buy_chest(chest: Dictionary):
 		chest.rolled_free = true
 		chest.free = chest.free or rules.rng.randf() < rules.free_chance(stats.keyPower)
 	var price = 0 if chest.free else rules.chest_price(paid_chests,stats.discount)
-	if gold < price: hud.tell("● %d / %d" % [gold,price]);return
-	if price > 0 and gold == price: achievement_event("LAST_COIN")
-	if price > 0 and stats.discount > 0: achievement_event("SALE")
-	if chest.free: achievement_event("BOSS_GIFT" if chest.elite else "FREE_KEY")
+	if price > 0:
+		if gold < price: hud.tell("● %d / %d" % [gold,price]);return
+		# In a shared-party chest the opener already paid; others open it free.
+		if not free_in_party:
+			if price == gold: achievement_event("LAST_COIN")
+			if stats.discount > 0: achievement_event("SALE")
+		gold -= price
+		if price > 0: paid_chests += 1
+	if free_in_party: achievement_event("BOSS_GIFT" if chest.elite else "FREE_KEY")
 	if chest.node.position.y > world.height_at(chest.node.position.x,chest.node.position.z)+1: achievement_event("HIGH_CHEST")
-	gold -= price
-	if price > 0: paid_chests += 1
 	chest.opened = true
 	# A tiny, collectible sneeze bonus; the box is still paid for exactly once.
 	sound.ui_effect("chest_latch")
@@ -532,6 +544,13 @@ func buy_chest(chest: Dictionary):
 	offer_source = "chest"
 	reveal_tier = offers.map(func(item):return item.tier).max()
 	if reveal_tier == 3: achievement_event("LEGENDARY")
+	# Co-op: chest is shared. Every player opens the same box and each
+	# chooses their own reward. Broadcast the offer pool so all members
+	# open it locally and see the same cards (each filters to their own loadout).
+	if coop.active and not free_in_party:
+		coop.broadcast({"type":"chest_open","offers":offers,"kind":"item","elite":bool(chest.elite)})
+		# Every other member's chest is now gone too — hide it from their world and mini-map.
+		coop.broadcast({"type":"chest_hide","pos":[int(chest.node.position.x),int(chest.node.position.y),int(chest.node.position.z)]})
 	reveal_duration = [2.6,2.9,3.3,3.8][reveal_tier]
 	sound.chest_open(reveal_tier,reveal_duration)
 	reveal_clock = 0
@@ -562,6 +581,10 @@ func level_up():
 	sound.say("level",0)
 	vibrate(.4,.65,.25)
 	hud.tell("LEVEL %d  ·  NEW POWER!" % level,1.2)
+	# Co-op: the level-up reward is shared. Broadcast the offer pool so every
+	# member opens the same choice locally (each filters to their own loadout).
+	if coop.active:
+		coop.broadcast({"type":"level_up","kind":kind,"elite":offer_elite,"offers":offers})
 
 func choose_offer(index: int):
 	if mode != "offer" or index < 0 or index >= offers.size(): return
@@ -582,6 +605,12 @@ func choose_offer(index: int):
 		career.bump("loot")
 		families[item.family] = int(families.get(item.family,0))+1
 		career.best("family_"+item.family,families[item.family])
+	# Co-op: let the others see what you picked (they're choosing too).
+	if coop.active:
+		coop.broadcast({"type":"reward_chosen",
+			"name":hero.name,
+			"item":{"id":item.id,"name":item.name,"kind":item.kind,"family":item.get("family","")}
+		})
 	hud.tell("+  " + item.name)
 	hud.close()
 	if xp >= xp_target: level_up()
@@ -743,6 +772,36 @@ func _input(event):
 	if event.is_action_pressed("deploy"):
 		var turrets = equipped.filter(func(weapon):return weapon.turret)
 		if not turrets.is_empty() and turrets[selected_turret%turrets.size()].deploy_clock <= 0: deploy_turret(turrets[selected_turret%turrets.size()])
+
+func filter_offers_to_loadout(items: Array) -> Array:
+	# Item 5 (co-op): each player keeps only cards that apply to their own
+	# loadout — the weapon itself, a generic upgrade, or a +Power boost for it.
+	var equipped_ids = equipped.map(func(w):return str(w.get("id","")))
+	return items.filter(func(item):
+		if item.kind == "weapon": return equipped_ids.has(item.id) or equipped.size() < RunRules.WEAPON_CAP
+		if not equipped_ids: return true
+		return rules.card_targets_weapon(item, equipped_ids[0])
+	)
+func open_shared_offer(party_offers_in: Array, kind_in: String, elite_in: bool, source: String):
+	# Co-op shared reward: the opener already called level_up()/buy_chest();
+	# this opens the same pool for this player, filtered to their own loadout,
+	# with a companion panel showing the other players' cards.
+	offers = filter_offers_to_loadout(party_offers_in)
+	if offers.is_empty(): offers = party_offers_in  # nothing matched; show all.
+	offer_kind = kind_in
+	offer_elite = elite_in
+	offer_rerolls = 0
+	offer_source = source
+	mode = "offer"
+	if source == "chest":
+		# Re-run reveal so the chest visuals play, then hand off to show_offers.
+		reveal_tier = offers.map(func(item):return item.tier).max()
+		mode = "reveal"
+		reveal_clock = 0
+		# Chest open happens once locally; mark it opened so we don't re-open.
+		# (Chests are already marked opened by the opener; we just want the visuals.)
+	else:
+		hud.show_offers(offers,"level")
 
 func finish_reveal():
 	if mode != "reveal": return
@@ -1383,8 +1442,19 @@ func update_pickups(delta: float):
 					else: pickup.velocity=Vector3.ZERO;pickup.settled=true
 		pickup.node.rotation.y+=delta*2
 		if hp>0 and player.position.distance_to(pickup.node.position)<1.05+float(pickup.get("radius",.12))-.12:
-			if pickup.kind=="gold": update.run_coins+=pickup.value;gold+=roundi(pickup.value*stat("goldGain")/stat("goldGain"));heal(stats.coinHeal*pickup.get("units",1));sound.effect("coin")
-			else: update.run_xp+=pickup.value;xp+=pickup.value*(stat("xpGain")/stat("xpGain"))
+			# Co-op: progress is shared, so split the reward by party size.
+			# Without this each pickup would be applied locally + broadcast whole
+			# to everyone, so bigger groups farm rewards faster than solo.
+			var div=maxf(1.0,float(coop.members.size())+1.0)
+			if pickup.kind=="gold":
+				var gained=roundi(pickup.value*stat("goldGain")/div)
+				update.run_coins+=gained;gold+=gained;heal(stats.coinHeal*pickup.get("units",1));sound.effect("coin")
+				# Co-op: pick up is local, but credits are shared. Broadcast so every player applies them.
+				if coop.active: coop.broadcast({"type":"credit","gold":gained,"xp":0,"xp_source":"pickup"})
+			else:
+				var gained=roundi(pickup.value*stat("xpGain")/div)
+				update.run_xp+=gained;xp+=gained
+				coop.broadcast({"type":"credit","gold":0,"xp":gained,"xp_source":"pickup"})
 			pickup.node.queue_free();pickup.age=-1
 	pickups=pickups.filter(func(pickup):return pickup.age>=0)
 
@@ -1793,7 +1863,9 @@ func _physics_process(delta: float):
 	avatar.visible=burrow_time<=0
 	if burrow_time==0 and events.get("burrowing",false): damage_area(player.position,5.5,stats.burrow,"burrow");events.burrowing=false
 	if burrow_time>0: events.burrowing=true
-	walking_gold+=previous.distance_to(player.position)*stats.walkGold
+	# Co-op: walking gold is shared across the party, so split by size.
+	var walk_div=maxf(1.0,float(coop.members.size())+1.0)
+	walking_gold+=previous.distance_to(player.position)*stats.walkGold/walk_div
 	if walking_gold>=1: achievement_event("WALK_PAY");gold+=int(walking_gold);walking_gold-=int(walking_gold)
 	shield_delay=maxf(0,shield_delay-delta)
 	if shield_delay==0 and shield_hp<stats.shield: shield_hp=minf(stats.shield,shield_hp+maxf(2,stats.shield*.1)*delta)

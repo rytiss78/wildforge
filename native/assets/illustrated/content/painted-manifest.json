@@ -2004,6 +2004,18 @@
 		"source": "Painted atlas with distinct condition seal and identity engraving"
 	},
 	{
+		"id": "attraction-pulse-skill",
+		"path": "res://assets/illustrated/content/attraction-pulse-skill.png",
+		"sha256": "8c42ba26b42459d49e9e9e9062a9b41ffe3ecab56425dd9c3c5ffc81c2031c41",
+		"source": "Painted atlas with distinct condition seal and identity engraving"
+	},
+	{
+		"id": "repulsion-pulse-skill",
+		"path": "res://assets/illustrated/content/repulsion-pulse-skill.png",
+		"sha256": "de0e0036a4a8c2dd735794be6e84d1cf167e01958855369580151e596de51895",
+		"source": "Painted atlas with distinct condition seal and identity engraving"
+	},
+	{
 		"id": "augment-air-damage",
 		"path": "res://assets/illustrated/content/augment-air-damage.png",
 		"sha256": "02601f4e578f5964982c51ac715f916d539dd152209221b969fd789faad866b5",
@@ -4166,151 +4178,151 @@
 	{
 		"id": "flowers",
 		"path": "res://assets/illustrated/content/flowers.png",
-		"sha256": "d4eded8ec44a2d6c7709abe5885d315d217a1ba165c09121104d45b4d68ee138",
+		"sha256": "23b1ff2bda1f3dac1b3403845b658c94003e076c40a80edd1532514811cc67b7",
 		"source": "Painted atlas with distinct condition seal and identity engraving"
 	},
 	{
 		"id": "gun",
 		"path": "res://assets/illustrated/content/gun.png",
-		"sha256": "724159cad6d67e2f24e3db6624315de5aa7602c29cc5223ebd975942192da729",
+		"sha256": "6febb9f2a132273555e6802d37404f0904640c77cba09d6fe15489fa0d372e51",
 		"source": "Painted atlas with distinct condition seal and identity engraving"
 	},
 	{
 		"id": "shotgun",
 		"path": "res://assets/illustrated/content/shotgun.png",
-		"sha256": "8fb62ad915c405b023b2445f3c9dd2929e394592f96ac31c844296f72296d4b7",
+		"sha256": "1d2bd39588ed68c555004779db990a2aa0e81305102742f3893938d0ebe33235",
 		"source": "Painted atlas with distinct condition seal and identity engraving"
 	},
 	{
 		"id": "flame",
 		"path": "res://assets/illustrated/content/flame.png",
-		"sha256": "d45041f1f486acab064464af84e6c30506ff60ad48907e591364b7a5979200d2",
+		"sha256": "46e854943f074811e01a6a96f3e8e167df127baf41bc9803f7946a5cf400d251",
 		"source": "Painted atlas with distinct condition seal and identity engraving"
 	},
 	{
 		"id": "poison",
 		"path": "res://assets/illustrated/content/poison.png",
-		"sha256": "7769df80a11c521535c786b64bd74f24a21cf00b48b49c08a7752db40990c9a3",
+		"sha256": "b23819ca760699fa0b9d7e375a94865e4f8eed705b2c1c4a8ab8b7ce52252ec5",
 		"source": "Painted atlas with distinct condition seal and identity engraving"
 	},
 	{
 		"id": "ice",
 		"path": "res://assets/illustrated/content/ice.png",
-		"sha256": "d3308f2c82266b35fb66eaf6898a94dc745949321d3874c4477e787577b79b9c",
+		"sha256": "e5d269c0e5967d9f6fbd0e26900eaad66ae15cf00f71902781ba113957fb03a7",
 		"source": "Painted atlas with distinct condition seal and identity engraving"
 	},
 	{
 		"id": "rail",
 		"path": "res://assets/illustrated/content/rail.png",
-		"sha256": "45fad761f295a3989d6899a2b86675b30ed3366e771d06fc534b587a8342dcc4",
+		"sha256": "be7db66bba82fd7d9e45ccbd449faac62b41497b23a3db39eb2a1d612ec8ac33",
 		"source": "Painted atlas with distinct condition seal and identity engraving"
 	},
 	{
 		"id": "lightning",
 		"path": "res://assets/illustrated/content/lightning.png",
-		"sha256": "4661f97162cd5fa33f7c6a5989b346890030e06165215f8e8040e6ba5c38c6b2",
+		"sha256": "051a60b04ab23a75e748441f9bd5ef3ab61a7bd2e1d72bc2930a228e59819e83",
 		"source": "Painted atlas with distinct condition seal and identity engraving"
 	},
 	{
 		"id": "saw",
 		"path": "res://assets/illustrated/content/saw.png",
-		"sha256": "df2bbef172151ee4d6bdd95fd46e53c110630088418e7570a472462533878957",
+		"sha256": "1dd61a6bc9d6aed2a5b7efc0e828db21e84affcf7ea91ce6441062253de8398c",
 		"source": "Painted atlas with distinct condition seal and identity engraving"
 	},
 	{
 		"id": "rocket",
 		"path": "res://assets/illustrated/content/rocket.png",
-		"sha256": "493a83d564b249591d461a64e78e8f62d1554716495b63a671f5b41b5bda2072",
+		"sha256": "0cf7a5c5c6a430db4da51a06ce0960c1fcf71e22d226f6f10ed9b752f0705385",
 		"source": "Painted atlas with distinct condition seal and identity engraving"
 	},
 	{
 		"id": "ghost",
 		"path": "res://assets/illustrated/content/ghost.png",
-		"sha256": "7f52d76259ff9c5c09a05c6e9d4be129ed3336dde898d16ac925291e9350d45b",
+		"sha256": "b909ca7f81a1ef30a448ee6fada5067537114c4e6b1b4951df3d59abd517f617",
 		"source": "Painted atlas with distinct condition seal and identity engraving"
 	},
 	{
 		"id": "turret",
 		"path": "res://assets/illustrated/content/turret.png",
-		"sha256": "0ed50fc2d763f20ae55c136ac9203418ed26365c79ba1012fb51588006bc4b1f",
+		"sha256": "902cec2c94b9695763478747d09eecfd5e242cbb35048f1b2bb0e4fe5887320a",
 		"source": "Painted atlas with distinct condition seal and identity engraving"
 	},
 	{
 		"id": "fire-turret",
 		"path": "res://assets/illustrated/content/fire-turret.png",
-		"sha256": "e211360c875b38c1feed2b49c712e7917867208f4bdf22a89a0eaa0dbddc7535",
+		"sha256": "52c3effa549ade359ad3268fca95c9a41c907eb7d73fdfaed5c413a3f02a2fe9",
 		"source": "Painted atlas with distinct condition seal and identity engraving"
 	},
 	{
 		"id": "ice-turret",
 		"path": "res://assets/illustrated/content/ice-turret.png",
-		"sha256": "87e2d35e4deb85fb0d1dd9fde3baca3521de9c7953d9f453183bf80f3d61e236",
+		"sha256": "b9c30f81e97860ccc00edc6a13f3af934d1f6c2310ca0519ccb5e98a747d3709",
 		"source": "Painted atlas with distinct condition seal and identity engraving"
 	},
 	{
 		"id": "poison-turret",
 		"path": "res://assets/illustrated/content/poison-turret.png",
-		"sha256": "f50ae076d082cd492110e2917cf3519f00ca1818c468d0aa645ae2c0a7afd53b",
+		"sha256": "3a18e2c205bc24a8d939459d6796fb5e34c3fc103251c9f32303665d50bf859c",
 		"source": "Painted atlas with distinct condition seal and identity engraving"
 	},
 	{
 		"id": "lightning-turret",
 		"path": "res://assets/illustrated/content/lightning-turret.png",
-		"sha256": "93cde914fa81c4d0e0bfa8354d67130e74c843e911b25ab3347e09117984ebc3",
+		"sha256": "54e296f3f408614b64da69ac2eca939228e3acd2ae5d4d8696716ea72747e47b",
 		"source": "Painted atlas with distinct condition seal and identity engraving"
 	},
 	{
 		"id": "rocket-turret",
 		"path": "res://assets/illustrated/content/rocket-turret.png",
-		"sha256": "857b4f3ee0e4b2639e94ea39e2aa9d97111b66830c7302d02e4f11dd4c2230f6",
+		"sha256": "6923957e1c352173064c7909f82bfe08e6d9ae75cfe0df7130faee5ffd7e1578",
 		"source": "Painted atlas with distinct condition seal and identity engraving"
 	},
 	{
 		"id": "boomerang",
 		"path": "res://assets/illustrated/content/boomerang.png",
-		"sha256": "76da9ed2be396006a0ed0e47a747f2e4e7a1610acca6d5fd3a0f31a6aefe4b50",
+		"sha256": "9d7f3ce7fcb16c34219907e5cdc59bea17c60fed196cfcecc57b5d96e8ce1143",
 		"source": "Painted atlas with distinct condition seal and identity engraving"
 	},
 	{
 		"id": "disc",
 		"path": "res://assets/illustrated/content/disc.png",
-		"sha256": "bcd0af31293930f0bb1f948f874d944513d909caefa7cbf59181f4da7503db94",
+		"sha256": "185cd1110e6b3b04a132df882a9ac78f9acf96ba7b300be067736ddf7c234e0e",
 		"source": "Painted atlas with distinct condition seal and identity engraving"
 	},
 	{
 		"id": "harpoon",
 		"path": "res://assets/illustrated/content/harpoon.png",
-		"sha256": "aeb1ccb595df9cff221efff45d88d78409cd931500fdd3523d7db071a5ee3738",
+		"sha256": "b7a9ddaa34f291a7987a639bd37b5a3f3b528f2702891617754f7d41c45afad2",
 		"source": "Painted atlas with distinct condition seal and identity engraving"
 	},
 	{
 		"id": "gravity",
 		"path": "res://assets/illustrated/content/gravity.png",
-		"sha256": "5835c934821ce349630940b0cbd0f366b82549a80dba5d5aa53e59fe400a9320",
+		"sha256": "6127e660d252ae459db236b0895a361f8a13bdfc48f417e5545914f4e96f0145",
 		"source": "Painted atlas with distinct condition seal and identity engraving"
 	},
 	{
 		"id": "horn",
 		"path": "res://assets/illustrated/content/horn.png",
-		"sha256": "d4e9b3d1c6e458949c561791e70acacffe3196ea3be11db42f90654f5e7092cf",
+		"sha256": "0ad1e56d8a9cf31c5b4764335e199948ea12fdb3893c98f88655996c37f9826d",
 		"source": "Painted atlas with distinct condition seal and identity engraving"
 	},
 	{
 		"id": "bubble",
 		"path": "res://assets/illustrated/content/bubble.png",
-		"sha256": "dbcb818e14c1f85898d42c8e9668558dc5df755738b0ff7c453b202390c35873",
+		"sha256": "49dc9ed429693a16cb1eda8a4ca9d2551051d71a359b172e17f597bb556702b5",
 		"source": "Painted atlas with distinct condition seal and identity engraving"
 	},
 	{
 		"id": "meteor",
 		"path": "res://assets/illustrated/content/meteor.png",
-		"sha256": "5c71e2d646360d8c9ff594b5db784cbf311cc711207a8e6f3fc3db1fd2cf1792",
+		"sha256": "7d688e0eb19b996b452e79c669ea1ffa85a127eaa4e779a5a9dfaee5507b10b1",
 		"source": "Painted atlas with distinct condition seal and identity engraving"
 	},
 	{
 		"id": "bomb",
 		"path": "res://assets/illustrated/content/bomb.png",
-		"sha256": "8cd68abf643aed843e510fed0cbc8b77e7709ac83ad071be26d0ccd3c3f3d2b7",
+		"sha256": "ce01293b64ea2c5cb2e6a94cfb4dfc4d6278d80053862aabd0a1d81a2f595bc4",
 		"source": "Painted atlas with distinct condition seal and identity engraving"
 	},
 	{
