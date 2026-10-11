@@ -115,14 +115,15 @@ func compute_height_at(x: float,z: float) -> float:
 	var p=Vector3(x,0,z)
 	var biome=biome_at(p)
 	var angle=fposmod(atan2(z,x)+float(seed_value%23)*.03+realm*.4,TAU)/(TAU/6)
-	var amplitudes=[9.0,5.0,11.0,28.0,19.0,16.0]
+	# Reduced terrain amplitudes to keep slopes navigable for enemies.
+	var amplitudes=[6.0,4.0,6.0,8.0,6.0,6.0]
 	var index=int(floor(angle))
 	var amplitude=lerpf(amplitudes[index],amplitudes[(index+1)%6],smoothstep(0.0,1.0,fposmod(angle,1.0)))
 	# Smooth amplitudes near angular boundaries; no invisible height discontinuities.
-	var base=noise.get_noise_2d(x,z)*9+sin(x*.012)*cos(z*.012)*4
-	var mountain=maxf(0,noise.get_noise_2d(x+790,z-530))*25
+	var base=noise.get_noise_2d(x,z)*6+sin(x*.012)*cos(z*.012)*3
+	var mountain=maxf(0,noise.get_noise_2d(x+790,z-530))*12
 	var blend=smoothstep(65.0,120.0,Vector2(x,z).length())
-	var terrain=[sin(x*.06)*cos(z*.06)*1.5,-absf(sin(x*.025)*sin(z*.035))*3,-pow(maxf(0,noise.get_noise_2d(x*2,z*2)),2)*28,sin(x*.025)*cos(z*.025)*7,absf(sin(x*.032)+cos(z*.041))*4,sin(x*.018)*cos(z*.022)*9]
+	var terrain=[sin(x*.06)*cos(z*.06)*1.5,-absf(sin(x*.025)*sin(z*.035))*3,-pow(maxf(0,noise.get_noise_2d(x*2,z*2)),2)*6,sin(x*.025)*cos(z*.025)*7,absf(sin(x*.032)+cos(z*.041))*4,sin(x*.018)*cos(z*.022)*9]
 	var relief=lerpf(terrain[index],terrain[(index+1)%6],smoothstep(0.0,1.0,fposmod(angle,1.0)))
 	var original=base+mountain*blend*(amplitude/28.0)+relief*blend
 	var terrace=floorf(original/5.0)*5.0+smoothstep(.62,1.0,fposmod(original,5.0)/5.0)*5.0
