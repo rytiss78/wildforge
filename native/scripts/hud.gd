@@ -632,7 +632,7 @@ func offer_card(item: Dictionary, index: int, select: Callable) -> Button:
 	var text=WeaponDetails.describe(item.id) if item.kind=="weapon" else game.rules.describe(item.effects[0])
 	var description=label(text,14);description.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;description.max_lines_visible=4;description.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS;card.tooltip_text=text;description.size_flags_vertical=Control.SIZE_EXPAND_FILL
 	column.add_child(description)
-	var note=item.kind.capitalize()+""" · """+str(item.get("family","Weapon"))
+	var note=item.kind.capitalize()+" · "+str(item.get("family","Weapon"))
 	if item.kind=="weapon":
 		var owned=game.equipped.filter(func(w):return w.id==item.id)
 		if not owned.is_empty():
@@ -641,6 +641,22 @@ func offer_card(item: Dictionary, index: int, select: Callable) -> Button:
 			note="New weapon — full slot required"
 		else:
 			note="New weapon — fills empty slot"
+	elif item.effects.size()>0 and str(item.effects[0].key).begins_with("augment-"):
+		# Boost cards: check if player owns the target weapon
+		var aug_key=item.effects[0].key  # e.g. "augment-gun-damage"
+		var parts=aug_key.split("-")     # ["augment","gun","damage"]
+		var weapon_id=parts[1]           # "gun"
+		var weapon_name=""
+		if game.equipped.any(func(w):return w.id==weapon_id):
+			weapon_name=game.equipped.filter(func(w):return w.id==weapon_id)[0].name
+			note="Boosts: %s" % weapon_name
+		elif game.rules.data.weapons.any(func(w):return w.id==weapon_id):
+			note="Won't help — requires %s" % weapon_id.capitalize()
+		else:
+			note="Won't help — no matching weapon"
+	elif item.effects.size()>0:
+		# Generic boosts (damage, rate, etc.) apply to everything
+		pass
 	var footer=label(note,12);footer.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;column.add_child(footer)
 	# Hover scale-up via tween
 	card.mouse_entered.connect(func():
