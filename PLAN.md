@@ -75,6 +75,15 @@ Chest card icons need a complete visual overhaul: detailed 2D artwork. Not a cod
 - Scroll wheel zoom: 4–7 range
 - Keyboard WASD moves character relative to camera direction
 
+|### 17. Damage aura visual indicator — `[ ] open`
+|Damage aura (auraDamage stat) needs a visible visual effect so players know it's active. Add pulsing ring or shockwave around player when aura is active/charging.
+
+|### 18. Lightning effect looks like lightning — `[ ] open`
+|Current lightning projectile needs a proper lightning visual: jagged bolt, electric glow, flash on hit. Not just a blue projectile — needs branching arcs and particle trail.
+
+|### 19. Enemy speed too slow — they stop even on flat ground — `[ ] open`
+|Enemy navigation fix (#3) may have masked a speed issue: enemies are so slow they appear "stuck" even when moving. Check enemy `move_and_slide()` velocity — base speed may be too low, or velocity may be getting zeroed incorrectly. Compare enemy speed vs player speed.
+
 ## Done (retained, removed from active list)
 
 - Organic island + minimap, painted ground materials, compact HUD + treasure-reel chests.
