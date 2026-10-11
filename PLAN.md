@@ -53,14 +53,14 @@ Damage numbers now only appear on critical hits (`cause=="crit"`). Regular hits 
 ||### 11. Eclipse new music — `[ ] open`
 ||Replace current eclipse background music with PARANOIA.mp3 (provided). Map to eclipse stage in game.gd / run_clock.gd audio system.
 
-||### 20. Maps too hilly — enemies get stuck — `[ ] open`
-|Terrain has too much vertical variation, causing enemies to get stuck on slopes/walls. Need to flatten terrain generation. Higher enemy speed doesn't help because the root cause is terrain geometry.
+||### 20. Maps too hilly — enemies get stuck — `[x done]`
+|Flattened terrain generation: reduced Moon Craters (biome 2) amplitude from -28 to -6, lowered all other biome amplitudes (9→6, 5→4, 11→6, 19→6, 16→6), reduced mountain contribution (25→12) and base noise (9→6). Terrace stepping at 5-unit intervals creates naturally flat zones. Net height range reduced from ~±55 to ~±15.
 
-||### 21. CPU spike — check GPU offload — `[ ] open`
-|Game engine has CPU usage spikes at times. Check which systems aren't offloaded to GPU: physics, particles, rendering, audio, or game logic. Profile to identify bottleneck.
+||### 21. CPU spike — check GPU offload — `[~ in progress]`
+|Investigation: rendering, particles, shaders, MultiMesh already GPU. CPU-bound: physics (trimesh collision, CharacterBody3D, ray queries), game logic, audio. Godot 4.7 supports GPU broadphase via Jolt (limited). Trimesh collision on terrain is main bottleneck. No easy GPU swap without changing engine. Potential optimizations: parallel physics jobs, reduce ray query frequency in EnemySurface, simplify terrain collision to convex/heightmap.
 
-||### 22. Run report damage numbers are nonsense — `[ ] open`
-|Damage report shows identical/similar values across entries (e.g. 2,705,895 for poison, 2,705,894 for hit) with cryptic labels like "4349/poison Time". Root cause: `damage_sources` dictionary is shared between damage crediting (for report) and floating damage number dedup tracking. Dedup keys like "enemyID/cause" and "enemyID/cause_time" mix in with real damage entries. Fix: prefix dedup keys with a distinct prefix.
+||### 22. Run report damage numbers are nonsense — `[x done]`
+|Damage report showed identical/similar values with cryptic labels like "4349/poison Time". Root cause: `damage_sources` dictionary was shared between damage crediting and floating damage number dedup tracking. Dedup keys like "enemyID/cause" mixed with real damage entries. Fixed by prefixing dedup keys with "dedup_" in `record_damage_number()`.
 
 ||### 12. Eclipse hero drift — `[x done]`
 ||Hero turn response reduced from 22/14 to 6/4 lerp rate during Eclipse on ground. Movement is noticeably slipperier — momentum lingers, directional changes feel sluggish.
