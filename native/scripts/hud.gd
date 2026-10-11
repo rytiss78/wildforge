@@ -56,6 +56,14 @@ var binding_status: Label
 var binding_axes={}
 var binding_buttons={}
 
+# Achievement notification system (Xbox-style overlay)
+var _ach_note_panel: PanelContainer = null
+var _ach_note_name: Label = null
+var _ach_note_desc: Label = null
+var _ach_note_timer: float = 0.0
+var _ach_note_alpha: float = 0.0
+var _ach_note_active: bool = false
+
 func menu_controls(node: Node=modal) -> Array:
 	var result=[]
 	for child in node.get_children():
@@ -246,6 +254,24 @@ func setup(owner_game):
 	flash_overlay.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	root.add_child(flash_overlay)
 	flash_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	# Achievement notification overlay (Xbox-style, top-right slide-in)
+	_ach_note_panel = PanelContainer.new()
+	_ach_note_panel.visible = false
+	_ach_note_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_ach_note_panel.add_theme_stylebox_override("panel", style(ThemeTokens.STAR_GOLD, Color("a88830"), 6))
+	var ach_vbox = VBoxContainer.new()
+	ach_vbox.add_theme_constant_override("separation", 4)
+	_ach_note_panel.add_child(ach_vbox)
+	_ach_note_name = label("", 18, ThemeTokens.STAR_GOLD)
+	_ach_note_name.add_theme_constant_override("outline_size", 2)
+	_ach_note_name.add_theme_color_override("font_outline_color", Color("1a1a2e"))
+	ach_vbox.add_child(_ach_note_name)
+	_ach_note_desc = label("", 13, ink)
+	_ach_note_desc.add_theme_constant_override("outline_size", 2)
+	_ach_note_desc.add_theme_color_override("font_outline_color", Color("1a1a2e"))
+	ach_vbox.add_child(_ach_note_desc)
+	_ach_note_panel.add_child(ach_vbox)
+	root.add_child(_ach_note_panel)
 	root.add_child(modal)
 	modal.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	modal.visible = false
@@ -283,6 +309,14 @@ func close():
 func tell(text: String, duration: float = 3.0):
 	toast.text = text
 	toast_time = duration
+
+func show_achievement_notification(ach_name: String, ach_desc: String):
+	_ach_note_name.text = ach_name
+	_ach_note_desc.text = ach_desc
+	_ach_note_panel.visible = true
+	_ach_note_active = true
+	_ach_note_alpha = 0.0
+	_ach_note_timer = 4.5  # 1s fade in + 3s visible + 0.5s fade out
 
 func level_flash():
 	blast_time = .65
@@ -405,6 +439,30 @@ func update(delta: float):
 		blast_time -= delta
 		blast.color.a = 0
 	else: blast.color.a = 0
+	# Achievement notification fade (slide-in from top-right, hold, slide-out)
+	if _ach_note_active:
+		_ach_note_timer -= delta
+		if _ach_note_timer > 3.5:
+			# Fade in (1s)
+			_ach_note_alpha = 1.0 - (_ach_note_timer - 3.5)
+		elif _ach_note_timer > 0.5:
+			# Hold fully visible (3s)
+			_ach_note_alpha = 1.0
+		elif _ach_note_timer > 0:
+			# Fade out (0.5s)
+			_ach_note_alpha = _ach_note_timer / 0.5
+		else:
+			# Done
+			_ach_note_panel.visible = false
+			_ach_note_active = false
+			_ach_note_alpha = 0.0
+		_ach_note_panel.modulate.a = _ach_note_alpha
+		if _ach_note_panel.visible:
+			var vp_size = get_viewport().get_visible_rect().size
+			var panel_w := 280.0
+			var panel_h := 60.0
+			_ach_note_panel.size = Vector2(panel_w, panel_h)
+			_ach_note_panel.position = Vector2(vp_size.x - panel_w - 24, 24)
 
 func start_menu(focus_hero: bool=false):
 	game.mode="start"

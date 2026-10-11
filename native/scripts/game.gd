@@ -1728,8 +1728,14 @@ func update_combat(delta: float):
 		for enemy in enemies:
 			if enemy.dead or shot.hit.has(enemy.net_id): continue
 			var center=enemy_center(enemy)
-			var closest=Geometry3D.get_closest_point_to_segment(center,shot_start,shot.node.position)
-			if closest.distance_squared_to(center) < pow(maxf(enemy.get("radius",.7),enemy.get("height",1.7)*.35)+shot.get("hit_radius",.1),2):
+			# Sphere-swept check: fast distance-to-segment comparison instead of Geometry3D API.
+			var to_center=center-shot_start
+			var dir=shot.node.position-shot_start
+			var dir_len_sq=dir.length_squared()
+			var proj=clampf(to_center.dot(dir)/maxf(dir_len_sq,.0001),0.0,1.0)
+			var closest=shot_start+dir*proj
+			var enemy_hit=maxf(enemy.get("radius",.7),enemy.get("height",1.7)*.35)
+			if closest.distance_squared_to(center) < pow(enemy_hit+shot.get("hit_radius",.1),2):
 				shot.hit.append(enemy.net_id)
 				hit_enemy(enemy,shot)
 				burst(closest,Color("ffcc44"),5)
@@ -2365,7 +2371,13 @@ func run_smoke():
 	get_tree().quit(1 if failure else 0)
 
 func achievement_event(id: String):
-	if float(career.data.total.get("event_"+id,0)) < 1: career.bump("event_"+id)
+	if float(career.data.total.get("event_"+id,0)) < 1:
+		career.bump("event_"+id)
+		# Find matching achievement for notification display
+		for ach in career.achievements:
+			if ach.key == id:
+				hud.show_achievement_notification(ach.name, ach.description)
+				break
 
 func check_creative_goals():
 	if equipped.size()==3: achievement_event("TRIPLE_WEAPON")
