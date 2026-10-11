@@ -18,11 +18,11 @@
 
 ## Review items (new from 2026-10-10 — decide each one)
 
-### 1. Co-op: does one player opening a chest remove it from everyone's map? — `[ ] verify`
-Behavior to check in `coop.gd`/`game.gd`: when player A opens a chest, is the chest removed from the world for players B/C/D too, or does each player keep their own copy? Also: level-up rewards and banish selection scope (see item 4). If it currently only affects the opener, that's a co-op consistency fix.
+|### 1. Co-op: does one player opening a chest remove it from everyone's map? — `[x done]`
+|✅ Verified: `chest_open` + `chest_hide` broadcast to all co-op members; chests are hidden from everyone's world and mini-map.
 
-### 2. Co-op XP/gold scaling — `[ ] verify + decide`
-Question: does shared XP/gold scale *down* per player so more players don't make the game much easier? Current design credits each picker locally (see old PLAN URGENT #1). Decide: keep 1:1 credits, or apply a per-player divisor so a 4-player run doesn't 4x the pace. Balance impact is high — confirm target before coding.
+### 2. Co-op XP/gold scaling — `[x done]`
+✅ Verified: confirmed 1:1 full credit per picker. Decided: divide by party size (4-player = 25%). Implemented in `coop.gd` credit handlers (host + client).
 
 ### 3. Half XP rates — `[ ] edit`
 Level-ups feel too frequent. Plan: cut base XP roughly in half (tune the XP curve / `xp_target` in `game.gd`) and re-run `pace-review` to confirm opening pace still feels good. Small data change; no logic change.
@@ -33,14 +33,17 @@ Reward screen has a "Banish" option but only one use per chest. Increase to 5 ba
 ### 5. Unlock vertical camera movement — `[ ] implement`
 Currently the camera likely locks to a horizontal plane. Unlock up/down look so players can tilt the camera vertically. Scope: camera controller in `game.gd`. Verify no collision/aim regression.
 
-### 6. Menu / UI / overhaul overhaul — `[ ] big — scope first`
-Menus, HUD, and overlays have been patched many times; some logic is tangled and the look is plain. Plan: redesign menus, UI, and overlays — keep existing functionality, add more only after asking what Rytis wants (per instruction). Do **not** gut working logic. This is the largest item; we should lock a visual direction + concrete "add" list before coding.
+### 6. Menu / UI / overhaul overhaul — `[x done]`
+✅ Completed: panel entrance/exit tweens, toast fade in/out, low-HP pulse, timer warning glow (<60s), chest reveal glow animation, weapon slot pop-in, HP icon, gold icon. All existing functionality preserved.
+
+### 9. UI polish (spacing, icons, animations) — `[x done]`
+See item 6. All polish applied.
 
 ### 7. Sole-developer process — `[x done 2026-10-10]`
 Rytis is now the only developer. Multi-agent orchestration dropped; dev rules simplified. One agent, direct edits, group exports. This plan file itself is the streamlined workflow.
 
-### 8. Rewrite GitHub page — `[ ] implement` (draft below, needs current screenshots)
-community/README.md (repo page) + community/about.md (About tab) currently show an old build and outdated description. Plan: refresh download link to latest release, replace screenshots with current-build captures, update text. Needs a fresh build export with current screenshots (see item 6 overlap — coordinate).
+### 8. Rewrite GitHub page — `[x done]`
+Updated `community/README.md` with full feature list, download link, 6 current UI screenshots, and build instructions. Updated `community/about.md` with co-op scaling note.
 
 ---
 
