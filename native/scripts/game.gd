@@ -306,6 +306,7 @@ func clear_entities():
 	for weapon in equipped:
 		if weapon.has("node") and is_instance_valid(weapon.node): weapon.node.queue_free()
 	if is_instance_valid(gate): gate.queue_free()
+	if is_instance_valid(get_meta("aura_node",null)): get_meta("aura_node",null).queue_free();set_meta("aura_node",null)
 
 func start_run(shared_seed: int=-1):
 	if coop.active and coop.hosting and not run_active and not coop.can_start(): hud.tell("Every player must be Ready before starting.");return
@@ -1124,7 +1125,7 @@ func hit_enemy(enemy: Dictionary, shot: Dictionary,cause: String="hit"):
 		var next = nearest_enemy(origin,8,excluded)
 		if next.is_empty(): break
 		excluded.append(next.net_id)
-		beam(origin+Vector3.UP,next.node.position+Vector3.UP,Color("b2e0f4"))
+		lightning_bolt(origin+Vector3.UP,next.node.position+Vector3.UP)
 		hurt_enemy(next,damage*.6,"lightning")
 		origin = next.node.position
 
@@ -1418,6 +1419,32 @@ func beam(from: Vector3,to: Vector3,color: Color):
 		node.rotate_object_local(Vector3.RIGHT,PI/2)
 	effects.append({"node":node,"life":.16,"velocity":Vector3.ZERO})
 
+func lightning_bolt(from: Vector3, to: Vector3):
+	# Jagged lightning bolt: zigzag line with electric glow
+	var dir=(to-from).normalized()
+	var right=dir.cross(Vector3.UP).normalized()
+	if right.length()<.01: right=dir.cross(Vector3.FORWARD).normalized()
+	var up=dir.cross(right).normalized()
+	var points=[from]
+	var segs=6
+	for s in range(1,segs):
+		var t=float(s)/segs
+		var p=from.lerp(to,t)
+		p+=right*(rules.rng.randf_range(-.6,.6)*(1-t))
+		p+=up*(rules.rng.randf_range(-.6,.6)*(1-t))
+		points.append(p)
+	points.append(to)
+	for si in range(points.size()-1):
+		var a=points[si]; var b=points[si+1]
+		var len=a.distance_to(b)
+		var cyl=CylinderMesh.new();cyl.top_radius=.015;cyl.bottom_radius=.015;cyl.height=len
+		var node=shape(cyl,Color("#d0e8ff"),self,(a+b)*.5,3.0)
+		if len>.01:
+			node.look_at(b,Vector3.FORWARD)
+			node.rotate_object_local(Vector3.RIGHT,PI/2)
+		effects.append({"node":node,"life":.22,"velocity":Vector3.ZERO})
+
+
 func telegraph(enemy: Dictionary):
 	enemy.node.get_meta("rig").attack=1.0
 	var target=coop.target(enemy.node.position).position
@@ -1626,6 +1653,32 @@ func update_combat(delta: float):
 					sound.say("attack_warn",25)
 					telegraph(enemy);enemy.recovery=realm_time+1.3;enemy.attack=2.7 if enemy.phase==2 else 4
 		if hp>0 and stats.auraDamage>0 and distance<4: hurt_enemy(enemy,stats.auraDamage*enemy_delta,"aura")
+
+		# Aura visual: pulsing golden ring around player
+		if not has_meta("aura_node") or not is_instance_valid(get_meta("aura_node")):
+			var ring=TorusMesh.new();ring.inner_radius=.8;ring.outer_radius=1.1
+			var ring_node=MeshInstance3D.new();ring_node.mesh=ring
+			ring_node.material_override=material(Color("#ffaa33"),2.5)
+			ring_node.position=player.position+Vector3.UP*.8
+			ring_node.rotation.x=-PI/2
+			add_child(ring_node);ring_node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			set_meta("aura_node",ring_node)
+			effects.append({"node":ring_node,"life":9999,"lifetime":9999,"velocity":Vector3.ZERO,"stationary":true,"aura":true})
+		else:
+			var an=get_meta("aura_node")
+			if an.visible:
+				var pulse=.95+sin(elapsed*5)*.15
+				an.scale=Vector3(pulse,1,pulse)
+				an.material_override.emission_energy_multiplier=2.0+sin(elapsed*5)*.8
+			else:
+				var ring=TorusMesh.new();ring.inner_radius=.8;ring.outer_radius=1.1
+				var ring_node=MeshInstance3D.new();ring_node.mesh=ring
+				ring_node.material_override=material(Color("#ffaa33"),2.5)
+				ring_node.position=player.position+Vector3.UP*.8
+				ring_node.rotation.x=-PI/2
+				add_child(ring_node);ring_node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+				set_meta("aura_node",ring_node)
+				effects.append({"node":ring_node,"life":9999,"lifetime":9999,"velocity":Vector3.ZERO,"stationary":true,"aura":true})
 	for shot in projectiles:
 		shot.life -= delta
 		shot.return_clock -= delta
@@ -1862,7 +1915,8 @@ func _process(delta: float):
 		effect.life-=delta
 		effect.node.position+=effect.velocity*delta
 		if not effect.get("visual_shot",false) and not effect.get("stationary",false): effect.velocity.y-=8*delta
-		effect.node.scale=Vector3.ONE*maxf(.05,effect.life/.55)
+		if not effect.get("aura",false):
+			effect.node.scale=Vector3.ONE*maxf(.05,effect.life/.55)
 		if effect.has("blast_radius"):
 			effect.age+=delta;effect.node.scale=Vector3.ONE*effect.blast_radius*(.2+effect.age*1.5);effect.paint.set_shader_parameter("age",effect.age/.65)
 		elif effect.has("bubble_enemy"):
