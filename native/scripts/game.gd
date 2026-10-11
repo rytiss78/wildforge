@@ -1925,7 +1925,9 @@ func _process(delta: float):
 		# Screen flash overlay
 		if hit_shake>0: camera.position+=Vector3(sin(hit_shake*140),cos(hit_shake*110),0)*hit_shake*.32
 		# Camera pulse (pulls back on multi-kills)
-		camera.look_at(anchor-Vector3(sin(yaw)*2,0,cos(yaw)*2))
+		var cam_look=anchor-Vector3(sin(yaw)*2,0,cos(yaw)*2)
+		camera.look_at(cam_look)
+		camera.rotation.x=pitch
 	for effect in effects:
 		effect.life-=delta
 		effect.node.position+=effect.velocity*delta

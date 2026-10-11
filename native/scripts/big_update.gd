@@ -43,7 +43,7 @@ func realm_started():
 	for node in [merchant,beacon]:
 		if is_instance_valid(node): node.queue_free()
 	merchant=null;beacon=null;stock.clear();purchased.clear();beacon_claimed.clear()
-	banish_charges=1;pending_purchase=-1;downed=false;downed_ids.clear();rescue_progress.clear()
+	banish_charges=5;pending_purchase=-1;downed=false;downed_ids.clear();rescue_progress.clear()
 	beacon_state="idle";beacon_seconds=0;beacon_absent=0;mimic.clear();pings.clear()
 	var rng=RandomNumberGenerator.new();rng.seed=game.seed_value+game.realm*839
 	var angle=rng.randf()*TAU
