@@ -376,7 +376,7 @@ func enter_realm(index: int):
 	storm_clock = 5
 	nova_clock = 6
 	yaw = 0
-	pitch = 0
+	pitch = -0.3
 	world.build(realm,seed_value)
 	player.position = Vector3(0,1.2,0)
 	player.velocity = Vector3.ZERO
@@ -689,7 +689,7 @@ func camera_look(amount: Vector2):
 	if mode != "playing": return
 	var sensitivity = float(career.data.settings.lookSensitivity)
 	yaw -= amount.x*sensitivity
-	pitch = clampf(pitch+amount.y*sensitivity*2*(-1 if career.data.settings.invertLook else 1),-.8,.6)
+	pitch = clampf(pitch+amount.y*sensitivity*(-1 if career.data.settings.invertLook else 1),-.4,1.1)
 
 func _input(event):
 	if hud.capture_binding(event): get_viewport().set_input_as_handled();return
@@ -711,8 +711,8 @@ func _input(event):
 	if event is InputEventMouseMotion and (dragging or Input.mouse_mode == Input.MOUSE_MODE_CAPTURED):
 		camera_look(event.relative*Vector2(.004,.002))
 	if event is InputEventMouseButton and event.pressed and mode == "playing":
-		if event.button_index == MOUSE_BUTTON_WHEEL_UP: camera_distance=maxf(3,camera_distance-.5)
-		if event.button_index == MOUSE_BUTTON_WHEEL_DOWN: camera_distance=minf(11,camera_distance+.5)
+		if event.button_index == MOUSE_BUTTON_WHEEL_UP: camera_distance=maxf(4,camera_distance-.5)
+			if event.button_index == MOUSE_BUTTON_WHEEL_DOWN: camera_distance=minf(8,camera_distance+.5)
 	if event is InputEventJoypadButton and event.pressed:
 		controller_id = event.device
 		if event.button_index == JOY_BUTTON_BACK:
@@ -820,7 +820,7 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 	max_health *= 1+biome*.18
 	if not boss: max_health*=species.health*(.42 if species.behavior=="spit" else 1.0)
 	if elite: max_health*=2.5
-	var enemy = {"biome":biome,"elite":elite,"node":node,"hp":max_health,"maxHp":max_health,"speed":2.9+realm*.35+randf()*.6,"boss":boss,"fire":0.0,"poison":0.0,"status_time":0.0,"freeze":0.0,"blind":0.0,"slow":0.0,"attack":2.5,"telegraph":0.0,"dead":false,"contact":0.0,"phase":1,"startDamage":health_damage}
+	var enemy = {"biome":biome,"elite":elite,"node":node,"hp":max_health,"maxHp":max_health,"speed":8.0+realm*.35+randf()*1.5,"boss":boss,"fire":0.0,"poison":0.0,"status_time":0.0,"freeze":0.0,"blind":0.0,"slow":0.0,"attack":2.5,"telegraph":0.0,"dead":false,"contact":0.0,"phase":1,"startDamage":health_damage}
 	enemy.guardian=guardian
 	enemy.merge(species);enemy.speed*=species.speed
 	enemy.height=height;enemy.radius=radius_value;enemy.flying=species.flying and not boss
@@ -1134,6 +1134,8 @@ func record_damage_number(enemy_id: int, damage: float, cause: String,position_v
 	var last_time=damage_sources.get(dedup_key+"_time",0)
 	var last_idx=damage_sources.get(dedup_key,-1)
 	var elapsed_ms=now-last_time
+	# Only show damage numbers on critical hits to reduce screen clutter
+	if cause!="crit": return
 	# Only aggregate if same enemy+cause within 300ms and the target entry still exists and is visible
 	if elapsed_ms<300 and last_idx>=0 and last_idx<damage_numbers.size():
 		var entry=damage_numbers[last_idx]
@@ -1841,7 +1843,9 @@ func _process(delta: float):
 	damage_numbers=damage_numbers.filter(func(dn):return dn.life>0)
 	if not camera_locked:
 		var anchor=player.position+Vector3.UP*1.2
-		var offset=Vector3(sin(yaw)*camera_distance,7.5+camera_distance*.25,cos(yaw)*camera_distance)
+		# TPS camera: spherical coords around player
+		var cos_p=cos(pitch)
+		var offset=Vector3(sin(yaw)*cos_p*camera_distance,sin(pitch)*camera_distance,cos(yaw)*cos_p*camera_distance)
 		var desired=player.position+offset
 		var ray=PhysicsRayQueryParameters3D.create(anchor,desired)
 		ray.collision_mask=1
@@ -1852,11 +1856,8 @@ func _process(delta: float):
 		hit_shake=maxf(0,hit_shake-delta)
 		# Screen flash overlay
 		if hit_shake>0: camera.position+=Vector3(sin(hit_shake*140),cos(hit_shake*110),0)*hit_shake*.32
-		# Camera pulse (pulls back on multi-kills)
-		# Pitch tilts camera look angle (not just height)
-		var look_offset = Vector3(sin(yaw)*2, pitch*6, cos(yaw)*2)
-		var look_anchor = anchor - look_offset
-		camera.look_at(look_anchor)
+		# Look at player body (always TPS)
+		camera.look_at(anchor)
 	for effect in effects:
 		effect.life-=delta
 		effect.node.position+=effect.velocity*delta
@@ -1939,11 +1940,12 @@ func golden_scene():
 	# Hide HUD/menu during capture
 	hud.visible=false
 	# Camera: explicit elevated side angle, then look_at to lock transform
-	camera_distance=10.0
+	camera_distance=6.0
 	yaw=-0.6
-	pitch=0.2
+	pitch=-0.3
+	var cos_p=cos(pitch)
 	var cam_anchor=player.position+Vector3.UP*1.2
-	var cam_pos=cam_anchor+Vector3(sin(yaw)*camera_distance, 2.4+pitch*6, cos(yaw)*camera_distance)
+	var cam_pos=cam_anchor+Vector3(sin(yaw)*cos_p*camera_distance, sin(pitch)*camera_distance, cos(yaw)*cos_p*camera_distance)
 	camera.position=cam_pos
 	camera.look_at(cam_anchor)
 	# Wait for drawn frames
