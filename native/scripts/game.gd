@@ -710,6 +710,9 @@ func _input(event):
 	if event is InputEventMouseButton and event.button_index == MOUSE_BUTTON_RIGHT: dragging = event.pressed
 	if event is InputEventMouseMotion and (dragging or Input.mouse_mode == Input.MOUSE_MODE_CAPTURED):
 		camera_look(event.relative*Vector2(.004,.002))
+	if event is InputEventMouseButton and event.pressed and mode == "playing":
+		if event.button_index == MOUSE_BUTTON_WHEEL_UP: camera_distance=maxf(3,camera_distance-.5)
+		if event.button_index == MOUSE_BUTTON_WHEEL_DOWN: camera_distance=minf(11,camera_distance+.5)
 	if event is InputEventJoypadButton and event.pressed:
 		controller_id = event.device
 		if event.button_index == JOY_BUTTON_BACK:
