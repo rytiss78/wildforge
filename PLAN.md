@@ -28,16 +28,52 @@
 |Added early return in `EnemySurface.tick()`: regular enemies only use surface climbing when player is >3 units higher. On flat ground, enemies walk via standard CharacterBody3D `move_and_slide()`.
 
 |### 4. Mouse up/down zooms instead of looks up/down — `[x done]`
-|Removed scroll wheel zoom. Vertical mouse now tilts camera look angle (pitch). Increased Y sensitivity ×2, pitch range expanded to -.8/.6. Camera height fixed (no longer affected by pitch).
+|Scroll wheel zoom kept. Vertical mouse movement now tilts camera look angle (pitch ×2 sensitivity, range -.8/.6). Camera position height no longer affected by pitch — only look direction.
 
 |### 5. Card picker: weapon upgrade not matched to equipped weapon — `[x done]`
-|Upgrade cards now show "Equipped: Rank X → X+1" when the upgrade applies to an owned weapon, "New weapon — fills empty slot" or "New weapon — full slot required" for new weapons.
+|Weapon cards show "Equipped: Rank X → X+1" for owned weapons, "New weapon — fills empty slot" / "full slot required" for new weapons.
+|### 5b. Boost cards show weapon applicability — `[x done]`
+|Augment boost cards (e.g. "augment-gun-damage") now show "Boosts: [weapon name]" when player owns that weapon, or "Won't help — requires [weapon]" when they don't. Generic boosts (damage, rate, etc.) still show normal text.
 
 ### 6. Chest card icons — `[ ] open`
 Chest card icons need a complete visual overhaul: detailed 2D artwork. Not a code fix — asset creation needed.
 
-### 7. Hit indicator makes screen to busy — `[ ] open`
-Enemie hit particles should apear only on critical hit on the nenemie
+|### 7. Hit indicator makes screen to busy — `[ ] open`
+|Enemie hit particles should apear only on critical hit on the nenemie
+
+|### 8. Xbox-style achievement notifications — `[ ] open`
+|Add achievement popup with Xbox-style notification look + sound. Use a centered top banner with fade in/out animation and Xbox achievement sound effect.
+
+|### 9. Portal maps scale difficulty — `[ ] open`
+|Entering a new map through a portal should make that map harder (more enemies, tougher stats) proportional to map depth/progression.
+
+|### 10. Eclipse lag investigation — `[ ] open`
+|Investigate lag when there are many enemies with skills/weapon events. Profile to find bottleneck (physics, rendering, or logic).
+
+|### 11. Eclipse new music — `[ ] open`
+|Replace current eclipse background music with PARANOIA.mp3 (provided). Map to eclipse stage in game.gd / run_clock.gd audio system.
+
+|### 12. Eclipse hero drift — `[ ] open`
+|Increase hero drift/slippage on eclipse stage (slippery movement, harder control). Modify hero physics or add an eclipse-specific friction multiplier.
+
+|### 13. Eclipse blood rain — `[ ] open`
+|Add blood rain particle effect for eclipse stage. Red droplet particles falling across the screen.
+
+|### 14. Remake non-weapon card/skill/boost icons — `[ ] open`
+|Redesign all icons for cards, skills, and boost items (NOT weapon icons — those are fine). Needs detailed 2D artwork. Covers ~600 loot items + skills.
+
+|### 15. HUD pushed into corner — `[ ] open`
+|Screenshot shows UI elements (health, gold, chest count, location) crammed into the top-left corner, leaving most of the screen empty. Redesign HUD layout: spread elements across screen edges (health top-left, minimap top-right, inventory bottom-center, XP bottom-left, gold/round timer top-center). Increase font sizes and make panels more visible without blocking gameplay view.
+
+|### 16. Camera: third-person shooter perspective — `[ ] open`
+|Current camera is overhead/top-down (camera Y fixed at `7.5 + distance*0.25`, high angle, small character on screen). Remake camera to TPS style:
+- Camera orbit around player: mouse X rotates yaw, mouse Y orbits pitch (clamped -0.5 to 0.4 radians)
+- Camera height tied to pitch: `player.y + 1.5 + cos(pitch)*distance*0.5`
+- Camera distance: 4–7 units (not 3–11)
+- Smooth follow with raycast occlusion (current system ok, keep)
+- No crosshair
+- Scroll wheel zoom: 4–7 range
+- Keyboard WASD moves character relative to camera direction
 
 ## Done (retained, removed from active list)
 
