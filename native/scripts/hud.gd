@@ -164,11 +164,13 @@ func setup(owner_game):
 	# Health sits below the clock's tilted footprint, clear of it.
 	var health_panel=PanelContainer.new();health_panel.position=Vector2(24,230);health_panel.custom_minimum_size=Vector2(254,56)
 	health_panel.add_theme_stylebox_override("panel",style(paper,Color("8eac93"),10));root.add_child(health_panel)
-	var health_column=VBoxContainer.new();health_panel.add_child(health_column)
-	health_text=label("",16);health_column.add_child(health_text)
+	var health_root=VBoxContainer.new();health_root.add_theme_constant_override("separation",6);health_panel.add_child(health_root)
+	var hp_row=HBoxContainer.new();hp_row.add_theme_constant_override("separation",6);health_root.add_child(hp_row)
+	var hp_icon=PowerIcon.new();hp_icon.key="maxHp";hp_icon.size=Vector2(28,28);hp_icon.position=Vector2(0,4);hp_row.add_child(hp_icon)
+	health_text=label("",16);hp_row.add_child(health_text)
 	health_bar=ProgressBar.new();health_bar.custom_minimum_size.y=9;health_bar.show_percentage=false
 	health_bar.add_theme_stylebox_override("background",style(Color("d5d9c8"),Color.TRANSPARENT,4))
-	health_bar.add_theme_stylebox_override("fill",style(Color("559c78"),Color.TRANSPARENT,4));health_column.add_child(health_bar)
+	health_bar.add_theme_stylebox_override("fill",style(Color("559c78"),Color.TRANSPARENT,4));health_root.add_child(health_bar)
 	journey_overlay=preload("res://scripts/journey_hud.gd").new();journey_overlay.game=game;journey_overlay.mouse_filter=Control.MOUSE_FILTER_IGNORE;root.add_child(journey_overlay)
 	map_view.position = Vector2(1180,24)
 	map_view.size = Vector2(230,230)
@@ -194,6 +196,8 @@ func setup(owner_game):
 	coins = label("GOLD  0    BOX PRICE  30",15,ThemeTokens.STAR_GOLD)
 	coins.add_theme_stylebox_override("normal",style())
 	coins.position=Vector2(24,300)
+	# Gold icon beside coins
+	var gold_icon=PowerIcon.new();gold_icon.key="goldGain";gold_icon.size=Vector2(24,24);gold_icon.position=Vector2(10,4);gold_icon.mouse_filter=Control.MOUSE_FILTER_IGNORE;root.add_child(gold_icon)
 	root.add_child(coins)
 	box_counter=label("",15);box_counter.position=Vector2(24,338);box_counter.add_theme_stylebox_override("normal",style());root.add_child(box_counter)
 	weapons = WeaponBar.new()
@@ -254,6 +258,9 @@ func open(title: String, subtitle: String = "") -> VBoxContainer:
 	var shade=ColorRect.new();shade.color=Color(.025,.05,.08,.72);modal.add_child(shade);shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	panel.add_theme_stylebox_override("panel",style(paper,Color("a99070"),22))
 	modal.add_child(panel)
+	# Smooth panel entrance
+	panel.scale=Vector2(.94,.94)
+	panel.create_tween().tween_property(panel,"scale",Vector2.ONE,.15).set_trans(Tween.TRANS_CUBIC).set_ease(Tween.EASE_OUT)
 	content = VBoxContainer.new()
 	content.add_theme_constant_override("separation",10)
 	panel.add_child(content)
@@ -265,13 +272,31 @@ func open(title: String, subtitle: String = "") -> VBoxContainer:
 
 func close():
 	if offer_tween!=null and offer_tween.is_valid(): offer_tween.kill()
+	# Smooth panel exit
+	for child in modal.get_children():
+		if child is PanelContainer:
+			child.create_tween().tween_property(child,"scale",Vector2(.94,.94),.1).set_trans(Tween.TRANS_CUBIC)
+			break
+	# Fade out shade
+	for child in modal.get_children():
+		if child is ColorRect:
+			child.create_tween().tween_property(child,"modulate:a",0,.12)
+			break
+	# Clean up immediately; tweens keep running for the visual
+	for child in modal.get_children(): child.queue_free()
 	modal.visible = false
 	game.mode = "playing"
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED if not game.smoke else Input.MOUSE_MODE_VISIBLE
 
 func tell(text: String, duration: float = 3.0):
-	toast.text = text
-	toast_time = duration
+	if toast_time>0 and text=="":
+		# Fade out
+		toast.create_tween().tween_property(toast,"modulate:a",0,.2)
+	else:
+		# Fade in
+		toast.visible=true;toast.text=text;toast.modulate=Color(1,1,1,0)
+		toast.create_tween().tween_property(toast,"modulate:a",1,.15)
+	toast_time=duration
 
 func level_flash():
 	blast_time = .65
@@ -285,6 +310,18 @@ func update(delta: float):
 		if widget is CanvasItem and widget!=modal and widget!=blast: widget.visible=not modal.visible
 	level_plate.visible=game.mode=="level_reveal"
 	level_plate.text="LEVEL %d  ·  NEW POWER!" % game.level
+	# Level-up text pulse
+	if level_plate.visible:
+		var pulse=1.0+sin(game.elapsed*8)*.08
+		level_plate.scale=Vector2(pulse,pulse)
+	#else reset
+	if game.mode!="level_reveal": level_plate.scale=Vector2.ONE
+	# Low-health pulse on HP bar
+	if health_bar.visible and not modal.visible and game.hp/game.stats.maxHp<.3:
+		var pulse=1.0+sin(game.elapsed*6)*.15
+		health_bar.modulate=Color(1.0,pulse*.6,0.5,1.0)
+	else:
+		health_bar.modulate=Color("ef8c7e") if game.hp/game.stats.maxHp<.3 else Color.WHITE
 	biome_label.text=RealmWorld.BIOMES[game.current_biome]
 	if is_instance_valid(party_label): party_label.text=game.coop.status
 	if game.mode=="coop" and is_instance_valid(party_list): update_party_list();update_lobby_controls()

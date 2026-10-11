@@ -7,7 +7,12 @@ var game
 func refresh():
 	var next = ""
 	for weapon in game.equipped: next += weapon.id+str(weapon.rank)+";"
-	if next == signature: return
+	# Track which slots are newly filled for entrance animation
+	var new_slots: Array[int]=[]
+	if next!=signature:
+		for i in range(3):
+			if i<game.equipped.size() and (i>=signature.split(";",false).size()):
+				new_slots.append(i)
 	signature = next
 	for child in get_children():
 		remove_child(child)
@@ -17,6 +22,10 @@ func refresh():
 		var panel = PanelContainer.new()
 		panel.custom_minimum_size = Vector2(116,78)
 		panel.add_theme_stylebox_override("panel",game.hud.style(Color("f6eddc"),Color("a7885c") if filled else Color("b9ad93"),12))
+		# Subtle entrance pop for newly equipped weapons
+		if filled and new_slots.has(i):
+			panel.scale=Vector2(.88,.88)
+			panel.create_tween().tween_property(panel,"scale",Vector2.ONE,.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 		add_child(panel)
 		var column = VBoxContainer.new()
 		column.add_theme_constant_override("separation",0)

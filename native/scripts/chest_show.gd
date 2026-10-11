@@ -20,12 +20,20 @@ func animate(value: float):
 	queue_redraw()
 func _draw():
 	if items.is_empty(): return
-	var font=ThemeDB.fallback_font;var start=(size.x-850)*.5
+	var font=ThemeDB.fallback_font;var start=(size.x-850)*.5;var frame=Engine.get_frame_time_msec()*TAU/2000.0
 	draw_style_box(box(Color("17293d"),Color("bd9864")),Rect2(start-18,15,886,286))
 	for i in range(5):
 		var stop=.48+i*.095;var locked=progress>=stop
 		var rect=Rect2(start+i*172,53,162,180)
-		draw_style_box(box(Color("fff8de"),RunRules.COLORS[items[i].tier] if locked else Color("756951")),rect)
+		var box_color=Color("fff8de");var border=RunRules.COLORS[items[i].tier] if locked else Color("756951")
+		# Glowing border for locked items
+		if locked:
+			var pulse=.25+sin(frame*4+i*.8)*.08
+			box.set_border_width_all(3);border=RunRules.COLORS[items[i].tier].lerp(Color(1,1,1),pulse*.3)
+			box.shadow_color=Color(border.r,border.g,border.b,pulse*.4);box.shadow_size=6+pulse*4;box.shadow_offset=Vector2.ZERO
+		else:
+			box.shadow_color=Color("3a2f1e",.2);box.shadow_size=8
+		draw_style_box(box(box_color,border),rect)
 		var index=i if locked else (int(progress*48*(1-progress*.5))+i*3)%textures.size()
 		var shift=0.0 if locked else sin(progress*160+i)*15*(1-progress)
 		draw_texture_rect(textures[index],Rect2(rect.position+Vector2(22,24+shift),Vector2(118,118)),false)
