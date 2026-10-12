@@ -326,7 +326,5 @@ def bullet():
     return a.save()
 
 
-if __name__ == "__main__":
-    report=[duck(),bottlebite(),pistol(),tree(),bullet()]
-    (OUT/"model-manifest.json").write_text(json.dumps({"pipeline":"authored mesh profiles / reused approved textures", "assets":report},indent=2)+"\n")
-    print(json.dumps(report,indent=2))
+if __name__ == '__main__':
+    raise SystemExit('Shared geometry library. Regenerate with build-forge-slice.py, build-forge-roster.py and build-forge-biomes.py, then agent-workflow.mjs bake-roster.')

@@ -63,24 +63,6 @@ func set_health(fraction: float, tank: bool=false):
 func set_defense(armour: float,shield_value: float,shield_capacity: float):
 	if solid!=null: solid.set_defense(armour,shield_value,shield_capacity)
 
-func setup_painted(model_name: String) -> bool:
-	var path="res://assets/illustrated/"+("creatures/" if model_name.begins_with("creature_") else "heroes/")+model_name+".png"
-	if not ResourceLoader.exists(path): return false
-	illustrated=true;identity=model_name
-	add_child(body);body.add_child(head);head.position.y=1.13
-	illustration=Sprite3D.new();illustration.texture=load(path);illustration.pixel_size=1.95/256;illustration.position.y=.92
-	illustration.billboard=BaseMaterial3D.BILLBOARD_ENABLED;illustration.alpha_cut=SpriteBase3D.ALPHA_CUT_DISCARD;illustration.alpha_scissor_threshold=.15;illustration.shaded=false
-	illustration.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;body.add_child(illustration)
-	hit_material=ToonArt.paint(skin).duplicate()
-	if not model_name.begins_with("creature_"):
-		for side in [-1,1]: add_arm(side)
-	for i in range(3):
-		var flame=ToonArt.ball(body,Color("ffad61"),Vector3((i-1)*.23,.6+i*.13,-.34),Vector3(.18,.4,.17));flame.visible=false;fire_nodes.append(flame)
-		var droplet=ToonArt.ball(body,Color("9cdc73"),Vector3((i-1)*.27,.8,0),Vector3(.12,.14,.12));droplet.visible=false;poison_nodes.append(droplet)
-		var crystal=ToonArt.tube(body,Color("b2e6ee"),Vector3((i-1)*.22,.08,.1),0,.12,.4);crystal.visible=false;ice_nodes.append(crystal)
-	blind_node=block(body,Color("746382"),Vector3(0,1.6,0),Vector3(.36,.045,.045));blind_node.visible=false
-	return true
-
 func block(parent: Node3D,color: Color,pos: Vector3,dimensions: Vector3):
 	var mesh=BoxMesh.new();mesh.size=dimensions
 	return ToonArt.part(parent,mesh,color,pos)
@@ -89,76 +71,8 @@ func setup(model_name: String):
 	identity=model_name
 	skin={"rubber_duck_toy":Color("ffd265"),"pipe_wrench":Color("da8a66"),"sweet_potato":Color("bd9263"),"marble_bust_01":Color("b9b8bf"),"street_rat":Color("b2a3ca"),"hamburger_buns":Color("dda76b"),"florist":Color("eab295"),"acorn":Color("bb986d"),"toad":Color("9ebe81"),"crab":Color("d6a175"),"penguin":Color("82aabd"),"lizard":Color("e9a279"),"beetle":Color("bfa0d6")}.get(model_name,Color("abafc5"))
 	if setup_solid(model_name): return
-	if setup_painted(model_name): return
-	add_child(body)
-	var torso=sculpt(body,skin,Vector3(0,.70,0),Vector3(.8,.85,.62),"body")
-	hit_material=ToonArt.paint(skin).duplicate()
-	torso.material_override=hit_material
-	body.add_child(head);head.position.y=1.13
-	sculpt(head,skin,Vector3.ZERO,Vector3(.73,.68,.61),"head")
-	ToonArt.eyes(head,.08,-.30,.17)
-	ToonArt.ball(head,Color("cf826d"),Vector3(0,-.14,-.30),Vector3(.12,.055,.025))
-	for side in [-1,1]:
-		var leg=Node3D.new();leg.position=Vector3(side*.22,.4,0);body.add_child(leg);legs.append(leg)
-		ToonArt.tube(leg,skin,Vector3(0,-.12,0),.09,.10,.30)
-		ToonArt.ball(leg,Color("62594e"),Vector3(0,-.32,-.09),Vector3(.25,.16,.37))
-		add_arm(side)
-	if model_name=="rubber_duck_toy":
-		ToonArt.ball(head,Color("e6a261"),Vector3(0,-.15,-.42),Vector3(.44,.13,.34))
-		var cape=block(body,Color("a68bbe"),Vector3(0,.72,.32),Vector3(.62,.70,.06));cape.rotation.x=.18
-		block(body,Color("eee1ba"),Vector3(0,.91,-.32),Vector3(.09,.15,.03))
-	elif model_name in ["street_rat","toad","acorn","crab","penguin","lizard","beetle"]:
-		if model_name=="street_rat":
-			for side in [-1,1]: ToonArt.ball(head,skin,Vector3(side*.30,.30,0),Vector3(.25,.29,.14))
-		elif model_name=="beetle":
-			for side in [-1,1]: ToonArt.tube(head,Color("806893"),Vector3(side*.18,.42,0),.035,.04,.30)
-		if model_name=="street_rat":
-			ToonArt.ball(head,Color("dbaab1"),Vector3(0,-.1,-.4),Vector3(.18,.15,.15))
-			block(body,Color("e9bd68"),Vector3(0,.72,-.32),Vector3(.1,.28,.04))
-			ToonArt.ball(body,Color("e5cfaa"),Vector3(.36,.5,0),Vector3(.10,.20,.21))
-		elif model_name=="acorn":
-			ToonArt.tube(head,Color("7f654e"),Vector3(0,.30,0),.28,.4,.2)
-			ToonArt.tube(head,Color("7f654e"),Vector3(0,.46,0),.03,.07,.2)
-		elif model_name=="toad":
-			for x in [-.27,.27]: ToonArt.ball(head,Color("f5e6ba"),Vector3(x,.20,-.24),Vector3(.27,.31,.18))
-			for x in [-.18,.18]: ToonArt.ball(body,Color("dcc796"),Vector3(x,.67,-.28),Vector3(.12,.14,.08))
-		elif model_name=="crab":
-			for side in [-1,1]: ToonArt.ball(body,Color("e3b16d"),Vector3(side*.58,.60,-.1),Vector3(.28,.35,.26))
-		elif model_name=="penguin":
-			ToonArt.ball(body,Color("fff0d9"),Vector3(0,.72,-.29),Vector3(.50,.64,.14))
-			ToonArt.ball(head,Color("efb46c"),Vector3(0,-.1,-.37),Vector3(.2,.12,.25))
-		elif model_name=="lizard":
-			for i in range(3): ToonArt.tube(head,Color("e6c17c"),Vector3(0,.3,.15-i*.15),0,.07,.24)
-		else:
-			ToonArt.ball(body,Color("a892ca"),Vector3(0,.74,.23),Vector3(.93,.92,.35))
-	elif model_name=="pipe_wrench":
-		ToonArt.tube(head,Color("c97658"),Vector3(0,.31,0),.31,.40,.18)
-		block(body,Color("738f96"),Vector3(0,.6,-.30),Vector3(.55,.50,.05))
-		for x in [-.2,.2]: ToonArt.ball(body,Color("e8c98a"),Vector3(x,.83,-.35),Vector3(.06,.06,.03))
-	elif model_name=="sweet_potato":
-		ToonArt.tube(head,Color("939f96"),Vector3(0,.29,0),.15,.40,.2)
-		for x in [-.2,.2]: ToonArt.ball(head,Color("93b78d"),Vector3(x,.47,0),Vector3(.22,.40,.13))
-		block(body,Color("a5b6a6"),Vector3(0,.67,-.31),Vector3(.52,.46,.07))
-	elif model_name=="marble_bust_01":
-		for side in [-1,1]: ToonArt.ball(head,Color("f5e5d1"),Vector3(side*.31,.23,.04),Vector3(.32,.29,.29))
-		for x in [-.17,.17]:
-			var ring=TorusMesh.new();ring.inner_radius=.1;ring.outer_radius=.125
-			var lens=ToonArt.part(head,ring,Color("8a6656"),Vector3(x,.08,-.35));lens.rotation.x=PI*.5
-		block(body,Color("af8ba3"),Vector3(0,.71,-.32),Vector3(.57,.18,.08))
-	elif model_name=="hamburger_buns":
-		ToonArt.tube(head,Color("b3815b"),Vector3(0,.27,0),.28,.37,.15)
-		for i in range(7): ToonArt.ball(head,Color("fff0ba"),Vector3(sin(i*2.4)*.23,.31,cos(i*2.4)*.23),Vector3(.04,.025,.08))
-		block(body,Color("9eab9c"),Vector3(0,.68,-.29),Vector3(.58,.40,.08))
-	else:
-		ToonArt.tube(head,Color("d3af78"),Vector3(0,.31,0),.34,.51,.12)
-		ToonArt.tube(head,Color("9fbf87"),Vector3(0,.43,0),.18,.29,.18)
-		for i in range(5): ToonArt.ball(head,Color("eda1b8"),Vector3(.27+cos(i*TAU/5)*.11,.40+sin(i*TAU/5)*.11,-.20),Vector3(.14,.14,.10))
-		block(body,Color("8eae82"),Vector3(0,.62,-.30),Vector3(.54,.52,.06))
-	for i in range(3):
-		var flame=ToonArt.ball(body,Color("ffad61"),Vector3((i-1)*.23,.6+i*.13,-.34),Vector3(.18,.4,.17));flame.visible=false;fire_nodes.append(flame)
-		var droplet=ToonArt.ball(body,Color("9cdc73"),Vector3((i-1)*.27,.8,.0),Vector3(.12,.14,.12));droplet.visible=false;poison_nodes.append(droplet)
-		var crystal=ToonArt.tube(body,Color("b2e6ee"),Vector3((i-1)*.22,.08,.1),0,.12,.4);crystal.visible=false;ice_nodes.append(crystal)
-	blind_node=block(body,Color("746382"),Vector3(0,1.6,0),Vector3(.36,.045,.045));blind_node.visible=false
+	push_error("Missing required actor model: "+model_name)
+	add_child(body);body.add_child(head)
 
 func add_arm(side: int):
 	var arm=Node3D.new()

@@ -11,11 +11,11 @@ varying vec3 p;
 void vertex(){p=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz;}
 vec3 biome_paint(float b,vec2 uv) {
  vec3 paint;vec3 base;
- if(b>4.5){paint=texture(t5,uv).rgb;base=vec3(.20,.15,.28);}
- else if(b>3.5){paint=texture(t4,uv).rgb;base=vec3(.39,.21,.16);}
- else if(b>2.5){paint=texture(t3,uv).rgb;base=vec3(.43,.55,.57);}
- else if(b>1.5){paint=texture(t2,uv).rgb;base=vec3(.24,.30,.38);}
- else if(b>.5){paint=texture(t1,uv).rgb;base=vec3(.16,.27,.23);}
+ if(b>4.5){paint=texture(t5,uv).rgb;base=vec3(.065,.038,.11);}
+ else if(b>3.5){paint=texture(t4,uv).rgb;base=vec3(.13,.053,.044);}
+ else if(b>2.5){paint=texture(t3,uv).rgb;base=vec3(.18,.23,.25);}
+ else if(b>1.5){paint=texture(t2,uv).rgb;base=vec3(.075,.10,.16);}
+ else if(b>.5){paint=texture(t1,uv).rgb;base=vec3(.045,.08,.065);}
  else {
    vec3 stone=texture(t0,p.xz*.07).rgb;
    // Quiet slate values leave the bright range to actors, lights and combat.
@@ -40,6 +40,6 @@ void fragment(){
  float path=1.0-smoothstep(2.2,3.5,abs(p.x+sin(p.z*.035)*9.0));
  float a=atan(p.z,p.x);
  float coast=344.0+24.0*sin(3.0*(a+phase))+14.0*sin(5.0*(a-phase))+8.0*cos(7.0*(a+phase*.5));
- paint=mix(paint,vec3(.79,.68,.43),smoothstep(coast-22.0,coast-3.0,length(p.xz)));
+ paint=mix(paint,vec3(.19,.15,.09),smoothstep(coast-22.0,coast-3.0,length(p.xz)));
  ALBEDO=mix(paint,paint*1.06+vec3(.012,.008,.002),path*.4);ROUGHNESS=1.0;SPECULAR=0.0;
 }

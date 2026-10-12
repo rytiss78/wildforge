@@ -1,0 +1,453 @@
+{
+  "generator": "scripts/build-forge-roster.py",
+  "heroes": [
+    {
+      "asset": "hero_pipe_wrench",
+      "triangles": 3132,
+      "mesh_nodes": 55,
+      "bytes": 149668
+    },
+    {
+      "asset": "hero_sweet_potato",
+      "triangles": 3204,
+      "mesh_nodes": 57,
+      "bytes": 160912
+    },
+    {
+      "asset": "hero_marble_bust_01",
+      "triangles": 4916,
+      "mesh_nodes": 48,
+      "bytes": 201420
+    },
+    {
+      "asset": "hero_street_rat",
+      "triangles": 3084,
+      "mesh_nodes": 43,
+      "bytes": 140076
+    },
+    {
+      "asset": "hero_hamburger_buns",
+      "triangles": 3340,
+      "mesh_nodes": 47,
+      "bytes": 153352
+    },
+    {
+      "asset": "hero_florist",
+      "triangles": 3000,
+      "mesh_nodes": 51,
+      "bytes": 147596
+    },
+    {
+      "asset": "hero_teapot",
+      "triangles": 3692,
+      "mesh_nodes": 39,
+      "bytes": 155024
+    },
+    {
+      "asset": "hero_octopus",
+      "triangles": 4088,
+      "mesh_nodes": 58,
+      "bytes": 189024
+    },
+    {
+      "asset": "hero_astronaut",
+      "triangles": 2976,
+      "mesh_nodes": 42,
+      "bytes": 136188
+    },
+    {
+      "asset": "hero_cactus",
+      "triangles": 3376,
+      "mesh_nodes": 60,
+      "bytes": 170832
+    },
+    {
+      "asset": "hero_book",
+      "triangles": 2284,
+      "mesh_nodes": 44,
+      "bytes": 115920
+    },
+    {
+      "asset": "hero_snail",
+      "triangles": 3592,
+      "mesh_nodes": 48,
+      "bytes": 163052
+    },
+    {
+      "asset": "hero_bee",
+      "triangles": 3280,
+      "mesh_nodes": 47,
+      "bytes": 150628
+    },
+    {
+      "asset": "hero_sushi",
+      "triangles": 3848,
+      "mesh_nodes": 57,
+      "bytes": 178672
+    },
+    {
+      "asset": "hero_mushroom",
+      "triangles": 2640,
+      "mesh_nodes": 43,
+      "bytes": 127728
+    },
+    {
+      "asset": "hero_clock",
+      "triangles": 3544,
+      "mesh_nodes": 51,
+      "bytes": 163740
+    },
+    {
+      "asset": "hero_icecream",
+      "triangles": 3096,
+      "mesh_nodes": 45,
+      "bytes": 143076
+    },
+    {
+      "asset": "hero_bathtub",
+      "triangles": 3180,
+      "mesh_nodes": 46,
+      "bytes": 147424
+    },
+    {
+      "asset": "hero_peacock",
+      "triangles": 4520,
+      "mesh_nodes": 71,
+      "bytes": 215884
+    },
+    {
+      "asset": "hero_toaster",
+      "triangles": 3076,
+      "mesh_nodes": 44,
+      "bytes": 139432
+    }
+  ],
+  "creatures": [
+    {
+      "asset": "creature_1_0",
+      "triangles": 6336,
+      "mesh_nodes": 24,
+      "bytes": 216360
+    },
+    {
+      "asset": "creature_1_1",
+      "triangles": 6416,
+      "mesh_nodes": 21,
+      "bytes": 215944
+    },
+    {
+      "asset": "creature_1_2",
+      "triangles": 6328,
+      "mesh_nodes": 24,
+      "bytes": 215928
+    },
+    {
+      "asset": "creature_1_3",
+      "triangles": 6416,
+      "mesh_nodes": 21,
+      "bytes": 215944
+    },
+    {
+      "asset": "creature_1_4",
+      "triangles": 6592,
+      "mesh_nodes": 28,
+      "bytes": 228856
+    },
+    {
+      "asset": "creature_1_5",
+      "triangles": 6120,
+      "mesh_nodes": 24,
+      "bytes": 208220
+    },
+    {
+      "asset": "creature_2_0",
+      "triangles": 6272,
+      "mesh_nodes": 25,
+      "bytes": 215480
+    },
+    {
+      "asset": "creature_2_1",
+      "triangles": 6288,
+      "mesh_nodes": 21,
+      "bytes": 212032
+    },
+    {
+      "asset": "creature_2_2",
+      "triangles": 5984,
+      "mesh_nodes": 19,
+      "bytes": 199812
+    },
+    {
+      "asset": "creature_2_3",
+      "triangles": 5668,
+      "mesh_nodes": 14,
+      "bytes": 185544
+    },
+    {
+      "asset": "creature_2_4",
+      "triangles": 5544,
+      "mesh_nodes": 13,
+      "bytes": 178920
+    },
+    {
+      "asset": "creature_2_5",
+      "triangles": 6720,
+      "mesh_nodes": 21,
+      "bytes": 224376
+    },
+    {
+      "asset": "creature_3_0",
+      "triangles": 6168,
+      "mesh_nodes": 31,
+      "bytes": 220824
+    },
+    {
+      "asset": "creature_3_1",
+      "triangles": 7728,
+      "mesh_nodes": 23,
+      "bytes": 256756
+    },
+    {
+      "asset": "creature_3_2",
+      "triangles": 5984,
+      "mesh_nodes": 19,
+      "bytes": 199812
+    },
+    {
+      "asset": "creature_3_3",
+      "triangles": 6416,
+      "mesh_nodes": 21,
+      "bytes": 215944
+    },
+    {
+      "asset": "creature_3_4",
+      "triangles": 6224,
+      "mesh_nodes": 22,
+      "bytes": 211028
+    },
+    {
+      "asset": "creature_3_5",
+      "triangles": 5984,
+      "mesh_nodes": 19,
+      "bytes": 199812
+    },
+    {
+      "asset": "creature_4_0",
+      "triangles": 6272,
+      "mesh_nodes": 25,
+      "bytes": 215484
+    },
+    {
+      "asset": "creature_4_1",
+      "triangles": 6600,
+      "mesh_nodes": 29,
+      "bytes": 230416
+    },
+    {
+      "asset": "creature_4_2",
+      "triangles": 6616,
+      "mesh_nodes": 33,
+      "bytes": 235316
+    },
+    {
+      "asset": "creature_4_3",
+      "triangles": 6312,
+      "mesh_nodes": 25,
+      "bytes": 215536
+    },
+    {
+      "asset": "creature_4_4",
+      "triangles": 6144,
+      "mesh_nodes": 21,
+      "bytes": 207456
+    },
+    {
+      "asset": "creature_4_5",
+      "triangles": 6696,
+      "mesh_nodes": 36,
+      "bytes": 238904
+    },
+    {
+      "asset": "creature_5_0",
+      "triangles": 7824,
+      "mesh_nodes": 24,
+      "bytes": 261508
+    },
+    {
+      "asset": "creature_5_1",
+      "triangles": 7216,
+      "mesh_nodes": 22,
+      "bytes": 240996
+    },
+    {
+      "asset": "creature_5_2",
+      "triangles": 7088,
+      "mesh_nodes": 22,
+      "bytes": 237084
+    },
+    {
+      "asset": "creature_5_3",
+      "triangles": 6632,
+      "mesh_nodes": 31,
+      "bytes": 233240
+    },
+    {
+      "asset": "creature_5_4",
+      "triangles": 6336,
+      "mesh_nodes": 25,
+      "bytes": 217820
+    },
+    {
+      "asset": "creature_5_5",
+      "triangles": 6472,
+      "mesh_nodes": 30,
+      "bytes": 227568
+    }
+  ],
+  "weapons": [
+    {
+      "asset": "weapon_flowers",
+      "triangles": 640,
+      "mesh_nodes": 9,
+      "bytes": 30936
+    },
+    {
+      "asset": "weapon_shotgun",
+      "triangles": 2776,
+      "mesh_nodes": 11,
+      "bytes": 95644
+    },
+    {
+      "asset": "weapon_flame",
+      "triangles": 1120,
+      "mesh_nodes": 9,
+      "bytes": 43940
+    },
+    {
+      "asset": "weapon_poison",
+      "triangles": 1120,
+      "mesh_nodes": 9,
+      "bytes": 43940
+    },
+    {
+      "asset": "weapon_ice",
+      "triangles": 1120,
+      "mesh_nodes": 9,
+      "bytes": 43936
+    },
+    {
+      "asset": "weapon_rail",
+      "triangles": 1032,
+      "mesh_nodes": 7,
+      "bytes": 39016
+    },
+    {
+      "asset": "weapon_lightning",
+      "triangles": 1120,
+      "mesh_nodes": 9,
+      "bytes": 43940
+    },
+    {
+      "asset": "weapon_saw",
+      "triangles": 1008,
+      "mesh_nodes": 15,
+      "bytes": 45140
+    },
+    {
+      "asset": "weapon_rocket",
+      "triangles": 1080,
+      "mesh_nodes": 8,
+      "bytes": 41900
+    },
+    {
+      "asset": "weapon_ghost",
+      "triangles": 1120,
+      "mesh_nodes": 9,
+      "bytes": 43936
+    },
+    {
+      "asset": "weapon_turret",
+      "triangles": 268,
+      "mesh_nodes": 6,
+      "bytes": 15420
+    },
+    {
+      "asset": "weapon_fire-turret",
+      "triangles": 268,
+      "mesh_nodes": 6,
+      "bytes": 15420
+    },
+    {
+      "asset": "weapon_ice-turret",
+      "triangles": 268,
+      "mesh_nodes": 6,
+      "bytes": 15420
+    },
+    {
+      "asset": "weapon_poison-turret",
+      "triangles": 268,
+      "mesh_nodes": 6,
+      "bytes": 15420
+    },
+    {
+      "asset": "weapon_lightning-turret",
+      "triangles": 268,
+      "mesh_nodes": 6,
+      "bytes": 15420
+    },
+    {
+      "asset": "weapon_rocket-turret",
+      "triangles": 268,
+      "mesh_nodes": 6,
+      "bytes": 15420
+    },
+    {
+      "asset": "weapon_boomerang",
+      "triangles": 128,
+      "mesh_nodes": 4,
+      "bytes": 8716
+    },
+    {
+      "asset": "weapon_disc",
+      "triangles": 1008,
+      "mesh_nodes": 15,
+      "bytes": 45140
+    },
+    {
+      "asset": "weapon_harpoon",
+      "triangles": 1052,
+      "mesh_nodes": 8,
+      "bytes": 40516
+    },
+    {
+      "asset": "weapon_gravity",
+      "triangles": 1112,
+      "mesh_nodes": 6,
+      "bytes": 41168
+    },
+    {
+      "asset": "weapon_horn",
+      "triangles": 1048,
+      "mesh_nodes": 3,
+      "bytes": 35936
+    },
+    {
+      "asset": "weapon_bubble",
+      "triangles": 1112,
+      "mesh_nodes": 6,
+      "bytes": 41164
+    },
+    {
+      "asset": "weapon_meteor",
+      "triangles": 1120,
+      "mesh_nodes": 9,
+      "bytes": 43936
+    },
+    {
+      "asset": "weapon_bomb",
+      "triangles": 208,
+      "mesh_nodes": 5,
+      "bytes": 12576
+    }
+  ]
+}

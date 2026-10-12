@@ -26,7 +26,7 @@ static func run(game):
 	game.hud.build_menu();checks.simple=await capture(game,"simple")
 	game.damage_sources={"gun":120,"effect:poison":35};game.hud.run_report_menu();checks.report=await capture(game,"report")
 	game.hud.show_offers(game.owned.slice(0,5),"level");checks.cards=await capture(game,"cards")
-	checks.all_skill_art=game.rules.data.loot.filter(func(i):return i.kind=="skill").all(func(i):return ResourceLoader.exists("res://assets/illustrated/skill-icons/"+i.id+".png"))
+	checks.all_skill_art=game.rules.data.loot.filter(func(i):return i.kind=="skill").all(func(i):return ResourceLoader.exists("res://assets/illustrated/content/"+i.id+".svg"))
 	game.sound.boss_voice_last=-100;var before=game.sound.boss_voice_count
 	game.spawn_enemy(8,true);var boss=game.enemies[-1];boss.hp=10000
 	for i in range(50): game.hurt_enemy(boss,1,"hit","gun")

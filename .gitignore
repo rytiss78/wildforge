@@ -14,3 +14,8 @@ steam_appid.txt
 *.pending
 # Historical local audio; unused and excluded from current exports.
 native/assets/audio/local/
+# Build outputs
+Wildforge.exe
+Wildforge.pck
+Wildforge.console.exe
+Wildforge.pck*.tmp

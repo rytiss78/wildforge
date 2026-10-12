@@ -1,8 +1,6 @@
 extends RefCounted
 class_name IllustratedIcons
 
-static var atlas: Texture2D
-static var skill_atlas: Texture2D
 static var textures={}
 const SKILLS={
 	"damage":0,"bossDamage":0,"berserk":0,"orbitDamage":0,"auraDamage":0,"slamPower":0,
@@ -36,47 +34,10 @@ const POWERS = {
 }
 
 static func texture(key: String, weapon: bool=false) -> Texture2D:
-	var vector_art="res://assets/illustrated/content/"+key+".svg"
-	if not weapon and ResourceLoader.exists(vector_art):
-		if not textures.has(vector_art): textures[vector_art]=load(vector_art)
-		return textures[vector_art]
-	var skill_art="res://assets/illustrated/skill-icons/"+key+".png"
-	if not weapon and ResourceLoader.exists(skill_art):
-		if not textures.has(skill_art): textures[skill_art]=load(skill_art)
-		return textures[skill_art]
-	# Weapon images are rendered from the very same WeaponModel used by ActorRig.
-	var matching="res://assets/illustrated/weapon-icons/"+key+".png"
-	if weapon and ResourceLoader.exists(matching):
-		if not textures.has(matching): textures[matching]=load(matching)
-		return textures[matching]
-	if ResourceLoader.exists(vector_art):
-		if not textures.has(vector_art): textures[vector_art]=load(vector_art)
-		return textures[vector_art]
-	var content="res://assets/illustrated/content/"+key+".png"
-	if ResourceLoader.exists(content):
-		if not textures.has(content): textures[content]=load(content)
-		return textures[content]
-	var cache_key=("weapon:" if weapon else "power:")+key
-	if textures.has(cache_key): return textures[cache_key]
-	if not weapon and ResourceLoader.exists("res://assets/illustrated/skills.png"):
-		if skill_atlas==null: skill_atlas=load("res://assets/illustrated/skills.png")
-		var tile=int(SKILLS.get(key,0 if key.ends_with("Power") else -1))
-		if tile>=0:
-			var result=AtlasTexture.new();result.atlas=skill_atlas
-			var side=skill_atlas.get_width()/4.0
-			var inset=side*.04
-			result.region=Rect2((tile%4)*side+inset,int(tile/4)*side+inset,side-2*inset,side-2*inset);result.filter_clip=true
-			textures[cache_key]=result;return result
-	var rendered="res://assets/illustrated/weapon-icons/"+key+".png"
-	if weapon and ResourceLoader.exists(rendered):
-		textures[cache_key]=load(rendered);return textures[cache_key]
-	if atlas==null: atlas=load("res://assets/illustrated/icons.png")
-	# A missing skill illustration must never fall back to a gun or turret.
-	var index=int(WEAPONS.get(key,0) if weapon else 20 if key=="magnetPulse" else 21 if key=="thorns" else 22 if key=="blind" else 18 if key=="keyPower" else 23)
-	var result=AtlasTexture.new()
-	result.atlas=atlas
-	result.region=Rect2((index%6)*128+5,(index/6)*128+5,118,118)
-	if index==4: result.region=Rect2(4*128+4,5,110,118)
-	result.filter_clip=true
-	textures[cache_key]=result
-	return result
+	var path="res://assets/illustrated/weapon-icons/"+key+".png" if weapon else "res://assets/illustrated/content/"+key+".svg"
+	if not ResourceLoader.exists(path): path="res://assets/illustrated/effects/"+key+".svg"
+	if not ResourceLoader.exists(path):
+		push_error("Missing required icon: "+key)
+		return null
+	if not textures.has(path): textures[path]=load(path)
+	return textures[path]

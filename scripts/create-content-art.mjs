@@ -89,21 +89,70 @@ function weaponAccent(w){
  if(m.sweepDot!==undefined)return '<path d="M78 88q35-35 37 12M76 88l1-12M78 88l12 2" fill="none"/>';
  return '';
 }
-const manifest=[];
-for(const [i,item] of [...data.loot,...data.weapons].entries()){
- const digest=createHash('sha256').update(item.id).digest();const weapon=!item.effects;
- const shape=item.art?.shape??digest[0]%20;const condition=item.art?.condition??digest[1]%20;
- const color=palette[shape%palette.length];const emblem=glyphs[condition];
- const artwork=weapon?weaponShape(item)+weaponAccent(item):item.art?shapes[shape]:legacyArtwork(item.effects[0].key);
- const engraving=Array.from({length:5},(_,j)=>`<path d="M${39+j*11} 118l${digest[j+2]%7-3} -${4+digest[j+3]%6}"/>`).join('');
- const source=`<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"><defs><linearGradient id="paint" x2=".8" y2="1"><stop stop-color="${color}"/><stop offset="1" stop-color="#f5db94"/></linearGradient></defs><rect x="3" y="3" width="122" height="122" rx="19" fill="#fcf0d7" stroke="#805c47" stroke-width="3"/><g transform="translate(1 3)" fill="#9b7558" opacity=".25">${artwork}</g><g fill="url(#paint)" stroke="#5e4539" stroke-width="3" stroke-linejoin="round" stroke-linecap="round">${artwork}</g><rect x="3" y="3" width="38" height="38" rx="10" fill="#f7e4b8" stroke="#805c47" stroke-width="2"/><g fill="none" stroke="#5e4539" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">${emblem}${engraving}</g></svg>`;
- await writeFile(new URL(item.id+'.svg',root),source);
- if(weapon){
-  const pattern=`<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128"><rect width="128" height="128" fill="${color}"/><g fill="#f4d596" stroke="#674f49" stroke-width="2">${Array.from({length:9},(_,n)=>`<g transform="translate(${n%3*42} ${Math.floor(n/3)*42}) scale(.3)">${artwork}</g>`).join('')}</g><path d="M0 4h128M0 124h128" stroke="#efcc91" stroke-width="5"/></svg>`;
-  await writeFile(new URL('textures/'+item.id+'.svg',root),pattern);
- }
- manifest.push({id:item.id,path:`res://assets/illustrated/content/${item.id}.svg`,shape,condition,source:'Original editable vector geometry',sha256:createHash('sha256').update(source).digest('hex')});
+
+// The emblem encodes a real condition. Identical effects deliberately share a
+// symbol; file hashes are never treated as proof of visual distinctness.
+const conditionNames=['air','ground','moving','still','low','healthy','shield','bare','dash','slam','kill','crit','boss','near','crowd','flower','turret','gold'];
+const statNames=['damage','rate','speed','regen','armor','dodge','crit','critPower','range','projectileSpeed','size','knockback','lifesteal','bossDamage','xpGain','goldGain','pickup','turretDamage','turretRate','turretRange'];
+const semantic={
+ multishot:'<path d="M30 104V62l9-17 9 17v42zM57 104V37l9-19 9 19v67zM84 104V62l9-17 9 17v42z"/>',
+ ricochet:'<path d="m25 104 30-65 22 34 26-52M83 27l23-9 4 23M20 111h90" fill="none"/>',
+ stun:'<path d="m65 20 9 27 29-9-15 26 20 22-30-2-13 27-12-27-30 2 19-22-15-26 29 9z"/><path d="M62 43v30m0 10v8" fill="none"/>',
+ repair:'<path d="m45 21 11 24 16 1 11-24q27 40-7 54l-3 36H52l-1-36Q18 59 45 21z"/><path d="M59 82v17" fill="none"/>',
+ revive:'<path d="M40 52q-3-30 25-30 33 0 26 32l-13 16v17H51V70z"/><path d="M29 92h24V70h23v22h24v20H29z"/><path d="M53 47h4m17 0h4" fill="none"/>',
+ luck:'<path d="M65 62Q17 39 33 24q26-14 32 25 10-41 35-25 19 17-23 38 39 9 22 34-21 15-34-20-10 35-31 22-19-21 19-32z"/><path d="M65 66v45" fill="none"/>',
+ chestBonus:'<path d="M25 57q0-34 40-34t40 34v48H25zM25 62h80M65 25v80"/><path d="M56 57h18v21H56z" fill="#eab84f"/>',
+ shield:'<path d="m65 21 37 17-7 43-30 27-30-27-7-43z"/><path d="m65 37 21 10-5 27-16 14-16-14-5-27z" fill="#132a36"/>',
+ dashCooldown:'<path d="M70 25a37 37 0 1 1-31 17M23 42h21V22M69 37v28l19 12M20 88h28M13 101h32" fill="none"/>',
+ banana:'<path d="M32 20q40 91 75 30-1 67-52 54Q17 90 32 20z"/><path d="M36 40q-7 56 43 60" fill="none"/>',
+ enemyPull:'<path d="M19 39l27 25-27 25M111 39 84 64l27 25M18 64h34M112 64H78" fill="none"/><circle cx="65" cy="64" r="12"/>',
+ enemyPush:'<path d="m46 39-27 25 27 25M84 39l27 25-27 25M18 64h34M112 64H78" fill="none"/><circle cx="65" cy="64" r="12"/>',
+ potionPower:'<path d="M52 21h27v30l23 39q6 23-36 23-41 0-35-23l21-39z"/><path d="M43 76h45M62 83v22M51 94h22M49 31h32" fill="none"/>'
+};
+const aliases={execute:'bossDamage',berserk:'damage',salvage:'repair',coinRadius:'pickup',airControl:'speed',fallThreshold:'armor',jumpShield:'shield',fallGuard:'armor',landingHeal:'maxHp',slamHeal:'maxHp',potionChance:'luck',potionDuration:'rate',enemyPull:'enemyPull',enemyPush:'enemyPush'};
+function symbol(key){
+ key=aliases[key]||key;
+ if(semantic[key])return semantic[key];
+ const w={boomerangPower:'boomerang',boomerangPierce:'boomerang',discPower:'disc',discBounces:'disc',harpoonPower:'harpoon',harpoonPull:'harpoon',gravityPower:'gravity',gravitySize:'gravity',hornPower:'horn',hornStun:'horn',bubblePower:'bubble',bubbleTime:'bubble',meteorPower:'meteor',meteorCount:'meteor',bombPower:'bomb',bombSize:'bomb'}[key];
+ if(w)return weaponShape({id:w});
+ return legacyArtwork(key);
 }
-if(new Set(manifest.map(x=>x.sha256)).size!==manifest.length)throw Error('Duplicate icon composition');
+const familyColors={'Mobility':'#75dcb7','Defense':'#81b9d7','Arcane':'#bb87ee','Engineering':'#dcae68','Ballistics':'#ddbd82','Explosives':'#f68849','Nature':'#84c963','Economy':'#efc05e'};
+const manifest=[];
+for(const item of [...data.loot,...data.weapons]){
+ const weapon=!item.effects;const key=item.effects?.[0]?.key;const shape=item.art?.shape??statNames.indexOf(key);
+ const condition=item.art && !weapon?item.art.condition:null;
+ const color=familyColors[item.family]||palette[Math.max(0,shape)%palette.length];
+ const artwork=weapon?weaponShape(item)+weaponAccent(item):item.art?shapes[shape]:symbol(key);
+ const emblem=condition!==null?glyphs[condition]:item.kind==='skill'?'<path d="m21 5 5 11 11 5-11 5-5 11-5-11-11-5 11-5z"/>':'<path d="m21 7 14 8v15l-14 7-14-7V15zM7 15l14 8 14-8M21 23v14"/>';
+ const additional=item.effects?.slice(1,3).map((e,i)=>`<g transform="translate(${76+i*22} 94) scale(.20)" fill="${color}" stroke="#080e19" stroke-width="5">${symbol(e.key)}</g>`).join('')||'';
+ const source=`<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 128 128"><path d="M17 3h94l14 14v94l-14 14H17L3 111V17z" fill="#0a141d" stroke="#987b48" stroke-width="2"/><path d="M22 10h84l12 12v84l-12 12H22l-12-12V22z" fill="#1b2931" stroke="#42584f"/><path d="M14 44v-21l9-9h23m36 0h23l9 9v21M14 84v21l9 9h23m36 0h23l9-9V84" fill="none" stroke="#e1b978" stroke-width="1"/><circle cx="66" cy="66" r="43" fill="none" stroke="#3c4947"/><g transform="translate(3 4)" fill="#050b14" stroke="#050b14" stroke-width="5">${artwork}</g><g fill="${color}" stroke="#07111e" stroke-width="3.4" stroke-linejoin="miter" stroke-linecap="square">${artwork}</g><path d="m55 112 11 4 11-4" fill="none" stroke="#e9ce90" stroke-width="2"/><path d="M4 4h33l6 7v26l-7 6H11l-7-7z" fill="#09141e" stroke="#b38b54"/><g fill="none" stroke="#f4d79b" stroke-width="2.8" stroke-linecap="square" stroke-linejoin="miter">${emblem}</g>${additional}</svg>`;
+ await writeFile(new URL(item.id+'.svg',root),source+'\n');
+ if(weapon){const pattern=`<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128"><rect width="128" height="128" fill="#18232f"/><path d="M0 9h128M0 119h128M8 0v128M120 0v128" stroke="#bc995e" stroke-width="4"/><path d="m64 24 24 40-24 40-24-40z" fill="${color}" stroke="#07111e" stroke-width="5"/><path d="m64 42 12 22-12 22-12-22z" fill="#15232c"/></svg>`;await writeFile(new URL('textures/'+item.id+'.svg',root),pattern);}
+ manifest.push({id:item.id,path:`res://assets/illustrated/content/${item.id}.svg`,semantic:key||item.archetype||item.id,shape,condition:condition===null?item.kind:conditionNames[condition],source:'Original semantic vector geometry; intentional shared effect symbols',sha256:createHash('sha256').update(source).digest('hex')});
+}
 await writeFile(new URL('manifest.json',root),JSON.stringify(manifest,null,2));
-console.log(`${manifest.length} distinct editable icons; ${data.weapons.length} patterned weapon textures`);
+console.log(`${manifest.length} semantic engraved icons; ${data.weapons.length} weapon inlay textures`);
+// Achievement art shares the same semantic vocabulary as rewards.
+await mkdir(new URL('../achievements/',root),{recursive:true});
+const familyKey={Engineering:'turretDamage',Ballistics:'multishot',Explosives:'explosion',Fire:'burn',Frost:'freeze',Electric:'chain',Toxic:'poison',Defense:'shield',Recovery:'regen',Mobility:'speed',Vampiric:'lifesteal',Scavenging:'pickup',Fortune:'luck',Precision:'crit',Assassin:'bossDamage',Aura:'auraDamage',Spectral:'ghost',Burrowing:'burrow',Shadow:'blind',Berserker:'damage',Storm:'chain',Arcane:'nova',Nature:'thorns',Economy:'goldGain',Garden:'flowerPower'};
+const heroKey={wrench:'repair',duck:'lifesteal',broccoli:'shield',grandma:'bombPower',goblin:'goldGain',loaf:'damage',florist:'flowerPower'};
+for(const a of data.achievements){
+ let keys=[];if(a.key.startsWith('combo_'))keys=a.key.slice(6).split('_');
+ else if(a.key.startsWith('family_'))keys=[familyKey[a.key.slice(7)]];
+ else if(/^(play|win)_/.test(a.key))keys=[heroKey[a.key.split('_')[1]]];
+ else {const k=a.key.toLowerCase();keys=[k.includes('boss')?'bossDamage':k.includes('flower')||k.includes('garden')?'flowerPower':k.includes('coin')||k.includes('merchant')?'goldGain':k.includes('ice')?'freeze':k.includes('ghost')?'ghost':k.includes('rescue')||k.includes('revive')?'revive':k.includes('banana')?'banana':k.includes('key')||k.includes('gate')?'keyPower':k.includes('turret')?'turretDamage':k.includes('walk')||k.includes('air')||k.includes('terrace')?'speed':k.includes('reaction')?'chain':'chestBonus'];}
+ const art=keys.map((k,i)=>`<g transform="${keys.length>1?`translate(${i*46+3} ${i*20+12}) scale(.65)`:'translate(0 0)'}">${symbol(k)}</g>`).join('');
+ const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 128 128"><path d="M64 3 116 31v57l-52 37-52-37V31z" fill="#111c2a" stroke="#ccaa68" stroke-width="3"/><path d="m22 35 6 18-4 9 9 13-2 10 14 7m61-57-6 18 4 9-9 13 2 10-14 7" fill="none" stroke="#678575" stroke-width="3"/><g fill="#d6b878" stroke="#07111d" stroke-width="3">${art}</g>${a.key.startsWith('win_')?'<path d="m45 21 3-13 11 7 5-12 6 12 11-7 3 13z" fill="#fff0ad"/>':''}</svg>`;
+ await writeFile(new URL('../achievements/'+a.id+'.svg',root),svg+'\n');
+}
+console.log(`${data.achievements.length} achievement seals`);
+
+// Effect keys are used by buff rows and compact HUD symbols, outside card IDs.
+await mkdir(new URL('../effects/',root),{recursive:true});
+const runtime=await readFile(new URL('../native/scripts/illustrated_icons.gd',import.meta.url),'utf8');
+const effectKeys=new Set(['banana','magnetPulse','enemyPull','enemyPush',...data.loot.flatMap(i=>i.effects.map(e=>e.key)),...runtime.matchAll(/"([A-Za-z]+)":\d/g)].map(x=>typeof x==='string'?x:x[1]));
+for(const key of effectKeys){
+ const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"><path d="M20 4h88l16 16v88l-16 16H20L4 108V20z" fill="#12212c" stroke="#b69760" stroke-width="3"/><g fill="#d4b674" stroke="#09111e" stroke-width="3">${symbol(key)}</g></svg>`;
+ await writeFile(new URL('../effects/'+key+'.svg',root),svg+'\n');
+}

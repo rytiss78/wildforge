@@ -23,7 +23,7 @@ func configure(seed_value: int,realm: int):
 			var p=Vector2((x+.5)/256.0*800-400,(y+.5)/256.0*800-400)
 			var biome=0 if p.length()<65 else int(floor(fposmod(atan2(p.y,p.x)+phase,TAU)/(TAU/6)))
 			var coast=RealmWorld.coast_radius(atan2(p.y,p.x),seed_value,realm)
-			var color=Color("245b6c") if p.length()>=coast else Color("ddc995") if p.length()>coast-14 else RealmWorld.COLORS[biome]
+			var color=Color("0e1826") if p.length()>=coast else Color("806f53") if p.length()>coast-14 else [Color("294b42"),Color("37443f"),Color("3b465d"),Color("657179"),Color("63403c"),Color("443653")][biome]
 			image.set_pixel(x,y,color)
 	terrain=ImageTexture.create_from_image(image)
 
@@ -33,7 +33,7 @@ func point(p: Vector3,radius: float) -> Vector2:
 func _draw():
 	var center = size*.5
 	var radius = minf(size.x,size.y)*.46
-	var frame=StyleBoxFlat.new();frame.bg_color=Color("17293d");frame.border_color=Color("b8a16e");frame.set_border_width_all(2);frame.set_corner_radius_all(10)
+	var frame=StyleBoxFlat.new();frame.bg_color=Color("17293d");frame.border_color=Color("b8a16e");frame.set_border_width_all(2);frame.set_corner_radius_all(2)
 	draw_style_box(frame,Rect2(Vector2.ZERO,size))
 	if terrain!=null: draw_texture_rect(terrain,Rect2(center-Vector2.ONE*radius,Vector2.ONE*radius*2),false)
 	draw_string(ThemeDB.fallback_font,Vector2(8,18),"N ↑",HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color("fff8de"))
@@ -62,7 +62,7 @@ func _draw():
 	draw_circle(gp,9,Color("17293d"));draw_arc(gp,7,0,TAU,24,Color("ffd767") if gate_open else Color("e1c8f4"),3,true)
 	draw_line(gp+Vector2(0,-10),gp+Vector2(0,10),Color("ffd767"),1.5)
 	var hp = point(hero_position,radius)
-	draw_colored_polygon(PackedVector2Array([hp+Vector2(0,-6).rotated(-camera_yaw),hp+Vector2(-4,4).rotated(-camera_yaw),hp+Vector2(4,4).rotated(-camera_yaw)]),Color("574536"))
+	draw_colored_polygon(PackedVector2Array([hp+Vector2(0,-6).rotated(-camera_yaw),hp+Vector2(-4,4).rotated(-camera_yaw),hp+Vector2(4,4).rotated(-camera_yaw)]),Color("fff0b5"))
 	for member in party: draw_circle(point(member,radius),3,Color("398ace"))
 	for ping in pings: draw_arc(point(ping,radius),5,0,TAU,12,Color("d55746"),2,true)
 

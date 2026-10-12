@@ -39,23 +39,21 @@ test('all six first-discovery announcements have original text and rendered audi
   assert.ok(existsSync(new URL('native/assets/voices/biome_'+i+'.wav',root)));
  }
 });
-test('expanded hero and exotic creature rosters resolve to distinct compact painted assets',()=>{
+test('complete 3D roster has articulated heroes, enemy health cores, and baked scenery',()=>{
+ const glb=(name)=>{const b=readFileSync(new URL(`native/assets/style3d/${name}.glb`,root));assert.equal(b.toString('ascii',0,4),'glTF');return JSON.parse(b.toString('utf8',20,20+b.readUInt32LE(12)));};
  assert.equal(catalog.heroes.length,21);
- const art=new Set();
- for(const h of catalog.heroes){
-  const png=readFileSync(new URL('native/assets/illustrated/heroes/'+h.model+'.png',root));
-  assert.equal(png.readUInt32BE(16),256);assert.equal(png.readUInt32BE(20),256);art.add(png.toString('base64'));
-  assert.ok(catalog.weapons.some(w=>w.id===h.weapon));
+ for(const hero of catalog.heroes){
+  const doc=glb(hero.model==='rubber_duck_toy'?'count_duck':'hero_'+hero.model);
+  assert.ok(doc.nodes.some(n=>n.name?.startsWith('GlassCore')),hero.id+' core');
+  assert.ok(doc.nodes.some(n=>n.name?.startsWith('HandSocket')),hero.id+' socket');
+  assert.ok(catalog.weapons.some(w=>w.id===hero.weapon));
  }
- assert.equal(art.size,21);
- const creatures=new Set();
- for(let b=0;b<6;b++)for(let s=0;s<6;s++){
-  const png=readFileSync(new URL(`native/assets/illustrated/creatures/creature_${b}_${s}.png`,root));
-  assert.equal(png.readUInt32BE(16),256);assert.equal(png.readUInt32BE(20),256);creatures.add(png.toString('base64'));
+ for(let b=0;b<6;b++)for(let i=0;i<6;i++){
+  assert.ok(glb(`creature_${b}_${i}`).nodes.some(n=>n.name?.startsWith('GlassCore')));
+  glb(`prop_${b}_${i}`);
+  for(const name of [`creature_${b}_${i}`,`creature_${b}_${i}-core`,`prop_${b}_${i}`])assert.ok(existsSync(new URL(`native/assets/style3d/baked/${name}.res`,root)),name);
  }
- assert.equal(creatures.size,36);
- for(let b=0;b<6;b++){
-  assert.ok(existsSync(new URL(`native/assets/illustrated/terrain-${b}.png`,root)));
-  for(let p=0;p<4;p++)assert.ok(existsSync(new URL(`native/assets/illustrated/scenery/prop_${b}_${p}.png`,root)));
- }
+ for(let b=0;b<6;b++)glb('harvest_'+b);
+ for(const w of catalog.weapons)assert.ok(existsSync(new URL(`native/assets/illustrated/weapon-icons/${w.id}.png`,root)),w.id);
+ for(const a of catalog.achievements)assert.ok(existsSync(new URL(`native/assets/illustrated/achievements/${a.id}.svg`,root)),a.id);
 });

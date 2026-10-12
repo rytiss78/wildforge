@@ -10,7 +10,7 @@ static func run(game: Node3D):
 	checks.six_distinct_landmarks=game.world.landmarks.size()==6 and range(6).all(func(i):return game.world.has_node("Landmark_"+str(i)))
 	checks.skill_art_not_guns=game.rules.data.loot.all(func(item):
 		var texture=IllustratedIcons.texture(item.effects[0].key)
-		return texture is AtlasTexture and (texture.atlas==IllustratedIcons.skill_atlas or texture.region.position.y>=256)
+		return texture is Texture2D and texture.resource_path.begins_with("res://assets/illustrated/effects/")
 	)
 	game.mode="offer";game.offer_source="level";game.offer_kind="skill";game.offer_rerolls=0;game.gold=1000
 	game.offers=game.rules.offers("skill",0,false,game.stats);game.hud.show_offers(game.offers,"level")

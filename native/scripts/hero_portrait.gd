@@ -17,9 +17,6 @@ func setup(model_name: String,weapon: String="gun",armour: float=0,shield_capaci
 	expand_mode=TextureRect.EXPAND_IGNORE_SIZE
 	stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
 	mouse_filter=Control.MOUSE_FILTER_IGNORE
-	var path="res://assets/illustrated/heroes/"+model_name+".png"
-	var asset="count_duck" if model_name=="rubber_duck_toy" else "hero_"+model_name
-	if not ResourceLoader.exists("res://assets/style3d/"+asset+".glb") and ResourceLoader.exists(path): texture=load(path);return
 	var viewport=SubViewport.new()
 	viewport.size=Vector2i(512,512)
 	viewport.own_world_3d=true

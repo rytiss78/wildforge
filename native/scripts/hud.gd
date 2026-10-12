@@ -39,8 +39,8 @@ var party_list_key=""
 var offer_tween: Tween
 var preview_id=""
 var health_text: Label
-var health_bar: ProgressBar
-var shield_bar: ProgressBar
+var health_orb: Control
+var shield_text: Label
 var armor_text: Label
 var portrait: HeroPortrait
 var hints_until=25.0
@@ -192,14 +192,11 @@ func setup(owner_game):
 	root.add_child(clock)
 	var health_panel=PanelContainer.new();health_panel.position=Vector2(32,122);health_panel.custom_minimum_size=Vector2(413,96)
 	health_panel.add_theme_stylebox_override("panel",style(paper,Color("8eac93"),10));root.add_child(health_panel)
-	var health_column=VBoxContainer.new();health_panel.add_child(health_column)
-	health_text=label("",16);health_column.add_child(health_text)
-	health_bar=ProgressBar.new();health_bar.custom_minimum_size.y=12;health_bar.show_percentage=false
-	health_bar.add_theme_stylebox_override("background",style(Color("d5d9c8"),Color.TRANSPARENT,4))
-	health_bar.add_theme_stylebox_override("fill",style(Color("559c78"),Color.TRANSPARENT,4));health_bar.get_theme_stylebox("fill").bg_color=Color("b8334d");health_column.add_child(health_bar)
-	shield_bar=ProgressBar.new();shield_bar.custom_minimum_size.y=8;shield_bar.show_percentage=false
-	shield_bar.add_theme_stylebox_override("background",style(Color("d5d9c8"),Color.TRANSPARENT,3))
-	shield_bar.add_theme_stylebox_override("fill",style(Color("5b9cd8"),Color.TRANSPARENT,3));shield_bar.get_theme_stylebox("fill").bg_color=Color("70c9df");shield_bar.visible=false;health_column.add_child(shield_bar)
+	var health_row=HBoxContainer.new();health_panel.add_child(health_row)
+	health_orb=preload("res://scripts/hud_vessel.gd").new();health_orb.custom_minimum_size=Vector2(76,76);health_row.add_child(health_orb)
+	var health_column=VBoxContainer.new();health_column.size_flags_horizontal=Control.SIZE_EXPAND_FILL;health_row.add_child(health_column)
+	health_text=label("",18);health_column.add_child(health_text)
+	shield_text=label("",13,Color("70c9df"));health_column.add_child(shield_text)
 	armor_text=label("",12,ink);health_column.add_child(armor_text)
 	journey_overlay=preload("res://scripts/journey_hud.gd").new();journey_overlay.game=game;journey_overlay.mouse_filter=Control.MOUSE_FILTER_IGNORE;root.add_child(journey_overlay)
 	map_view.position = Vector2(1573,32)
@@ -411,13 +408,10 @@ func update(delta: float):
 		buff_widgets[key].add_theme_color_override("font_color",ink if benefit.useful else Color("f49b86"))
 		buff_widgets[key].get_parent().get_parent().tooltip_text=benefit.text
 	health_text.text="HP  %d / %d" % [ceili(game.hp),roundi(game.stats.maxHp)]
-	health_bar.max_value=game.stats.maxHp;health_bar.value=game.hp
-	health_bar.modulate=Color("ef8c7e") if game.hp/game.stats.maxHp<.3 else Color.WHITE
-	if game.shield_hp>0:
-		shield_bar.visible=true
-		shield_bar.max_value=game.stats.shield;shield_bar.value=game.shield_hp
-	else:
-		shield_bar.visible=false
+	health_orb.fill=clampf(game.hp/maxf(1,game.stats.maxHp),0,1)
+	health_orb.shield_fill=clampf(game.shield_hp/maxf(1,game.stats.shield),0,1);health_orb.queue_redraw()
+	shield_text.text="SHIELD  %d / %d" % [ceili(game.shield_hp),ceili(game.stats.shield)]
+	shield_text.visible=game.stats.shield>0
 	if game.stats.armor>0:
 		armor_text.text="ARMOR  %d" % ceili(game.stats.armor)
 		armor_text.visible=true
@@ -1030,12 +1024,8 @@ func career_menu(scores: bool):
 			var value = minf(achievement.target,float(game.career.data[achievement.scope].get(achievement.key,0)))
 			var row=HBoxContainer.new();rows.add_child(row)
 			var icon=TextureRect.new();icon.custom_minimum_size=Vector2(54,54);icon.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;icon.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED
-			var tile=AtlasTexture.new();tile.atlas=load("res://assets/illustrated/achievements.png" if unlocked else "res://assets/illustrated/achievements-locked.png")
-			var index=game.career.achievements.find(achievement)
-			if index>=100:
-				icon.texture=IllustratedIcons.texture(["turretCount","goldGain","luck","poison","revive","range","speed","jumpHeight"][index-100])
-				if not unlocked: icon.modulate=Color(.6,.6,.6)
-			else: tile.region=Rect2((index%10)*96,(index/10)*96,96,96);icon.texture=tile
+			icon.texture=load("res://assets/illustrated/achievements/"+achievement.id+".svg")
+			if not unlocked: icon.modulate=Color(.42,.49,.52)
 			row.add_child(icon)
 			var text=VBoxContainer.new();row.add_child(text)
 			text.add_child(label(achievement.name+"  ·  "+str(int(value))+" / "+str(int(achievement.target)),17))

@@ -627,14 +627,5 @@ def scenery(biome,variant):
     return a.save()
 
 
-if __name__=="__main__":
-    heroes=["pipe_wrench","sweet_potato","marble_bust_01","street_rat","hamburger_buns","florist","teapot","octopus","astronaut","cactus","book","snail","bee","sushi","mushroom","clock","icecream","bathtub","peacock","toaster"]
-    weapons=["shotgun","flame","poison","ice","rail","lightning","saw","rocket","ghost","flowers","turret","fire-turret","ice-turret","poison-turret","lightning-turret","rocket-turret","boomerang","disc","harpoon","gravity","horn","bubble","meteor","bomb"]
-    import sys
-    orb_spec=importlib.util.spec_from_file_location('orb_heroes',Path(__file__).with_name('build-orb-heroes.py'))
-    orb_module=importlib.util.module_from_spec(orb_spec);orb_spec.loader.exec_module(orb_module)
-    report=[orb_module.build(h) for h in ['rubber_duck_toy']+heroes]
-    if '--heroes-only' not in sys.argv: report+=[creature(b,i) for b in range(6) for i in range(6)]+[weapon(w) for w in weapons]+[scenery(b,i) for b in range(6) for i in range(6)]
-    manifest="hero-core-manifest.json" if '--heroes-only' in sys.argv else "world-model-manifest.json"
-    (OUT/manifest).write_text(json.dumps({"source":"Original authored profiles, UVs and articulated pivots; approved texture reuse","assets":report},indent=2)+"\n")
-    print(json.dumps({"assets":len(report),"triangles":sum(r["triangles"] for r in report),"source_mib":sum(r["bytes"] for r in report)/1048576},indent=2))
+if __name__ == '__main__':
+    raise SystemExit('Shared geometry library. Regenerate with build-forge-slice.py, build-forge-roster.py and build-forge-biomes.py, then agent-workflow.mjs bake-roster.')

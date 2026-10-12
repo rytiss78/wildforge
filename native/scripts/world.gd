@@ -40,8 +40,8 @@ var border_patches=[]
 var edge_near=false
 var eclipse=false
 static var prop_meshes={}
-const SKY_TOP=[Color("111a2b"),Color("7fb7a9"),Color("18234d"),Color("83cdeb"),Color("f49a78"),Color("302457")]
-const SKY_HORIZON=[Color("293b48"),Color("c1d8b7"),Color("a3b8d9"),Color("fff7e2"),Color("ffd3a0"),Color("ba9bd5")]
+const SKY_TOP=[Color("111a2b"),Color("151b28"),Color("18234d"),Color("254459"),Color("301824"),Color("16132d")]
+const SKY_HORIZON=[Color("293b48"),Color("405149"),Color("536683"),Color("8aa8a8"),Color("944436"),Color("534577")]
 
 static func coast_radius(angle: float,world_seed: int,world_realm: int) -> float:
 	var phase=float(world_seed%23)*.03+world_realm*.4
@@ -145,7 +145,8 @@ func portal_site() -> Vector3:
 func model(name: String,height: float) -> Node3D:
 	if name.begins_with("boss_"):
 		var rig=ActorRig.new();rig.setup(name);rig.scale=Vector3.ONE*(height/3.0);return rig
-	if ResourceLoader.exists("res://assets/illustrated/"+("creatures/" if name.begins_with("creature_") else "heroes/")+name+".png") or name in ["pipe_wrench","rubber_duck_toy","sweet_potato","marble_bust_01","street_rat","hamburger_buns","florist","acorn","toad","crab","penguin","lizard","beetle"]:
+	var asset=name if name.begins_with("creature_") else "count_duck" if name=="rubber_duck_toy" else "hero_"+name
+	if ResourceLoader.exists("res://assets/style3d/"+asset+".glb"):
 		var rig=ActorRig.new();rig.setup(name);var reference_height=1.65
 		if name.begins_with("creature_") and ResourceLoader.exists("res://assets/style3d/baked/"+name+".res"):
 			reference_height=load("res://assets/style3d/baked/"+name+".res").get_aabb().size.y
@@ -246,46 +247,7 @@ func make_chunk(cell: Vector2i):
 				var occlusion=OccluderInstance3D.new();var occluder=BoxOccluder3D.new();occluder.size=Vector3(1.25,7.0,1.15)*scale_value;occlusion.occluder=occluder;occlusion.position.y=4*scale_value;prop.add_child(occlusion)
 			PaintedBatch.collect(prop,scenery)
 			continue
-		var art_path="res://assets/illustrated/scenery/prop_%d_%d.png" % [biome,i%4]
-		if ResourceLoader.exists(art_path):
-			var art=Sprite3D.new();art.texture=load(art_path);var size=local_rng.randf_range(3.5,7.5);art.pixel_size=size/256;art.position.y=size*.45;art.billboard=BaseMaterial3D.BILLBOARD_ENABLED;art.alpha_cut=SpriteBase3D.ALPHA_CUT_DISCARD;art.alpha_scissor_threshold=.2;art.shaded=false;prop.add_child(art)
-			var solid=StaticBody3D.new();prop.add_child(solid);solid.collision_layer=1
-			var obstacle=CollisionShape3D.new();var capsule=CapsuleShape3D.new();capsule.radius=.5;capsule.height=2;obstacle.shape=capsule;obstacle.position.y=1;solid.add_child(obstacle)
-			continue
-		var tree_height=local_rng.randf_range(4,7)
-		if biome==0:
-			ToonArt.tube(prop,Color("b67552"),Vector3(0,tree_height*.35,0),.19,.32,tree_height*.7)
-			for j in range(3):
-				var leaf=ToonArt.ball(prop,Color("9fbe8c"),Vector3(sin(j*2)*.6,tree_height*.7+j*.4,cos(j*2)*.4),Vector3(2.6,2,2.4))
-		elif biome==1:
-			ToonArt.tube(prop,Color("e6d7ba"),Vector3(0,1,0),.19,.33,2)
-			ToonArt.ball(prop,Color("bb8ca7"),Vector3(0,2.2,0),Vector3(2.7,1.0,2.7))
-			for j in range(5): ToonArt.ball(prop,Color("f5e9c9"),Vector3(sin(j*2.4),2.45,cos(j*2.4)),Vector3(.24,.08,.24))
-		elif biome==2:
-			ToonArt.tube(prop,Color("9caf76"),Vector3(0,1.1,0),.20,.26,2.2)
-			for side in [-1,1]:
-				ToonArt.tube(prop,Color("9caf76"),Vector3(side*.55,1.4,0),.13,.16,.9)
-				ToonArt.ball(prop,Color("e5ac95"),Vector3(side*.55,1.95,0),Vector3(.4,.2,.4))
-		elif biome==3:
-			ToonArt.tube(prop,Color("847d70"),Vector3(0,1.7,0),.17,.25,3.4)
-			for j in range(3):
-				ToonArt.tube(prop,Color("8ab5b6"),Vector3(0,2+j*.7,0),0,1.4-j*.25,1.7)
-				ToonArt.tube(prop,Color("e9f0e2"),Vector3(0,2.3+j*.7,0),0,1.04-j*.18,1.25)
-		elif biome==4:
-			for j in range(3):
-				ToonArt.ball(prop,Color("947f7d"),Vector3(cos(j*2)*.6,.6+j*.3,sin(j*2)*.4),Vector3(1.6,1.6,1.4))
-				ToonArt.ball(prop,Color("e5a578"),Vector3(cos(j*2)*.6,.3,sin(j*2)*.4),Vector3(.7,.15,.7))
-			ToonArt.tube(prop,Color("b9886b"),Vector3(1,1,0),.09,.18,2)
-		else:
-			var prism=PrismMesh.new();prism.size=Vector3(1.5,3.2,1.4)
-			ToonArt.part(prop,prism,COLORS[biome].darkened(.1),Vector3(0,1.6,0))
-			if biome==3: ToonArt.ball(prop,Color("fff2db"),Vector3(0,2,0),Vector3(1.7,.5,1.5))
-			if biome==4: ToonArt.ball(prop,Color("eeaa75"),Vector3(0,.3,0),Vector3(1.8,.4,1.6))
-		var obstacle=StaticBody3D.new();prop.add_child(obstacle)
-		obstacle.collision_layer=1;obstacle.collision_mask=0
-		var shape=CollisionShape3D.new();var capsule=CapsuleShape3D.new();capsule.radius=.4;capsule.height=2.8
-		shape.shape=capsule;shape.position.y=1.4;obstacle.add_child(shape)
-		PaintedBatch.collect(prop,scenery)
+		push_error("Missing required scenery model: "+model_path)
 	for path in scenery_groups:
 		var instances=MultiMesh.new();instances.transform_format=MultiMesh.TRANSFORM_3D;instances.mesh=prop_meshes[path];instances.instance_count=scenery_groups[path].size()
 		for index in range(instances.instance_count): instances.set_instance_transform(index,scenery_groups[path][index])

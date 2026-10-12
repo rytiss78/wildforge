@@ -168,7 +168,7 @@ func _ready():
 	smoke=smoke or OS.get_cmdline_user_args().has("--golden-scene")
 	smoke=smoke or OS.get_cmdline_user_args().has("--ui-review")
 	smoke=smoke or OS.get_cmdline_user_args().has("--journey-review") or OS.get_cmdline_user_args().has("--scenery-review") or OS.get_cmdline_user_args().has("--hunt-review")
-	smoke=smoke or OS.get_cmdline_user_args().has("--style-review") or OS.get_cmdline_user_args().has("--boss-review") or OS.get_cmdline_user_args().has("--forge-review") or OS.get_cmdline_user_args().has("--combat-review") or OS.get_cmdline_user_args().has("--pace-review")
+	smoke=smoke or OS.get_cmdline_user_args().has("--biome-review") or OS.get_cmdline_user_args().has("--style-review") or OS.get_cmdline_user_args().has("--boss-review") or OS.get_cmdline_user_args().has("--forge-review") or OS.get_cmdline_user_args().has("--combat-review") or OS.get_cmdline_user_args().has("--pace-review")
 	camera_locked=OS.get_cmdline_user_args().has("--golden-scene") or OS.get_cmdline_user_args().has("--ui-review")
 	career = ProfileScript.new(rules.data,smoke)
 	if network_test_role!="": career.file="user://coop-test-"+network_test_role+".json"
@@ -270,6 +270,7 @@ func _ready():
 	elif OS.get_cmdline_user_args().has("--journey-review"): preload("res://scripts/journey_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--ui-review"): preload("res://scripts/ui_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--pace-review"): preload("res://scripts/pace_review.gd").run.call_deferred(self)
+	elif OS.get_cmdline_user_args().has("--biome-review"): preload("res://scripts/biome_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--style-review"): preload("res://scripts/style_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--boss-review"): preload("res://scripts/boss_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--forge-review"): preload("res://scripts/forge_review.gd").run.call_deferred(self)
@@ -2100,10 +2101,10 @@ func run_smoke():
 	var checks = {"native":true,"initial_enemies":enemies.size(),"weapon_slots":equipped.size(),"chests":chests.size(),"first_price":rules.chest_price(0),"rarities":rules.data.loot.size(),"achievements":career.achievements.size(),"xp_target":xp_target,"realm":realm,"paid_count":paid_chests}
 	checks.main_menu=rebuilt_menu
 	checks.xbox_navigation=navigated;checks.xbox_accept=accepted;checks.pointer_focus_safe=pointer_safe
-	checks.hero_roster=rules.data.heroes.size()==21 and rules.data.heroes.all(func(h):return ResourceLoader.exists("res://assets/illustrated/heroes/"+h.model+".png"))
-	checks.enemy_roster=range(6).all(func(b):return range(6).all(func(s):return ResourceLoader.exists("res://assets/illustrated/creatures/creature_%d_%d.png" % [b,s])))
+	checks.hero_roster=rules.data.heroes.size()==21 and rules.data.heroes.all(func(h):return ResourceLoader.exists("res://assets/style3d/"+("count_duck" if h.model=="rubber_duck_toy" else "hero_"+h.model)+".glb"))
+	checks.enemy_roster=range(6).all(func(b):return range(6).all(func(s):return ResourceLoader.exists("res://assets/style3d/creature_%d_%d.glb" % [b,s])))
 	checks.painted_terrain=range(6).all(func(i):return ResourceLoader.exists("res://assets/illustrated/terrain-%d.png" % i))
-	checks.painted_weapons=equipped.all(func(w):return ResourceLoader.exists("res://assets/illustrated/weapons/"+("turret" if w.turret else w.id)+".png"))
+	checks.painted_weapons=rules.data.weapons.all(func(w):return ResourceLoader.exists("res://assets/illustrated/weapon-icons/"+w.id+".png"))
 	checks.opaque_ui=is_equal_approx(hud.style(Color(0,0,0,.2)).bg_color.a,1.0)
 	var _gun_tex=IllustratedIcons.texture("gun",true)
 	checks.illustrated_icons=(_gun_tex is AtlasTexture and _gun_tex.atlas.get_width()==768) or (_gun_tex is Texture2D and _gun_tex.get_width() in [128, 256, 768])
@@ -2328,7 +2329,7 @@ func run_smoke():
 	level_reveal=.01;_process(.02)
 	checks.level_choice=mode=="offer"
 	checks.biome_voices=range(6).all(func(i):return ResourceLoader.exists("res://assets/voices/biome_"+str(i)+".wav"))
-	checks.achievement_art=ResourceLoader.exists("res://assets/illustrated/achievements.png")
+	checks.achievement_art=rules.data.achievements.all(func(a):return ResourceLoader.exists("res://assets/illustrated/achievements/"+a.id+".svg"))
 	clear_entities()
 	mode="playing";spawn_enemy(12)
 	var stomp_target=enemies[0];stomp_target.node.position=Vector3.ZERO;stomp_target.hp=10000

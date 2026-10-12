@@ -12,9 +12,7 @@ try {
   node scripts/create-content-art.mjs
   if ($LASTEXITCODE -ne 0) { throw 'Content art export failed.' }
   & $taskGodot --headless --path native --editor --import
-  & $taskGodot --headless --path native --script scripts/bake_content_icons.gd
-  if ($LASTEXITCODE -ne 0) { throw 'Painted icon bake failed.' }
-  & $taskGodot --headless --path native --editor --import
+  if ($LASTEXITCODE -ne 0) { throw 'Asset import failed.' }
   foreach ($taskScript in @('res://scripts/game.gd','res://scripts/style_lab.gd')) {
     $taskPreflight = & $taskGodot --headless --path native --check-only --script $taskScript 2>&1
     if ($LASTEXITCODE -ne 0 -or ($taskPreflight -join "`n") -match 'SCRIPT ERROR|Parse Error|Compile Error') { throw ('Native script preflight failed: ' + ($taskPreflight -join "`n")) }

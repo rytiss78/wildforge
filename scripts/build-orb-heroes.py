@@ -230,8 +230,5 @@ def build(identity):
     arms(a,body,color)
     return a.save()
 
-if __name__=='__main__':
-    roster=['pipe_wrench','rubber_duck_toy','sweet_potato','marble_bust_01','street_rat','hamburger_buns','florist','teapot','octopus','astronaut','cactus','book','snail','bee','sushi','mushroom','clock','icecream','bathtub','peacock','toaster']
-    report=[build(identity) for identity in roster]
-    (w.OUT/'hero-core-manifest.json').write_text(json.dumps({'source':'Original orb-first 3D geometry; no converted images, reused hero meshes, or cutout retrofit','assets':report},indent=2)+'\n')
-    print(json.dumps({'heroes':len(report),'triangles':sum(r['triangles'] for r in report),'source_mib':sum(r['bytes'] for r in report)/1048576},indent=2))
+if __name__ == '__main__':
+    raise SystemExit('Shared geometry library. Regenerate with build-forge-slice.py, build-forge-roster.py and build-forge-biomes.py, then agent-workflow.mjs bake-roster.')

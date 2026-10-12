@@ -1,0 +1,223 @@
+{
+  "generator": "scripts/build-forge-biomes.py",
+  "props": [
+    {
+      "asset": "prop_1_0",
+      "triangles": 222,
+      "mesh_nodes": 9,
+      "bytes": 18520
+    },
+    {
+      "asset": "prop_1_1",
+      "triangles": 222,
+      "mesh_nodes": 9,
+      "bytes": 18520
+    },
+    {
+      "asset": "prop_1_2",
+      "triangles": 666,
+      "mesh_nodes": 27,
+      "bytes": 53664
+    },
+    {
+      "asset": "prop_1_3",
+      "triangles": 666,
+      "mesh_nodes": 27,
+      "bytes": 53672
+    },
+    {
+      "asset": "prop_1_4",
+      "triangles": 738,
+      "mesh_nodes": 30,
+      "bytes": 58572
+    },
+    {
+      "asset": "prop_1_5",
+      "triangles": 738,
+      "mesh_nodes": 30,
+      "bytes": 58576
+    },
+    {
+      "asset": "prop_2_0",
+      "triangles": 1092,
+      "mesh_nodes": 11,
+      "bytes": 45500
+    },
+    {
+      "asset": "prop_2_1",
+      "triangles": 284,
+      "mesh_nodes": 7,
+      "bytes": 16956
+    },
+    {
+      "asset": "prop_2_2",
+      "triangles": 180,
+      "mesh_nodes": 6,
+      "bytes": 13752
+    },
+    {
+      "asset": "prop_2_3",
+      "triangles": 300,
+      "mesh_nodes": 10,
+      "bytes": 22188
+    },
+    {
+      "asset": "prop_2_4",
+      "triangles": 300,
+      "mesh_nodes": 10,
+      "bytes": 22132
+    },
+    {
+      "asset": "prop_2_5",
+      "triangles": 1212,
+      "mesh_nodes": 15,
+      "bytes": 53900
+    },
+    {
+      "asset": "prop_3_0",
+      "triangles": 76,
+      "mesh_nodes": 4,
+      "bytes": 6748
+    },
+    {
+      "asset": "prop_3_1",
+      "triangles": 284,
+      "mesh_nodes": 7,
+      "bytes": 16956
+    },
+    {
+      "asset": "prop_3_2",
+      "triangles": 352,
+      "mesh_nodes": 16,
+      "bytes": 27768
+    },
+    {
+      "asset": "prop_3_3",
+      "triangles": 352,
+      "mesh_nodes": 16,
+      "bytes": 27780
+    },
+    {
+      "asset": "prop_3_4",
+      "triangles": 352,
+      "mesh_nodes": 16,
+      "bytes": 27740
+    },
+    {
+      "asset": "prop_3_5",
+      "triangles": 352,
+      "mesh_nodes": 16,
+      "bytes": 27752
+    },
+    {
+      "asset": "prop_4_0",
+      "triangles": 212,
+      "mesh_nodes": 9,
+      "bytes": 16288
+    },
+    {
+      "asset": "prop_4_1",
+      "triangles": 284,
+      "mesh_nodes": 7,
+      "bytes": 16964
+    },
+    {
+      "asset": "prop_4_2",
+      "triangles": 268,
+      "mesh_nodes": 13,
+      "bytes": 21396
+    },
+    {
+      "asset": "prop_4_3",
+      "triangles": 212,
+      "mesh_nodes": 9,
+      "bytes": 16288
+    },
+    {
+      "asset": "prop_4_4",
+      "triangles": 240,
+      "mesh_nodes": 11,
+      "bytes": 18848
+    },
+    {
+      "asset": "prop_4_5",
+      "triangles": 268,
+      "mesh_nodes": 13,
+      "bytes": 21396
+    },
+    {
+      "asset": "prop_5_0",
+      "triangles": 1104,
+      "mesh_nodes": 9,
+      "bytes": 43576
+    },
+    {
+      "asset": "prop_5_1",
+      "triangles": 900,
+      "mesh_nodes": 7,
+      "bytes": 34580
+    },
+    {
+      "asset": "prop_5_2",
+      "triangles": 912,
+      "mesh_nodes": 8,
+      "bytes": 35856
+    },
+    {
+      "asset": "prop_5_3",
+      "triangles": 888,
+      "mesh_nodes": 6,
+      "bytes": 33388
+    },
+    {
+      "asset": "prop_5_4",
+      "triangles": 1104,
+      "mesh_nodes": 9,
+      "bytes": 43576
+    },
+    {
+      "asset": "prop_5_5",
+      "triangles": 1104,
+      "mesh_nodes": 9,
+      "bytes": 43576
+    }
+  ],
+  "harvestables": [
+    {
+      "asset": "harvest_0",
+      "triangles": 968,
+      "mesh_nodes": 9,
+      "bytes": 38584
+    },
+    {
+      "asset": "harvest_1",
+      "triangles": 976,
+      "mesh_nodes": 8,
+      "bytes": 39508
+    },
+    {
+      "asset": "harvest_2",
+      "triangles": 932,
+      "mesh_nodes": 7,
+      "bytes": 37112
+    },
+    {
+      "asset": "harvest_3",
+      "triangles": 968,
+      "mesh_nodes": 9,
+      "bytes": 38576
+    },
+    {
+      "asset": "harvest_4",
+      "triangles": 932,
+      "mesh_nodes": 4,
+      "bytes": 33624
+    },
+    {
+      "asset": "harvest_5",
+      "triangles": 1416,
+      "mesh_nodes": 8,
+      "bytes": 52748
+    }
+  ]
+}
