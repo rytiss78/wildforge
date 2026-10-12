@@ -1,1 +1,43 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"><defs><linearGradient id="paint" x2=".8" y2="1"><stop stop-color="#7988c2"/><stop offset="1" stop-color="#f5db94"/></linearGradient></defs><rect x="3" y="3" width="122" height="122" rx="19" fill="#fcf0d7" stroke="#805c47" stroke-width="3"/><g transform="translate(1 3)" fill="#9b7558" opacity=".25"><path d="M65 105Q10 67 35 38q18-13 30 8 18-22 34-5 24 23-34 64z"/><path d="M40 62h15l6-12 8 25 7-12h15" fill="none"/></g><g fill="url(#paint)" stroke="#5e4539" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><path d="M65 105Q10 67 35 38q18-13 30 8 18-22 34-5 24 23-34 64z"/><path d="M40 62h15l6-12 8 25 7-12h15" fill="none"/></g><rect x="3" y="3" width="38" height="38" rx="10" fill="#f7e4b8" stroke="#805c47" stroke-width="2"/><g fill="none" stroke="#5e4539" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 12l19 18M29 12L10 30"/><path d="M39 118l-3 -7"/><path d="M50 118l2 -9"/><path d="M61 118l3 -8"/><path d="M72 118l2 -4"/><path d="M83 118l-2 -9"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <linearGradient id="body" x1="0" y1="0" x2="0.3" y2="1">
+      <stop offset="0%" stop-color="#d4956a"/>
+      <stop offset="100%" stop-color="#a86840"/>
+    </linearGradient>
+    <linearGradient id="lid" x1="0" y1="0" x2="0.3" y2="1">
+      <stop offset="0%" stop-color="#c4845a"/>
+      <stop offset="100%" stop-color="#985830"/>
+    </linearGradient>
+    <radialGradient id="heart-glow" cx="0.5" cy="0.4" r="0.5">
+      <stop offset="0%" stop-color="#ff6b8a"/>
+      <stop offset="100%" stop-color="#e04060"/>
+    </radialGradient>
+  </defs>
+  <!-- Background frame -->
+  <rect x="3" y="3" width="122" height="122" rx="19" fill="#fcf0d7" stroke="#805c47" stroke-width="3"/>
+  <!-- Chest body -->
+  <rect x="30" y="62" width="68" height="40" rx="6" fill="url(#body)" stroke="#5e3a2a" stroke-width="2.5" stroke-linejoin="round"/>
+  <!-- Chest lid -->
+  <path d="M28 62 Q28 42 64 38 Q100 42 100 62" fill="url(#lid)" stroke="#5e3a2a" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M35 55 Q35 42 64 35 Q93 42 93 55 L100 62" fill="#b8705a" stroke="#5e3a2a" stroke-width="1.5"/>
+  <!-- Metal bands -->
+  <rect x="50" y="62" width="12" height="40" rx="2" fill="#b89030" stroke="#5e3a2a" stroke-width="1.5"/>
+  <rect x="52" y="40" width="8" height="24" rx="2" fill="#b89030" stroke="#5e3a2a" stroke-width="1.5"/>
+  <!-- Lock -->
+  <circle cx="64" cy="65" r="6" fill="#d4a020" stroke="#5e3a2a" stroke-width="1.5"/>
+  <!-- Heart symbol on chest (healing indicator) -->
+  <g transform="translate(64, 82)">
+    <path d="M0 -6 C-6 -14 -16 -8 -16 0 C-16 8 0 16 0 16 C0 16 16 8 16 0 C16 -8 6 -14 0 -6 Z" fill="url(#heart-glow)" stroke="#5e3a2a" stroke-width="1.5" stroke-linejoin="round"/>
+    <!-- Heart highlight -->
+    <path d="M-6 -2 C-8 2 -6 6 -4 8" fill="none" stroke="#ffb0c0" stroke-width="1" stroke-linecap="round" opacity="0.7"/>
+  </g>
+  <!-- Healing glow rays -->
+  <path d="M40 58 L38 55" fill="none" stroke="#ff8aaa" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+  <path d="M88 58 L90 55" fill="none" stroke="#ff8aaa" stroke-width="1.5" stroke-linecap="round" opacity="0.6"/>
+  <!-- Skill sparkle (top-right, distinguishing it from item) -->
+  <path d="M102 15 L104 22 L111 24 L104 26 L102 33 L100 26 L93 24 L100 22 Z" fill="#ffd700" stroke="#5e3a2a" stroke-width="1" stroke-linejoin="round"/>
+  <!-- Bottom left card corner icon -->
+  <rect x="3" y="3" width="38" height="38" rx="10" fill="#f7e4b8" stroke="#805c47" stroke-width="2"/>
+  <path d="M12 20 Q12 12 20 12 L28 12 Q36 12 36 20 L36 28 Q36 36 28 36 L20 36 Q12 36 12 28 Z" fill="none" stroke="#5e3a2a" stroke-width="2"/>
+  <text x="24" y="28" text-anchor="middle" font-size="14" font-weight="bold" fill="#5e3a2a" font-family="sans-serif">★</text>
+</svg>
