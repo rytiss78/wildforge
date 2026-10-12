@@ -12,3 +12,5 @@ steam_appid.txt
 .env
 .env.*
 *.pending
+# Historical local audio; unused and excluded from current exports.
+native/assets/audio/local/

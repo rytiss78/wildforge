@@ -3,6 +3,6 @@ export const CHEST_PRICES=Object.freeze([30,72,115,159,206,256,309,366,427,495,5
 export const WEAPON_CAP=3;
 export function chestPrice(paidCount,discount=0){if(!Number.isInteger(paidCount)||paidCount<0)throw new Error('Invalid paid chest count');if(paidCount>=CHEST_PRICES.length)throw new Error('Chest price table exhausted');return Math.max(1,Math.ceil(CHEST_PRICES[paidCount]*(1-Math.min(.6,Math.max(0,discount)))));}
 export function freeChestChance(keyPower){return Math.max(0,keyPower)/(1+Math.max(0,keyPower));}
-export function nextLevelXp(level){return Math.round(24+level*14+level*level*3);}
+export function nextLevelXp(level){return Math.round(18+level*8+level*level);}
 export function canEquipWeapon(weapons,id){return weapons.some(w=>w.id===id)||weapons.length<WEAPON_CAP;}
 export function realmGate(bossesDefeated,realm){return bossesDefeated>=2&&(realm<2?'next':'finish')||'locked';}

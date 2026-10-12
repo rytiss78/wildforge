@@ -1,1 +1,51 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"><defs><linearGradient id="paint" x2=".8" y2="1"><stop stop-color="#d6a647"/><stop offset="1" stop-color="#f5db94"/></linearGradient></defs><rect x="3" y="3" width="122" height="122" rx="19" fill="#fcf0d7" stroke="#805c47" stroke-width="3"/><g transform="translate(1 3)" fill="#9b7558" opacity=".25"><ellipse cx="66" cy="77" rx="34" ry="19"/><path d="M32 77v15q33 26 68 0V77M40 56h52v20H40z"/><ellipse cx="66" cy="56" rx="26" ry="15"/><path d="M61 48v17M72 48v17" fill="none"/></g><g fill="url(#paint)" stroke="#5e4539" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><ellipse cx="66" cy="77" rx="34" ry="19"/><path d="M32 77v15q33 26 68 0V77M40 56h52v20H40z"/><ellipse cx="66" cy="56" rx="26" ry="15"/><path d="M61 48v17M72 48v17" fill="none"/></g><rect x="3" y="3" width="38" height="38" rx="10" fill="#f7e4b8" stroke="#805c47" stroke-width="2"/><g fill="none" stroke="#5e4539" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 30h23M14 30V18h14v12M21 18V9h13"/><path d="M39 118l1 -5"/><path d="M50 118l-3 -8"/><path d="M61 118l2 -6"/><path d="M72 118l-3 -5"/><path d="M83 118l0 -6"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+<defs>
+<linearGradient id="cardBg" x1="0%" y1="0%" x2="0%" y2="100%">
+<stop offset="0%" stop-color="#fcf5e5"/>
+<stop offset="100%" stop-color="#f8e9c5"/>
+</linearGradient>
+<linearGradient id="goldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+<stop offset="0%" stop-color="#f0d060"/>
+<stop offset="100%" stop-color="#c09820"/>
+</linearGradient>
+<linearGradient id="goldBrightGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+<stop offset="0%" stop-color="#ffe080"/>
+<stop offset="100%" stop-color="#d0a830"/>
+</linearGradient>
+<linearGradient id="goldDarkGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+<stop offset="0%" stop-color="#d4a830"/>
+<stop offset="100%" stop-color="#a07810"/>
+</linearGradient>
+<filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+<feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.18"/>
+</filter>
+</defs>
+<rect x="3" y="3" width="122" height="122" rx="20" fill="url(#cardBg)" stroke="#826209" stroke-width="3"/>
+<rect x="8" y="8" width="112" height="112" rx="16" fill="none" stroke="#ecd49b" stroke-width="1.4" opacity="0.6"/>
+<circle cx="64" cy="66" r="40" fill="#e4c475" opacity="0.12"/>
+<circle cx="92" cy="102" r="4" fill="#e6c25c" opacity="0.75"/>
+<circle cx="24" cy="98" r="4" fill="#e6c25c" opacity="0.75"/>
+<circle cx="64" cy="112" r="3" fill="#e3bd52" stroke="#8a6a10" stroke-width="1.2"/>
+<polygon points="104,26 105,29 108,30 105,31 104,34 103,31 100,30 103,29" fill="#e6c25c" opacity="0.82"/>
+<g filter="url(#shadow)">
+<!-- Heart shape -->
+<path d="M64 90 C50 76 32 64 32 48 C32 36 40 30 50 30 C56 30 62 34 64 40 C66 34 72 30 78 30 C88 30 96 36 96 48 C96 64 78 76 64 90 Z" fill="url(#goldBrightGrad)" stroke="#8a6a10" stroke-width="2.5" stroke-linejoin="round"/>
+<!-- Heart inner detail -->
+<path d="M64 84 C52 72 38 62 38 50 C38 40 44 36 52 36 C57 36 62 38 64 42 C66 38 71 36 76 36 C84 36 90 40 90 50 C90 62 76 72 64 84 Z" fill="url(#goldGrad)" stroke="#8a6a10" stroke-width="1.2"/>
+<!-- Heart shine highlight -->
+<path d="M48 38 C42 38 38 42 38 50 C38 56 42 62 50 68 C46 60 42 52 42 46 C42 42 46 38 52 38 C54 38 56 40 58 42 C54 40 50 38 48 38 Z" fill="#ffe080" opacity="0.4"/>
+<!-- Heart lock -->
+<circle cx="64" cy="54" r="6" fill="url(#goldDarkGrad)" stroke="#8a6a10" stroke-width="1.5"/>
+<circle cx="64" cy="54" r="2.5" fill="#8a6a10"/>
+<line x1="64" y1="56.5" x2="64" y2="60" stroke="#8a6a10" stroke-width="1.2" stroke-linecap="round"/>
+<!-- Sparkles -->
+<polygon points="26,22 28,26 32,28 28,30 26,34 24,30 20,28 24,26" fill="#f0d870" opacity="0.7"/>
+<polygon points="102,22 104,26 108,28 104,30 102,34 100,30 96,28 100,26" fill="#f0d870" opacity="0.7"/>
+</g>
+<rect x="6" y="6" width="34" height="34" rx="10" fill="#f7e7c2" stroke="#826209" stroke-width="2"/>
+<text x="23" y="28" text-anchor="middle" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#8a6a10">♥</text>
+<rect x="16" y="96" width="96" height="18" rx="9" fill="#e5c679" stroke="#826209" stroke-width="1.6" opacity="0.96"/>
+<text x="64" y="109" text-anchor="middle" font-size="12" font-weight="700" font-family="Arial, sans-serif" fill="#8a6a10">GOLD HEART</text>
+<text x="96" y="120" text-anchor="middle" font-size="7.5" font-weight="700" font-family="Arial, sans-serif" fill="#8a6a10" opacity="0.85">ECONOMY</text>
+<!-- gold-heart | Gold Heart | hurtGold -->
+</svg>

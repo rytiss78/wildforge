@@ -85,8 +85,9 @@ static func run(game: Node3D):
 	checks.merchant_once=game.gold==gold-game.update.merchant_price(1) and game.owned.size()==owned
 	game.hud.close();game.offer_kind="skill";game.offer_source="level";game.mode="offer"
 	game.offers=game.rules.offers("skill",0,false,game.stats,game.equipped)
+	var charges=game.update.banish_charges
 	var banned=game.offers[0].effects[0].key;game.update.banish(0)
-	checks.banish=game.update.banish_charges==0 and game.rules.banished.has(banned)
+	checks.banish=charges==5 and game.update.banish_charges==charges-1 and game.rules.banished.has(banned)
 	for i in range(30):
 		checks.banish=checks.banish and game.rules.offers("skill",0,false,game.stats,game.equipped).all(func(item):return item.kind=="weapon" or item.effects[0].key!=banned)
 	var banishes=game.rules.banished.duplicate()

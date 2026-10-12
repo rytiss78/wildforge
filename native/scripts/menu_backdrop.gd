@@ -3,9 +3,11 @@ extends Control
 # Native vector scenery keeps the menu crisp at every window size.
 func _ready():
 	mouse_filter=Control.MOUSE_FILTER_IGNORE
+	resized.connect(queue_redraw)
 
 func _draw():
 	var canvas=Vector2(1440,810)
+	draw_set_transform(Vector2.ZERO,0,size/canvas)
 	for row in range(81):
 		draw_rect(Rect2(0,row*10,canvas.x,11),Color("142638").lerp(Color("365b59"),float(row)/80))
 	var moon=Vector2(1206,128)

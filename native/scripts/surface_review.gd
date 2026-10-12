@@ -15,13 +15,14 @@ static func capture(game,name: String) -> bool:
 static func run(game):
 	seed(614);AudioServer.set_bus_volume_db(0,-80);game.start_run(614);game.set_physics_process(false);game.camera_locked=true
 	game.clear_entities();game.equipped.clear();game.spawn_clock=99999;game.invulnerable=10000
+	var hill_checks=await preload("res://scripts/hill_checks.gd").run(game)
 	block(game,Vector3(0,29.5,0),Vector3(40,1,16),Color("8b9e91"))
 	block(game,Vector3(0,34,0),Vector3(1,8,8),Color("b4a78e"))
 	var ceiling=block(game,Vector3(3,38.25,0),Vector3(8,.5,8),Color("aab5c7"))
 	game.spawn_enemy(8);var enemy=game.enemies[-1];enemy.flying=false;enemy.boss=false;enemy.behavior="chase";enemy.speed=4;enemy.hp=10000;enemy.maxHp=10000;enemy.node.position=Vector3(3,30.1,0)
 	game.player.position=Vector3(-2,38.6,0);game.player.velocity=Vector3.ZERO
 	game.camera.position=Vector3(17,39,19);game.camera.look_at(Vector3(0,34,0))
-	var checks={};checks.before=await capture(game,"before")
+	var checks=hill_checks;checks.before=await capture(game,"before")
 	for i in range(300):
 		await game.get_tree().physics_frame;game.update_combat(1./60)
 		if enemy.node.position.y>34.5: break

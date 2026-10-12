@@ -1,1 +1,57 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"><defs><linearGradient id="paint" x2=".8" y2="1"><stop stop-color="#d6a647"/><stop offset="1" stop-color="#f5db94"/></linearGradient></defs><rect x="3" y="3" width="122" height="122" rx="19" fill="#fcf0d7" stroke="#805c47" stroke-width="3"/><g transform="translate(1 3)" fill="#9b7558" opacity=".25"><path d="M65 42q-20-18-41-10v66q20-9 41 7 20-16 40-7V32q-20-8-40 10z"/><path d="M65 43v61M35 49l18 3M77 52l17-4M35 67l18 3M77 70l17-4" fill="none"/></g><g fill="url(#paint)" stroke="#5e4539" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><path d="M65 42q-20-18-41-10v66q20-9 41 7 20-16 40-7V32q-20-8-40 10z"/><path d="M65 43v61M35 49l18 3M77 52l17-4M35 67l18 3M77 70l17-4" fill="none"/></g><rect x="3" y="3" width="38" height="38" rx="10" fill="#f7e4b8" stroke="#805c47" stroke-width="2"/><g fill="none" stroke="#5e4539" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M8 23l10-15 10 15M9 28h19"/><path d="M39 118l-1 -4"/><path d="M50 118l1 -7"/><path d="M61 118l-1 -8"/><path d="M72 118l3 -6"/><path d="M83 118l-3 -5"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+<defs>
+<linearGradient id="cardBg" x1="0%" y1="0%" x2="0%" y2="100%">
+<stop offset="0%" stop-color="#fcf5e5"/>
+<stop offset="100%" stop-color="#f8e9c5"/>
+</linearGradient>
+<linearGradient id="goldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+<stop offset="0%" stop-color="#f0d060"/>
+<stop offset="100%" stop-color="#c09820"/>
+</linearGradient>
+<linearGradient id="silverGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+<stop offset="0%" stop-color="#d0d8e0"/>
+<stop offset="100%" stop-color="#8890a0"/>
+</linearGradient>
+<linearGradient id="magnetGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+<stop offset="0%" stop-color="#6080c0"/>
+<stop offset="50%" stop-color="#4060a0"/>
+<stop offset="100%" stop-color="#304080"/>
+</linearGradient>
+<filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+<feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.18"/>
+</filter>
+</defs>
+<rect x="3" y="3" width="122" height="122" rx="20" fill="url(#cardBg)" stroke="#826209" stroke-width="3"/>
+<rect x="8" y="8" width="112" height="112" rx="16" fill="none" stroke="#ecd49b" stroke-width="1.4" opacity="0.6"/>
+<circle cx="64" cy="66" r="40" fill="#e4c475" opacity="0.12"/>
+<circle cx="92" cy="102" r="4" fill="#e6c25c" opacity="0.75"/>
+<circle cx="24" cy="98" r="4" fill="#e6c25c" opacity="0.75"/>
+<circle cx="64" cy="112" r="3" fill="#e3bd52" stroke="#8a6a10" stroke-width="1.2"/>
+<polygon points="104,26 105,29 108,30 105,31 104,34 103,31 100,30 103,29" fill="#e6c25c" opacity="0.82"/>
+<g filter="url(#shadow)">
+<!-- Horseshoe magnet -->
+<path d="M30 80 C30 50 38 36 50 30 L54 30 C60 30 64 34 64 40 L64 30 C64 24 68 20 74 20 L78 20 C84 20 88 24 88 30 L88 40 C88 34 92 30 98 30 L102 30 C114 36 122 50 122 80" fill="none" stroke="url(#magnetGrad)" stroke-width="8" stroke-linecap="round"/>
+<!-- Magnet tips -->
+<rect x="28" y="76" width="10" height="12" rx="3" fill="url(#magnetGrad)" stroke="#203060" stroke-width="1.5"/>
+<rect x="102" y="76" width="10" height="12" rx="3" fill="url(#magnetGrad)" stroke="#203060" stroke-width="1.5"/>
+<!-- Magnetic field lines (curved attraction lines) -->
+<path d="M18 65 C22 50 35 42 45 40" fill="none" stroke="#4060a0" stroke-width="1.5" stroke-dasharray="3,2" opacity="0.6"/>
+<path d="M118 65 C114 50 101 42 91 40" fill="none" stroke="#4060a0" stroke-width="1.5" stroke-dasharray="3,2" opacity="0.6"/>
+<!-- Coins being attracted -->
+<circle cx="38" cy="50" r="9" fill="url(#goldGrad)" stroke="#8a6a10" stroke-width="1.5"/>
+<circle cx="38" cy="50" r="5.5" fill="none" stroke="#f0d870" stroke-width="0.8"/>
+<text x="38" y="53.5" text-anchor="middle" font-size="8" font-weight="700" fill="#8a6a10" font-family="Arial">$</text>
+<circle cx="108" cy="52" r="8" fill="url(#goldGrad)" stroke="#8a6a10" stroke-width="1.5"/>
+<circle cx="108" cy="52" r="5" fill="none" stroke="#f0d870" stroke-width="0.8"/>
+<circle cx="30" cy="60" r="7" fill="url(#goldGrad)" stroke="#8a6a10" stroke-width="1.5"/>
+<circle cx="112" cy="62" r="7" fill="url(#goldGrad)" stroke="#8a6a10" stroke-width="1.5"/>
+<!-- Sparkle on magnet -->
+<polygon points="74,26 75.5,29 79,30 75.5,31 74,34 72.5,31 69,30 72.5,29" fill="#f0d870" opacity="0.8"/>
+</g>
+<rect x="6" y="6" width="34" height="34" rx="10" fill="#f7e7c2" stroke="#826209" stroke-width="2"/>
+<text x="23" y="28" text-anchor="middle" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#8a6a10">⊕</text>
+<rect x="16" y="96" width="96" height="18" rx="9" fill="#e5c679" stroke="#826209" stroke-width="1.6" opacity="0.96"/>
+<text x="64" y="109" text-anchor="middle" font-size="12" font-weight="700" font-family="Arial, sans-serif" fill="#8a6a10">COIN MAGNET</text>
+<text x="96" y="120" text-anchor="middle" font-size="7.5" font-weight="700" font-family="Arial, sans-serif" fill="#8a6a10" opacity="0.85">ECONOMY</text>
+<!-- coin-magnet | Coin Magnet | coinRadius -->
+</svg>

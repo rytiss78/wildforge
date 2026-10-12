@@ -15,7 +15,7 @@ var condition_clock=0.0
 var update = preload("res://scripts/big_update.gd").new()
 var rules = RulesScript.new()
 var world: RealmWorld
-var hud: RunHUD
+var hud
 var career
 var sound: RunSound
 var player: CharacterBody3D
@@ -39,8 +39,11 @@ var gold = 0
 var level = 1
 var xp = 0.0
 var xp_target = 41
+var level_choice_cooldown=0.0
+const LEVEL_CHOICE_GAP=8.0
 var hp = 100.0
 var health_damage = 0.0
+var death_count = 0
 var shield_hp = 0.0
 var shield_delay = 0.0
 var invulnerable = 0.0
@@ -50,7 +53,7 @@ var ghost_time = 0.0
 var burrow_time = 0.0
 var yaw = 0.0
 var pitch = 0.0
-var camera_distance = 8.0
+var camera_distance = 12.0
 var camera_locked=false
 var walking_gold = 0.0
 var spawn_clock = 0.0
@@ -74,6 +77,8 @@ var projectiles = []
 var pickups = []
 var chests = []
 var pots = []
+var harvestables = []
+var harvest_buffs={}
 var pools = []
 var effects = []
 var melee_attacks = []
@@ -165,7 +170,7 @@ func _ready():
 	camera_locked=OS.get_cmdline_user_args().has("--golden-scene") or OS.get_cmdline_user_args().has("--ui-review")
 	career = ProfileScript.new(rules.data,smoke)
 	if network_test_role!="": career.file="user://coop-test-"+network_test_role+".json"
-	career.on_unlock = func(achievement): hud.tell("★  " + achievement.name); sound.say("achievement",25)
+	career.on_unlock = func(achievement): hud.show_achievement_notification(achievement.name,achievement.description)
 	stats = rules.data.stats.duplicate(true)
 	hero = rules.data.heroes[1]
 	add_child(world)
@@ -216,23 +221,21 @@ func _ready():
 	bp.initial_velocity_min=80
 	bp.initial_velocity_max=120
 	bp.direction=Vector3(0,-1,0)
-	bp.spread=180
-	bp.pre_process_time=0.5
+	bp.spread=5
 	bp.emission_shape=ParticleProcessMaterial.EMISSION_SHAPE_BOX
 	bp.emission_box_extents=Vector3(60,0,60)
-	bp.age_range=3.5
 	blood_rain.process_material=bp
 	blood_rain.emitting=true
 	blood_rain.amount=200
 	blood_rain.lifetime=3.5
-	blood_rain.forward_by_limits=true
+	blood_rain.preprocess=0.5
 	blood_rain.one_shot=false
 	var mat=StandardMaterial3D.new()
 	mat.albedo_color=Color("#8b0000")
 	mat.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA
-	mat.albedo_texture=load("res://assets/illustrated/paper.png")
+	var drop_mesh=SphereMesh.new();drop_mesh.radius=.045;drop_mesh.height=.5
+	blood_rain.draw_pass_1=drop_mesh
 	blood_rain.material_override=mat
-	blood_rain.cull_mask=0x7FFFFFFF
 	add_child(blood_rain)
 	blood_rain.visible=false
 	add_child(coop);coop.setup(self)
@@ -326,14 +329,16 @@ func clear_entities():
 	for drop in consumables:
 		if is_instance_valid(drop.node): drop.node.queue_free()
 	consumables.clear()
-	for list in [enemies,projectiles,pickups,chests,pots,pools,effects,hazards,flowers]:
+	for list in [enemies,projectiles,pickups,chests,pots,harvestables,pools,effects,hazards,flowers]:
 		for item in list:
 			if is_instance_valid(item.node): item.node.queue_free()
 		list.clear()
 	for weapon in equipped:
 		if weapon.has("node") and is_instance_valid(weapon.node): weapon.node.queue_free()
 	if is_instance_valid(gate): gate.queue_free()
-	if is_instance_valid(get_meta("aura_node",null)): get_meta("aura_node",null).queue_free();set_meta("aura_node",null)
+	if has_meta("aura_node"):
+		if is_instance_valid(get_meta("aura_node")): get_meta("aura_node").queue_free()
+		remove_meta("aura_node")
 	if is_instance_valid(blood_rain): blood_rain.visible=false
 
 func start_run(shared_seed: int=-1):
@@ -354,11 +359,13 @@ func start_run(shared_seed: int=-1):
 	level = 1
 	xp = 0
 	xp_target = rules.next_xp(level)
+	level_choice_cooldown=0
 	stats = rules.data.stats.duplicate(true)
 	rules.apply_effects(stats,hero.effects)
 	hp = stats.maxHp
 	shield_hp = stats.shield
 	health_damage = 0
+	death_count = 0
 	kills = 0
 	gold = 0
 	paid_chests = 0
@@ -372,7 +379,7 @@ func start_run(shared_seed: int=-1):
 	last_plant = Vector3(9999,0,9999)
 	owned.clear()
 	equipped.clear()
-	buffs.clear();biome_seen.clear();player_poison=0;player_fire=0;player_chill=0;player_blind=0
+	buffs.clear();harvest_buffs.clear();biome_seen.clear();player_poison=0;player_fire=0;player_chill=0;player_blind=0
 	var first = rules.data.weapons.filter(func(w): return w.id == hero.weapon)[0].duplicate(true)
 	first.kind = "weapon"
 	first.strength = 1.0
@@ -406,7 +413,7 @@ func enter_realm(index: int):
 	storm_clock = 5
 	nova_clock = 6
 	yaw = 0
-	pitch = -0.3
+	pitch = 0.3
 	realm_difficulty = 1.0 + realm * 0.25
 	world.build(realm,seed_value)
 	player.position = Vector3(0,1.2,0)
@@ -417,7 +424,7 @@ func enter_realm(index: int):
 	avatar.visible = true
 	hud.map_view.visited.clear()
 	make_chests()
-	make_pots()
+	make_harvestables()
 	make_gate()
 	update.realm_started()
 	Hunt.setup(self)
@@ -449,60 +456,22 @@ func make_chest(p: Vector3, elite: bool):
 	add_child(node)
 	chests.append({"node":node,"opened":false,"elite":elite,"discovered":elite,"free":elite,"rolled_free":false})
 
-func make_pots():
-	for i in range(42):
-		var angle = rules.rng.randf()*TAU
-		var radius = rules.rng.randf_range(9,RealmWorld.SPAWN_EXTENT-30)
-		var node = Node3D.new()
-		node.position = Vector3(cos(angle)*radius,0,sin(angle)*radius)
-		node.position.y = world.height_at(node.position.x,node.position.z)
-		add_child(node)
-		var body = CylinderMesh.new()
-		body.top_radius = .23
-		body.bottom_radius = .34
-		body.height = .65
-		body.radial_segments = 20
-		shape(body,Color("9f6548"),node,Vector3(0,.33,0))
-		pots.append({"node":node})
+func make_harvestables():
+	HarvestBook.spawn(self)
 
-func make_gate():
-	gate_position = world.portal_site()
-	gate = Node3D.new()
-	gate.position = gate_position
-	add_child(gate)
-	var ring = TorusMesh.new()
-	ring.inner_radius = 3.0
-	ring.outer_radius = 3.5
-	var rim = shape(ring,Color("a89db1"),gate,Vector3(0,3.3,0),.8)
-	rim.rotation.x = PI/2
-	for x in [-3.5,3.5]:
-		var pillar = CylinderMesh.new()
-		pillar.top_radius = .5
-		pillar.bottom_radius = .7
-		pillar.height = 6.8
-		shape(pillar,Color("788a92"),gate,Vector3(x,3.4,0))
-	var marker = Label3D.new()
-	marker.text = "PORTAL · 2 WARDENS"
-	marker.font_size = 48
-	marker.position.y = 8
-	marker.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-	gate.add_child(marker)
-	gate.set_meta("marker",marker)
-	var disk=MeshInstance3D.new();var quad=QuadMesh.new();quad.size=Vector2(6,6);disk.mesh=quad
-	var vortex=ShaderMaterial.new();vortex.shader=preload("res://shaders/portal.gdshader");disk.material_override=vortex;disk.position.y=3.3;gate.add_child(disk)
-	var beam_mesh=CylinderMesh.new();beam_mesh.top_radius=.18;beam_mesh.bottom_radius=.8;beam_mesh.height=55
-	var beacon=shape(beam_mesh,Color("ffd767"),gate,Vector3(0,27.5,0),1.8);beacon.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	var beam_paint=ShaderMaterial.new();beam_paint.shader=preload("res://shaders/portal_beacon.gdshader");beacon.material_override=beam_paint
-
-
-func nearest_chest() -> Dictionary:
-	var nearest = {}
-	var distance_value = 3.2
-	for chest in chests:
-		if chest.opened: continue
-		var distance = player.position.distance_to(chest.node.position)
-		if distance < distance_value: nearest=chest;distance_value=distance
+func nearest_harvestable() -> Dictionary:
+	var nearest:Dictionary
+	var best_dist = 4.0
+	for h in harvestables:
+		if h.picked: continue
+		var distance = player.position.distance_to(h.node.position)
+		if distance < best_dist:
+			nearest = h
+			best_dist = distance
 	return nearest
+
+func pick_harvestable(h: Dictionary):
+	HarvestBook.pick(self,h)
 
 func interaction_hint() -> String:
 	var hunt_hint=Hunt.hint(self)
@@ -511,6 +480,8 @@ func interaction_hint() -> String:
 	if not special.is_empty(): return special
 	var drop=nearest_consumable()
 	if not drop.is_empty(): return "E / X  ·  "+drop.title+"  ·  25 s"
+	var harvest=nearest_harvestable()
+	if not harvest.is_empty(): return "E / X · Harvest "+harvest.type.name+"\n"+harvest.type.description+" "+harvest.type.effect
 	if mode != "playing": return ""
 	var chest = nearest_chest()
 	if not chest.is_empty():
@@ -526,11 +497,24 @@ func interact():
 	var drop=nearest_consumable()
 	if not drop.is_empty():
 		activate_consumable(drop.kind);drop.node.queue_free();consumables.erase(drop);return
+	var harvest=nearest_harvestable()
+	if not harvest.is_empty():
+		pick_harvestable(harvest);return
 	var chest = nearest_chest()
 	if not chest.is_empty(): buy_chest(chest);return
 	if player.position.distance_to(gate_position) < 4:
 		if coop.active and not coop.hosting: coop.send_to(coop.owner_id,{"type":"travel"});return
 		Journey.activate(self)
+
+func nearest_chest() -> Dictionary:
+	var nearest = {}
+	var distance_value = 3.2
+	for chest in chests:
+		if chest.opened: continue
+		var distance = player.position.distance_to(chest.node.position)
+		if distance < distance_value: nearest=chest;distance_value=distance
+	return nearest
+
 
 func buy_chest(chest: Dictionary):
 	if update.start_mimic(chest): return
@@ -575,8 +559,9 @@ func buy_chest(chest: Dictionary):
 	else: sound.say("treasure",18)
 
 func level_up():
-	if mode != "playing" or hp<=0: return
+	if mode != "playing" or hp<=0 or level_choice_cooldown>0: return
 	xp -= xp_target
+	level_choice_cooldown=LEVEL_CHOICE_GAP
 	level += 1
 	xp_target = rules.next_xp(level)
 	# Levels feel like milestones: heal and reveal a weapon/skill choice, not a tiny stat pop.
@@ -684,7 +669,9 @@ func heal(amount: float):
 	if update.downed: return
 	var actual = maxf(0,minf(stats.maxHp-hp,amount))
 	hp += actual
-	if actual > 0: career.bump("healing",actual)
+	if actual > 0:
+		career.bump("healing",actual)
+		record_damage_number(-1,actual,"heal",player.position if is_instance_valid(player) else Vector3.INF)
 	update_hero_vitals()
 
 func update_hero_vitals():
@@ -696,7 +683,12 @@ func record_run(win: bool, abandoned: bool = false):
 	if run_recorded or not run_active: return
 	run_recorded = true
 	if elapsed < 2 and abandoned: return
-	career.score({"id":run_id,"hero":hero.id,"seconds":elapsed,"kills":kills,"level":level,"bosses":run_bosses,"chests":run_chests,"win":win,"abandoned":abandoned,"healthDamage":health_damage,"realm":realm,"gold":gold,"seed":seed_value,"recap":update.recap(),"localDamage":update.run_damage,"partyDamage":update.party_damage,"damageSources":damage_sources.duplicate(),"killTypes":kill_types.duplicate()})
+	career.score({"id":run_id,"hero":hero.id,"seconds":elapsed,"kills":kills,"level":level,"bosses":run_bosses,"chests":run_chests,"win":win,"abandoned":abandoned,"healthDamage":health_damage,"realm":realm,"gold":gold,"seed":seed_value,"recap":update.recap(),"localDamage":update.run_damage,"partyDamage":update.party_damage,"damageSources":damage_sources.duplicate(),"killTypes":kill_types.duplicate(),"deaths":death_count})
+	# Career totals: sum kills and deaths across all runs
+	career.bump("deaths",death_count)
+	# Best run time and max level
+	career.best("best_seconds",elapsed)
+	career.best("max_level",level)
 
 func end_run(win: bool):
 	if coop.active and coop.hosting and win: coop.broadcast({"type":"finish","win":true})
@@ -743,7 +735,7 @@ func _input(event):
 		camera_look(event.relative*Vector2(.004,.002))
 	if event is InputEventMouseButton and event.pressed and mode == "playing":
 		if event.button_index == MOUSE_BUTTON_WHEEL_UP: camera_distance=maxf(4,camera_distance-.5)
-		if event.button_index == MOUSE_BUTTON_WHEEL_DOWN: camera_distance=minf(8,camera_distance+.5)
+		if event.button_index == MOUSE_BUTTON_WHEEL_DOWN: camera_distance=minf(16,camera_distance+.5)
 	if event is InputEventJoypadButton and event.pressed:
 		controller_id = event.device
 		if event.button_index == JOY_BUTTON_BACK:
@@ -822,7 +814,7 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 	if not valid_spawn: return
 	world.ensure_ground(p)
 	var node=CharacterBody3D.new()
-	node.collision_layer=4;node.collision_mask=7;node.floor_snap_length=1.2;node.floor_max_angle=deg_to_rad(55);node.max_slides=2
+	node.collision_layer=4;node.collision_mask=7;node.floor_snap_length=1.2;node.floor_max_angle=deg_to_rad(55);node.max_slides=6;node.floor_constant_speed=true
 	var collider=CollisionShape3D.new();var capsule=CylinderShape3D.new()
 	capsule.radius=radius_value;capsule.height=maxf(height,radius_value*2)
 	collider.shape=capsule;collider.position.y=capsule.height*.5;node.add_child(collider)
@@ -831,27 +823,25 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 	node.position=p+Vector3.UP*.15
 	add_child(node)
 	if not boss: rig.bake_enemy()
-	if elite or species.rarity==3:
-		var title=Label3D.new();title.text=("ELITE  ·  " if elite else "MYTHIC  ·  ")+species.name;title.font_size=22;title.position.y=2.3;title.modulate=Color("ffd992");title.billboard=BaseMaterial3D.BILLBOARD_ENABLED;node.add_child(title)
-		# Boss health bar
-		if boss:
-			var hp_bar=MeshInstance3D.new()
-			var hp_mesh=BoxMesh.new();hp_mesh.size=Vector3(2.5,.15,.05)
-			hp_bar.mesh=hp_mesh
-			hp_bar.material_override=material(Color("ff3333"),3.0)
-			hp_bar.position=Vector3(0,height*1.8,0)
-			node.add_child(hp_bar)
-			node.set_meta("boss_hp_bar",hp_bar)
-		# Elite glow ring
-		if elite:
-			var ring=TorusMesh.new();ring.inner_radius=.6;ring.outer_radius=.75
-			var glow_ring=MeshInstance3D.new();glow_ring.mesh=ring;glow_ring.position=Vector3(0,height*.55,0)
-			glow_ring.material_override=material(Color("ff6633"),2.5);glow_ring.scale=Vector3(1,.01,1);node.add_child(glow_ring);node.set_meta("elite_ring",glow_ring)
+	# Boss health bar (mesh, not a label)
+	if boss:
+		var hp_bar=MeshInstance3D.new()
+		var hp_mesh=BoxMesh.new();hp_mesh.size=Vector3(2.5,.15,.05)
+		hp_bar.mesh=hp_mesh
+		hp_bar.material_override=material(Color("ff3333"),3.0)
+		hp_bar.position=Vector3(0,height*1.8,0)
+		node.add_child(hp_bar)
+		node.set_meta("boss_hp_bar",hp_bar)
+	# Elite glow ring
+	if elite:
+		var ring=TorusMesh.new();ring.inner_radius=.6;ring.outer_radius=.75
+		var glow_ring=MeshInstance3D.new();glow_ring.mesh=ring;glow_ring.position=Vector3(0,height*.55,0)
+		glow_ring.material_override=material(Color("ff6633"),2.5);glow_ring.scale=Vector3(1,.01,1);node.add_child(glow_ring);node.set_meta("elite_ring",glow_ring)
 	var max_health = ((500+realm*500+realm_time*3) if boss else (35+realm*22+realm_time*.12))*realm_difficulty
 	max_health *= 1+biome*.18
 	if not boss: max_health*=species.health*(.42 if species.behavior=="spit" else 1.0)
 	if elite: max_health*=2.5
-	var enemy = {"biome":biome,"elite":elite,"node":node,"hp":max_health,"maxHp":max_health,"speed":8.0+realm*.35+randf()*1.5,"boss":boss,"fire":0.0,"poison":0.0,"status_time":0.0,"freeze":0.0,"blind":0.0,"slow":0.0,"attack":2.5*realm_difficulty,"telegraph":0.0,"dead":false,"contact":0.0,"phase":1,"startDamage":health_damage}
+	var enemy = {"biome":biome,"elite":elite,"node":node,"hp":max_health,"maxHp":max_health,"speed":2.9+realm*.35+randf()*0.6,"boss":boss,"fire":0.0,"poison":0.0,"status_time":0.0,"freeze":0.0,"blind":0.0,"slow":0.0,"attack":2.5*realm_difficulty,"telegraph":0.0,"dead":false,"contact":0.0,"phase":1,"startDamage":health_damage}
 	enemy.guardian=guardian
 	enemy.merge(species);enemy.speed*=species.speed
 	enemy.height=height;enemy.radius=radius_value;enemy.flying=species.flying and not boss
@@ -864,19 +854,12 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 	if realm_time>=600: EclipseCorruption.apply(enemy,1+int((realm_time-600)/30))
 	enemy.xp_reward=enemy_xp_reward(enemy)
 	if boss:
-		enemy.speed = 2.7+realm*.3
 		boss_name = ["World Maw","Sun Breaker","Star Eater"][realm]
 		var crown = TorusMesh.new()
 		crown.inner_radius = .72
 		crown.outer_radius = .87
 		shape(crown,Color("e7cb79"),node,Vector3(0,3.4,0),.3)
-		var hp_label = Label3D.new()
-		hp_label.font_size = 45
-		hp_label.text = boss_name
-		hp_label.position.y = height+.8
-		hp_label.billboard = BaseMaterial3D.BILLBOARD_ENABLED
-		node.add_child(hp_label)
-		enemy.label = hp_label
+		enemy.speed = 2.7+realm*.3
 		sound.say("boss",0);update.quip("boss")
 		vibrate(.5,.8,.35)
 		hud.tell("☠  " + boss_name,5)
@@ -884,8 +867,11 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 	enemies.append(enemy)
 
 func enemy_xp_reward(enemy: Dictionary) -> float:
-	# Spawn-time health captures species, elite, biome and difficulty strength.
-	return maxf(.75,float(enemy.maxHp)/23.0*1.5*sqrt(maxf(.25,float(enemy.get("damage",1)))))
+	# Sublinear strength scaling prevents late high-HP enemies multiplying XP bursts.
+	var strength=sqrt(maxf(.25,float(enemy.maxHp)/35.0))*pow(maxf(.25,float(enemy.get("damage",1))),.25)
+	if enemy.get("boss",false): return clampf(12*strength,24,45)
+	if enemy.get("elite",false): return clampf(3*strength,6,12)
+	return clampf(2*strength,1.5,5)
 
 func make_spawn_room() -> bool:
 	enemies=enemies.filter(func(e):return not e.dead)
@@ -954,7 +940,7 @@ func update_melee(delta: float):
 			if offset.length()>swing.reach or (offset.length()>.6 and offset.normalized().dot(swing.aim)<float(swing.get("sweep_dot",.45))): continue
 			var critical=rules.rng.randf()<stat("crit")
 			if critical: career.bump("crits")
-			hit_enemy(enemy,{"kind":"saw","weapon_id":swing.get("weapon_id","saw"),"payload":swing.get("payload",""),"damage":swing.damage*(stat("critPower") if critical else 1.0)},"melee");hits+=1
+			hit_enemy(enemy,{"kind":"saw","weapon_id":swing.get("weapon_id","saw"),"payload":swing.get("payload",""),"critical":critical,"damage":swing.damage*(stat("critPower") if critical else 1.0)},"melee");hits+=1
 		if hits>0:
 			sound.effect("melee_hit",swing.target);vibrate(.12,.22,.08)
 			hit_shake=maxf(hit_shake,.08)
@@ -1005,7 +991,7 @@ func spawn_network_enemy(actor: Dictionary) -> Dictionary:
 	if not enemy.boss: rig.bake_enemy()
 	if enemy.boss:
 		boss_name=["World Maw","Sun Breaker","Star Eater"][realm]
-		var label=Label3D.new();label.font_size=45;label.position.y=height+.8;label.billboard=BaseMaterial3D.BILLBOARD_ENABLED;node.add_child(label);enemy.label=label
+		
 	enemies.append(enemy)
 	# Apply eclipse corruption for newly spawned remote enemies
 	if sound.eclipse_active or realm_time>=600:
@@ -1081,7 +1067,7 @@ func fire(weapon: Dictionary, origin: Vector3):
 		if critical: career.bump("crits")
 		var rage = 1+stats.berserk*(1-hp/stats.maxHp)
 		var damage = base_damage*(stat("turretDamage") if weapon.turret else 1.0)*rage*(stat("critPower") if critical else 1.0)
-		projectiles.append({"node":node,"velocity":aim.rotated(Vector3.UP,spread)*stat("projectileSpeed"),"damage":damage,"life":2.0 if kind=="boomerang" else float(mods.get("fuse",1)) if kind=="bomb" else effective_range/stat("projectileSpeed")+0.25,"kind":kind,"weapon_id":weapon.id,"payload":mods.get("payload",""),"area_scale":mods.get("areaScale",1),"hit":[],"hit_radius":.1*minf(2.5,stat("size"))*float(mods.get("shotScale",1)),"pierce":int(stats.pierce)+int(mods.get("extraPierce",0))+(8 if kind=="rail" else 3 if kind=="harpoon" else 2+int(stats.boomerangPierce) if kind=="boomerang" else 0),"bounce":int(stats.ricochet)+int(mods.get("extraBounce",0))+(3+int(stats.discBounces) if kind=="disc" else 0),"return":stats.boomerang>0 or kind=="boomerang" or mods.get("returning",false),"return_clock":.55})
+		projectiles.append({"node":node,"velocity":aim.rotated(Vector3.UP,spread)*stat("projectileSpeed"),"damage":damage,"critical":critical,"life":2.0 if kind=="boomerang" else float(mods.get("fuse",1)) if kind=="bomb" else effective_range/stat("projectileSpeed")+0.25,"kind":kind,"weapon_id":weapon.id,"payload":mods.get("payload",""),"area_scale":mods.get("areaScale",1),"hit":[],"hit_radius":.1*minf(2.5,stat("size"))*float(mods.get("shotScale",1)),"pierce":int(stats.pierce)+int(mods.get("extraPierce",0))+(8 if kind=="rail" else 3 if kind=="harpoon" else 2+int(stats.boomerangPierce) if kind=="boomerang" else 0),"bounce":int(stats.ricochet)+int(mods.get("extraBounce",0))+(3+int(stats.discBounces) if kind=="disc" else 0),"return":stats.boomerang>0 or kind=="boomerang" or mods.get("returning",false),"return_clock":.55})
 	if projectiles.size() > 140:
 		for i in range(projectiles.size()-140): projectiles[0].node.queue_free();projectiles.pop_front()
 
@@ -1105,6 +1091,7 @@ func remote_weapon_effect(id: String,origin: Vector3,target: Vector3,duration: f
 	else: beam(origin,target,PowerIcon.color_for(id))
 
 func hit_enemy(enemy: Dictionary, shot: Dictionary,cause: String="hit"):
+	if shot.get("critical",false): cause="crit"
 	var kind: String = shot.kind
 	var damage = shot.damage
 	if enemy.boss: damage *= stat("bossDamage")
@@ -1160,50 +1147,129 @@ func hit_enemy(enemy: Dictionary, shot: Dictionary,cause: String="hit"):
 		origin = next.node.position
 
 func record_damage_number(enemy_id: int, damage: float, cause: String,position_value: Vector3=Vector3.INF):
-	var dedup_key="dedup_"+str(enemy_id)+"/"+cause
-	var now=Time.get_ticks_msec()
-	var last_time=damage_sources.get(dedup_key+"_time",0)
-	var last_idx=damage_sources.get(dedup_key,-1)
-	var elapsed_ms=now-last_time
-	# Only show damage numbers on critical hits to reduce screen clutter
-	if cause!="crit": return
-	# Only aggregate if same enemy+cause within 300ms and the target entry still exists and is visible
-	if elapsed_ms<300 and last_idx>=0 and last_idx<damage_numbers.size():
-		var entry=damage_numbers[last_idx]
-		if entry.life>0 and entry.enemy_id==enemy_id:
+	# Show damage numbers for meaningful hits: crits (always), fire/ice (DOTs), explosions, melee, slam, heal
+	var show_causes=["crit","fire","ice","slam","explosion","melee","sonic","thorn","poison","aura","burn","heal"]
+	if cause not in show_causes: return
+	# De-dup: merge damage within 400ms for same enemy+cause to reduce visual noise
+	for entry in damage_numbers:
+		if entry.life>.8 and entry.enemy_id==enemy_id and entry.cause==cause:
 			entry.amount+=damage
 			entry.value=maxi(1,roundi(entry.amount))
 			entry.life=1.2
-			damage_sources[dedup_key+"_time"]=now
 			return
-	# Mark this as the latest entry for this enemy+cause
-	damage_sources[dedup_key]=damage_numbers.size()
-	damage_sources[dedup_key+"_time"]=now
 	if damage_numbers.size()>=MAX_DAMAGE_NUMBERS: return
 	var dmg_color=Color.WHITE
-	if cause=="crit": dmg_color=Color("#ff4444")
-	elif cause=="fire": dmg_color=Color("#ff8833")
-	elif cause=="poison": dmg_color=Color("#88ff44")
-	elif cause=="ice": dmg_color=Color("#88ddff")
-	elif cause=="lightning": dmg_color=Color("#ffff44")
-	elif cause=="explosion": dmg_color=Color("#ffaa44")
-	elif cause=="slam": dmg_color=Color("#ffffff")
-	elif cause=="melee": dmg_color=Color("#ffcc88")
-	elif cause=="sonic": dmg_color=Color("#dd88ff")
-	damage_numbers.append({"enemy_id":enemy_id,"amount":damage,"value":maxi(1,roundi(damage)),"world_position":position_value,"screen_x":randf_range(.2,.8),"life":1.2,"maxLife":1.2,"cause":cause,"color":dmg_color})
+	var fly_speed=0.6
+	var size_boost=false
+	if cause=="crit":
+		dmg_color=Color("ffdc70")  # Stable gold; the bold HUD adds an exclamation mark.
+		fly_speed=0.8
+		size_boost=true
+	elif cause=="fire":
+		dmg_color=Color("#ff8833")  # Orange-red for fire
+		fly_speed=0.7
+	elif cause=="ice":
+		dmg_color=Color("#88ddff")  # Cyan for freeze
+		fly_speed=0.55
+	elif cause=="slam":
+		dmg_color=Color("ffffff")  # White for slam
+		fly_speed=1.1  # Big slam = big text
+		size_boost=true
+	elif cause=="explosion":
+		dmg_color=Color("#ffaa44")  # Warm orange
+		fly_speed=0.65
+	elif cause=="melee":
+		dmg_color=Color("f0e0d0")  # Warm white for melee
+		fly_speed=0.6
+	elif cause=="sonic":
+		dmg_color=Color("#dd88ff")  # Purple for pulse
+		fly_speed=0.6
+	elif cause=="thorn":
+		dmg_color=Color("#88ff88")  # Green thorns
+		fly_speed=0.5
+	elif cause=="poison":
+		dmg_color=Color("#66cc44")  # Green poison
+		fly_speed=0.4
+	elif cause=="aura" or cause=="burn":
+		dmg_color=Color("#ff5555")  # Red for burn/aura
+		fly_speed=0.45
+	elif cause=="heal":
+		dmg_color=Color("00ff00")  # Green for healing
+	else:
+		dmg_color=Color("ffffff")  # White fallback
+	damage_numbers.append({"enemy_id":enemy_id,"amount":damage,"value":maxi(1,roundi(damage)),"world_position":position_value,"screen_x":randf_range(.2,.8),"life":1.2,"maxLife":1.2,"cause":cause,"color":dmg_color,"fly_speed":fly_speed,"size_boost":size_boost,"flash_timer":1.2 if cause in ["crit","heal"] else 0})
+
+func create_status_indicator(enemy: Dictionary, color: Color, name: String) -> Node3D:
+	if not enemy.node.has_meta("status_fx"): enemy.node.set_meta("status_fx",{})
+	if enemy.node.get_meta("status_fx").has(name):
+		var old=enemy.node.get_meta("status_fx")[name]
+		if is_instance_valid(old): old.queue_free()
+	var node=GPUParticles3D.new()
+	var pp=ParticleProcessMaterial.new()
+	pp.gravity=Vector3(0,-1.5,0)
+	pp.initial_velocity_min=0
+	pp.initial_velocity_max=0
+	pp.emission_shape=ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
+	pp.emission_sphere_radius=.35
+	pp.spread=120
+	node.emitting=true
+	node.amount=12
+	node.lifetime=.6
+	node.process_material=pp
+	node.one_shot=false
+	node.visible=true
+	var mat=StandardMaterial3D.new()
+	mat.albedo_color=color
+	mat.emission_enabled=true
+	mat.emission=color
+	mat.emission_energy_multiplier=2.0
+	mat.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA
+	node.material_override=mat
+	var mote=SphereMesh.new();mote.radius=.055;mote.height=.11
+	node.draw_pass_1=mote
+	var rig_height=float(enemy.get("height",1.7))
+	node.position=Vector3(0,rig_height*1.65,0)
+	enemy.node.add_child(node)
+	enemy.node.get_meta("status_fx")[name]=node
+	enemy["indicator_"+name] = node
+	enemy["status_color_"+name] = color
+	enemy["status_name_"+name] = name
+	return node
+
+func update_status_indicators(enemy: Dictionary):
+	for effect in [["fire",enemy.status_time if enemy.fire>0 else 0,Color("ff6633")],["poison",enemy.status_time if enemy.poison>0 else 0,Color("44cc66")],["ice",enemy.freeze,Color("66bbdd")],["blind",enemy.blind,Color("554477")]]:
+		var id=effect[0]
+		if effect[1]<=0:
+			kill_status_indicator(enemy,id)
+			continue
+		var indicator=enemy.get("indicator_"+id)
+		if not is_instance_valid(indicator): indicator=create_status_indicator(enemy,effect[2],id)
+		var remaining=clampf(float(effect[1])/4.0,.08,1.0)
+		indicator.scale=Vector3.ONE*lerpf(.25,.95,remaining)
+		indicator.material_override.emission_energy_multiplier=lerpf(.3,3.0,remaining)
+
+func kill_status_indicator(enemy: Dictionary, name: String):
+	var key="indicator_"+name
+	if enemy.has(key) and is_instance_valid(enemy.get(key)):
+		enemy.get(key).queue_free()
+		enemy.set(key,null)
+	if enemy.node.has_meta("status_fx") and enemy.node.get_meta("status_fx").has(name):
+		var old=enemy.node.get_meta("status_fx")[name]
+		if is_instance_valid(old): old.queue_free()
+		enemy.node.get_meta("status_fx").erase(name)
 
 func credit_damage(source: String,amount: float):
 	damage_sources[source]=float(damage_sources.get(source,0))+maxf(0,amount)
 
 func hurt_enemy(enemy: Dictionary, damage: float, cause: String,mechanic: String="",mechanic_origin: Vector3=Vector3.ZERO):
 	if enemy.dead or damage <= 0: return
-	if cause in ["hit","melee","coop","sonic","lightning","explosion","meteor","burrow","stomp"]: blood_hit(enemy)
+	if cause in ["hit","crit","melee","coop","sonic","lightning","explosion","meteor","burrow","stomp"]: blood_hit(enemy)
 	# Hit flash on enemy
 	if enemy.node.has_meta("rig"): enemy.node.set_meta("flash_timer",0.05)
 	# Status effect start sounds
-	if cause=="poison" and enemy.poison<=0: enemy.poison=4 # Cloud/DOT hits are silent; the firing sound marks the attack.
-	elif cause=="fire" and enemy.fire<=0: enemy.fire=3;sound.effect("fire",enemy.node.position)
-	elif cause=="ice" and enemy.freeze<=0: enemy.freeze=3;sound.effect("freeze",enemy.node.position)
+	if cause=="poison" and enemy.poison<=0: enemy.poison=4;enemy.status_time=4 # Cloud/DOT hits are silent; the firing sound marks the attack.
+	elif cause=="fire" and enemy.fire<=0: enemy.fire=3;enemy.status_time=4;sound.effect("fire",enemy.node.position)
+	elif cause=="ice" and enemy.freeze<=0: enemy.freeze=3;enemy.status_time=4;sound.effect("freeze",enemy.node.position)
 	if coop.active and not coop.hosting:
 		coop.hit(enemy,damage,mechanic if not mechanic.is_empty() else cause,mechanic_origin);enemy.node.get_meta("rig").hurt=.18;return
 	if enemy.boss and cause not in ["poison","fire"]:
@@ -1316,7 +1382,9 @@ func take_damage(amount: float, source: Vector3=Vector3.ZERO, voice_type: String
 		low_health_warned = true
 		sound.say("low_health",30)
 	if hp <= 0:
-		if stats.revive >= 1: achievement_event("REVIVE");stats.revive-=1;hp=stats.maxHp*.6;invulnerable=3;hud.tell("♥  ANOTHER LIFE")
+		death_count += 1
+		if stats.revive >= 1:
+			achievement_event("REVIVE");stats.revive-=1;hp=stats.maxHp*.6;invulnerable=3;hud.tell("♥  ANOTHER LIFE")
 		elif coop.active: update.knocked_down()
 		else: hp=0;end_run(false)
 
@@ -1372,6 +1440,7 @@ func merge_xp_orbs():
 				for z in range(-1,2):
 					for other in buckets.get(cell+Vector3i(x,y,z),[]):
 						if other.kind!=pickup.kind or absf(other.base_y-pickup.base_y)>1.25: continue
+						if pickup.kind=="xp" and other.value+pickup.value>maxf(12,xp_target*.4): continue
 						if other.node.position.distance_to(p)>6.0: continue
 						var query=PhysicsRayQueryParameters3D.create(p+Vector3.UP*.3,other.node.position+Vector3.UP*.3,1)
 						if not get_world_3d().direct_space_state.intersect_ray(query).is_empty(): continue
@@ -1417,7 +1486,7 @@ func update_pickups(delta: float):
 		pickup.node.rotation.y+=delta*2
 		if hp>0 and player.position.distance_to(pickup.node.position)<1.05+float(pickup.get("radius",.12))-.12:
 			if pickup.kind=="gold": update.run_coins+=pickup.value;gold+=roundi(pickup.value*stat("goldGain")/stat("goldGain"));heal(stats.coinHeal*pickup.get("units",1));sound.effect("coin")
-			else: update.run_xp+=pickup.value;xp+=pickup.value*(stat("xpGain")/stat("xpGain"))
+			else: update.run_xp+=pickup.value;xp+=pickup.value
 			pickup.node.queue_free();pickup.age=-1
 	pickups=pickups.filter(func(pickup):return pickup.age>=0)
 
@@ -1539,6 +1608,7 @@ func update_combat(delta: float):
 		var enemy_delta=float(enemy.simulation_elapsed);enemy.simulation_elapsed=0.0
 		if coop.active and not coop.hosting:
 			var previous=enemy.node.position
+			update_status_indicators(enemy)
 			enemy.node.position=enemy.node.position.lerp(enemy.get("target_position",previous),1-exp(-enemy_delta*16))
 			var rig=enemy.node.get_meta("rig");rig.set_health(enemy.hp/enemy.maxHp,enemy.boss or enemy.health>=1.8);rig.animate(enemy_delta,(enemy.node.position-previous)/enemy_delta,true);rig.statuses(enemy.fire>0,enemy.poison>0,enemy.freeze>0,enemy.blind>0)
 			# Update boss health bar scale
@@ -1556,7 +1626,6 @@ func update_combat(delta: float):
 			enemy.thorn_clock=maxf(0,enemy.get("thorn_clock",0)-enemy_delta)
 			if hp>0 and stats.thorns>0 and enemy.thorn_clock<=0 and enemy_touching(enemy,player.position):
 				enemy.thorn_clock=.5;hurt_enemy(enemy,stats.thorns,"thorn")
-			if enemy.boss: enemy.label.text="%s  %d%%" % [enemy.get("title",boss_name),enemy.hp/enemy.maxHp*100]
 			if enemy.get("windup",0)>0: update.eyebrows(enemy)
 			if enemy.get("slip_until",0)>realm_time:
 				var slip_rig=enemy.node.get_meta("rig")
@@ -1565,12 +1634,15 @@ func update_combat(delta: float):
 		enemy.freeze = maxf(0,enemy.freeze-enemy_delta)
 		enemy.blind = maxf(0,enemy.blind-enemy_delta)
 		# Hit stun: briefly freeze enemy on hit for combat feedback
+		# Status effect tick: apply DOT and manage floating indicators
 		if enemy.status_time > 0:
 			enemy.status_time -= enemy_delta
 			if enemy.poison>0: hurt_enemy(enemy,enemy.poison*enemy_delta,"poison")
 			if enemy.fire>0: hurt_enemy(enemy,enemy.fire*enemy_delta,"fire")
 			if enemy.dead: continue
-		else: enemy.poison=0;enemy.fire=0;enemy.slow=0
+		if enemy.status_time<=0:
+			enemy.poison=0;enemy.fire=0;enemy.slow=0
+		update_status_indicators(enemy)
 		var target_player=coop.target(enemy.node.position)
 		enemy.wants_climb=target_player.position.y-enemy.node.position.y>1.5
 		var toward = target_player.position-enemy.node.position
@@ -1628,8 +1700,10 @@ func update_combat(delta: float):
 				var cruise=enemy.altitude*(.15 if fmod(elapsed+enemy.net_id,9.0)>7 else 1.0)
 				vertical=clampf((world.height_at(body.position.x,body.position.z)+cruise-body.position.y)*3,-6,6)
 			elif not body.is_on_floor(): vertical-=24*enemy_delta
+			else: vertical=0
 			if enemy.freeze>0 and (enemy.flying or enemy.bubble>0): vertical=0
 			body.velocity.y=vertical*(enemy_delta/delta)
+			EnemySurface.step_up(enemy,Vector3(body.velocity.x,0,body.velocity.z)*delta)
 			body.move_and_slide()
 			enemy.vertical=body.velocity.y/(enemy_delta/delta)
 			if body.position.y<world.height_at(body.position.x,body.position.z)-4: body.position.y=world.height_at(body.position.x,body.position.z)+.3;body.velocity.y=0
@@ -1661,7 +1735,6 @@ func update_combat(delta: float):
 				if enemy.get("biome",0)==5: player_blind=2
 		if enemy.boss:
 			enemy.phase = 2 if enemy.hp<enemy.maxHp*.5 else 1
-			enemy.label.text = "%s  %d%%" % [boss_name,enemy.hp/enemy.maxHp*100]
 			enemy.attack -= enemy_delta
 			if enemy.attack<=0 and enemy.blind<=0 and enemy.freeze<=0:
 					# Boss attack telegraph: ground ring before attack
@@ -1672,7 +1745,7 @@ func update_combat(delta: float):
 					tele_ring.material_override=tele_mat
 					tele_ring.rotation.x=-PI/2;tele_ring.position.y=.1
 					add_child(tele_ring)
-					effects.append({"node":tele_ring,"life":1.5,"type":"telegraph"})
+					effects.append({"node":tele_ring,"life":1.5,"type":"telegraph","velocity":Vector3.ZERO,"stationary":true})
 					# Flash warning ring
 					var warn_ring=MeshInstance3D.new()
 					var warn_mesh=TorusMesh.new();warn_mesh.inner_radius=1.5;warn_mesh.outer_radius=3.5
@@ -1680,36 +1753,12 @@ func update_combat(delta: float):
 					warn_ring.material_override=material(Color("ff2200"),3.0)
 					warn_ring.rotation.x=-PI/2;warn_ring.position.y=.15
 					add_child(warn_ring)
-					effects.append({"node":warn_ring,"life":1.0,"type":"telegraph"})
+					effects.append({"node":warn_ring,"life":1.0,"type":"telegraph","velocity":Vector3.ZERO,"stationary":true})
 					sound.say("attack_warn",25)
 					telegraph(enemy);enemy.recovery=realm_time+1.3;enemy.attack=2.7 if enemy.phase==2 else 4
 		if hp>0 and stats.auraDamage>0 and distance<4: hurt_enemy(enemy,stats.auraDamage*enemy_delta,"aura")
 
-		# Aura visual: pulsing golden ring around player
-		if not has_meta("aura_node") or not is_instance_valid(get_meta("aura_node")):
-			var ring=TorusMesh.new();ring.inner_radius=.8;ring.outer_radius=1.1
-			var ring_node=MeshInstance3D.new();ring_node.mesh=ring
-			ring_node.material_override=material(Color("#ffaa33"),2.5)
-			ring_node.position=player.position+Vector3.UP*.8
-			ring_node.rotation.x=-PI/2
-			add_child(ring_node);ring_node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-			set_meta("aura_node",ring_node)
-			effects.append({"node":ring_node,"life":9999,"lifetime":9999,"velocity":Vector3.ZERO,"stationary":true,"aura":true})
-		else:
-			var an=get_meta("aura_node")
-			if an.visible:
-				var pulse=.95+sin(elapsed*5)*.15
-				an.scale=Vector3(pulse,1,pulse)
-				an.material_override.emission_energy_multiplier=2.0+sin(elapsed*5)*.8
-			else:
-				var ring=TorusMesh.new();ring.inner_radius=.8;ring.outer_radius=1.1
-				var ring_node=MeshInstance3D.new();ring_node.mesh=ring
-				ring_node.material_override=material(Color("#ffaa33"),2.5)
-				ring_node.position=player.position+Vector3.UP*.8
-				ring_node.rotation.x=-PI/2
-				add_child(ring_node);ring_node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-				set_meta("aura_node",ring_node)
-				effects.append({"node":ring_node,"life":9999,"lifetime":9999,"velocity":Vector3.ZERO,"stationary":true,"aura":true})
+	update_aura_visual()
 	for shot in projectiles:
 		shot.life -= delta
 		shot.return_clock -= delta
@@ -1832,6 +1881,7 @@ func _physics_process(delta: float):
 	if update.downed:
 		elapsed+=delta;realm_time+=delta;update_events();update_combat(delta);return
 	update_exploration(delta)
+	level_choice_cooldown=maxf(0,level_choice_cooldown-delta)
 	elapsed+=delta
 	realm_time+=delta
 	var movement = Input.get_vector("move_left","move_right","move_forward","move_back",.18)
@@ -1913,6 +1963,28 @@ func _physics_process(delta: float):
 		if can_afford and not affordable_warned and chests.any(func(chest):return chest.discovered and not chest.opened): sound.say("affordable",30);affordable_warned=true
 		if not can_afford: affordable_warned=false
 
+func update_aura_visual():
+	var active=hp>0 and stats.auraDamage>0 and enemies.any(func(e):return not e.dead and e.node.position.distance_squared_to(player.position)<16)
+	if not active:
+		if has_meta("aura_node"):
+			var old=get_meta("aura_node")
+			effects=effects.filter(func(e):return e.node!=old)
+			if is_instance_valid(old): old.queue_free()
+			remove_meta("aura_node")
+		return
+	if not has_meta("aura_node"):
+		var ring=TorusMesh.new();ring.inner_radius=3.8;ring.outer_radius=4.0
+		var ring_node=MeshInstance3D.new();ring_node.mesh=ring
+		ring_node.material_override=material(Color("ffaa33"),2.5)
+		add_child(ring_node);ring_node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		set_meta("aura_node",ring_node)
+		effects.append({"node":ring_node,"life":9999,"velocity":Vector3.ZERO,"stationary":true,"aura":true})
+	var aura=get_meta("aura_node")
+	aura.position=player.position+Vector3.UP*.12
+	var pulse=.95+sin(elapsed*5)*.15
+	aura.scale=Vector3(pulse,.1,pulse)
+	aura.material_override.emission_energy_multiplier=2.4+sin(elapsed*5)*.4
+
 func _process(delta: float):
 	if not is_instance_valid(avatar): return
 	coop.tick(delta)
@@ -1936,14 +2008,16 @@ func _process(delta: float):
 	if mode=="level_reveal":
 		level_reveal-=delta
 		if level_reveal<=0: mode="offer";hud.show_offers(offers,"level")
-	for dn in damage_numbers: dn.life-=delta
+	for dn in damage_numbers:
+		dn.life-=delta
+		if dn.get("flash_timer",0)>0: dn.flash_timer-=delta
 	damage_numbers=damage_numbers.filter(func(dn):return dn.life>0)
 	if not camera_locked:
 		var anchor=player.position+Vector3.UP*1.2
 		# TPS camera: spherical coords around player
 		var cos_p=cos(pitch)
 		var offset=Vector3(sin(yaw)*cos_p*camera_distance,sin(pitch)*camera_distance,cos(yaw)*cos_p*camera_distance)
-		var desired=player.position+offset
+		var desired=anchor+offset
 		var ray=PhysicsRayQueryParameters3D.create(anchor,desired)
 		ray.collision_mask=1
 		ray.exclude=[player.get_rid()]
@@ -2247,7 +2321,7 @@ func run_smoke():
 	checks.three_realms=realm==2 and career.data.unlocked.has("WF_THREE_REALMS")
 	hud.settings_menu()
 	await get_tree().process_frame
-	checks.settings_fit=hud.content.get_parent().position.y+hud.content.get_parent().size.y<=810
+	checks.settings_fit=get_viewport().get_visible_rect().encloses(hud.content.get_parent().get_global_rect())
 	if DisplayServer.get_name()!="headless":
 		await RenderingServer.frame_post_draw
 		get_viewport().get_texture().get_image().save_png("user://native-settings.png")
@@ -2356,6 +2430,7 @@ func run_smoke():
 	realm=(old_realm+1)%3;sound.tick(.01,true,true)
 	checks.music_realm_and_boss=sound.theme_realm==realm and sound.atmosphere.stream!=theme_before and not sound.atmosphere.stream_paused and sound.boss
 	realm=old_realm
+	checks.merge(preload("res://scripts/repair_checks.gd").run(self))
 	mode="test_finished"
 	sound.active=false
 	for audio_player in sound.get_children():
@@ -2373,11 +2448,6 @@ func run_smoke():
 func achievement_event(id: String):
 	if float(career.data.total.get("event_"+id,0)) < 1:
 		career.bump("event_"+id)
-		# Find matching achievement for notification display
-		for ach in career.achievements:
-			if ach.key == id:
-				hud.show_achievement_notification(ach.name, ach.description)
-				break
 
 func check_creative_goals():
 	if equipped.size()==3: achievement_event("TRIPLE_WEAPON")
@@ -2457,7 +2527,7 @@ func update_garden(delta: float):
 	flowers=flowers.filter(func(f):return f.life>0)
 
 func try_jump():
-	if not player.is_on_floor() and air_jumps>=int(stats.airJumps): return
+	if not player.is_on_floor() and air_jumps>=int(stat("airJumps")): return
 	if player.is_on_floor(): air_jumps=0;peak_height=player.position.y;landing_ready=true
 	else: air_jumps+=1
 	slamming=false
@@ -2664,6 +2734,7 @@ func recover_player():
 	landing_ready=false;slamming=false;air_jumps=0;peak_height=player.position.y
 
 func update_exploration(delta: float):
+	HarvestBook.tick(self,delta)
 	if not update.memories.has("TERRACE") and player.position.y>world.height_at(0,0)+12 and world.crossing_distance(player.position)<16: update.note("TERRACE")
 	world.ensure_ground(player.position)
 	current_biome=world.biome_at(player.position)
@@ -2688,6 +2759,36 @@ func update_exploration(delta: float):
 		drop.node.rotation.y+=delta*.5
 		if drop.age>120: drop.node.queue_free()
 	consumables=consumables.filter(func(drop):return drop.age<=120)
+
+
+func make_gate():
+	gate_position = world.portal_site()
+	gate = Node3D.new()
+	gate.position = gate_position
+	add_child(gate)
+	var ring = TorusMesh.new()
+	ring.inner_radius = 3.0
+	ring.outer_radius = 3.5
+	var rim = shape(ring,Color("a89db1"),gate,Vector3(0,3.3,0),.8)
+	rim.rotation.x = PI/2
+	for x in [-3.5,3.5]:
+		var pillar = CylinderMesh.new()
+		pillar.top_radius = .5
+		pillar.bottom_radius = .7
+		pillar.height = 6.8
+		shape(pillar,Color("788a92"),gate,Vector3(x,3.4,0))
+	var marker = Label3D.new()
+	marker.text = "PORTAL · 2 WARDENS"
+	marker.font_size = 48
+	marker.position.y = 8
+	marker.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	gate.add_child(marker)
+	gate.set_meta("marker",marker)
+	var disk=MeshInstance3D.new();var quad=QuadMesh.new();quad.size=Vector2(6,6);disk.mesh=quad
+	var vortex=ShaderMaterial.new();vortex.shader=preload("res://shaders/portal.gdshader");disk.material_override=vortex;disk.position.y=3.3;gate.add_child(disk)
+	var beam_mesh=CylinderMesh.new();beam_mesh.top_radius=.18;beam_mesh.bottom_radius=.8;beam_mesh.height=55
+	var beacon=shape(beam_mesh,Color("ffd767"),gate,Vector3(0,27.5,0),1.8);beacon.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var beam_paint=ShaderMaterial.new();beam_paint.shader=preload("res://shaders/portal_beacon.gdshader");beacon.material_override=beam_paint
 
 func nearest_consumable() -> Dictionary:
 	var found={};var distance=2.4
@@ -2729,7 +2830,7 @@ func drop_consumable(p: Vector3, force: bool=false):
 	consumables.append({"node":node,"kind":kind,"title":title,"base_y":node.position.y,"age":0.0})
 
 func stat(key: String) -> float:
-	return ContentExpansion.value(self,key,PotionBook.value(key,float(stats.get(key,0)),buffs,float(stats.get("potionPower",1.0))))
+	return HarvestBook.value(self,key,ContentExpansion.value(self,key,PotionBook.value(key,float(stats.get(key,0)),buffs,float(stats.get("potionPower",1.0)))))
 
 func slam_wave():
 	var ring=TorusMesh.new();ring.inner_radius=.85;ring.outer_radius=1

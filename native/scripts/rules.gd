@@ -33,22 +33,18 @@ func free_chance(power: float) -> float:
 	return clampf(power,0,.75)
 
 func next_xp(level: int) -> int:
-	return 8 + level * 6 + level * level * 2
+	return 18 + level * 8 + level * level
 
 func can_weapon(equipped: Array, id: String) -> bool:
 	return equipped.any(func(w): return w.id == id) or equipped.size() < WEAPON_CAP
 
 func card_targets_weapon(item: Dictionary, weapon_id: String) -> bool:
-	# Item 5: a card "targets" the given equipped weapon when it is either
-	# that weapon itself, a generic upgrade, or a weapon-specific +Power boost.
-	if item.kind == "weapon":
-		return item.id == weapon_id
-	var key = item.effects[0].key if item.effects and item.effects.size() > 0 else ""
-	# Generic upgrades (damage, rate, range, etc.) apply to every weapon.
-	if key in ["damage","rate","range","crit","critPower","multishot","pierce","splash","ricochet","chain","fire","freeze","poison","slow","stun","lifesteal","thorns","airDamage","airJumps","revive","boomerangPierce","discBounces","turretCount","turretDamage","turretRate","turretRange","turretLife","repair"]:
-		return true
-	# Weapon-specific power boosts, keyed to the equipped weapon's id.
-	return key == weapon_id + "Power"
+	if item.kind=="weapon": return item.id==weapon_id
+	for effect in item.effects:
+		var key=str(effect.key)
+		if data.augments.has(key): key=data.augments[key].stat
+		if not UpgradeFit.weapon_key(key) or UpgradeFit.affects(key,ContentExpansion.weapon(weapon_id)): return true
+	return false
 
 func rarity(luck: float) -> int:
 	var chance = rng.randf() + minf(luck, 0.75) * 0.18
@@ -165,7 +161,7 @@ func describe(effect: Dictionary) -> String:
 		var bonus=data.augments[effect.key];var amount=float(effect.amount)
 		var percent=bonus.mode=="multiply" or bonus.stat in ["crit","dodge","lifesteal"]
 		return "+%s%s %s %s" % [snappedf(amount*100 if percent else amount,.01),"%" if percent else "",bonus.label,bonus.when]
-	var phrases = {"enemyPull":"Attraction pulse strength (8 m, every 3.5 s)","enemyPush":"Repulsion pulse strength (8 m, every 4.5 s)","banana":"Chance to slip enemies","flowerPower":"Bigger flower blooms", "flowerRoots":"Roots slow enemies", "flowerPollen":"Poison pollen", "flowerHeal":"Blooms heal you", "flowerSeeds":"Plant extra flowers","damage":"Hit harder", "rate":"Attack faster", "speed":"Move faster", "maxHp":"More health", "armor":"Take less damage", "regen":"Health grows back", "lifesteal":"Hits heal you", "poison":"Poison on hit", "burn":"Fire on hit", "thorns":"Hurt enemies that touch you", "freeze":"Freeze enemies", "blind":"Blind enemies", "ghost":"Dash through danger", "burrow":"Dash underground, then explode", "shield":"A shield that grows back", "goldGain":"More coins from enemies", "discount":"Cheaper chests", "keyPower":"Chance to open chests free", "walkGold":"Walking makes coins", "hurtGold":"Being hit gives coins", "interest":"Saved coins grow each minute", "coinRadius":"Pull coins from farther away", "potGold":"More coins from pots", "drones":"Flying helpers attack", "orbitDamage":"Orbiting blades", "auraDamage":"Hurt nearby enemies", "storm":"Call lightning", "nova":"Send out a blast", "pools":"Leave poison pools", "boomerang":"Shots come back", "ricochet":"Shots bounce", "multishot":"More shots", "crit":"More critical hits", "critPower":"Bigger critical hits", "pierce":"Shots go through enemies", "chain":"Lightning jumps", "splash":"Hits explode", "explosion":"Kills explode", "dashBlast":"Dash makes a blast", "dashCooldown":"Dash more often", "revive":"Another life", "luck":"Better treasure", "chestBonus":"Better treasure", "salvage":"Kills heal you", "turretCount":"Stronger turret", "turretDamage":"Stronger turret", "turretRate":"Faster turret", "turretRange":"Turret reaches farther", "turretLife":"Turret stays longer", "repair":"Heal near your turret", "berserk":"Hit harder at low health", "xpGain":"Learn faster", "pickup":"Pull XP closer", "range":"Reach farther", "projectileSpeed":"Faster shots", "size":"Bigger shots", "knockback":"Push enemies back", "slow":"Slow enemies", "execute":"Finish weak enemies", "bossDamage":"Hurt bosses more", "stun":"Stun enemies", "magnetPulse":"Pull in XP"}
+	var phrases = {"enemyPull":"Attraction pulse strength (8 m, every 3.5 s)","enemyPush":"Repulsion pulse strength (8 m, every 4.5 s)","banana":"Chance to slip enemies","flowerPower":"Bigger flower blooms", "flowerRoots":"Roots slow enemies", "flowerPollen":"Poison pollen", "flowerHeal":"Blooms heal you", "flowerSeeds":"Plant extra flowers","damage":"Hit harder", "rate":"Attack faster", "speed":"Move faster", "maxHp":"More health", "armor":"Take less damage", "regen":"Health grows back", "lifesteal":"Hits heal you", "poison":"Poison on hit", "burn":"Fire on hit", "thorns":"Hurt enemies that touch you", "freeze":"Freeze enemies", "blind":"Blind enemies", "ghost":"Dash through danger", "burrow":"Dash underground, then explode", "shield":"A shield that grows back", "goldGain":"More coins from enemies", "discount":"Cheaper chests", "keyPower":"Chance to open chests free", "walkGold":"Walking makes coins", "hurtGold":"Being hit gives coins", "interest":"Saved coins grow each minute", "coinRadius":"Pull coins from farther away", "potGold":"More coins from harvestables", "drones":"Flying helpers attack", "orbitDamage":"Orbiting blades", "auraDamage":"Hurt nearby enemies", "storm":"Call lightning", "nova":"Send out a blast", "pools":"Leave poison pools", "boomerang":"Shots come back", "ricochet":"Shots bounce", "multishot":"More shots", "crit":"More critical hits", "critPower":"Bigger critical hits", "pierce":"Shots go through enemies", "chain":"Lightning jumps", "splash":"Hits explode", "explosion":"Kills explode", "dashBlast":"Dash makes a blast", "dashCooldown":"Dash more often", "revive":"Another life", "luck":"Better treasure", "chestBonus":"Better treasure", "salvage":"Kills heal you", "turretCount":"Stronger turret", "turretDamage":"Stronger turret", "turretRate":"Faster turret", "turretRange":"Turret reaches farther", "turretLife":"Turret stays longer", "repair":"Heal near your turret", "berserk":"Hit harder at low health", "xpGain":"Learn faster", "pickup":"Pull XP closer", "range":"Reach farther", "projectileSpeed":"Faster shots", "size":"Bigger shots", "knockback":"Push enemies back", "slow":"Slow enemies", "execute":"Finish weak enemies", "bossDamage":"Hurt bosses more", "stun":"Stun enemies", "magnetPulse":"Pull in XP"}
 	var name=phrases.get(effect.key, data.labels.get(effect.key,"More power"))
 	var extra={"discBounces":"Disc bounces","boomerangPierce":"Blade piercing","harpoonPull":"Hook pull","gravitySize":"Gravity radius","hornStun":"Horn stun","bubbleTime":"Bubble time","meteorCount":"Extra meteors","bombSize":"Bomb radius","airDamage":"Damage while airborne","landingHeal":"Heal on landing","slamHeal":"Heal on slam","airControl":"Air movement","fallThreshold":"Safe fall height","potionDuration":"Potion time","potionPower":"Potion strength","potionChance":"Potion drop chance","jumpShield":"Shield on jump","jumpBlast":"Jump blast damage","slamFire":"Fire on slam","slamPoison":"Poison on slam","coinHeal":"Heal per coin pickup","chestHeal":"Heal on opening a chest"}
 	if extra.has(effect.key): name=extra[effect.key]

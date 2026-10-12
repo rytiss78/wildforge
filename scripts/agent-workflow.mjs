@@ -174,7 +174,7 @@ async function main(action) {
     if (action === 'capture-ui') {
       const output=await step('ui-capture',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--ui-review'],90000);
       if (!output.includes('UI_REVIEW_SAVED: OK')) throw new Error('UI capture failed.');
-      report.capture=['menu','coop','hero','ice-match','hud','build','potions','potion-icons','chest-opening','chest-reels','offers','focus','weapons','pause','ended'].map(name=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','ui-'+name+'.png'),started));
+      report.capture=['menu','coop','hero','ice-match','hud','build','potions','buff-compatibility','potion-icons','chest-opening','chest-reels','offers','focus','weapons','pause','ended','compatibility','harvest-0','harvest-1','harvest-2','harvest-3','harvest-4','harvest-5','harvest-buffs','damage-text','achievement-icon','achievement'].map(name=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','ui-'+name+'.png'),started));
     }
     if (action === 'coop') {
       const results=await Promise.allSettled(['host','client'].map(role=>step('coop-'+role,godot,['--headless','--path',join(root,'native'),'--','--coop-'+role+'-test'],420000)));

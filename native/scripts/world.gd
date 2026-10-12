@@ -15,6 +15,7 @@ var noise=FastNoiseLite.new()
 var height_vertices={}
 var rng=RandomNumberGenerator.new()
 var landmarks=[]
+var harvest_sites: Array[Vector3]=[]
 var chunks={}
 var pending=[]
 var terrain_material: ShaderMaterial
@@ -153,7 +154,7 @@ func build(index: int,world_seed: int):
 	noise.seed=world_seed%2147483647;noise.frequency=.014;noise.fractal_octaves=3;noise.fractal_gain=.4
 	for child in get_children():
 		remove_child(child);child.queue_free()
-	chunks.clear();pending.clear();landmarks.clear();last_cell=Vector2i(999,999);stream_signature=""
+	chunks.clear();pending.clear();landmarks.clear();harvest_sites.clear();last_cell=Vector2i(999,999);stream_signature=""
 	clouds.clear();border_steam.clear();border_patches.clear()
 	make_environment();make_material();make_boundaries();make_landmarks()
 	# Frame-budgeted chunk building: schedule 49 chunks, process ~6 per frame
@@ -200,6 +201,7 @@ func make_chunk(cell: Vector2i):
 		if Vector2(p.x-60,p.z+35).length()<7: continue
 		if Vector2(p.x,p.z).length()<13 or absf(p.x+sin(p.z*.035)*9)<6: continue
 		if crossing_distance(p)<12 and i%3!=0: continue
+		if harvest_sites.any(func(site):return Vector2(site.x-p.x,site.z-p.z).length()<4): continue
 		p.y=height_at(p.x,p.z)
 		var biome=biome_at(p)
 		var prop=Node3D.new();prop.position=p-root.position;root.add_child(prop)

@@ -33,13 +33,30 @@ static func attach(enemy: Dictionary, hit: Dictionary, forward: Vector3):
 	orient(enemy.node, enemy.surface_up, forward)
 	enemy.vertical = 0.
 
+static func step_up(enemy: Dictionary, travel: Vector3) -> bool:
+	var body: CharacterBody3D=enemy.node
+	if enemy.flying or enemy.freeze>0 or enemy.get("bubble",0)>0 or enemy.get("surface_attached",false): return false
+	if travel.length_squared()<.00001 or not body.is_on_floor(): return false
+	var obstruction=KinematicCollision3D.new()
+	if not body.test_move(body.global_transform,travel,obstruction): return false
+	if obstruction.get_normal().y>cos(body.floor_max_angle): return false
+	# Sweep the whole body up, forward and down: never warp through a wall/ceiling.
+	var lift=Vector3.UP*.65
+	if body.test_move(body.global_transform,lift): return false
+	var raised=body.global_transform;raised.origin+=lift
+	var ahead=travel.normalized()*maxf(travel.length(),.22)
+	if body.test_move(raised,ahead): return false
+	raised.origin+=ahead
+	var landing=KinematicCollision3D.new()
+	if not body.test_move(raised,Vector3.DOWN*.72,landing): return false
+	if landing.get_normal().y<cos(body.floor_max_angle): return false
+	var destination=raised.origin+landing.get_travel()
+	if destination.y-body.global_position.y<.025: return false
+	body.global_position=destination;body.velocity.y=0;enemy.vertical=0
+	return true
+
 static func tick(game, enemy: Dictionary, target: Vector3, delta: float) -> bool:
 	var body: CharacterBody3D = enemy.node
-	# Regular enemies only climb when player is significantly elevated (>3 units)
-	# Small height diffs → regular ground walking via CharacterBody3D
-	var height_diff = target.y - body.position.y
-	if not enemy.boss and height_diff <= 3.0:
-		return false
 	if enemy.flying or enemy.boss or enemy.get("bubble", 0) > 0:
 		if enemy.get("surface_attached", false):
 			detach(enemy)
@@ -51,16 +68,24 @@ static func tick(game, enemy: Dictionary, target: Vector3, delta: float) -> bool
 
 	if not enemy.get("surface_attached", false):
 		enemy.surface_probe = maxf(0, float(enemy.get("surface_probe", 0)) - delta)
-		if target.y - body.position.y < 1.5 or enemy.surface_probe > 0:
+		if enemy.surface_probe > 0:
 			return false
 		enemy.surface_probe = .15
 		# Slope acquisition: only climb genuinely steep slopes (>45°) leading toward target
 		var aim = (target - body.position)
 		aim.y = 0
 		aim = aim.normalized()
-		var ground_hit = ray(game, enemy, body.position + Vector3.UP * 1.5, body.position + Vector3.UP * 1.5 + aim * 8 - Vector3.UP * 4)
-		# normal.y < 0.71 means slope angle > 45° — only attach for genuinely steep ground
-		if not ground_hit.is_empty() and ground_hit.normal.y < 0.71:
+		# A blocking wall still needs climbing when the target is at ground level.
+		var nose=body.position+Vector3.UP*.8
+		var wall_hit=ray(game,enemy,nose,nose+aim*(enemy.radius+.8))
+		if not wall_hit.is_empty() and absf(wall_hit.normal.y)<.5:
+			attach(enemy,wall_hit,Vector3.UP)
+			return true
+		# Probe immediately ahead, not eight metres away. Any blocking steep slope
+		# can be climbed, including a short rise with a target at the same height.
+		var ahead=body.position+aim*(enemy.radius+.4)
+		var ground_hit = ray(game, enemy, ahead+Vector3.UP*1.4,ahead-Vector3.UP*.3)
+		if not ground_hit.is_empty() and ground_hit.normal.y < cos(body.floor_max_angle):
 			attach(enemy, ground_hit, aim)
 			return true
 		return false
@@ -89,7 +114,7 @@ static func tick(game, enemy: Dictionary, target: Vector3, delta: float) -> bool
 	var nose = body.position + normal * (enemy.radius + .12)
 	var front = ray(game, enemy, nose, nose + direction * (enemy.radius + .25 + travel.length()))
 	# Only re-attach to genuinely steep surfaces (>45° from vertical = normal.y < 0.71)
-	if not front.is_empty() and front.normal.y < 0.71:
+	if not front.is_empty() and front.normal.dot(normal) < .7:
 		attach(enemy, front, direction)
 		normal = enemy.surface_up
 		direction = (target - body.position).slide(normal).normalized()
@@ -110,21 +135,17 @@ static func tick(game, enemy: Dictionary, target: Vector3, delta: float) -> bool
 		detach(enemy)
 		return true
 
-	# Only reattach to steep surfaces; flat ground means the fell off
-	if support.normal.y < 0.71:
-		attach(enemy, support, direction)
-		body.velocity = (body.position - previous) / maxf(.001, delta)
-	else:
-		detach(enemy)
-		return true
+	# Follow the edge onto its top before returning to ground walking.
+	attach(enemy, support, direction)
+	body.velocity = (body.position - previous) / maxf(.001, delta)
 
 	if enemy.surface_up.y > .8:
 		var offset_to_target = target - body.position
 		offset_to_target.y = 0
 		if offset_to_target.length_squared() > .01:
 			var aim = offset_to_target.normalized()
-			var cast_y = body.position.y + 1.5
-			var hit_ahead = ray(game, enemy, body.position + Vector3.UP * cast_y, body.position + Vector3.UP * cast_y + aim * 10)
+			var top_probe=body.position+Vector3.UP*1.5
+			var hit_ahead = ray(game, enemy, top_probe, top_probe + aim * 2)
 			if hit_ahead.is_empty():
 				detach(enemy)
 			else:

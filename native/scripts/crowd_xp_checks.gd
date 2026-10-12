@@ -5,7 +5,8 @@ static func run(game: Node3D):
 	game.start_run(407);game.set_physics_process(false);game.set_process(false);game.mode="playing"
 	game.clear_entities();game.equipped.clear();game.spawn_clock=99999
 	var checks={}
-	checks.stronger_more_xp=game.enemy_xp_reward({"maxHp":92,"damage":2})>game.enemy_xp_reward({"maxHp":23,"damage":1})*4
+	# Revised pacing uses sublinear strength rewards, bounded to avoid burst levels.
+	checks.stronger_more_xp=game.enemy_xp_reward({"maxHp":92,"damage":2})>game.enemy_xp_reward({"maxHp":23,"damage":1}) and game.enemy_xp_reward({"maxHp":50000,"damage":4})<=5
 	checks.boss_more_xp=game.enemy_xp_reward({"maxHp":500,"damage":1})>game.enemy_xp_reward({"maxHp":92,"damage":2})
 	var p=game.player.position+Vector3(12,5,0)
 	game.spawn_pickup(p,"xp",1.5);game.spawn_pickup(p+Vector3(.1,0,0),"xp",6);game.spawn_pickup(p+Vector3(0,2,0),"xp",3);game.spawn_pickup(p,"gold",2)

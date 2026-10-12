@@ -13,7 +13,7 @@ static func announce(g,title: String,subtitle: String):
 static func boss_arrived(g,enemy):
 	enemy.freeze=2.5;enemy.contact=3
 	enemy.title=["Briar Colossus","Cinder Sovereign","Astral Devourer"][g.realm] if enemy.get("guardian",false) else ["The Root Warden","The Dusk Warden"][mini(g.realm_bosses,1)]
-	g.boss_name=enemy.title;enemy.label.text=enemy.title
+	g.boss_name=enemy.title
 	announce(g,enemy.title.to_upper(),"PORTAL GUARDIAN · Defeat it to leave this island" if enemy.get("guardian",false) else "WARDEN AWAKENED · Watch the ground warnings")
 	g.explosion_fx(enemy.node.position,8);g.burst(enemy.node.position+Vector3.UP*3,Color("f4cb80"),18)
 

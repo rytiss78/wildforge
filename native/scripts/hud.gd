@@ -25,6 +25,7 @@ var cards = []
 var buff_icons: HBoxContainer
 var buff_widgets={}
 var buff_label: Label
+var harvest_status: Label
 var biome_label: Label
 var level_plate: Label
 var offer_detail: VBoxContainer
@@ -39,12 +40,17 @@ var offer_tween: Tween
 var preview_id=""
 var health_text: Label
 var health_bar: ProgressBar
+var shield_bar: ProgressBar
+var armor_text: Label
+var portrait: HeroPortrait
 var hints_until=25.0
 var player_locator: Control
 var journey_overlay: Control
 var lobby_ready: Button
 var lobby_start: Button
 var lobby_roster_label: Label
+var lobby_specialty: Label
+var damage_font=SystemFont.new()
 var damage_labels: Array[Label]=[]
 var damage_overlay: Control
 var flash_overlay: ColorRect
@@ -57,12 +63,17 @@ var binding_axes={}
 var binding_buttons={}
 
 # Achievement notification system (Xbox-style overlay)
-var _ach_note_panel: PanelContainer = null
+var _ach_note_panel: Panel = null
 var _ach_note_name: Label = null
 var _ach_note_desc: Label = null
 var _ach_note_timer: float = 0.0
 var _ach_note_alpha: float = 0.0
 var _ach_note_active: bool = false
+var _ach_note_queue: Array[Dictionary] = []
+var _ach_note_header: Label
+var _ach_note_row: HBoxContainer
+var _ach_note_text: VBoxContainer
+const ACHIEVEMENT_DURATION=5.0
 
 func menu_controls(node: Node=modal) -> Array:
 	var result=[]
@@ -157,7 +168,9 @@ func setup(owner_game):
 	player_locator=preload("res://scripts/player_locator.gd").new();player_locator.game=game;player_locator.mouse_filter=Control.MOUSE_FILTER_IGNORE;root.add_child(player_locator)
 	buff_icons=HBoxContainer.new();buff_icons.position=Vector2(1000,913);root.add_child(buff_icons)
 	buff_label=label("",14);buff_label.position=Vector2(1013,930);root.add_child(buff_label)
-	biome_label=label("",16);biome_label.position=Vector2(32,250);root.add_child(biome_label)
+	biome_label=label("",16);biome_label.position=Vector2(32,292);root.add_child(biome_label)
+	harvest_status=label("",17);harvest_status.position=Vector2(32,336);harvest_status.custom_minimum_size.x=360
+	harvest_status.add_theme_stylebox_override("normal",style(paper,Color("74a876"),10));root.add_child(harvest_status)
 	level_plate=label("",30);level_plate.position=Vector2(733,333);root.add_child(level_plate)
 	level_plate.add_theme_stylebox_override("normal",style(paper,ThemeTokens.EARTH_TERRACOTTA))
 	add_child(root)
@@ -177,13 +190,17 @@ func setup(owner_game):
 	clock.scale=Vector2.ONE*.75
 	clock.size = Vector2(400,149)
 	root.add_child(clock)
-	var health_panel=PanelContainer.new();health_panel.position=Vector2(32,122);health_panel.custom_minimum_size=Vector2(413,72)
+	var health_panel=PanelContainer.new();health_panel.position=Vector2(32,122);health_panel.custom_minimum_size=Vector2(413,96)
 	health_panel.add_theme_stylebox_override("panel",style(paper,Color("8eac93"),10));root.add_child(health_panel)
 	var health_column=VBoxContainer.new();health_panel.add_child(health_column)
 	health_text=label("",16);health_column.add_child(health_text)
 	health_bar=ProgressBar.new();health_bar.custom_minimum_size.y=12;health_bar.show_percentage=false
 	health_bar.add_theme_stylebox_override("background",style(Color("d5d9c8"),Color.TRANSPARENT,4))
 	health_bar.add_theme_stylebox_override("fill",style(Color("559c78"),Color.TRANSPARENT,4));health_column.add_child(health_bar)
+	shield_bar=ProgressBar.new();shield_bar.custom_minimum_size.y=8;shield_bar.show_percentage=false
+	shield_bar.add_theme_stylebox_override("background",style(Color("d5d9c8"),Color.TRANSPARENT,3))
+	shield_bar.add_theme_stylebox_override("fill",style(Color("5b9cd8"),Color.TRANSPARENT,3));shield_bar.visible=false;health_column.add_child(shield_bar)
+	armor_text=label("",12,ink);health_column.add_child(armor_text)
 	journey_overlay=preload("res://scripts/journey_hud.gd").new();journey_overlay.game=game;journey_overlay.mouse_filter=Control.MOUSE_FILTER_IGNORE;root.add_child(journey_overlay)
 	map_view.position = Vector2(1573,32)
 	map_view.size = Vector2(306,306)
@@ -207,12 +224,10 @@ func setup(owner_game):
 	xp.add_theme_stylebox_override("fill",style(Color("a5de9d"),Color.TRANSPARENT,3))
 	info_box.add_child(xp)
 	coins = label("GOLD  0    BOX PRICE  30",18,ThemeTokens.STAR_GOLD)
-	coins.position = Vector2(32,201)
-	coins.add_theme_stylebox_override("normal",style())
-	root.add_child(coins)
 	box_counter=label("",15);box_counter.position=Vector2(32,265);box_counter.add_theme_stylebox_override("normal",style());root.add_child(box_counter)
-	var coins_panel=PanelContainer.new();coins_panel.position=Vector2(32,173);coins_panel.custom_minimum_size=Vector2(413,48)
+	var coins_panel=PanelContainer.new();coins_panel.position=Vector2(32,230);coins_panel.custom_minimum_size=Vector2(413,48)
 	coins_panel.add_theme_stylebox_override("panel",style(ThemeTokens.STAR_GOLD,Color("c8a840"),8));root.add_child(coins_panel)
+	coins.add_theme_color_override("font_color",ink);coins_panel.add_child(coins)
 	weapons = WeaponBar.new()
 	weapons.game = game
 	weapons.position = Vector2(426,920)
@@ -226,7 +241,8 @@ func setup(owner_game):
 	root.add_child(turret_hints)
 	add_prompts(turret_hints,[["T","LB","Place"],["G","RB","Next turret"]])
 	prompt = label("",18,ThemeTokens.BIOME_ACCENTS.verdant.petal)
-	prompt.position = Vector2(746,866)
+	prompt.position = Vector2(540,682);prompt.size=Vector2(840,110)
+	prompt.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;prompt.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 	prompt.add_theme_stylebox_override("normal",style())
 	root.add_child(prompt)
 	alert = label("",21,ThemeTokens.EARTH_TERRACOTTA)
@@ -234,7 +250,7 @@ func setup(owner_game):
 	alert.add_theme_stylebox_override("normal",style())
 	root.add_child(alert)
 	toast = label("",16,ThemeTokens.BIOME_ACCENTS.verdant.leaf)
-	toast.position = Vector2(586,720)
+	toast.position = Vector2(586,606)
 	toast.add_theme_stylebox_override("normal",style())
 	root.add_child(toast)
 	blast = ColorRect.new()
@@ -254,23 +270,36 @@ func setup(owner_game):
 	flash_overlay.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	root.add_child(flash_overlay)
 	flash_overlay.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	# Achievement notification overlay (Xbox-style, top-right slide-in)
-	_ach_note_panel = PanelContainer.new()
+	# Modern console banner: icon first, expanding green panel, then text.
+	_ach_note_panel = Panel.new()
 	_ach_note_panel.visible = false
+	_ach_note_panel.clip_contents=true
 	_ach_note_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_ach_note_panel.add_theme_stylebox_override("panel", style(ThemeTokens.STAR_GOLD, Color("a88830"), 6))
+	_ach_note_panel.z_index=100
+	var achievement_style=StyleBoxFlat.new()
+	achievement_style.bg_color=Color("086b24");achievement_style.border_color=Color("35934c")
+	achievement_style.set_border_width_all(1);achievement_style.set_corner_radius_all(10)
+	achievement_style.shadow_color=Color(0,0,0,.3);achievement_style.shadow_size=8;achievement_style.shadow_offset=Vector2(0,4)
+	_ach_note_panel.add_theme_stylebox_override("panel",achievement_style)
+	_ach_note_row=HBoxContainer.new();_ach_note_row.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	_ach_note_row.position=Vector2(14,14);_ach_note_row.size=Vector2(612,80)
+	_ach_note_row.add_theme_constant_override("separation",20);_ach_note_panel.add_child(_ach_note_row)
+	var badge=preload("res://scripts/achievement_badge.gd").new();badge.custom_minimum_size=Vector2(76,80);_ach_note_row.add_child(badge)
 	var ach_vbox = VBoxContainer.new()
-	ach_vbox.add_theme_constant_override("separation", 5)
-	_ach_note_panel.add_child(ach_vbox)
-	_ach_note_name = label("", 24, ThemeTokens.STAR_GOLD)
-	_ach_note_name.add_theme_constant_override("outline_size", 2)
-	_ach_note_name.add_theme_color_override("font_outline_color", Color("1a1a2e"))
+	_ach_note_text=ach_vbox
+	ach_vbox.size_flags_horizontal=Control.SIZE_EXPAND_FILL;ach_vbox.alignment=BoxContainer.ALIGNMENT_CENTER
+	ach_vbox.mouse_filter=Control.MOUSE_FILTER_IGNORE;ach_vbox.add_theme_constant_override("separation",3)
+	_ach_note_row.add_child(ach_vbox)
+	_ach_note_header=label("ACHIEVEMENT UNLOCKED",15)
+	_ach_note_header.add_theme_color_override("font_color",Color("c7efd0"));ach_vbox.add_child(_ach_note_header)
+	_ach_note_name = label("", 25)
+	_ach_note_name.add_theme_color_override("font_color",Color("ffffff"))
+	_ach_note_name.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
 	ach_vbox.add_child(_ach_note_name)
-	_ach_note_desc = label("", 17, ink)
-	_ach_note_desc.add_theme_constant_override("outline_size", 2)
-	_ach_note_desc.add_theme_color_override("font_outline_color", Color("1a1a2e"))
+	_ach_note_desc = label("", 16)
+	_ach_note_desc.add_theme_color_override("font_color",Color("e1f3e5"))
+	_ach_note_desc.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
 	ach_vbox.add_child(_ach_note_desc)
-	_ach_note_panel.add_child(ach_vbox)
 	root.add_child(_ach_note_panel)
 	root.add_child(modal)
 	modal.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
@@ -311,12 +340,37 @@ func tell(text: String, duration: float = 3.0):
 	toast_time = duration
 
 func show_achievement_notification(ach_name: String, ach_desc: String):
-	_ach_note_name.text = ach_name
-	_ach_note_desc.text = ach_desc
-	_ach_note_panel.visible = true
-	_ach_note_active = true
-	_ach_note_alpha = 0.0
-	_ach_note_timer = 4.5  # 1s fade in + 3s visible + 0.5s fade out
+	_ach_note_queue.append({"name":ach_name,"description":ach_desc})
+
+func update_achievement_notification(delta: float):
+	# Keep queued unlocks (and their sound) until the game is visible again.
+	if modal.visible:
+		_ach_note_panel.visible=false
+		return
+	if not _ach_note_active and not _ach_note_queue.is_empty():
+		var achievement=_ach_note_queue.pop_front()
+		_ach_note_name.text=achievement.name;_ach_note_desc.text=achievement.description
+		_ach_note_timer=ACHIEVEMENT_DURATION;_ach_note_active=true
+		game.sound.achievement_unlocked()
+	if not _ach_note_active:
+		_ach_note_panel.visible=false
+		return
+	_ach_note_timer=maxf(0,_ach_note_timer-delta)
+	if _ach_note_timer<=0:
+		_ach_note_active=false;_ach_note_alpha=0;_ach_note_panel.visible=false
+		return
+	var age=ACHIEVEMENT_DURATION-_ach_note_timer
+	_ach_note_alpha=minf(clampf(age/.16,0,1),clampf(_ach_note_timer/.28,0,1))
+	var ease=1-pow(1-_ach_note_alpha,3)
+	var viewport_size=get_viewport().get_visible_rect().size
+	var full_width=minf(640,viewport_size.x-48)
+	var expansion=minf(clampf((age-.18)/.48,0,1),clampf((_ach_note_timer-.12)/.36,0,1))
+	var width=lerpf(104,full_width,1-pow(1-expansion,3))
+	_ach_note_row.size=Vector2(full_width-28,80)
+	_ach_note_text.modulate.a=minf(clampf((age-.44)/.22,0,1),clampf((_ach_note_timer-.3)/.18,0,1))
+	_ach_note_panel.size=Vector2(width,108)
+	_ach_note_panel.position=Vector2((viewport_size.x-width)*.5,viewport_size.y-282+(1-ease)*18)
+	_ach_note_panel.modulate.a=_ach_note_alpha;_ach_note_panel.visible=true
 
 func level_flash():
 	blast_time = .65
@@ -327,10 +381,16 @@ func update(delta: float):
 	update_skill_strip()
 	journey_overlay.queue_redraw()
 	for widget in root.get_children():
-		if widget is CanvasItem and widget!=modal and widget!=blast: widget.visible=not modal.visible
+		if widget is CanvasItem and widget!=modal and widget!=blast and widget!=_ach_note_panel: widget.visible=not modal.visible
+	_ach_note_panel.visible=_ach_note_active and not modal.visible
 	level_plate.visible=game.mode=="level_reveal"
 	level_plate.text="LEVEL %d  ·  NEW POWER!" % game.level
 	biome_label.text=RealmWorld.BIOMES[game.current_biome]
+	var harvest_lines=[]
+	for id in game.harvest_buffs:
+		var entry=HarvestBook.TYPES[int(id)]
+		harvest_lines.append("%s · %ds\n%s" % [entry.name,ceili(game.harvest_buffs[id]),entry.effect.replace(" for 20s","")])
+	harvest_status.text="\n".join(harvest_lines);harvest_status.visible=not modal.visible and not harvest_lines.is_empty()
 	if is_instance_valid(party_label): party_label.text=game.coop.status
 	if game.mode=="coop" and is_instance_valid(party_list): update_party_list();update_lobby_controls()
 	var active_buffs=[]
@@ -345,11 +405,23 @@ func update(delta: float):
 			var column=VBoxContainer.new();panel.add_child(column)
 			var icon=TextureRect.new();icon.texture=load("res://assets/illustrated/potions/"+str(key)+".svg");icon.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;icon.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;icon.custom_minimum_size=Vector2(40,40);column.add_child(icon)
 			var timer=label("",12);timer.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;column.add_child(timer);buff_widgets[key]=timer
-		buff_widgets[key].text="%s\n%ds" % [PotionBook.TYPES[key].name,ceil(game.buffs[key])]
+		var benefit=UpgradeFit.for_key(game,str(PotionBook.TYPES[key].key))
+		buff_widgets[key].text="%s\n%ds · %s" % [PotionBook.TYPES[key].name,ceil(game.buffs[key]),"Active" if benefit.useful else "No benefit"]
+		buff_widgets[key].add_theme_color_override("font_color",ink if benefit.useful else Color("973426"))
+		buff_widgets[key].get_parent().get_parent().tooltip_text=benefit.text
 	health_text.text="HP  %d / %d" % [ceili(game.hp),roundi(game.stats.maxHp)]
-	if game.shield_hp>0: health_text.text+="   +%d shield" % ceili(game.shield_hp)
 	health_bar.max_value=game.stats.maxHp;health_bar.value=game.hp
 	health_bar.modulate=Color("ef8c7e") if game.hp/game.stats.maxHp<.3 else Color.WHITE
+	if game.shield_hp>0:
+		shield_bar.visible=true
+		shield_bar.max_value=game.stats.shield;shield_bar.value=game.shield_hp
+	else:
+		shield_bar.visible=false
+	if game.stats.armor>0:
+		armor_text.text="ARMOR  %d" % ceili(game.stats.armor)
+		armor_text.visible=true
+	else:
+		armor_text.visible=false
 	clock.seconds = maxf(0,600.0-game.realm_time)
 	clock.realm = game.realm
 	clock.bosses = game.realm_bosses
@@ -358,6 +430,8 @@ func update(delta: float):
 	xp.value = game.xp
 	status.text = "LEVEL %d   ·   %s" % [game.level,game.hero.name]
 	xp_text.text="XP  %d / %d to next level" % [floori(game.xp),game.xp_target]
+	if game.xp>=game.xp_target and game.level_choice_cooldown>0:
+		xp_text.text="Level ready in %ds · %d XP saved" % [ceili(game.level_choice_cooldown),floori(game.xp)]
 	coins.text = "%d gold  ·  Chest %d  ·  %d left" % [game.gold,game.rules.chest_price(game.paid_chests,game.stats.discount),game.chests.filter(func(c):return not c.opened and not c.get("destroyed",false)).size()]
 	box_counter.visible=false
 	weapons.refresh()
@@ -419,19 +493,38 @@ func update(delta: float):
 			var val_text = str(dn.value)
 			if index>=damage_labels.size():
 				var pooled=Label.new();pooled.mouse_filter=Control.MOUSE_FILTER_IGNORE
+				damage_font.font_names=PackedStringArray(["Segoe UI","Arial"]);damage_font.font_weight=800
+				pooled.add_theme_font_override("font",damage_font)
 				damage_overlay.add_child(pooled);damage_labels.append(pooled)
 			var label=damage_labels[index]
 			label.visible=true
 			label.text = val_text
+			# Font size: base 20, boosted for crit/slam, scaled by damage value
+			var base_size = 42 if dn.get("size_boost",false) else 34
+			label.add_theme_font_size_override("font_size", base_size + (3 if dn.value > 100 else (2 if dn.value > 50 else 0)))
+			# Color: crit flashes red/gold, heal flashes green, others use source color
+			if dn.cause=="crit": num_color=Color("ffe36a");label.text+="!"
+			elif dn.cause=="heal": num_color=Color("a0ffb0");label.text="+"+label.text
 			label.add_theme_color_override("font_color", num_color)
-			label.add_theme_font_size_override("font_size", 28 if dn.value > 100 else (22 if dn.value > 50 else 18))
-			label.add_theme_color_override("font_outline_color", Color("222222"))
-			label.add_theme_constant_override("outline_size", 2)
+			# Outline color: darker version for contrast
+			var outline_color = Color("222222")
+			if dn.cause=="heal":
+				outline_color = Color("114411")
+			label.add_theme_color_override("font_outline_color", outline_color)
+			label.add_theme_constant_override("outline_size", 6)
+			label.add_theme_color_override("font_shadow_color",Color(0,0,0,.8))
+			label.add_theme_constant_override("shadow_offset_y",3)
 			label.mouse_filter = Control.MOUSE_FILTER_IGNORE
 			# Position: starts at bottom, rises up, fades out
 			var screen_size=get_viewport().get_visible_rect().size
 			var inset=maxf(32,label.get_combined_minimum_size().y+6)
 			label.position=Vector2(screen_size.x*dn.screen_x,screen_size.y-inset-(1.0-life_ratio)*screen_size.y*.35)
+			var world_position: Vector3=dn.get("world_position",Vector3.INF)
+			if world_position.is_finite():
+				if game.camera.is_position_behind(world_position): label.visible=false;continue
+				label.position=game.camera.unproject_position(world_position)+Vector2((dn.screen_x-.5)*70,-35-(1-life_ratio)*85)
+				label.position.x=clampf(label.position.x,12,screen_size.x-label.get_combined_minimum_size().x-12)
+				label.position.y=clampf(label.position.y,12,screen_size.y-inset-110)
 
 			label.modulate.a = clampf(life_ratio * 2.0, 0.0, 1.0)
 
@@ -439,30 +532,7 @@ func update(delta: float):
 		blast_time -= delta
 		blast.color.a = 0
 	else: blast.color.a = 0
-	# Achievement notification fade (slide-in from top-right, hold, slide-out)
-	if _ach_note_active:
-		_ach_note_timer -= delta
-		if _ach_note_timer > 3.5:
-			# Fade in (1s)
-			_ach_note_alpha = 1.0 - (_ach_note_timer - 3.5)
-		elif _ach_note_timer > 0.5:
-			# Hold fully visible (3s)
-			_ach_note_alpha = 1.0
-		elif _ach_note_timer > 0:
-			# Fade out (0.5s)
-			_ach_note_alpha = _ach_note_timer / 0.5
-		else:
-			# Done
-			_ach_note_panel.visible = false
-			_ach_note_active = false
-			_ach_note_alpha = 0.0
-		_ach_note_panel.modulate.a = _ach_note_alpha
-		if _ach_note_panel.visible:
-			var vp_size = get_viewport().get_visible_rect().size
-			var panel_w := 373.0
-			var panel_h := 80.0
-			_ach_note_panel.size = Vector2(panel_w, panel_h)
-			_ach_note_panel.position = Vector2(vp_size.x - panel_w - 32, 32)
+	update_achievement_notification(delta)
 
 func start_menu(focus_hero: bool=false):
 	game.mode="start"
@@ -517,7 +587,7 @@ func start_menu(focus_hero: bool=false):
 		if item.id==game.hero.id: selected_hero=pick
 		if item.id==game.hero.id: pick.add_theme_stylebox_override("normal",style(ThemeTokens.BIOME_ACCENTS.verdant.blossom,ThemeTokens.EARTH_TERRACOTTA))
 		hero_list.add_child(pick)
-	var portrait=HeroPortrait.new()
+	portrait = HeroPortrait.new()
 	portrait.custom_minimum_size=Vector2(426,560)
 	columns.add_child(portrait)
 	var preview_stats=game.rules.data.stats.duplicate(true);game.rules.apply_effects(preview_stats,game.hero.effects)
@@ -570,9 +640,10 @@ func coop_menu():
 	var columns=HBoxContainer.new();columns.add_theme_constant_override("separation",32);box.add_child(columns)
 	var heroes=VBoxContainer.new();heroes.custom_minimum_size.x=333;columns.add_child(heroes)
 	heroes.add_child(label("YOUR HERO",14))
+	portrait = HeroPortrait.new()
 	portrait.custom_minimum_size=Vector2(333,220);heroes.add_child(portrait)
 	portrait.setup(game.hero.model,game.hero.weapon,0,0)
-	var scroll=ScrollContainer.new();scroll.custom_minimum_size=Vector2(333,373);scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;heroes.add_child(scroll)
+	var scroll=ScrollContainer.new();scroll.custom_minimum_size=Vector2(333,300);scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;heroes.add_child(scroll)
 	var choices=VBoxContainer.new();choices.size_flags_horizontal=Control.SIZE_EXPAND_FILL;scroll.add_child(choices)
 	var selected: Button
 	for hero in game.rules.data.heroes:
@@ -580,6 +651,12 @@ func coop_menu():
 		pick.disabled=game.run_active;choices.add_child(pick)
 		if hero.id==game.hero.id: selected=pick
 	var connection=VBoxContainer.new();connection.size_flags_horizontal=Control.SIZE_EXPAND_FILL;connection.add_theme_constant_override("separation",10);columns.add_child(connection)
+	connection.add_child(label(game.hero.name+" · "+game.hero.perk,24))
+	lobby_specialty=label(game.hero.description+"\n"+" · ".join(game.hero.effects.map(func(effect):return game.rules.describe(effect))),17)
+	lobby_specialty.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;connection.add_child(lobby_specialty)
+	var starter=ContentExpansion.weapon(game.hero.weapon)
+	var loadout=label("STARTING WEAPON · "+str(starter.get("name",game.hero.weapon))+"\n"+WeaponDetails.describe(game.hero.weapon),15)
+	loadout.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;connection.add_child(loadout)
 	party_label=label(game.coop.status,14);party_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;connection.add_child(party_label)
 	var hosting_row=HBoxContainer.new();connection.add_child(hosting_row)
 	hosting_row.add_child(button("HOST PARTY",func():game.coop.host_lan()))
@@ -633,7 +710,14 @@ func update_party_list():
 
 func pause_menu(ended: bool = false, win: bool = false):
 	game.mode = "ended" if ended else "paused"
-	var box = open("YOU WON" if win else "TRY AGAIN" if ended else "PAUSED", "%s · %d coins · %d enemies · ★ %d" % [game.hero.name,game.gold,game.kills,game.level])
+	var extra=""
+	var score=game.career.data.scores.filter(func(entry):return entry.id==game.run_id)
+	if not score.is_empty():
+		extra+=" · Died %d" % score[0].get("deaths",0)
+		extra+=" · Best run %02d:%02d" % [int(game.career.data.best.get("best_seconds",0))/60,int(game.career.data.best.get("best_seconds",0))%60]
+		extra+=" · Level %d" % game.career.data.best.get("max_level",0)
+		extra+=" · %d kills" % game.career.data.total.get("kills",0)
+	var box = open("YOU WON" if win else "TRY AGAIN" if ended else "PAUSED", "%s · %d coins · %d enemies · ★ %d%s" % [game.hero.name,game.gold,game.kills,game.level,extra])
 	if ended: box.add_child(label(game.update.recap(),15))
 	if not ended: box.add_child(button("▶  CONTINUE",close,true))
 	box.add_child(button("HERO STATS & EQUIPMENT",func():build_menu(true)))
@@ -684,6 +768,7 @@ func offer_card(item: Dictionary, index: int, select: Callable) -> Button:
 	icon_bg.add_theme_stylebox_override("normal",radius)
 	column.add_child(icon_bg)
 	var icon=PowerIcon.new();icon.key=icon_key(item);icon.weapon_icon=item.kind=="weapon"
+	icon_bg.add_child(icon)
 	icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	icon.offset_left=10;icon.offset_top=10;icon.offset_right=-10;icon.offset_bottom=-10
 	var title=label(item.name,20);title.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;title.custom_minimum_size.y=58
@@ -701,23 +786,13 @@ func offer_card(item: Dictionary, index: int, select: Callable) -> Button:
 			note="New weapon — full slot required"
 		else:
 			note="New weapon — fills empty slot"
-	elif item.effects.size()>0 and str(item.effects[0].key).begins_with("augment-"):
-		# Boost cards: check if player owns the target weapon
-		var aug_key=item.effects[0].key  # e.g. "augment-gun-damage"
-		var parts=aug_key.split("-")     # ["augment","gun","damage"]
-		var weapon_id=parts[1]           # "gun"
-		var weapon_name=""
-		if game.equipped.any(func(w):return w.id==weapon_id):
-			weapon_name=game.equipped.filter(func(w):return w.id==weapon_id)[0].name
-			note="Boosts: %s" % weapon_name
-		elif game.rules.data.weapons.any(func(w):return w.id==weapon_id):
-			note="Won't help — requires %s" % weapon_id.capitalize()
-		else:
-			note="Won't help — no matching weapon"
-	elif item.effects.size()>0:
-		# Generic boosts (damage, rate, etc.) apply to everything
-		pass
-	var footer=label(note,12);footer.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;column.add_child(footer)
+	var useful=true
+	if item.kind!="weapon":
+		var fit=UpgradeFit.describe(game,item);note=fit.text;useful=fit.useful
+	var footer=label(note,15,Color("245b35") if useful else Color("973426"))
+	footer.name="LoadoutBenefit";footer.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;footer.custom_minimum_size.y=68
+	footer.max_lines_visible=4;footer.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
+	column.add_child(footer);card.tooltip_text+="\n"+note
 	# Hover scale-up via tween
 	card.mouse_entered.connect(func():
 		if game.input_kind!="xbox": card.grab_focus()
@@ -748,6 +823,7 @@ func preview_offer(item: Dictionary):
 		var candidate=game.stats.duplicate(true);game.rules.apply_effects(candidate,item.effects)
 		var effect=item.effects[0];var source=game.rules.loot_by_id.get(item.id,{})
 		comparison=game.rules.describe(effect)
+		comparison+=" · "+UpgradeFit.describe(game,item).text
 		if not str(effect.key).begins_with("augment-"): comparison+="  ·  Current %s → %s" % [snappedf(game.stats.get(effect.key,0),.01),snappedf(candidate.get(effect.key,0),.01)]
 		if not source.is_empty() and item.tier>0: comparison+="  ·  Common version: "+game.rules.describe(source.effects[0])
 	var detail=label(comparison,15);detail.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;offer_detail.add_child(detail)
@@ -863,7 +939,9 @@ func run_report_menu():
 	game.mode="build"
 	var score=game.career.data.scores.filter(func(entry):return entry.id==game.run_id)
 	var summary="%d:%02d played · %d kills · %d gold" % [int(game.elapsed)/60,int(game.elapsed)%60,game.kills,game.gold]
-	if not score.is_empty(): summary+=" · Score %d · Local rank #%d" % [score[0].score,game.career.data.scores.find(score[0])+1]
+	if not score.is_empty():
+		summary+=" · Score %d · Local rank #%d" % [score[0].score,game.career.data.scores.find(score[0])+1]
+		summary+=" · Died %d times" % score[0].get("deaths",0)
 	var box=open("RUN REPORT",summary);var rows=report_scroll(box)
 	rows.add_child(label("YOUR DAMAGE BY WEAPON / EFFECT",18))
 	for entry in RunReport.ranked_damage(game):

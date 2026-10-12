@@ -36,6 +36,10 @@ const POWERS = {
 }
 
 static func texture(key: String, weapon: bool=false) -> Texture2D:
+	var vector_art="res://assets/illustrated/content/"+key+".svg"
+	if not weapon and ResourceLoader.exists(vector_art):
+		if not textures.has(vector_art): textures[vector_art]=load(vector_art)
+		return textures[vector_art]
 	var skill_art="res://assets/illustrated/skill-icons/"+key+".png"
 	if not weapon and ResourceLoader.exists(skill_art):
 		if not textures.has(skill_art): textures[skill_art]=load(skill_art)
@@ -45,7 +49,6 @@ static func texture(key: String, weapon: bool=false) -> Texture2D:
 	if weapon and ResourceLoader.exists(matching):
 		if not textures.has(matching): textures[matching]=load(matching)
 		return textures[matching]
-	var vector_art="res://assets/illustrated/content/"+key+".svg"
 	if ResourceLoader.exists(vector_art):
 		if not textures.has(vector_art): textures[vector_art]=load(vector_art)
 		return textures[vector_art]

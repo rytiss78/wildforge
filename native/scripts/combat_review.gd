@@ -9,6 +9,8 @@ static func run(game):
 	for i in range(500): game.record_damage_number(1,0.25,"poison")
 	var aggregated=game.damage_numbers.size()==1 and game.damage_numbers[0].value==125
 	for i in range(500): game.record_damage_number(i+2,2,"hit")
+	var regular_hits_hidden=game.damage_numbers.size()==1
+	for i in range(500): game.record_damage_number(i+2,2,"crit")
 	game.hud.update(0)
 	var bounded=game.damage_numbers.size()==game.MAX_DAMAGE_NUMBERS and game.hud.damage_labels.size()==game.MAX_DAMAGE_NUMBERS
 	var label_id=game.hud.damage_labels[0].get_instance_id()
@@ -16,7 +18,7 @@ static func run(game):
 	var cleared=game.hud.damage_labels.all(func(n):return not n.visible)
 	game.record_damage_number(999,12,"ice");game.hud.update(0)
 	var reused=game.hud.damage_labels[0].get_instance_id()==label_id
-	if not (aggregated and bounded and cleared and reused):
+	if not (aggregated and regular_hits_hidden and bounded and cleared and reused):
 		push_error("Damage feedback burst/reuse contract failed");game.get_tree().quit(1);return
 	game.damage_numbers.clear()
 	game.xp_target=100000;game.stats.damage=4

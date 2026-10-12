@@ -33,6 +33,7 @@ var hurt_source: Node3D
 var last_hurt=-100.0
 var chest_voice=AudioStreamPlayer.new()
 var ui_voice=AudioStreamPlayer.new()
+var achievement_voice=AudioStreamPlayer.new()
 var weapon_samples={}
 const WEAPON_SFX=["gun","shotgun","turret","rocket","rocket-turret","bomb","meteor","rail","lightning","lightning-turret","ice","poison","gravity","harpoon","boomerang","disc","horn","bubble","saw","flame","fire-turret"]
 
@@ -47,6 +48,8 @@ func setup(options: Dictionary):
 	hurt_voice.unit_size=8;hurt_voice.max_distance=45;hurt_voice.max_db=0
 	add_child(chest_voice)
 	ui_voice.max_polyphony=4;add_child(ui_voice)
+	add_child(achievement_voice)
+	achievement_voice.stream=make_achievement_chime()
 	if AudioServer.get_bus_index("SkyVoice")<0:
 		AudioServer.add_bus();var sky_bus=AudioServer.bus_count-1;AudioServer.set_bus_name(sky_bus,"SkyVoice")
 		var reverb=AudioEffectReverb.new();reverb.room_size=.82;reverb.damping=.65;reverb.wet=.24;reverb.dry=.90;reverb.spread=.85;reverb.predelay_msec=65
@@ -112,13 +115,15 @@ func play_phrase():
 	for player in [drums,rhythm,lead,synth]: player.play()
 
 func tick(delta: float, playing: bool, has_boss: bool):
+	achievement_voice.volume_db=linear_to_db(maxf(.0001,float(settings.sfx)))-3
+	if float(settings.sfx)<=0: achievement_voice.stop()
 	var eclipse_wanted=active and get_parent().events.get("eclipse",false)
 	if eclipse_wanted!=eclipse_active:
 		eclipse_active=eclipse_wanted
 		if eclipse_active:
 			if not is_instance_valid(eclipse_music.stream): eclipse_music.stream=load("res://assets/music/eclipse_paranoia.wav") as AudioStreamWAV
 			if is_instance_valid(eclipse_music.stream):
-				eclipse_music.stream.loop_mode=AudioStreamWAV.LOOP_FORWARD;eclipse_music.stream.loop_begin=0;eclipse_music.stream.loop_end=eclipse_music.stream.data.size()
+				eclipse_music.stream.loop_mode=AudioStreamWAV.LOOP_FORWARD;eclipse_music.stream.loop_begin=0;eclipse_music.stream.loop_end=roundi(eclipse_music.stream.get_length()*eclipse_music.stream.mix_rate)
 				eclipse_music.play()
 		else:
 			eclipse_music.stop();clock=0
@@ -224,6 +229,40 @@ func weapon_loop(id: String,enabled: bool,position: Vector3):
 	channel.volume_db=linear_to_db(maxf(.0001,float(settings.sfx)))-8
 	if enabled and not channel.playing: channel.play()
 	if not enabled and channel.playing: channel.stop()
+
+func achievement_unlocked():
+	if float(settings.sfx)<=0: return
+	achievement_voice.volume_db=linear_to_db(float(settings.sfx))-3
+	achievement_voice.play()
+
+static func make_achievement_chime() -> AudioStreamWAV:
+	# Original modern console-inspired cue: air sweep, warm impact, glassy resolve.
+	# No Xbox sample, melody transcription, or external audio dependency.
+	var audio=AudioStreamWAV.new();audio.mix_rate=44100;audio.format=AudioStreamWAV.FORMAT_16_BITS
+	var duration=1.85
+	var bytes=PackedByteArray();bytes.resize(int(duration*audio.mix_rate)*2)
+	var notes=[587.33,880.0,1318.51]
+	var starts=[.04,.17,.29]
+	var noise=RandomNumberGenerator.new();noise.seed=8809
+	var air=0.0
+	for i in range(bytes.size()/2):
+		var time=float(i)/audio.mix_rate
+		air=lerpf(air,noise.randf_range(-1,1),.1)
+		var sweep=sin(PI*clampf(time/.32,0,1))
+		var sample=air*.10*sweep+sin(TAU*(180*time+260*time*time))*.06*sweep
+		var impact=maxf(0,time-.17)
+		if time>.17: sample+=sin(TAU*146.83*impact)*.15*minf(impact/.012,1)*exp(-impact*9)
+		for note in range(notes.size()):
+			var t=time-starts[note]
+			if t<0: continue
+			var envelope=(1-exp(-t*90))*exp(-t*4.2)
+			var tone=sin(TAU*notes[note]*t+.3*sin(TAU*notes[note]*2*t)*exp(-t*12))
+			tone+=.20*sin(TAU*notes[note]*2.003*t)+.07*sin(TAU*notes[note]*3*t)
+			sample+=tone*.19*envelope
+		sample*=clampf((duration-time)/.25,0,1)
+		bytes.encode_s16(i*2,int(clampf(sample,-.9,.9)*32767))
+	audio.data=bytes
+	return audio
 
 func ui_effect(id: String):
 	if float(settings.sfx)<=0: return

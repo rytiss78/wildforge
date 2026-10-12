@@ -1,1 +1,63 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128"><defs><linearGradient id="paint" x2=".8" y2="1"><stop stop-color="#ca7395"/><stop offset="1" stop-color="#f5db94"/></linearGradient></defs><rect x="3" y="3" width="122" height="122" rx="19" fill="#fcf0d7" stroke="#805c47" stroke-width="3"/><g transform="translate(1 3)" fill="#9b7558" opacity=".25"><ellipse cx="66" cy="77" rx="34" ry="19"/><path d="M32 77v15q33 26 68 0V77M40 56h52v20H40z"/><ellipse cx="66" cy="56" rx="26" ry="15"/><path d="M61 48v17M72 48v17" fill="none"/></g><g fill="url(#paint)" stroke="#5e4539" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"><ellipse cx="66" cy="77" rx="34" ry="19"/><path d="M32 77v15q33 26 68 0V77M40 56h52v20H40z"/><ellipse cx="66" cy="56" rx="26" ry="15"/><path d="M61 48v17M72 48v17" fill="none"/></g><rect x="3" y="3" width="38" height="38" rx="10" fill="#f7e4b8" stroke="#805c47" stroke-width="2"/><g fill="none" stroke="#5e4539" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"><path d="M10 10l21 18M8 30h27M20 25l-6 8M27 25l7 8"/><path d="M39 118l0 -7"/><path d="M50 118l3 -8"/><path d="M61 118l0 -4"/><path d="M72 118l0 -9"/><path d="M83 118l-2 -9"/></g></svg>
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+<defs>
+<linearGradient id="cardBg" x1="0%" y1="0%" x2="0%" y2="100%">
+<stop offset="0%" stop-color="#fcf5e5"/>
+<stop offset="100%" stop-color="#f8e9c5"/>
+</linearGradient>
+<linearGradient id="frameGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+<stop offset="0%" stop-color="#ddb34d"/>
+<stop offset="100%" stop-color="#8a6a10"/>
+</linearGradient>
+<linearGradient id="pinkGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+<stop offset="0%" stop-color="#f0a0a0"/>
+<stop offset="100%" stop-color="#d07070"/>
+</linearGradient>
+<linearGradient id="goldGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+<stop offset="0%" stop-color="#f0d060"/>
+<stop offset="100%" stop-color="#c09820"/>
+</linearGradient>
+<filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+<feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.18"/>
+</filter>
+</defs>
+<rect x="3" y="3" width="122" height="122" rx="20" fill="url(#cardBg)" stroke="#826209" stroke-width="3"/>
+<rect x="8" y="8" width="112" height="112" rx="16" fill="none" stroke="#ecd49b" stroke-width="1.4" opacity="0.6"/>
+<circle cx="64" cy="66" r="40" fill="#e4c475" opacity="0.12"/>
+<circle cx="92" cy="102" r="4" fill="#e6c25c" opacity="0.75"/>
+<circle cx="24" cy="98" r="4" fill="#e6c25c" opacity="0.75"/>
+<circle cx="64" cy="112" r="3" fill="#e3bd52" stroke="#8a6a10" stroke-width="1.2"/>
+<polygon points="104,26 105,29 108,30 105,31 104,34 103,31 100,30 103,29" fill="#e6c25c" opacity="0.82"/>
+<g filter="url(#shadow)">
+<!-- Pig body -->
+<ellipse cx="64" cy="72" rx="30" ry="24" fill="url(#pinkGrad)" stroke="#a05050" stroke-width="2"/>
+<!-- Pig snout -->
+<ellipse cx="90" cy="74" rx="10" ry="8" fill="#f0a0a0" stroke="#a05050" stroke-width="1.5"/>
+<circle cx="86" cy="74" r="2" fill="#a05050"/>
+<circle cx="94" cy="74" r="2" fill="#a05050"/>
+<!-- Pig ears -->
+<path d="M40 54 C38 42 42 36 46 36 C50 36 48 46 46 52 Z" fill="#f0a0a0" stroke="#a05050" stroke-width="1.5"/>
+<path d="M84 54 C82 42 86 36 90 36 C94 36 92 46 90 52 Z" fill="#f0a0a0" stroke="#a05050" stroke-width="1.5"/>
+<!-- Pig eye -->
+<circle cx="56" cy="64" r="4" fill="#fff" stroke="#a05050" stroke-width="1.2"/>
+<circle cx="57" cy="63" r="2" fill="#333"/>
+<circle cx="57.5" cy="62.5" r="0.7" fill="#fff"/>
+<!-- Pig legs -->
+<rect x="44" y="88" width="8" height="12" rx="3" fill="url(#pinkGrad)" stroke="#a05050" stroke-width="1.2"/>
+<rect x="58" y="88" width="8" height="12" rx="3" fill="url(#pinkGrad)" stroke="#a05050" stroke-width="1.2"/>
+<rect x="72" y="88" width="8" height="12" rx="3" fill="url(#pinkGrad)" stroke="#a05050" stroke-width="1.2"/>
+<rect x="82" y="86" width="8" height="12" rx="3" fill="url(#pinkGrad)" stroke="#a05050" stroke-width="1.2"/>
+<!-- Coin slot on back -->
+<rect x="50" y="56" width="16" height="4" rx="2" fill="url(#goldGrad)" stroke="#8a6a10" stroke-width="1"/>
+<!-- Coin in slot -->
+<circle cx="58" cy="58" r="5" fill="url(#goldGrad)" stroke="#8a6a10" stroke-width="1"/>
+<text x="58" y="61" text-anchor="middle" font-size="7" font-weight="700" fill="#8a6a10" font-family="Arial">$</text>
+<!-- Curly tail -->
+<path d="M36 72 C30 72 28 66 30 62 C32 58 36 60 34 64 C32 68 36 70 38 68" fill="none" stroke="#a05050" stroke-width="2" stroke-linecap="round"/>
+</g>
+<rect x="6" y="6" width="34" height="34" rx="10" fill="#f7e7c2" stroke="#826209" stroke-width="2"/>
+<text x="23" y="28" text-anchor="middle" font-size="16" font-family="Arial, sans-serif" font-weight="700" fill="#8a6a10">🐷</text>
+<rect x="16" y="96" width="96" height="18" rx="9" fill="#e5c679" stroke="#826209" stroke-width="1.6" opacity="0.96"/>
+<text x="64" y="109" text-anchor="middle" font-size="12" font-weight="700" font-family="Arial, sans-serif" fill="#8a6a10">SAVINGS</text>
+<text x="96" y="120" text-anchor="middle" font-size="7.5" font-weight="700" font-family="Arial, sans-serif" fill="#8a6a10" opacity="0.85">ECONOMY</text>
+<!-- piggy-bank | Savings | interest -->
+</svg>

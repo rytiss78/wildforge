@@ -8,6 +8,8 @@ A bright 3D survival game where a duck, a loaf of bread and an angry granny are 
 
 The current release is **0.8.4**: Half XP curve so levels feel like milestones, 5 banishes per realm (not shared in co-op), and vertical camera movement (mouse/stick now tilts up and down). Full changelog in [release notes](https://github.com/rytiss78/wildforge/releases/tag/build-4). Run `build/Wildforge.exe` locally, or unpack the Windows download and run `Wildforge.exe`.
 
+The local development version is **0.8.10**, with repaired hill traversal, smoother level choices, weapon compatibility on cards/buffs, co-op hero specialties, bolder damage numbers and six finished biome harvestables. Run `build/gameplay-0.8.10/Wildforge.exe`; keep its neighboring pack file. [Changes, verification and known limitations](native/docs/gameplay-repair-0.8.10.md). Modern Series X-style achievement banners and the original synthesized chime from [0.8.9](native/docs/achievement-ui-0.8.9.md) remain. No Xbox recording is loaded or included in new exports. The [original repair audit](native/docs/repair-audit-2026-10-12.md) records other unfinished plan items. Build 4 remains the published release.
+
 ![Two Count Ducks fighting strange creatures together in Clover Woods](docs/screenshots/co-op.png)
 
 *Two ducks are better than one. Probably.*
@@ -46,6 +48,8 @@ Download the Windows ZIP, extract the whole folder and run **Wildforge.exe**. No
 
 <details>
 <summary><strong>For builders: source, tools and controls</strong></summary>
+
+Agents: start with [AGENTS.md](AGENTS.md). Hermes has a [quick start](HERMES.md); the [Godot workflow and troubleshooting guide](native/docs/godot-workflow.md) covers commands, test evidence, screenshots and safe local exports.
 
 The game uses Godot **4.7.2**. Open `native/project.godot`, allow the initial import and run the main scene. Node.js is used by the content scripts. All runtime game assets are included; local tool installations and generated caches are excluded.
 

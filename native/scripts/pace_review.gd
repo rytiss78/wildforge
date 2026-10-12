@@ -1,11 +1,14 @@
 extends RefCounted
 
 static func run(game):
-	seed(407);AudioServer.set_bus_volume_db(0,-80);game.start_run(407)
-	# Normal starter stats and health; the bot gathers nearby drops and circles the start.
+	seed(407);AudioServer.set_bus_volume_db(0,-80)
+	game.select_hero(game.rules.data.heroes.filter(func(h):return h.name=="Tank Potato")[0]);game.start_run(407)
+	# Controlled pacing sample: normal starter damage, no deaths. Invulnerability
+	# separates XP cadence from the bot's combat survival skill. Simulation runs 3x.
+	game.invulnerable=10000;Engine.time_scale=3;Engine.physics_ticks_per_second=180
 	var levels=[];var previous_level=1;var chest_ready=-1.0;var captured=false
 	var began=Time.get_ticks_msec()
-	while game.elapsed<60 and Time.get_ticks_msec()-began<85000 and game.hp>0:
+	while game.elapsed<120 and Time.get_ticks_msec()-began<80000 and game.hp>0:
 		await game.get_tree().process_frame
 		if game.level>previous_level:
 			levels.append({"level":game.level,"seconds":game.elapsed});previous_level=game.level
@@ -28,5 +31,5 @@ static func run(game):
 	for action in ["move_right","move_left","move_forward","move_back"]: Input.action_release(action)
 	var nearest_chest=10000.0
 	for chest in game.chests: nearest_chest=minf(nearest_chest,Vector2(chest.node.position.x,chest.node.position.z).length())
-	print("PACE_REVIEW "+JSON.stringify({"seconds":game.elapsed,"levels":levels,"kills":game.kills,"hp":game.hp,"gold":game.gold,"chest_affordable_seconds":chest_ready,"nearest_chest_m":nearest_chest,"xp":game.xp,"xp_target":game.xp_target}))
+	print("PACE_REVIEW "+JSON.stringify({"controlled_invulnerable":true,"seconds":game.elapsed,"levels":levels,"kills":game.kills,"hp":game.hp,"gold":game.gold,"chest_affordable_seconds":chest_ready,"nearest_chest_m":nearest_chest,"xp":game.xp,"xp_target":game.xp_target}))
 	game.get_tree().quit()
