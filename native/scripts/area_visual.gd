@@ -15,6 +15,6 @@ static func make(parent: Node3D, kind: String, radius: float, point: Vector3) ->
 			var cloud=MeshInstance3D.new();var mesh=QuadMesh.new();mesh.size=Vector2(radius*1.65,radius*1.1);cloud.mesh=mesh
 			cloud.position=Vector3(cos(i*TAU/3)*radius*.3,radius*(.3+i*.1),sin(i*TAU/3)*radius*.3)
 			var paint=ShaderMaterial.new();paint.shader=preload("res://shaders/area_mist.gdshader");paint.set_shader_parameter("phase",i*4.7)
-			paint.set_shader_parameter("mist_color",Color("c78a32") if kind=="ignited" else Color("659e36"))
+			paint.set_shader_parameter("mist_color",Color("ed691d") if kind=="ignited" else Color("62bb18"))
 			cloud.material_override=paint;cloud.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;root.add_child(cloud)
 	return root

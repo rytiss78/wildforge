@@ -12,7 +12,15 @@ static func build(world: Node3D):
 			var body=StaticBody3D.new();body.collision_layer=1;body.position=p;root.add_child(body)
 			var collider=CollisionShape3D.new();var shape=CylinderShape3D.new();shape.radius=.68;shape.height=8
 			collider.shape=shape;collider.position.y=4;body.add_child(collider)
-			var light=OmniLight3D.new();light.position=p+Vector3.UP*8.6;light.light_color=Color("62f0b2");light.light_energy=2.2;light.omni_range=13;root.add_child(light)
+			var light=OmniLight3D.new();light.position=p+Vector3.UP*8.6;light.light_color=Color("38ff9e");light.light_energy=3.8;light.omni_range=14;root.add_child(light)
+			# Low inset lamps cast isolated pools, with a visible source on each pillar.
+			var lamp_position=p+Vector3(-side*.65,1.6,.48)
+			var housing=BoxMesh.new();housing.size=Vector3(.35,.75,.25)
+			ToonArt.part(root,housing,Color("101827"),lamp_position)
+			var lens=BoxMesh.new();lens.size=Vector3(.21,.46,.04)
+			var glow=ToonArt.part(root,lens,Color("52ffa2"),lamp_position+Vector3(0,0,.15))
+			var flame=StandardMaterial3D.new();flame.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED;flame.albedo_color=Color("77ffd4");flame.emission_enabled=true;flame.emission=Color("23ef8c");glow.material_override=flame
+			var pool=OmniLight3D.new();pool.position=lamp_position+Vector3(0,0,.5);pool.light_color=Color("33fca3");pool.light_energy=2.4;pool.omni_range=6.5;root.add_child(pool)
 			# Broken carved lintels stay above the existing walkable surface.
 			for j in range(4):
 				var block=BoxMesh.new();block.size=Vector3(1.8,.48,.8)

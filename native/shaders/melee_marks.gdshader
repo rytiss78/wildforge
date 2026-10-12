@@ -11,5 +11,11 @@ void fragment(){
   coverage=1.0-smoothstep(edge-.025,edge,length(p));
   for(int i=0;i<6;i++){float a=float(i)*2.4;vec2 drop=vec2(cos(a),sin(a))*.68;coverage=max(coverage,1.0-smoothstep(.075,.11,length(p-drop)));}
  }
- ALBEDO=color.rgb;ALPHA=coverage*color.a*fade;
+ vec3 ink=color.rgb;
+ if(!splatter){
+  float edge=smoothstep(.65,.97,abs(p.y));
+  ink=mix(vec3(1.0,.96,.79),vec3(1.0,.31,.035),edge);
+  EMISSION=ink*.5*fade;
+ }
+ ALBEDO=ink;ALPHA=coverage*color.a*fade;
 }

@@ -68,7 +68,7 @@ export function assessPng(path, started, minimum=320) {
 }
 
 async function main(action) {
-  if (!['boss-review', 'forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'skill-icons', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
+  if (!['style-review', 'boss-review', 'forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'skill-icons', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
     console.error('Usage: node scripts/agent-workflow.mjs check|smoke|capture|capture-ui|combat-review|pace-review|soak|integration|build|status'); return 2;
   }
   const git = (...args) => spawnSync('git', ['-C', root, ...args], {encoding:'utf8', windowsHide:true}).stdout?.trim() ?? '';
@@ -128,6 +128,13 @@ async function main(action) {
       const output=await step('forge-weapon-icon',godot,['--path',join(root,'native'),'--script','res://scripts/render_weapon_icons.gd','--','--forge-slice'],120000);
       if(!output.includes('WEAPON_ICONS_COMPLETE 1')) throw new Error('Missing weapon render');
       report.capture=assessPng(join(root,'native/assets/illustrated/weapon-icons/gun.png'),started,128);
+    }
+    if (action === 'style-review') {
+      const output=await step('style-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--style-review'],120000);
+      const line=output.split(/\r?\n/).findLast(x=>x.startsWith('STYLE_REVIEW '));
+      if(!line) throw new Error('Missing style review');report.style=JSON.parse(line.slice(13));
+      if(Object.values(report.style.checks).some(v=>v===false)) throw new Error('Style review assertions failed');
+      report.capture=['idle','warning','impact','expansion','recovery','electric','gravity','poison'].map(n=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','style-'+n+'.png'),started));
     }
     if (action === 'boss-review') {
       const output=await step('boss-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--boss-review'],180000);

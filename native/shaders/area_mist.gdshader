@@ -12,8 +12,10 @@ void fragment() {
  float n=noise(UV*5.+vec2(TIME*.14+phase,-TIME*.24));
  n+=.45*noise(UV*11.+vec2(-TIME*.23,TIME*.13+phase));
  float outline=1.-smoothstep(.42,1.,length(p)+.12*sin(p.x*9.+TIME+phase));
- float density=smoothstep(.24,.93,n)*outline;
- ALBEDO=mix(mist_color.rgb*.45,mist_color.rgb*1.5,n*.65);
- EMISSION=mist_color.rgb*density*.12;
- ALPHA=density*.58;
+ float density=smoothstep(.37,.53,n)*outline;
+ float curl=smoothstep(.55,.59,n)*(1.0-smoothstep(.63,.67,n));
+ ALBEDO=mix(mist_color.rgb*.22,mist_color.rgb*1.25,smoothstep(.47,.55,n));
+ ALBEDO=mix(ALBEDO,vec3(.74,1.0,.28),curl*.55);
+ EMISSION=mist_color.rgb*curl*.35;
+ ALPHA=density*.48;
 }

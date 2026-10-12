@@ -57,6 +57,7 @@ Prefix every action below with `node scripts/agent-workflow.mjs`.
 | `capture-ui` | Menu, co-op selection, HUD, cards and pause screens | Rendered; inspect the PNGs |
 | `controls-review` | Keyboard/controller bindings and settings | Rendered; includes saved-setting checks |
 | `forge-review` | Representative overhaul scene, orb snapshot and camera checks | Rendered; inspect full/half/low/empty/remote/reward captures |
+| `style-review` | Short lighting and combat-art iteration | Eight rendered captures; actual explosion damage, effect expiry and unchanged camera checks. Full regression/export testing remains separate. |
 | `boss-review` | Eight bosses, seeded rotations, warnings and network identities | Rendered; inspect each silhouette and attack capture; includes real portal/guardian path |
 | `bake-forge` | Rebuild only Clover Woods baked meshes | Run after `python scripts/build-forge-slice.py`; preserves other biome cores |
 | `forge-weapon-icon` | Render the rebuilt pistol thumbnail | Rendered; only writes gun.png |

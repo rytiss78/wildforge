@@ -86,6 +86,7 @@ Mark a milestone complete only after its listed behavior and visual checks pass.
 
 ## Checkpoint policy
 
+- October 12 user update: prioritize implementation with light checks and focused visual captures during development. Defer the full regression/co-op/multiple-resolution/export suite to the end of the overhaul; intermediate source checkpoints are not release certifications.
 - Commit and push after each tested milestone or substantial validated sub-batch. Keep baseline, UI, character art, environments, bosses, cleanup and release-documentation changes reviewable.
 - Run commands from the repository root through `node scripts/agent-workflow.mjs`; follow [the workflow](godot-workflow.md). Inspect logs as well as exit codes and visually inspect screenshots. Do not run party-hosting tests together.
 - Keep a short ledger row containing scope, acceptance result, evidence path, commit, remote push result and next work. If push fails, preserve the local commit, report the actual error without secrets, and continue independent work.
@@ -100,6 +101,7 @@ Mark a milestone complete only after its listed behavior and visual checks pass.
 | 1a — UI foundation + bottom damage | Validated development sub-batch | [Evidence/build/screenshots](visual-foundation-1.0.0.md); `46ace7c`, pushed |
 | 1b — Clover Woods models + orb replication | Validated development sub-batch | [Scene evidence/build](visual-scene-1.0.0.md); `be0a086`, pushed |
 | 1c + 5 — vivid palette and eight-boss rotation | Technical checkpoint passed; ground palette rejected by user | `37e9df1`, pushed; [boss/network/build evidence](visual-bosses-1.0.0.md); [corrected Hades direction](hades-style-research-1.0.0.md) governs further visual work |
+| 1d + 3 — quiet ground, focused lamps, ink combat effects | Light source checks and rendered review passed; full testing deferred by user | [Changes, captures and evidence](visual-combat-1.0.0.md); development checkpoint on main |
 | 2–4, 6–7 | Open | Complete UI/catalogs/rosters/biomes, cleanup and release remain |
 
 Baseline context: [0.8.10 repair](gameplay-repair-0.8.10.md), [earlier audit](repair-audit-2026-10-12.md), [project rules](../../AGENTS.md).

@@ -8,7 +8,8 @@ void fragment() {
  float filament=band*(.4+.6*arms);
  float core=1.-smoothstep(.23,.28,r);
  float edge=1.-smoothstep(.75,1.,r);
- vec3 hot=mix(vec3(.85,.18,.035),vec3(1.,.85,.43),filament);
+ vec3 hot=mix(vec3(.30,.015,.70),vec3(.91,.28,1.0),filament);
+ hot=mix(hot,vec3(.87,.92,1.0),smoothstep(.88,.99,filament));
  ALBEDO=mix(hot,vec3(.003,.006,.012),core);
  EMISSION=hot*filament*1.2*(1.-core);
  ALPHA=clamp(core+filament+halo,0.,1.)*edge;

@@ -168,7 +168,7 @@ func _ready():
 	smoke=smoke or OS.get_cmdline_user_args().has("--golden-scene")
 	smoke=smoke or OS.get_cmdline_user_args().has("--ui-review")
 	smoke=smoke or OS.get_cmdline_user_args().has("--journey-review") or OS.get_cmdline_user_args().has("--scenery-review") or OS.get_cmdline_user_args().has("--hunt-review")
-	smoke=smoke or OS.get_cmdline_user_args().has("--boss-review") or OS.get_cmdline_user_args().has("--forge-review") or OS.get_cmdline_user_args().has("--combat-review") or OS.get_cmdline_user_args().has("--pace-review")
+	smoke=smoke or OS.get_cmdline_user_args().has("--style-review") or OS.get_cmdline_user_args().has("--boss-review") or OS.get_cmdline_user_args().has("--forge-review") or OS.get_cmdline_user_args().has("--combat-review") or OS.get_cmdline_user_args().has("--pace-review")
 	camera_locked=OS.get_cmdline_user_args().has("--golden-scene") or OS.get_cmdline_user_args().has("--ui-review")
 	career = ProfileScript.new(rules.data,smoke)
 	if network_test_role!="": career.file="user://coop-test-"+network_test_role+".json"
@@ -270,6 +270,7 @@ func _ready():
 	elif OS.get_cmdline_user_args().has("--journey-review"): preload("res://scripts/journey_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--ui-review"): preload("res://scripts/ui_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--pace-review"): preload("res://scripts/pace_review.gd").run.call_deferred(self)
+	elif OS.get_cmdline_user_args().has("--style-review"): preload("res://scripts/style_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--boss-review"): preload("res://scripts/boss_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--forge-review"): preload("res://scripts/forge_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--combat-review"): preload("res://scripts/combat_review.gd").run.call_deferred(self)
@@ -949,7 +950,7 @@ func slash_fx(origin: Vector3,target: Vector3):
 	var vertices=PackedVector3Array();var uvs=PackedVector2Array();var indices=PackedInt32Array()
 	for i in range(25):
 		var angle=lerpf(-.85,.85,float(i)/24);var direction=forward.rotated(Vector3.UP,angle)
-		var width=.04+.22*sin(PI*float(i)/24)
+		var width=.015+.38*pow(sin(PI*float(i)/24),.7)
 		vertices.append(direction*(radius_value-width));vertices.append(direction*(radius_value+width))
 		uvs.append(Vector2(float(i)/24,0));uvs.append(Vector2(float(i)/24,1))
 		if i<24: indices.append_array([i*2,i*2+1,i*2+2,i*2+1,i*2+3,i*2+2])
@@ -968,10 +969,8 @@ func blood_hit(enemy: Dictionary):
 	for i in range(5):
 		var drop=update.effect_node(orb_mesh,material(color),position_value);drop.scale=Vector3(.14,.10,.14)
 		effects.append({"node":drop,"life":.38,"velocity":Vector3(randf_range(-2,2),randf_range(1,3),randf_range(-2,2)),"blood":true,"base_scale":drop.scale})
-	# Hit sparks for instant feedback
-	for i in range(3):
-		var spark=update.effect_node(orb_mesh,material(Color("ffcc44")),position_value);spark.scale=Vector3(.04,.04,.04)
-		effects.append({"node":spark,"life":.15,"velocity":Vector3(randf_range(-3,3),randf_range(1,4),randf_range(-3,3)),"spark":true})
+	# Sharp directional flecks leave the orb and enemy silhouette readable.
+	CombatInk.burst(self,position_value,Color("ffbc3c"),3)
 	var mesh=PlaneMesh.new();mesh.size=Vector2(1.25,1.25)
 	var paint=ShaderMaterial.new();paint.shader=preload("res://shaders/melee_marks.gdshader");paint.set_shader_parameter("color",color);paint.set_shader_parameter("splatter",true)
 	var stain=MeshInstance3D.new();stain.mesh=mesh;stain.material_override=paint;stain.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;add_child(stain)
@@ -1306,15 +1305,15 @@ func kill_enemy(enemy: Dictionary, cause: String):
 	# Kill feedback: elite/boss get big explosion, regular get dust puff
 	# Multi-kill tracking
 	if enemy.get("elite",false) or enemy.boss:
-		for i in range(12): burst(p+Vector3.UP*randf(),Color("ff8844"),1)
-		for i in range(14 if enemy.boss else 8): burst(p+Vector3.UP*randf(),Color("ffcc44"),1)
+		burst(p+Vector3.UP*.65,Color("ff8844"),12)
+		burst(p+Vector3.UP*.3,Color("ffcc44"),12 if enemy.boss else 8)
 		hit_shake=maxf(hit_shake,.35 if enemy.boss else .2)
 		hit_stop=maxf(hit_stop,.08)
 		sound.say("kill",25)
 		vibrate(.3,.3,.2)
 	else:
-		for i in range(5): burst(p+Vector3.UP*randf(),Color("c8aa75"),1)
-		for i in range(4): burst(p+Vector3.UP*randf(),Color("888888"),1)
+		burst(p+Vector3.UP*.6,Color("c8aa75"),5)
+		burst(p+Vector3.UP*.25,Color("888888"),4)
 		hit_shake=maxf(hit_shake,.06)
 		vibrate(.1,.1,.05)
 	# Kill sparks for all kills
@@ -1491,57 +1490,18 @@ func update_pickups(delta: float):
 	pickups=pickups.filter(func(pickup):return pickup.age>=0)
 
 func burst(p: Vector3,color: Color,count: int):
-	if effects.size()>220: return
-	for i in range(mini(count,20)):
-		var node = update.effect_node(orb_mesh,material(color,.4),p)
-		node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		var velocity = Vector3(randf_range(-3,3),randf_range(1,5),randf_range(-3,3))
-		effects.append({"node":node,"life":.55,"velocity":velocity})
+	CombatInk.burst(self,p,color,count)
 
 func explosion_fx(p: Vector3, radius_value: float):
 	if effects.size()>220: return
 	sound.effect("blast",p)
-	var mesh=SphereMesh.new();mesh.radius=1;mesh.height=2;mesh.radial_segments=16;mesh.rings=8
-	var node=update.effect_node(mesh,null,p+Vector3.UP*.3)
-	node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	var paint=ShaderMaterial.new();paint.shader=load("res://shaders/explosion.gdshader");paint.set_shader_parameter("paper",load("res://assets/illustrated/paper.png"));node.material_override=paint
-	effects.append({"node":node,"life":.65,"velocity":Vector3.ZERO,"blast_radius":radius_value,"paint":paint,"age":0.0})
+	CombatInk.blast(self,p,radius_value)
 
 func beam(from: Vector3,to: Vector3,color: Color):
-	var cylinder = CylinderMesh.new()
-	cylinder.top_radius=.025
-	cylinder.bottom_radius=.025
-	cylinder.height=from.distance_to(to)
-	var node = shape(cylinder,color,self,(from+to)*.5,2)
-	if from.distance_to(to)>.01:
-		node.look_at(to,Vector3.FORWARD)
-		node.rotate_object_local(Vector3.RIGHT,PI/2)
-	effects.append({"node":node,"life":.16,"velocity":Vector3.ZERO})
+	CombatInk.beam(self,from,to,color)
 
 func lightning_bolt(from: Vector3, to: Vector3):
-	# Jagged lightning bolt: zigzag line with electric glow
-	var dir=(to-from).normalized()
-	var right=dir.cross(Vector3.UP).normalized()
-	if right.length()<.01: right=dir.cross(Vector3.FORWARD).normalized()
-	var up=dir.cross(right).normalized()
-	var points=[from]
-	var segs=6
-	for s in range(1,segs):
-		var t=float(s)/segs
-		var p=from.lerp(to,t)
-		p+=right*(rules.rng.randf_range(-.6,.6)*(1-t))
-		p+=up*(rules.rng.randf_range(-.6,.6)*(1-t))
-		points.append(p)
-	points.append(to)
-	for si in range(points.size()-1):
-		var a=points[si]; var b=points[si+1]
-		var len=a.distance_to(b)
-		var cyl=CylinderMesh.new();cyl.top_radius=.015;cyl.bottom_radius=.015;cyl.height=len
-		var node=shape(cyl,Color("#d0e8ff"),self,(a+b)*.5,3.0)
-		if len>.01:
-			node.look_at(b,Vector3.FORWARD)
-			node.rotate_object_local(Vector3.RIGHT,PI/2)
-		effects.append({"node":node,"life":.22,"velocity":Vector3.ZERO})
+	CombatInk.beam(self,from,to,Color("53baff"),true)
 
 
 func telegraph(enemy: Dictionary):
@@ -2002,8 +1962,9 @@ func _process(delta: float):
 		if not effect.get("visual_shot",false) and not effect.get("stationary",false): effect.velocity.y-=8*delta
 		if not effect.get("aura",false):
 			effect.node.scale=Vector3.ONE*maxf(.05,effect.life/.55)
-		if effect.has("blast_radius"):
-			effect.age+=delta;effect.node.scale=Vector3.ONE*effect.blast_radius*(.2+effect.age*1.5);effect.paint.set_shader_parameter("age",effect.age/.65)
+		if effect.get("ink_fx",false):
+			effect.node.scale=Vector3.ONE
+			effect.node.advance(delta)
 		elif effect.has("bubble_enemy"):
 			if not effect.bubble_enemy.dead and is_instance_valid(effect.bubble_enemy.node): effect.node.position=enemy_center(effect.bubble_enemy)
 			else: effect.life=0
