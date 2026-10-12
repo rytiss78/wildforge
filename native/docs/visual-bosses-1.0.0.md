@@ -2,6 +2,8 @@
 
 Work in progress. Version remains 0.8.10; the full visual overhaul is not released.
 
+**Subsequent user review:** the ground in this checkpoint is too bright. The technical checks below remain valid, but the palette is not an accepted visual target. Follow the [Hades reference study and corrected direction](hades-style-research-1.0.0.md): quieter ground, saturated effects and deliberately placed lighting.
+
 Eight original modeled bosses now enter normal warden and portal-guardian encounters. Host selection uses a seeded, biome/realm-weighted shuffle bag: all eight appear before reuse, with no consecutive repeat at a bag boundary. Snapshots and kill messages carry the selected identity; clients never roll their own boss. Each model has an exposed health vessel, slow articulated motion, distinct silhouette and attack layout. Phase two increases damage and cadence without removing dodge time.
 
 | Boss | Height / collision radius (m) | Structure / attack |

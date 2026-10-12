@@ -99,7 +99,7 @@ Mark a milestone complete only after its listed behavior and visual checks pass.
 | 0 — audited source baseline | Source checkpoint pushed; orb coverage pending | `4ffec33`; [audit/inventory](visual-baseline-1.0.0.md); original mixed index preserved |
 | 1a — UI foundation + bottom damage | Validated development sub-batch | [Evidence/build/screenshots](visual-foundation-1.0.0.md); `46ace7c`, pushed |
 | 1b — Clover Woods models + orb replication | Validated development sub-batch | [Scene evidence/build](visual-scene-1.0.0.md); `be0a086`, pushed |
-| 1c + 5 — vivid palette and eight-boss rotation | Validated development checkpoint | [Boss, network, brightness and executable evidence](visual-bosses-1.0.0.md); commit/push pending |
+| 1c + 5 — vivid palette and eight-boss rotation | Technical checkpoint passed; ground palette rejected by user | `37e9df1`, pushed; [boss/network/build evidence](visual-bosses-1.0.0.md); [corrected Hades direction](hades-style-research-1.0.0.md) governs further visual work |
 | 2–4, 6–7 | Open | Complete UI/catalogs/rosters/biomes, cleanup and release remain |
 
 Baseline context: [0.8.10 repair](gameplay-repair-0.8.10.md), [earlier audit](repair-audit-2026-10-12.md), [project rules](../../AGENTS.md).
