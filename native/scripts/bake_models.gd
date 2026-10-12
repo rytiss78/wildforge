@@ -5,9 +5,11 @@ func _initialize(): call_deferred("bake")
 func bake():
 	var stage=Node3D.new();root.add_child(stage)
 	DirAccess.make_dir_recursive_absolute("res://assets/style3d/baked")
-	var metadata={}
+	var slice=OS.get_cmdline_user_args().has("--forge-slice")
+	var metadata=JSON.parse_string(FileAccess.get_file_as_string("res://assets/style3d/baked/cores.json")) if slice else {}
 	for prefix in ["creature","prop"]:
 		for biome in range(6):
+			if slice and biome!=0: continue
 			for index in range(6):
 				var id="%s_%d_%d" % [prefix,biome,index]
 				var scene=load("res://assets/style3d/"+id+".glb").instantiate();stage.add_child(scene)
@@ -22,6 +24,7 @@ func bake():
 				var mesh=importer.get_mesh();ResourceSaver.save(mesh,"res://assets/style3d/baked/"+id+".res")
 				print("BAKED ",id," lods=",importer.get_surface_lod_count(0));scene.free()
 	for asset in ["brass_bullet","weapon_boomerang","weapon_disc","weapon_bomb"]:
+		if slice: continue
 		var scene=load("res://assets/style3d/"+asset+".glb").instantiate();stage.add_child(scene)
 		var nodes=[];PaintedBatch.collect(scene,nodes);var mesh=PaintedBatch.merge(scene,nodes);ResourceSaver.save(mesh,"res://assets/style3d/baked/"+asset+".res");scene.free()
 	var file=FileAccess.open("res://assets/style3d/baked/cores.json",FileAccess.WRITE);file.store_string(JSON.stringify(metadata,"  "));file.close()

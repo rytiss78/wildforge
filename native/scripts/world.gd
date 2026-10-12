@@ -8,7 +8,7 @@ const CHUNK=64.0
 const NAMES=["Sunlit Frontier","Wild Highlands","Skyward Reach"]
 const BIOMES=["Clover Woods","Puffcap Marsh","Moon Craters","Cloud City","Candy Hell","Starfall Space"]
 const CREATURES=["acorn","toad","crab","penguin","lizard","beetle"]
-const COLORS=[Color("9cb88c"),Color("91b3ab"),Color("b4c5df"),Color("d9eaed"),Color("e69479"),Color("ab96c5")]
+const COLORS=[Color("326849"),Color("91b3ab"),Color("b4c5df"),Color("d9eaed"),Color("e69479"),Color("ab96c5")]
 var realm=0
 var seed_value=0
 var noise=FastNoiseLite.new()
@@ -26,8 +26,8 @@ var sky_paint: ShaderMaterial
 var build_in_progress=false
 var build_cells=[]
 var build_cell_index=0
-var sky_top=Color("76c8e6")
-var sky_horizon=Color("dfedda")
+var sky_top=Color("101c27")
+var sky_horizon=Color("325c50")
 var environment: Environment
 var weather: GPUParticles3D
 var active_biome=-1
@@ -40,8 +40,8 @@ var border_patches=[]
 var edge_near=false
 var eclipse=false
 static var prop_meshes={}
-const SKY_TOP=[Color("76c8e6"),Color("7fb7a9"),Color("18234d"),Color("83cdeb"),Color("f49a78"),Color("302457")]
-const SKY_HORIZON=[Color("dfedda"),Color("c1d8b7"),Color("a3b8d9"),Color("fff7e2"),Color("ffd3a0"),Color("ba9bd5")]
+const SKY_TOP=[Color("101c27"),Color("7fb7a9"),Color("18234d"),Color("83cdeb"),Color("f49a78"),Color("302457")]
+const SKY_HORIZON=[Color("325c50"),Color("c1d8b7"),Color("a3b8d9"),Color("fff7e2"),Color("ffd3a0"),Color("ba9bd5")]
 
 static func coast_radius(angle: float,world_seed: int,world_realm: int) -> float:
 	var phase=float(world_seed%23)*.03+world_realm*.4
@@ -60,21 +60,24 @@ func weather_tick(delta: float,p: Vector3):
 	var biome=biome_at(p)
 	if active_biome!=biome:
 		active_biome=biome
-		for cloud in clouds: cloud.visible=biome in [0,1,3]
+		for cloud in clouds: cloud.visible=biome in [1,3]
 		stars.visible=biome in [2,5];moon.visible=biome==2
 		weather.emitting=biome in [0,1,3,4,5]
+		weather.amount=45 if biome==0 else 180
 		var material: ParticleProcessMaterial=weather.process_material
 		material.gravity=Vector3(4,-12,1) if biome==1 else Vector3(2,-2,1) if biome==3 else Vector3(-3,1,0)
 		material.initial_velocity_min=2;material.initial_velocity_max=5 if biome==1 else 2.5
 		var paint=StandardMaterial3D.new();paint.albedo_color=Color("b5dfec") if biome==1 else Color("fff8ed") if biome==3 else Color("ffcb88") if biome==4 else Color("bd9af0") if biome==5 else Color("a0c681")
 		paint.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED
-		var mesh=SphereMesh.new();mesh.radius=.035 if biome==1 else .07;mesh.height=.6 if biome==1 else .14;mesh.material=paint;weather.draw_pass_1=mesh
+		var mesh=SphereMesh.new();mesh.radius=.035 if biome==1 else .022 if biome==0 else .07;mesh.height=.6 if biome==1 else .044 if biome==0 else .14;mesh.material=paint;weather.draw_pass_1=mesh
 	weather.position=p+Vector3.UP*8
 	sky_top=sky_top.lerp(Color("21192f") if eclipse else SKY_TOP[biome],1-exp(-delta*.6));sky_horizon=sky_horizon.lerp(Color("77556c") if eclipse else SKY_HORIZON[biome],1-exp(-delta*.6))
 	sky_paint.set_shader_parameter("top_color",sky_top);sky_paint.set_shader_parameter("horizon_color",sky_horizon)
 	for pair in [["moon_strength",biome==2],["space_strength",biome==5],["fire_strength",biome==4]]:
 		var parameter=sky_paint.get_shader_parameter(pair[0]);var previous=float(parameter) if parameter!=null else 0.0;sky_paint.set_shader_parameter(pair[0],lerpf(previous,1.0 if pair[1] else 0.0,1-exp(-delta*.6)))
 	environment.fog_light_color=sky_horizon
+	environment.ambient_light_color=Color("739f95") if biome==0 else Color("e6efff")
+	environment.ambient_light_energy=.44 if biome==0 else .36
 	environment.fog_depth_begin=lerpf(environment.fog_depth_begin,35.0 if biome in [1,3] else 45.0,1-exp(-delta*.6))
 	environment.fog_depth_end=lerpf(environment.fog_depth_end,140.0 if biome in [1,3] else 165.0,1-exp(-delta*.6))
 	edge_near=false
@@ -157,6 +160,7 @@ func build(index: int,world_seed: int):
 	chunks.clear();pending.clear();landmarks.clear();harvest_sites.clear();last_cell=Vector2i(999,999);stream_signature=""
 	clouds.clear();border_steam.clear();border_patches.clear()
 	make_environment();make_material();make_boundaries();make_landmarks()
+	preload("res://scripts/forge_architecture.gd").build(self)
 	# Frame-budgeted chunk building: schedule 49 chunks, process ~6 per frame
 	build_in_progress=true
 	build_cell_index=0
@@ -169,7 +173,7 @@ func build(index: int,world_seed: int):
 func make_material():
 	var shader=load("res://shaders/terrain.gdshader")
 	terrain_material=ShaderMaterial.new();terrain_material.shader=shader;terrain_material.set_shader_parameter("phase",float(seed_value%23)*.03+realm*.4)
-	for i in range(6): terrain_material.set_shader_parameter("t"+str(i),load("res://assets/illustrated/terrain-moss-v2.png" if i<2 else "res://assets/illustrated/terrain-stone-v2.png"))
+	for i in range(6): terrain_material.set_shader_parameter("t"+str(i),load("res://assets/illustrated/forge-basalt-moss.png" if i==0 else "res://assets/illustrated/terrain-moss-v2.png" if i==1 else "res://assets/illustrated/terrain-stone-v2.png"))
 	scenery_material=PaintedBatch.material()
 	scenery_material.set_shader_parameter("fade_near",true)
 	scenery_material.next_pass.set_shader_parameter("fade_near",true)

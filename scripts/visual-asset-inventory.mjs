@@ -5,7 +5,7 @@ const walk = dir => readdirSync(dir,{withFileTypes:true}).flatMap(e=>e.isDirecto
 const sources = [...walk('native/scripts'),...walk('native/shaders'),...walk('scripts')].filter(p=>/\.(gd|gdshader|py|mjs)$/.test(p));
 const refs = sources.flatMap(path=>readFileSync(path,'utf8').split(/\r?\n/).flatMap((text,i)=> /res:\/\/assets|\.glb|\.res["']|Mesh\.new|shader\.code|_draw\(/.test(text)?[{path,line:i+1,text:text.trim()}]:[]));
 const families = [
-  ['native/assets/style3d/baked/','PaintedBatch / StyleModel / RealmWorld','scripts/build-style-models.py; scripts/build-world-models.py; native/scripts/bake_style_meshes.gd'],
+  ['native/assets/style3d/baked/','PaintedBatch / StyleModel / RealmWorld','scripts/build-style-models.py; scripts/build-world-models.py; native/scripts/bake_models.gd'],
   ['native/assets/style3d/','StyleModel / WeaponModel / RealmWorld','scripts/build-style-models.py; scripts/build-orb-heroes.py; scripts/build-world-models.py'],
   ['native/assets/illustrated/content/','IllustratedIcons / WeaponModel','scripts/create-content-art.mjs'],
   ['native/assets/illustrated/skill-icons/','IllustratedIcons fallback','native/scripts/render_skill_icons.gd'],

@@ -1,0 +1,89 @@
+{
+  "generator": "scripts/build-forge-slice.py",
+  "assets": [
+    {
+      "asset": "count_duck",
+      "triangles": 2900,
+      "mesh_nodes": 28,
+      "bytes": 116740
+    },
+    {
+      "asset": "mint_pistol",
+      "triangles": 272,
+      "mesh_nodes": 11,
+      "bytes": 18864
+    },
+    {
+      "asset": "creature_0_0",
+      "triangles": 2584,
+      "mesh_nodes": 15,
+      "bytes": 94412
+    },
+    {
+      "asset": "creature_0_1",
+      "triangles": 2384,
+      "mesh_nodes": 10,
+      "bytes": 82408
+    },
+    {
+      "asset": "creature_0_2",
+      "triangles": 6460,
+      "mesh_nodes": 16,
+      "bytes": 210784
+    },
+    {
+      "asset": "creature_0_3",
+      "triangles": 2396,
+      "mesh_nodes": 14,
+      "bytes": 86404
+    },
+    {
+      "asset": "creature_0_4",
+      "triangles": 3160,
+      "mesh_nodes": 14,
+      "bytes": 110156
+    },
+    {
+      "asset": "creature_0_5",
+      "triangles": 2640,
+      "mesh_nodes": 18,
+      "bytes": 100228
+    },
+    {
+      "asset": "prop_0_0",
+      "triangles": 480,
+      "mesh_nodes": 15,
+      "bytes": 31476
+    },
+    {
+      "asset": "prop_0_1",
+      "triangles": 340,
+      "mesh_nodes": 8,
+      "bytes": 20616
+    },
+    {
+      "asset": "prop_0_2",
+      "triangles": 320,
+      "mesh_nodes": 12,
+      "bytes": 21288
+    },
+    {
+      "asset": "prop_0_3",
+      "triangles": 448,
+      "mesh_nodes": 15,
+      "bytes": 28952
+    },
+    {
+      "asset": "prop_0_4",
+      "triangles": 320,
+      "mesh_nodes": 12,
+      "bytes": 21136
+    },
+    {
+      "asset": "prop_0_5",
+      "triangles": 448,
+      "mesh_nodes": 15,
+      "bytes": 28808
+    }
+  ]
+}

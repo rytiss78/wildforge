@@ -230,8 +230,13 @@ func tick(delta: float):
 			node.position=node.position.lerp(target,1-exp(-delta*12));node.rotation.y=float(state.get("yaw",0));node.get_meta("rig").animate(delta,movement,true)
 			if state.has("weapons"): node.get_meta("rig").sync_equipment(state.weapons)
 			if node.has_meta("nameplate"): node.get_meta("nameplate").text=str(state.get("name","Friend"))+("\nDOWNED · HOLD E / X" if game.update.downed_ids.has(id) else "")
-			if state.has("hp") and state.has("stats"): node.get_meta("rig").set_health(float(state.hp)/maxf(1,float(state.stats.get("maxHp",100))))
-			if state.has("stats"): node.get_meta("rig").set_defense(float(state.stats.get("armor",0)),float(state.get("shield_hp",0)),float(state.stats.get("shield",0))+float(state.stats.get("jumpShield",0)))
+			update_avatar_vitals(node.get_meta("rig"),state)
+
+func update_avatar_vitals(rig,state: Dictionary):
+	var stats=state.get("stats",{})
+	var vitals=state.get("vitals",{"max_hp":stats.get("maxHp",100),"armor":stats.get("armor",0),"shield_capacity":float(stats.get("shield",0))+float(stats.get("jumpShield",0))})
+	if state.has("hp"): rig.set_health(float(state.hp)/maxf(1,float(vitals.get("max_hp",100))))
+	rig.set_defense(float(vitals.get("armor",0)),float(state.get("shield_hp",0)),float(vitals.get("shield_capacity",0)))
 
 func pose() -> Dictionary:
 	var weapons=[]
@@ -250,7 +255,10 @@ func snapshot() -> Dictionary:
 	for enemy in game.enemies:
 		if not enemy.dead: actors.append({"id":enemy.net_id,"position":array(enemy.node.position),"biome":enemy.biome,"species":enemy.species,"height":enemy.height,"radius":enemy.radius,"hp":enemy.hp,"maxHp":enemy.maxHp,"xp_reward":enemy.xp_reward,"boss":enemy.boss,"guardian":enemy.get("guardian",false),"title":enemy.get("title",""),"elite":enemy.elite,"corruption":enemy.get("corruption",0),"surface_up":array(enemy.node.basis.y),"surface_forward":array(-enemy.node.basis.z),"fire":enemy.fire,"poison":enemy.poison,"freeze":enemy.freeze,"blind":enemy.blind,"slip_until":enemy.get("slip_until",0),"windup":enemy.get("windup",0)})
 	var poses=members.duplicate(true);poses[local_id]=pose()
-	for member in poses.values(): member.erase("stats");member.erase("last_seen")
+	for member in poses.values():
+		var stats=member.get("stats",{})
+		member.vitals={"max_hp":stats.get("maxHp",100),"armor":stats.get("armor",0),"shield_capacity":float(stats.get("shield",0))+float(stats.get("jumpShield",0))}
+		member.erase("stats");member.erase("last_seen")
 	return {"type":"world","actors":actors,"players":poses,"seconds":game.realm_time,"elapsed":game.elapsed,"realm":game.realm,"journey":game.events,"wardens":game.realm_bosses,"pause":frozen() or game.mode not in ["playing","ended"],"big_update":game.update.world_state()}
 
 static func array(v: Vector3) -> Array: return [v.x,v.y,v.z]
@@ -454,6 +462,7 @@ func ensure_avatar(id: int,state: Dictionary):
 		var rig=game.world.model(model,1.65);node.add_child(rig);node.set_meta("rig",rig);game.add_child(node);avatars[id]=node
 		var nameplate=Label3D.new();nameplate.text=str(state.get("name","Friend")).left(24);nameplate.position.y=2.1;nameplate.font_size=26;nameplate.billboard=BaseMaterial3D.BILLBOARD_ENABLED;node.add_child(nameplate);node.set_meta("nameplate",nameplate)
 		if state.has("position"): node.position=vector(state.position)
+	update_avatar_vitals(avatars[id].get_meta("rig"),state)
 	var wanted={}
 	for weapon in state.get("weapons",[]):
 		if not weapon is Dictionary or not weapon.has("placement") or not game.rules.data.weapons.any(func(w):return w.id==weapon.get("id","") and w.turret): continue

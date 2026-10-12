@@ -97,7 +97,8 @@ Mark a milestone complete only after its listed behavior and visual checks pass.
 | --- | --- | --- |
 | Roadmap and reference handoff | Prepared in the original repair session | This document and local reference manifest; implementation starts in the new session |
 | 0 — audited source baseline | Source checkpoint pushed; orb coverage pending | `4ffec33`; [audit/inventory](visual-baseline-1.0.0.md); original mixed index preserved |
-| 1a — UI foundation + bottom damage | Validated development sub-batch | [Evidence/build/screenshots](visual-foundation-1.0.0.md); commit/push recorded below |
-| 1b–7 | Open | Representative scene, complete catalogs/rosters/biomes/bosses, cleanup and release remain |
+| 1a — UI foundation + bottom damage | Validated development sub-batch | [Evidence/build/screenshots](visual-foundation-1.0.0.md); `46ace7c`, pushed |
+| 1b — Clover Woods models + orb replication | Validated development sub-batch | [Scene evidence/build](visual-scene-1.0.0.md); commit recorded in next ledger update |
+| 1c–7 | Open | Scene polish, complete catalogs/rosters/biomes/bosses, cleanup and release remain |
 
 Baseline context: [0.8.10 repair](gameplay-repair-0.8.10.md), [earlier audit](repair-audit-2026-10-12.md), [project rules](../../AGENTS.md).

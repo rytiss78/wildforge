@@ -21,7 +21,7 @@ void sky() {
  vec3 color=mix(horizon_color,top_color,pow(height,.55));
  float cloud=sin(d.x*21.0+sin(d.z*13.0+TIME*.007))*sin(d.z*17.0-d.y*20.0);
  float clouds=smoothstep(.62,.89,cloud)*smoothstep(.02,.15,d.y)*(1.0-space_strength)*.30;
- color=mix(color,vec3(.98,.94,.81),clouds);
+ color=mix(color,horizon_color*1.15,clouds*.45);
  vec3 centre=vec3(-.52,.43,-.72);
  float moon=sphere(d,centre,.32)*moon_strength;
  color=mix(color,planet(d,centre,.32,vec3(.74,.83,.91)),moon);

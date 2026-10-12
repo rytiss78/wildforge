@@ -5,7 +5,7 @@
     [
       "native/assets/style3d/baked/",
       "PaintedBatch / StyleModel / RealmWorld",
-      "scripts/build-style-models.py; scripts/build-world-models.py; native/scripts/bake_style_meshes.gd"
+      "scripts/build-style-models.py; scripts/build-world-models.py; native/scripts/bake_models.gd"
     ],
     [
       "native/assets/style3d/",
@@ -71,7 +71,9 @@
     "native/scripts/treasure_chest.gd",
     "native/scripts/weapon_identity.gd",
     "native/scripts/weapon_model.gd",
-    "native/scripts/world.gd"
+    "native/scripts/world.gd",
+    "native/scripts/forge_architecture.gd",
+    "native/scripts/health_emblem.gd"
   ],
   "refs": [
     {
@@ -1097,6 +1099,15 @@
   ],
   "assets": [
     {
+      "path": "native/assets/README.md",
+      "bytes": 906,
+      "sha256": "3790fe51761ed86e3f25a9cb0855232207be4b1e69b30824f9533efba5738313",
+      "owner": "Runtime auxiliary assets; audio preserved",
+      "generator": "existing family generators",
+      "replacement": "pending",
+      "deletion": "retain"
+    },
+    {
       "path": "native/assets/audio/achievement-sound.md",
       "bytes": 1476,
       "sha256": "0758c6fad3a809e1b0fadc7aeb397ecf905cb475d15d57360e283522626d9676",
@@ -1543,6 +1554,15 @@
       "sha256": "234bacbf4fe9376506422984396c11b70d159ec2d1feb02f03d4a2d5b4757e9e",
       "owner": "Runtime auxiliary assets; audio preserved",
       "generator": "existing family generators",
+      "replacement": "pending",
+      "deletion": "retain"
+    },
+    {
+      "path": "native/assets/illustrated/README.md",
+      "bytes": 7377,
+      "sha256": "e1574f083c2351b8c2fd9e1266622b9d8368276ae755a29f365b2eb059098b30",
+      "owner": "ActorRig / World / portraits / icons / terrain fallback",
+      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
       "replacement": "pending",
       "deletion": "retain"
     },
@@ -30896,6 +30916,24 @@
       "deletion": "retain"
     },
     {
+      "path": "native/assets/illustrated/forge-basalt-moss.png",
+      "owner": "Forge representative scene",
+      "bytes": 3489279,
+      "sha256": "d7178ef1023b5fd14e06ef2ab7502d707b6f35e4d0c4fbe1a58dc8a08147945f",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset",
+      "generator": "built-in imagegen; prompt provenance in visual-scene-1.0.0.md"
+    },
+    {
+      "path": "native/assets/illustrated/forge-basalt-moss.png.import",
+      "owner": "Forge representative scene",
+      "bytes": 973,
+      "sha256": "50a8655119703f3848cd38f7d8cfc50cb58cb4ca655f026eb956f4645e36bc60",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset",
+      "generator": "built-in imagegen; prompt provenance in visual-scene-1.0.0.md"
+    },
+    {
       "path": "native/assets/illustrated/grass.png",
       "bytes": 53035,
       "sha256": "54948a6605cc8802062895b755036b7766e07250dddebcaf2cdc2f49f222a165",
@@ -31583,15 +31621,6 @@
       "path": "native/assets/illustrated/potions/xp.svg.import",
       "bytes": 1034,
       "sha256": "7827e059c92fc1a56a380bc6f14907ef962ff4f8f68853b3ef566df1acd14f11",
-      "owner": "ActorRig / World / portraits / icons / terrain fallback",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
-      "replacement": "pending",
-      "deletion": "retain"
-    },
-    {
-      "path": "native/assets/illustrated/README.md",
-      "bytes": 7377,
-      "sha256": "e1574f083c2351b8c2fd9e1266622b9d8368276ae755a29f365b2eb059098b30",
       "owner": "ActorRig / World / portraits / icons / terrain fallback",
       "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
       "replacement": "pending",
@@ -38745,12 +38774,12 @@
     },
     {
       "path": "native/assets/illustrated/weapon-icons/gun.png",
-      "bytes": 19316,
-      "sha256": "e99a584d3f7af69d8ac1aaa17c975070723c25249ba9f1dbd720ee48bb49ea1f",
+      "bytes": 8354,
+      "sha256": "e85298397a985cc3b7f8ce4b68574abed52ffdfafccef2a134f3b2aa568ff526",
       "owner": "IllustratedIcons primary weapon art",
-      "generator": "native/scripts/render_weapon_icons.gd",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "native/scripts/render_weapon_icons.gd --forge-slice",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/illustrated/weapon-icons/gun.png.import",
@@ -40292,11 +40321,11 @@
       "deletion": "retain"
     },
     {
-      "path": "native/assets/README.md",
-      "bytes": 906,
-      "sha256": "3790fe51761ed86e3f25a9cb0855232207be4b1e69b30824f9533efba5738313",
-      "owner": "Runtime auxiliary assets; audio preserved",
-      "generator": "existing family generators",
+      "path": "native/assets/style3d/README.md",
+      "bytes": 554,
+      "sha256": "096cac614d4fd644be69618310bc8fecc6a2385633f4173ced08d50320e4bb13",
+      "owner": "StyleModel / WeaponModel / RealmWorld",
+      "generator": "scripts/build-style-models.py; scripts/build-orb-heroes.py; scripts/build-world-models.py",
       "replacement": "pending",
       "deletion": "retain"
     },
@@ -40311,120 +40340,120 @@
     },
     {
       "path": "native/assets/style3d/baked/cores.json",
-      "bytes": 5302,
-      "sha256": "d536c87967d8a2650082490fcfe5f93cd3d549f24f4c48811a413e273601db08",
+      "bytes": 5306,
+      "sha256": "d0f53b1da0b25d74ef64c1764c9bba9f5fd4db772373fa760e9ccb9138cca48f",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
-      "generator": "scripts/build-style-models.py; scripts/build-world-models.py; native/scripts/bake_style_meshes.gd",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/baked/creature_0_0-core.res",
-      "bytes": 25043,
-      "sha256": "dd2fd499b8443c85828ed87eeccc2e19bb0164f3ebef53d85b5b4a50e00a5094",
+      "bytes": 24937,
+      "sha256": "30079ab8d02c0b971520d503d00ac1d4ee4399acf5cce878e24bc6247174a00d",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
-      "generator": "scripts/build-style-models.py; scripts/build-world-models.py; native/scripts/bake_style_meshes.gd",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/baked/creature_0_0.res",
-      "bytes": 217009,
-      "sha256": "7964a330331ba45f0b1e3f5452a8ec329ea327c01d09b488ff5855aa9b5362f0",
+      "bytes": 62301,
+      "sha256": "c97609f7161a5bd8391dd96a77b9ec26c23c8ec16cd53ac564ea5426a74c51dd",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
-      "generator": "scripts/build-style-models.py; scripts/build-world-models.py; native/scripts/bake_style_meshes.gd",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/baked/creature_0_1-core.res",
-      "bytes": 25067,
-      "sha256": "5513c352678c7623769bc1fee7341e5b3f04d60b458c78130354a5469eaf96c3",
+      "bytes": 24937,
+      "sha256": "208533f07a7e88c5b7d2134a43750cb7c5da5e77f4dfaecac2be521692fc8b88",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
-      "generator": "scripts/build-style-models.py; scripts/build-world-models.py; native/scripts/bake_style_meshes.gd",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/baked/creature_0_1.res",
-      "bytes": 136397,
-      "sha256": "a2a751c38b9355fcc2bc23cae6615f1783b2e3bd59c93c37a097e51ee16b5b2e",
+      "bytes": 55825,
+      "sha256": "f34ac1160f484ab17632fa4c34471735b928bbc2b774f9f8ce78a21eb3a927da",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
-      "generator": "scripts/build-style-models.py; scripts/build-world-models.py; native/scripts/bake_style_meshes.gd",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/baked/creature_0_2-core.res",
-      "bytes": 25067,
-      "sha256": "8618b4acd6faf7a45d4900cadc26d6e94899ab1dc9b482c953726d185ee8faa1",
+      "bytes": 24937,
+      "sha256": "8d0b4afb2068040aa117d701d837fadffadeee6ef804f099e092a6d97278b0d0",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
-      "generator": "scripts/build-style-models.py; scripts/build-world-models.py; native/scripts/bake_style_meshes.gd",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/baked/creature_0_2.res",
-      "bytes": 241101,
-      "sha256": "6e2c5b67872c6d604c868beb3ed8c3288e69bf729ea405e5587fc3eacbcda8a7",
+      "bytes": 178321,
+      "sha256": "7028f6c40ce7b33e5b70710a280cb163e35b2827cc5436a58db96335ebbb087e",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
-      "generator": "scripts/build-style-models.py; scripts/build-world-models.py; native/scripts/bake_style_meshes.gd",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/baked/creature_0_3-core.res",
-      "bytes": 25019,
-      "sha256": "64e9b8dcda7829bb37501a91fa69059150e63dd20372fcc3b1209eb49879cbf3",
+      "bytes": 24937,
+      "sha256": "9862ab2a6c728c0d2010a49f78359ac51d72fd70c6ea574c8423106aecd15c95",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
-      "generator": "scripts/build-style-models.py; scripts/build-world-models.py; native/scripts/bake_style_meshes.gd",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/baked/creature_0_3.res",
-      "bytes": 255509,
-      "sha256": "ef77a3ef464f8f4e306b05cc8a5d55a37942625b839e061c1718b32d3eed7c36",
+      "bytes": 55945,
+      "sha256": "cb3e5f3f5c0bcb6b04ca10e68bc027f6ffde56aefa3f3a21e52b2251be3f97de",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
-      "generator": "scripts/build-style-models.py; scripts/build-world-models.py; native/scripts/bake_style_meshes.gd",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/baked/creature_0_4-core.res",
-      "bytes": 25067,
-      "sha256": "bfb1b7a7e4890129a33f4800e0d211cead9385bacc2bf6731005c06108e0df63",
+      "bytes": 24937,
+      "sha256": "cf56a0cae1c3fcc31897ca8ae728dcbbf3a69ededd07f4d5a745900405958838",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
-      "generator": "scripts/build-style-models.py; scripts/build-world-models.py; native/scripts/bake_style_meshes.gd",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/baked/creature_0_4.res",
-      "bytes": 172857,
-      "sha256": "d67d5b9b13a991f571e17acf0e23ce7c4e7e284e3e4dcc1cad3158bb566a74f5",
+      "bytes": 80061,
+      "sha256": "f8a1ce619fa8cbbb5bb240b988659880d1f712a5101acb8494ad18380471d1e4",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
-      "generator": "scripts/build-style-models.py; scripts/build-world-models.py; native/scripts/bake_style_meshes.gd",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/baked/creature_0_5-core.res",
-      "bytes": 25043,
-      "sha256": "530d27092d65da9d081ed2092c6f963253a1d148d0e585b8934589afa4cdd622",
+      "bytes": 24937,
+      "sha256": "ed7174882e46ede665b495a14d8f6b2c78ff61c7defb5d36dfff8da98a55e889",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
-      "generator": "scripts/build-style-models.py; scripts/build-world-models.py; native/scripts/bake_style_meshes.gd",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/baked/creature_0_5.res",
-      "bytes": 221253,
-      "sha256": "086723796b06fe5de3efda0eb544902adf8435a2ef8b9282872b7b7d3d7780c0",
+      "bytes": 65533,
+      "sha256": "684dfac1c5de447b824e225e8eb51d3f3c450ec395d3780f44c0644a6dfa15c1",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
-      "generator": "scripts/build-style-models.py; scripts/build-world-models.py; native/scripts/bake_style_meshes.gd",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/baked/creature_1_0-core.res",
@@ -40968,57 +40997,57 @@
     },
     {
       "path": "native/assets/style3d/baked/prop_0_0.res",
-      "bytes": 176489,
-      "sha256": "2f734f9857d72662aada41c90eb99374f64b3d13cf489b9f958c21c11c071e11",
+      "bytes": 16637,
+      "sha256": "2e4be2e537e3794a02533df256a0c393e686aed82769939ee2f273ebf8dc1cb3",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
-      "generator": "scripts/build-style-models.py; scripts/build-world-models.py; native/scripts/bake_style_meshes.gd",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/baked/prop_0_1.res",
-      "bytes": 176489,
-      "sha256": "b70492230af249771997c06f675128b1ccf6a1238c0e6e1d631bbf116b3fa08a",
+      "bytes": 11665,
+      "sha256": "71068a297864dc95a66a8bb77d4e905f6cab8919b4003fce43fff7784ea389b6",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
-      "generator": "scripts/build-style-models.py; scripts/build-world-models.py; native/scripts/bake_style_meshes.gd",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/baked/prop_0_2.res",
-      "bytes": 5513,
-      "sha256": "e88eedd131a3ce08956e25d607ce1ba65a396c71047a93b5c0ab6a1fe240ecdd",
+      "bytes": 10645,
+      "sha256": "b96052c262506cdfdf063f61ca471cbed60b21f43176bcb43627101522d4373c",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
-      "generator": "scripts/build-style-models.py; scripts/build-world-models.py; native/scripts/bake_style_meshes.gd",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/baked/prop_0_3.res",
-      "bytes": 5513,
-      "sha256": "399545b9db71232caa160765a2dc0c47345a55d660c121e98d9055d4c5fd2406",
+      "bytes": 15317,
+      "sha256": "ced25ffa83952a26e6ffb6875875c559fc9f869b59090a7614f3a0db2801efe3",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
-      "generator": "scripts/build-style-models.py; scripts/build-world-models.py; native/scripts/bake_style_meshes.gd",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/baked/prop_0_4.res",
-      "bytes": 13685,
-      "sha256": "ff97017ca4365cad1f1d1c30f74032f0571bef420a005121b40053c5baea36bc",
+      "bytes": 10669,
+      "sha256": "5331556b2d07bd1aef99b47c3ffc396a10c03d538055d7247035f620c375386e",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
-      "generator": "scripts/build-style-models.py; scripts/build-world-models.py; native/scripts/bake_style_meshes.gd",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/baked/prop_0_5.res",
-      "bytes": 15077,
-      "sha256": "d75cbc190d8d01a773621eb4bbad6b5735f284feaf1e78cb10ea94497220a833",
+      "bytes": 15317,
+      "sha256": "10e70bdeae2c0c00cf211e175e2dd00cf92d44954af96ed7062399694821de81",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
-      "generator": "scripts/build-style-models.py; scripts/build-world-models.py; native/scripts/bake_style_meshes.gd",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/baked/prop_1_0.res",
@@ -41355,12 +41384,12 @@
     },
     {
       "path": "native/assets/style3d/count_duck.glb",
-      "bytes": 304012,
-      "sha256": "52ff185c2e5b6cc024c49461bc09637c56121548087d28c7c54348c9805530ed",
+      "bytes": 116740,
+      "sha256": "0ddf0ea6c42fa3b14b0b8ef38a95eb4cc9d33e7a796bb935e508cdc43f525ebc",
       "owner": "StyleModel / WeaponModel / RealmWorld",
-      "generator": "scripts/build-style-models.py; scripts/build-orb-heroes.py; scripts/build-world-models.py",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/count_duck.glb.import",
@@ -41373,12 +41402,12 @@
     },
     {
       "path": "native/assets/style3d/creature_0_0.glb",
-      "bytes": 263884,
-      "sha256": "53f937b19d0430fa2e37e7c2b94029b3895bb1717b24f3f6ce6ec369c2afb71a",
+      "bytes": 94412,
+      "sha256": "ecce35de64d9ee9da238fd84d330e7d3e3aeba184f153a403047ac1405253a8b",
       "owner": "StyleModel / WeaponModel / RealmWorld",
-      "generator": "scripts/build-style-models.py; scripts/build-orb-heroes.py; scripts/build-world-models.py",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/creature_0_0.glb.import",
@@ -41391,12 +41420,12 @@
     },
     {
       "path": "native/assets/style3d/creature_0_1.glb",
-      "bytes": 182448,
-      "sha256": "322304b52833d3beb7d0d441d67e12b8c044cacd913daf8a01d1f05a3f752f8b",
+      "bytes": 82408,
+      "sha256": "213ca172efc21e171211129c638c9f3a8687f1d1dfb558a43120418f7be6fee3",
       "owner": "StyleModel / WeaponModel / RealmWorld",
-      "generator": "scripts/build-style-models.py; scripts/build-orb-heroes.py; scripts/build-world-models.py",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/creature_0_1.glb.import",
@@ -41409,12 +41438,12 @@
     },
     {
       "path": "native/assets/style3d/creature_0_2.glb",
-      "bytes": 280536,
-      "sha256": "28e9ca007d456ef71e91afc3d92c0ba29647693a4639c454fb2f72d4bc55267e",
+      "bytes": 210784,
+      "sha256": "a77f2f833898e9d20632d6435764b921092f25824368f175823d2d5f2380fe92",
       "owner": "StyleModel / WeaponModel / RealmWorld",
-      "generator": "scripts/build-style-models.py; scripts/build-orb-heroes.py; scripts/build-world-models.py",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/creature_0_2.glb.import",
@@ -41427,12 +41456,12 @@
     },
     {
       "path": "native/assets/style3d/creature_0_3.glb",
-      "bytes": 296736,
-      "sha256": "3b5023f30a880b931167ebce1ff36ff0dc7aa88527a0fc5a8e4f4099a11128c0",
+      "bytes": 86404,
+      "sha256": "8249b0e6f485170b65e2d1880dfe45c2ef7d97e849a05e6a87e5e5095e8e3ec6",
       "owner": "StyleModel / WeaponModel / RealmWorld",
-      "generator": "scripts/build-style-models.py; scripts/build-orb-heroes.py; scripts/build-world-models.py",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/creature_0_3.glb.import",
@@ -41445,12 +41474,12 @@
     },
     {
       "path": "native/assets/style3d/creature_0_4.glb",
-      "bytes": 219904,
-      "sha256": "e668dcacdc37f4bd06035fee55d590bda928318403df7ec4d33af94e7ab728d4",
+      "bytes": 110156,
+      "sha256": "56ee89f91bfa405fca89e7afaf7012a073d09bb6ebd72b27df67ae684c4e86f4",
       "owner": "StyleModel / WeaponModel / RealmWorld",
-      "generator": "scripts/build-style-models.py; scripts/build-orb-heroes.py; scripts/build-world-models.py",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/creature_0_4.glb.import",
@@ -41463,12 +41492,12 @@
     },
     {
       "path": "native/assets/style3d/creature_0_5.glb",
-      "bytes": 270044,
-      "sha256": "5e55aac96a16610d5ae1a9c52f965c6572d49c6e24fe398f2279b4e063f8e582",
+      "bytes": 100228,
+      "sha256": "8fd02d149da561519e78069b697e3dd86ff8fad48739e907e3bd2656460fc849",
       "owner": "StyleModel / WeaponModel / RealmWorld",
-      "generator": "scripts/build-style-models.py; scripts/build-orb-heroes.py; scripts/build-world-models.py",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/creature_0_5.glb.import",
@@ -42020,6 +42049,15 @@
       "deletion": "retain"
     },
     {
+      "path": "native/assets/style3d/forge-slice-manifest.json",
+      "owner": "Forge representative scene",
+      "bytes": 1722,
+      "sha256": "be6b7bebbd4699f7c59208be77336898a5060e0ad573b2d297ca2d5dfdfdc2a4",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset",
+      "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice"
+    },
+    {
       "path": "native/assets/style3d/hero-core-manifest.json",
       "bytes": 2700,
       "sha256": "3f46bda9b53be0e103af1ffcf96254a5d5281f486368883117f28427d9caa2a7",
@@ -42390,12 +42428,12 @@
     },
     {
       "path": "native/assets/style3d/mint_pistol.glb",
-      "bytes": 227900,
-      "sha256": "63782376ea43e92b0c48c5ce6e80614fab8f6f4c69f73fbe6e3eea4419bafa34",
+      "bytes": 18864,
+      "sha256": "20280f5631104b620de8e0be980e79bc5936d0325fd537c09fc86c75e4742b11",
       "owner": "StyleModel / WeaponModel / RealmWorld",
-      "generator": "scripts/build-style-models.py; scripts/build-orb-heroes.py; scripts/build-world-models.py",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/mint_pistol.glb.import",
@@ -42417,12 +42455,12 @@
     },
     {
       "path": "native/assets/style3d/prop_0_0.glb",
-      "bytes": 200912,
-      "sha256": "b9f2edecf995a8584f3051aef25d0e1141a37dd4cbb8dcb7165be88a4f8cc207",
+      "bytes": 31476,
+      "sha256": "a846bb7f847f15e4668f8e0c884dc7b99f9d4bad8454f410f9238ae46569d3a0",
       "owner": "StyleModel / WeaponModel / RealmWorld",
-      "generator": "scripts/build-style-models.py; scripts/build-orb-heroes.py; scripts/build-world-models.py",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/prop_0_0.glb.import",
@@ -42435,12 +42473,12 @@
     },
     {
       "path": "native/assets/style3d/prop_0_1.glb",
-      "bytes": 200912,
-      "sha256": "b9f2edecf995a8584f3051aef25d0e1141a37dd4cbb8dcb7165be88a4f8cc207",
+      "bytes": 20616,
+      "sha256": "f31ae90e18a5e3fa0df3422bcf54560bb7c8a90402b2c42fccc6d7b9952b6b7c",
       "owner": "StyleModel / WeaponModel / RealmWorld",
-      "generator": "scripts/build-style-models.py; scripts/build-orb-heroes.py; scripts/build-world-models.py",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/prop_0_1.glb.import",
@@ -42453,12 +42491,12 @@
     },
     {
       "path": "native/assets/style3d/prop_0_2.glb",
-      "bytes": 9276,
-      "sha256": "8eca46a644de600b0ebb69e4394a0706425a12edc022891eb2ad4d5728b032df",
+      "bytes": 21288,
+      "sha256": "314e46aafa7018df08267e6c6b53be447f0e2377fd16bf7cbf41c8233911b9af",
       "owner": "StyleModel / WeaponModel / RealmWorld",
-      "generator": "scripts/build-style-models.py; scripts/build-orb-heroes.py; scripts/build-world-models.py",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/prop_0_2.glb.import",
@@ -42471,12 +42509,12 @@
     },
     {
       "path": "native/assets/style3d/prop_0_3.glb",
-      "bytes": 9276,
-      "sha256": "8eca46a644de600b0ebb69e4394a0706425a12edc022891eb2ad4d5728b032df",
+      "bytes": 28952,
+      "sha256": "80d55fbb0c73f73c909c6071e2b702cf872ab3458731b731c4374d1ae7af10bd",
       "owner": "StyleModel / WeaponModel / RealmWorld",
-      "generator": "scripts/build-style-models.py; scripts/build-orb-heroes.py; scripts/build-world-models.py",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/prop_0_3.glb.import",
@@ -42489,12 +42527,12 @@
     },
     {
       "path": "native/assets/style3d/prop_0_4.glb",
-      "bytes": 26656,
-      "sha256": "4034aece3b16f80cba16112e573cc34f9530b865595ebc45ac30f4c64038a185",
+      "bytes": 21136,
+      "sha256": "ac5960b60a5dd57553ebd121b5eb13a455de9a57e744666cfd47067e018419f4",
       "owner": "StyleModel / WeaponModel / RealmWorld",
-      "generator": "scripts/build-style-models.py; scripts/build-orb-heroes.py; scripts/build-world-models.py",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/prop_0_4.glb.import",
@@ -42507,12 +42545,12 @@
     },
     {
       "path": "native/assets/style3d/prop_0_5.glb",
-      "bytes": 30220,
-      "sha256": "c3ef1e8f22f3f301e8f652ecf54e99aae0f05f457b17210f841662e7bf3bc883",
+      "bytes": 28808,
+      "sha256": "19f4363b0fb3c181860b339d17a4c900e01eeeb4f043ce8f4794dfcabb630c56",
       "owner": "StyleModel / WeaponModel / RealmWorld",
-      "generator": "scripts/build-style-models.py; scripts/build-orb-heroes.py; scripts/build-world-models.py",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
+      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/prop_0_5.glb.import",
@@ -43064,15 +43102,6 @@
       "deletion": "retain"
     },
     {
-      "path": "native/assets/style3d/README.md",
-      "bytes": 554,
-      "sha256": "096cac614d4fd644be69618310bc8fecc6a2385633f4173ced08d50320e4bb13",
-      "owner": "StyleModel / WeaponModel / RealmWorld",
-      "generator": "scripts/build-style-models.py; scripts/build-orb-heroes.py; scripts/build-world-models.py",
-      "replacement": "pending",
-      "deletion": "retain"
-    },
-    {
       "path": "native/assets/style3d/storybook_tree.glb",
       "bytes": 271028,
       "sha256": "475547d053e1e858adb1ff42039256f400b961691b0e4230c45bb80c5852bc95",
@@ -43528,6 +43557,33 @@
       "sha256": "3ebf02a7faff3136274eb10697a5087593f354e73010cf7aa1ffaace930a6811",
       "owner": "StyleModel / WeaponModel / RealmWorld",
       "generator": "scripts/build-style-models.py; scripts/build-orb-heroes.py; scripts/build-world-models.py",
+      "replacement": "pending",
+      "deletion": "retain"
+    },
+    {
+      "path": "native/assets/voices/MODEL-LICENSE.txt",
+      "bytes": 11358,
+      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
+      "owner": "Runtime auxiliary assets; audio preserved",
+      "generator": "existing family generators",
+      "replacement": "pending",
+      "deletion": "retain"
+    },
+    {
+      "path": "native/assets/voices/Pocket-TTS-license.txt",
+      "bytes": 1023,
+      "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
+      "owner": "Runtime auxiliary assets; audio preserved",
+      "generator": "existing family generators",
+      "replacement": "pending",
+      "deletion": "retain"
+    },
+    {
+      "path": "native/assets/voices/Pocket-TTS-voice-credits.txt",
+      "bytes": 572,
+      "sha256": "705e35480e47168d3f3c299cf7b047241193f66a095ba0c699f324e16689e913",
+      "owner": "Runtime auxiliary assets; audio preserved",
+      "generator": "existing family generators",
       "replacement": "pending",
       "deletion": "retain"
     },
@@ -44714,33 +44770,6 @@
       "path": "native/assets/voices/low_health.wav.import",
       "bytes": 502,
       "sha256": "69b887112bc06ce061372dcb0686ba5b64714ab97c488d4ff542f15f19388996",
-      "owner": "Runtime auxiliary assets; audio preserved",
-      "generator": "existing family generators",
-      "replacement": "pending",
-      "deletion": "retain"
-    },
-    {
-      "path": "native/assets/voices/MODEL-LICENSE.txt",
-      "bytes": 11358,
-      "sha256": "cfc7749b96f63bd31c3c42b5c471bf756814053e847c10f3eb003417bc523d30",
-      "owner": "Runtime auxiliary assets; audio preserved",
-      "generator": "existing family generators",
-      "replacement": "pending",
-      "deletion": "retain"
-    },
-    {
-      "path": "native/assets/voices/Pocket-TTS-license.txt",
-      "bytes": 1023,
-      "sha256": "23f18e03dc49df91622fe2a76176497404e46ced8a715d9d2b67a7446571cca3",
-      "owner": "Runtime auxiliary assets; audio preserved",
-      "generator": "existing family generators",
-      "replacement": "pending",
-      "deletion": "retain"
-    },
-    {
-      "path": "native/assets/voices/Pocket-TTS-voice-credits.txt",
-      "bytes": 572,
-      "sha256": "705e35480e47168d3f3c299cf7b047241193f66a095ba0c699f324e16689e913",
       "owner": "Runtime auxiliary assets; audio preserved",
       "generator": "existing family generators",
       "replacement": "pending",

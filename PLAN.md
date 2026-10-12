@@ -138,3 +138,5 @@ Read [AGENTS.md](AGENTS.md) and the [Godot workflow guide](native/docs/godot-wor
 - Test new builds in solo and in coop. Make and inspect new screenshots for UI bugs!
 - Preserve history, saves, logs; delete old builds only with explicit authorization.
 - Update plan.md: version, newest build, done tasks moved to do "## Done".
+
+Visual overhaul scene checkpoint: [models, orb replication, evidence and remaining work](native/docs/visual-scene-1.0.0.md). Version remains 0.8.10; full 1.0.0 roadmap stays open.

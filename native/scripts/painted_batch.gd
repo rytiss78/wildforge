@@ -88,7 +88,7 @@ void fragment(){vec3 paint=COLOR.a<.5?texture(bark,UV*vec2(1.0,2.0)).rgb:COLOR.a
 	material.next_pass=ToonArt.outline
 	if not animated:
 		var contour=ShaderMaterial.new();var contour_shader=Shader.new()
-		contour_shader.code="shader_type spatial;render_mode unshaded,cull_front;uniform bool fade_near=false;uniform vec3 hero_position=vec3(0.0);varying vec3 p;void vertex(){VERTEX+=NORMAL*.012;p=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz;}void fragment(){"+sightline_cutaway("p")+"ALBEDO=vec3(.26,.20,.15);}"
+		contour_shader.code="shader_type spatial;render_mode unshaded,cull_front;uniform bool fade_near=false;uniform vec3 hero_position=vec3(0.0);varying vec3 p;void vertex(){VERTEX+=NORMAL*.012;p=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz;}void fragment(){"+sightline_cutaway("p")+"ALBEDO=vec3(.025,.038,.045);}"
 		contour.shader=contour_shader;material.next_pass=contour
 	materials[animated]=material.duplicate()
 	if material.next_pass: materials[animated].next_pass=material.next_pass.duplicate()

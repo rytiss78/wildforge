@@ -166,7 +166,7 @@ func _ready():
 	smoke=smoke or OS.get_cmdline_user_args().has("--golden-scene")
 	smoke=smoke or OS.get_cmdline_user_args().has("--ui-review")
 	smoke=smoke or OS.get_cmdline_user_args().has("--journey-review") or OS.get_cmdline_user_args().has("--scenery-review") or OS.get_cmdline_user_args().has("--hunt-review")
-	smoke=smoke or OS.get_cmdline_user_args().has("--combat-review") or OS.get_cmdline_user_args().has("--pace-review")
+	smoke=smoke or OS.get_cmdline_user_args().has("--forge-review") or OS.get_cmdline_user_args().has("--combat-review") or OS.get_cmdline_user_args().has("--pace-review")
 	camera_locked=OS.get_cmdline_user_args().has("--golden-scene") or OS.get_cmdline_user_args().has("--ui-review")
 	career = ProfileScript.new(rules.data,smoke)
 	if network_test_role!="": career.file="user://coop-test-"+network_test_role+".json"
@@ -268,6 +268,7 @@ func _ready():
 	elif OS.get_cmdline_user_args().has("--journey-review"): preload("res://scripts/journey_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--ui-review"): preload("res://scripts/ui_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--pace-review"): preload("res://scripts/pace_review.gd").run.call_deferred(self)
+	elif OS.get_cmdline_user_args().has("--forge-review"): preload("res://scripts/forge_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--combat-review"): preload("res://scripts/combat_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--golden-scene"): call_deferred("golden_scene")
 	elif smoke: call_deferred("export_hero_art" if OS.get_cmdline_user_args().has("--art") else "run_soak" if OS.get_cmdline_user_args().has("--soak") else "run_smoke")
@@ -823,15 +824,6 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 	node.position=p+Vector3.UP*.15
 	add_child(node)
 	if not boss: rig.bake_enemy()
-	# Boss health bar (mesh, not a label)
-	if boss:
-		var hp_bar=MeshInstance3D.new()
-		var hp_mesh=BoxMesh.new();hp_mesh.size=Vector3(2.5,.15,.05)
-		hp_bar.mesh=hp_mesh
-		hp_bar.material_override=material(Color("ff3333"),3.0)
-		hp_bar.position=Vector3(0,height*1.8,0)
-		node.add_child(hp_bar)
-		node.set_meta("boss_hp_bar",hp_bar)
 	# Elite glow ring
 	if elite:
 		var ring=TorusMesh.new();ring.inner_radius=.6;ring.outer_radius=.75
@@ -1614,12 +1606,6 @@ func update_combat(delta: float):
 			update_status_indicators(enemy)
 			enemy.node.position=enemy.node.position.lerp(enemy.get("target_position",previous),1-exp(-enemy_delta*16))
 			var rig=enemy.node.get_meta("rig");rig.set_health(enemy.hp/enemy.maxHp,enemy.boss or enemy.health>=1.8);rig.animate(enemy_delta,(enemy.node.position-previous)/enemy_delta,true);rig.statuses(enemy.fire>0,enemy.poison>0,enemy.freeze>0,enemy.blind>0)
-			# Update boss health bar scale
-			if enemy.boss and enemy.node.has_meta("boss_hp_bar") and is_instance_valid(enemy.node.get_meta("boss_hp_bar")):
-				var hp_bar=enemy.node.get_meta("boss_hp_bar")
-				var hp_ratio=enemy.hp/enemy.maxHp
-				hp_bar.scale.x=2.5*hp_ratio
-				hp_bar.material_override=material(Color("ff3333" if hp_ratio>.3 else "ff8833"),3.0)
 			# Pulse elite ring
 			if enemy.get("elite",false) and enemy.node.has_meta("elite_ring") and is_instance_valid(enemy.node.get_meta("elite_ring")):
 				var ring_node=enemy.node.get_meta("elite_ring")

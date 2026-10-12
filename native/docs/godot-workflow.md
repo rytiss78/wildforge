@@ -56,6 +56,9 @@ Prefix every action below with `node scripts/agent-workflow.mjs`.
 | `integration` | Gameplay, rewards, content and traversal | Headless; detailed assertions in its log |
 | `capture-ui` | Menu, co-op selection, HUD, cards and pause screens | Rendered; inspect the PNGs |
 | `controls-review` | Keyboard/controller bindings and settings | Rendered; includes saved-setting checks |
+| `forge-review` | Representative overhaul scene, orb snapshot and camera checks | Rendered; inspect full/half/low/empty/remote/reward captures |
+| `bake-forge` | Rebuild only Clover Woods baked meshes | Run after `python scripts/build-forge-slice.py`; preserves other biome cores |
+| `forge-weapon-icon` | Render the rebuilt pistol thumbnail | Rendered; only writes gun.png |
 | `combat-review` | Combat, damage numbers and frame measurements | Rendered; metrics alone do not prove improvement |
 | `surface-review` | Wall, ceiling, ledge and slope traversal | Rendered; captures several positions |
 | `feedback-review`, `progression-review` | Feedback, reports and progression UI | Rendered; inspect feature captures |

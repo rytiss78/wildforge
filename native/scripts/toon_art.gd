@@ -22,7 +22,7 @@ static func paint(color: Color) -> StandardMaterial3D:
 	if outline==null:
 		outline=ShaderMaterial.new()
 		var shader=Shader.new()
-		shader.code="shader_type spatial;render_mode unshaded,cull_front;void vertex(){VERTEX+=NORMAL*0.012;}void fragment(){ALBEDO=vec3(.26,.20,.15);}"
+		shader.code="shader_type spatial;render_mode unshaded,cull_front;void vertex(){VERTEX+=NORMAL*0.012;}void fragment(){ALBEDO=vec3(.025,.038,.045);}"
 		outline.shader=shader
 	m.next_pass=outline
 	palette[key]=m

@@ -19,7 +19,7 @@ void fragment() {
 	float surface=fill+sin(TIME*3.0+world_position.x*8.0)*0.009*step(0.02,fill)*step(fill,0.98);
 	float blood=(1.0-smoothstep(surface-0.008,surface+0.008,height))*step(0.002,fill);
 	float rim=pow(1.0-clamp(dot(normalize(NORMAL),normalize(VIEW)),0.0,1.0),2.3);
-	vec3 empty_glass=mix(vec3(0.66,0.83,0.76),vec3(0.22,0.48,0.47),rim*0.75);
+	vec3 empty_glass=mix(vec3(0.18,0.32,0.29),vec3(0.035,0.09,0.09),rim*0.75);
 	vec3 red=mix(vec3(0.56,0.024,0.038),vec3(0.85,0.072,0.065),height);
 	vec3 liquid=red;
 	vec3 color=mix(empty_glass,liquid,blood*(1.0-rim*0.3));
@@ -38,5 +38,5 @@ void fragment() {
 	color=mix(color,vec3(0.97,0.96,0.82),reflection*0.8);
 	ALBEDO=mix(color,vec3(1.0,0.83,0.58),hit*0.35);
 	ROUGHNESS=0.85;
-	EMISSION=color*(0.025+fill*0.10)+vec3(0.96,0.77,0.5)*rim*0.06;
+	EMISSION=color*(0.025+fill*0.10)+vec3(0.96,0.77,0.5)*rim*0.16;
 }

@@ -70,13 +70,22 @@ static func pick(game,harvest: Dictionary):
 static func make_model(id: int) -> Node3D:
 	var root=Node3D.new();root.name="Harvest"+str(id)
 	var color=Color(TYPES[id].color)
+	if id==0:
+		# Blade-shaped leaves and a gilt seed vessel, with the same pickup footprint.
+		ToonArt.tube(root,Color("283f34"),Vector3(0,.08,0),.36,.46,.16)
+		var ring=TorusMesh.new();ring.inner_radius=.25;ring.outer_radius=.32;ring.rings=20;ring.ring_segments=6
+		ToonArt.part(root,ring,Color("bd9857"),Vector3(0,.20,0))
+		for i in range(6):
+			var leaf=PrismMesh.new();leaf.size=Vector3(.18,.85,.10)
+			var angle=i*TAU/6
+			var node=ToonArt.part(root,leaf,Color("48ae7b") if i%2 else Color("86cf9d"),Vector3(sin(angle)*.24,.45,cos(angle)*.24))
+			node.rotation=Vector3(.40,angle,.20)
+			var vein=BoxMesh.new();vein.size=Vector3(.014,.48,.012)
+			ToonArt.part(node,vein,Color("dbc184"),Vector3(0,0,-.055))
+		ToonArt.ball(root,Color("e6c984"),Vector3(0,.61,0),Vector3(.17,.22,.17))
+		return root
 	ToonArt.ball(root,Color("65705c") if id<2 else Color("66798c"),Vector3(0,.08,0),Vector3(.95,.18,.8))
 	match id:
-		0:
-			for i in range(7):
-				var angle=i*TAU/7;var leaf=ToonArt.ball(root,color.lightened((i%2)*.12),Vector3(sin(angle)*.28,.3+float(i%3)*.1,cos(angle)*.28),Vector3(.22,.65,.1))
-				leaf.rotation=Vector3(.35,angle,.3)
-			for i in range(4): ToonArt.ball(root,Color("fff1b4"),Vector3(sin(i*TAU/4)*.12,.7,cos(i*TAU/4)*.12),Vector3(.21,.12,.21))
 		1:
 			for i in range(3):
 				var p=Vector3((i-1)*.3,.0,(i%2)*.25);var height=.55+float(i%2)*.35

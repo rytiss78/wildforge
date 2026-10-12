@@ -16,7 +16,12 @@ vec3 biome_paint(float b,vec2 uv) {
  else if(b>2.5){paint=texture(t3,uv).rgb;base=vec3(.43,.55,.57);}
  else if(b>1.5){paint=texture(t2,uv).rgb;base=vec3(.24,.30,.38);}
  else if(b>.5){paint=texture(t1,uv).rgb;base=vec3(.16,.27,.23);}
- else {paint=texture(t0,uv).rgb;base=vec3(.16,.29,.12);}
+ else {
+   vec3 stone=texture(t0,p.xz*.07).rgb;
+   stone=mix(vec3(dot(stone,vec3(.3,.59,.11))),stone,.55);
+   float moss=sin(p.x*.073+sin(p.z*.11))*cos(p.z*.063);
+   return stone*1.5*mix(vec3(.8,1.02,.91),vec3(.55,.91,.61),smoothstep(.1,.75,moss));
+ }
  float wash=sin(uv.x*.57+sin(uv.y*.8))*.025+cos(uv.y*.66)*.02;
  float grain=dot(paint,vec3(.299,.587,.114));
  return base*(.82+grain*.9)+vec3(wash*.55);

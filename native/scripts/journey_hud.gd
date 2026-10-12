@@ -5,14 +5,14 @@ func _draw():
 	var font=ThemeDB.fallback_font
 	var bosses=game.enemies.filter(func(e):return e.boss and not e.dead)
 	if not bosses.is_empty():
-		var boss=bosses[-1];var width=520.0
-		draw_style_box(game.hud.style(Color("17293d"),Color("bc925d"),8),Rect2(460,20,width,54))
-		draw_string(font,Vector2(476,43),str(boss.get("title",game.boss_name)),HORIZONTAL_ALIGNMENT_LEFT,-1,19,Color("ffdf9a"))
-		draw_rect(Rect2(476,54,width-32,9),Color("3f414a"));draw_rect(Rect2(476,54,(width-32)*clampf(boss.hp/boss.maxHp,0,1),9),Color("d76c72"))
+		var boss=bosses[-1];var x=(get_viewport_rect().size.x-520)*.5
+		draw_style_box(game.hud.style(ThemeTokens.INK,ThemeTokens.STAR_GOLD,3),Rect2(x,20,520,58))
+		preload("res://scripts/health_emblem.gd").draw(self,Vector2(x+32,49),21,boss.hp/boss.maxHp)
+		draw_string(font,Vector2(x+68,55),str(boss.get("title",game.boss_name)),HORIZONTAL_ALIGNMENT_LEFT,-1,19,ThemeTokens.PAPER)
 	if game.elapsed<float(game.events.get("announcement_until",-1)):
-		draw_style_box(game.hud.style(Color("17293d"),Color("d6b474"),12),Rect2(380,92,680,85))
-		draw_string(font,Vector2(400,124),str(game.events.get("announcement","")),HORIZONTAL_ALIGNMENT_LEFT,-1,27,Color("ffdf9a"))
-		draw_string(font,Vector2(400,154),str(game.events.get("announcement_detail","")),HORIZONTAL_ALIGNMENT_LEFT,-1,15,Color("fff8de"))
+		draw_style_box(game.hud.style(Color("17293d"),Color("d6b474"),12),Rect2(620,92,680,85))
+		draw_string(font,Vector2(640,124),str(game.events.get("announcement","")),HORIZONTAL_ALIGNMENT_LEFT,-1,27,Color("ffdf9a"))
+		draw_string(font,Vector2(640,154),str(game.events.get("announcement_detail","")),HORIZONTAL_ALIGNMENT_LEFT,-1,15,Color("fff8de"))
 	if game.realm_time>=600:
 		draw_style_box(game.hud.style(Color("592e47"),Color("e38d6c"),5),Rect2(24,274,254,30))
 		draw_string(font,Vector2(34,296),"ECLIPSE · threat %d" % (1+int((game.realm_time-600)/30)),HORIZONTAL_ALIGNMENT_LEFT,-1,16,Color("ffdf9a"))

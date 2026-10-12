@@ -52,7 +52,7 @@ func setup(asset: String, tank: bool = false):
 	jaw=model.find_child("Jaw",true,false)
 	cape=model.find_child("Cape",true,false)
 	var shader=Shader.new()
-	shader.code="shader_type spatial; render_mode unshaded,cull_front; uniform float width=0.009; void vertex(){VERTEX+=NORMAL*width;} void fragment(){ALBEDO=vec3(0.24,0.18,0.16);}"
+	shader.code="shader_type spatial; render_mode unshaded,cull_front; uniform float width=0.009; void vertex(){VERTEX+=NORMAL*width;} void fragment(){ALBEDO=vec3(0.025,0.038,0.045);}"
 	outline=ShaderMaterial.new();outline.shader=shader
 	prepare_meshes(model)
 	for core_name in ["GlassCore","RearGlass"]:

@@ -57,7 +57,7 @@ export function assessPng(path, started, minimum=320) {
 }
 
 async function main(action) {
-  if (!['coop-feedback', 'eclipse-review', 'feedback-review', 'skill-icons', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
+  if (!['forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'skill-icons', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
     console.error('Usage: node scripts/agent-workflow.mjs check|smoke|capture|capture-ui|combat-review|pace-review|soak|integration|build|status'); return 2;
   }
   const git = (...args) => spawnSync('git', ['-C', root, ...args], {encoding:'utf8', windowsHide:true}).stdout?.trim() ?? '';
@@ -77,7 +77,7 @@ async function main(action) {
   }
   try {
     if (action === 'check') await step('javascript-tests',process.execPath,['--test'],120000);
-    if (action === 'check' || action === 'build' || !existsSync(join(root,'native/.godot/global_script_class_cache.cfg'))) {
+    if (action === 'check' || action === 'build' || action === 'bake-forge' || !existsSync(join(root,'native/.godot/global_script_class_cache.cfg'))) {
       await step('godot-import',godot,['--headless','--path',join(root,'native'),'--editor','--import'],180000);
       await step('gdscript-parse',godot,['--headless','--path',join(root,'native'),'--check-only','--script','res://scripts/game.gd'],45000);
     }
@@ -109,6 +109,19 @@ async function main(action) {
       const weapons=JSON.parse(readFileSync(join(root,'native/data/catalog.json'),'utf8')).weapons;
       if(!output.includes('WEAPON_ICONS_COMPLETE '+weapons.length)) throw new Error('Missing weapon render completion.');
       report.icons=weapons.map(w=>assessPng(join(root,'native/assets/illustrated/weapon-icons',w.id+'.png'),started,128));
+    }
+    if (action === 'bake-forge') await step('bake-forge',godot,['--headless','--path',join(root,'native'),'--script','res://scripts/bake_models.gd','--','--forge-slice'],180000);
+    if (action === 'forge-weapon-icon') {
+      const output=await step('forge-weapon-icon',godot,['--path',join(root,'native'),'--script','res://scripts/render_weapon_icons.gd','--','--forge-slice'],120000);
+      if(!output.includes('WEAPON_ICONS_COMPLETE 1')) throw new Error('Missing weapon render');
+      report.capture=assessPng(join(root,'native/assets/illustrated/weapon-icons/gun.png'),started,128);
+    }
+    if (action === 'forge-review') {
+      const output=await step('forge-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--forge-review'],120000);
+      const line=output.split(/\r?\n/).findLast(x=>x.startsWith('FORGE_REVIEW '));
+      if(!line) throw new Error('Missing forge review');report.forge=JSON.parse(line.slice(13));
+      if(Object.values(report.forge.checks).some(v=>v===false)) throw new Error('Forge review assertions failed');
+      report.capture=['scene','half','low','empty','remote-half','damage','reward'].map(n=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','forge-'+n+'.png'),started));
     }
     if (action === 'smoke') report.smoke=assessSmoke(await step('native-smoke',godot,['--headless','--path',join(root,'native'),'--','--smoke'],90000));
     if (action === 'integration') {
