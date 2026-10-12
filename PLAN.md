@@ -2,9 +2,9 @@
 
 **One developer. Streamlined process.** No multi-agent orchestration, no heavy rules. Direct edits, commit after each meaningful step, group exports after several milestones (Rytis prefers less-frequent uploads).
 
-**Version:** 0.8.2 (in `native/project.godot`). **Latest release:** build-2. **Wrapper:** `node scripts/agent-workflow.mjs <action>`.
+**Version:** 0.8.5 (in `native/project.godot`). **Latest release:** . **Wrapper:** `node scripts/agent-workflow.mjs <action>`.
 
-**Working rule:** every change committed + validated with the wrapper (see bottom). Keep README + release current.
+**Working rule:** every change committed + validated with the wrapper (see bottom), make exe build. Update README + release current.
 
 ---
 
@@ -18,8 +18,8 @@
 
 ## Bugs to fix (new from 2026-10-11)
 
-|### 1. UI offcentered, no visual update — `[x done]`
-|Modal panels now dynamically center based on `get_viewport().get_visible_rect().size` instead of fixed `Vector2(220,80)`. Panels stay centered at any resolution.
+|### 1. UI visual upgrades — `[ ] open`
+
 
 |### 2. Hero gets way too much XP — `[x done]`
 |Changed XP curve from `2 + level*2 + level²` to `8 + level*6 + level²*2`. Level 1 now costs ~16 XP vs 5; level 8 costs ~184 vs 82.
@@ -33,13 +33,13 @@
 |### 5.  cards show weapon applicability — `[] open`
 |Augment cards (e.g. "augment-gun-damage") now show "Boosts: [weapon name]" when player owns that weapon, or "Won't help — requires [weapon]" when they don't. Generic boosts (damage, rate, etc.) still show normal text.
 
-||### 6. Chest card icons — `[x done]`
-||Replaced all 3 chest card icons with detailed hand-painted SVGs matching the established art style. cheap-chest: treasure chest with gold bands, lock, and golden discount tag. chest-heal-item: chest with red heart symbol and pink healing glow rays. chest-heal-skill: same chest+heart with golden sparkle to distinguish from item.
+### 6. Chest card icons — `[ ] open`
+Chest card icons need a complete visual overhaul: detailed 2D artwork. Not a code fix — asset creation needed.
 
 ||### 7. Hit indicator makes screen to busy — `[x done]`
 Damage numbers now only appear on critical hits (`cause=="crit"`). Regular hits no longer spawn floating damage numbers, eliminating screen clutter.
 
-||### 8. Xbox-style achievement notifications — `[x done]`
+||### 8. Xbox-style achievement notifications do not work, no xbox notification ui or sound present — `[] open`
 ||Achievement popup slides in from top-right corner with fade animation (1s in, 3s hold, 0.5s out). Gold-bordered panel shows achievement name and description. Triggered via `achievement_event()` in game.gd.
 
 ||### 9. Portal maps scale difficulty — `[x done]`
@@ -66,8 +66,8 @@ Damage numbers now only appear on critical hits (`cause=="crit"`). Regular hits 
 ||### 13. Eclipse blood rain — `[x done]`
 ||Added `GPUParticles3D` blood rain system in `_ready()`. Emits 200 red droplets from a 120×60 box above player (y=55), gravity -8, initial velocity 80–120 downward. Visibility toggled on Eclipse enter/exit. Positioned to follow camera horizontally.
 
-||### 14. Remake non-weapon card/skill/boost icons — `[~ in progress]`
-||Scope: ~761 existing SVG icons need redesign (352 items + 696 skills + 360 augments in catalog; 761 SVGs in content/). This is a manual art task requiring hand-crafted SVGs in the established warm-pastel watercolor style. Each icon needs: distinct visual identity, dark brown ink outlines, consistent 128×128 frame with bottom-left card corner. Strategy: batch by theme (element families, stat categories), create master SVG templates with shared patterns, then customize per icon. No automated tool can replace manual artistry for game icons at this quality bar. Estimated 2-4 hours per 100 icons with careful review.
+|### 14. Remake non-weapon card/skill/boost icons — `[ ] open`
+|Redesign all icons for cards, skills, and boost items (NOT weapon icons — those are fine). Needs detailed 2D artwork. Covers ~600 loot items + skills.
 
 ||### 15. HUD pushed into corner — `[x done]`
 ||Health panel widened to 310px. Gold text increased to 18pt with gold-themed panel. Elements more spread out with better visual hierarchy.
@@ -82,6 +82,10 @@ Golden pulsing ring appears around player when `auraDamage > 0`. Ring scales wit
 Replaced simple blue beam with `lightning_bolt()`: 6-segment jagged zigzag using perpendicular offsets, electric glow (`#d0e8ff`, emission 3×), 0.22s lifetime. Each chain segment is a separate bolt segment with decreasing width toward the target.
 
 ||### 19. Enemy speed too fast — set to `2.9 + realm*0.35` — `[] open`
+
+||### 19. bug: dame numbers are gone. restore damege done to enenemies numbers — `[] open`
+
+||### 19. camera too close to the hero — `[] open`
 
 ## Done (retained, removed from active list)
 
