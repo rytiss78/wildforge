@@ -26,3 +26,29 @@ Exact generation and cutout prompts are saved in art-0.6-prompts.json. Original 
 ## Build 0.7.9 skill art
 
 `skills.png` is an original generated 4×4 atlas of detailed, saturated miniature objects on ivory paper: glove, clock, binoculars, shot crystals, critical gem, lightning cloud, engineering gear, ghost, flowers, heart, shield, coins, poison bottle, flame pendant, frost crystal and boots. Skills use these illustrations separately from weapon artwork. Runtime atlas regions are cached and inset to avoid neighbouring art bleeding into cards. The 3D world now uses stronger colour grading, neutral light and distance fog that preserves nearby colour; six code-authored landmarks have unique silhouettes. Historical 0.6 asset descriptions above describe that earlier stage, not the current 3D actor implementation.
+
+## Build 0.8.5 SVG content icons
+
+Starting in 0.8.5, individual content icons are hand-crafted SVGs in `content/` (not raster atlases). Each SVG is 128×128 with a warm parchment background, dark brown ink outlines, and watercolor-style gradients. The system includes ~761 SVGs covering items, skills, and augments.
+
+### Icon layout
+- Background: `#fcf0d7` parchment, `#805c47` frame
+- Card corner: bottom-left 38×38 square with category symbol
+- Main content: centered in 44–84 region
+- Outlines: `#5e3a2a`, 2.5px main, 1.5px detail
+
+### Category symbols
+- Items: `●` or item-specific glyph
+- Skills: `★`
+- Augments: `+` or stat symbol
+- Chests/economy: `%` or coin
+
+### Master template
+`icon-template.svg` — copy this to start new icons. See `icon-template.svg` comments for usage.
+
+### Quality checklist
+- Distinct silhouette at 32×32
+- No overlapping confusing elements
+- Consistent stroke weight
+- Watercolor gradients, no 3D rendering
+- No potato blobs or featureless shapes

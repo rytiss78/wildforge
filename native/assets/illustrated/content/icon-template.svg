@@ -1,0 +1,32 @@
+<!-- WILDFORGE ICON MASTER TEMPLATE v1.0 -->
+<!-- Use this as a starting point for all icon redesigns. -->
+<!-- Copy this file, rename it, and replace the content placeholders. -->
+<!-- Style: warm-pastel watercolor, dark brown (#5e3a2a) ink outlines, hand-painted cartoon. -->
+<!-- Size: 128x128 viewBox, content centered in 64,64 to 94,94 region. -->
+
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <defs>
+    <!-- Default warm gradient for backgrounds/objects -->
+    <linearGradient id="main-grad" x1="0" y1="0" x2="0.3" y2="1">
+      <stop offset="0%" stop-color="#d4956a"/>
+      <stop offset="100%" stop-color="#a86840"/>
+    </linearGradient>
+    <!-- Ink stroke style (dark brown) -->
+    <style>
+      .ink { stroke: #5e3a2a; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .ink-fill { stroke: #5e3a2a; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; fill: url(#main-grad); }
+      .ink-thin { stroke: #5e3a2a; stroke-width: 1.5; stroke-linecap: round; stroke-linejoin: round; fill: none; }
+      .highlight { stroke: #ffb0c0; stroke-width: 1; stroke-linecap: round; fill: none; opacity: 0.7; }
+    </style>
+  </defs>
+  <!-- Background frame -->
+  <rect x="3" y="3" width="122" height="122" rx="19" fill="#fcf0d7" stroke="#805c47" stroke-width="3"/>
+  <!-- Bottom-left card corner icon (parchment square with category symbol) -->
+  <rect x="3" y="3" width="38" height="38" rx="10" fill="#f7e4b8" stroke="#805c47" stroke-width="2"/>
+  <!-- Replace this placeholder with your category symbol -->
+  <text x="22" y="28" text-anchor="middle" font-size="16" font-weight="bold" fill="#5e3a2a" font-family="sans-serif">●</text>
+  <!-- ========== MAIN ICON CONTENT HERE ========== -->
+  <!-- Replace the placeholder below with your icon design -->
+  <rect x="44" y="44" width="40" height="40" rx="8" fill="url(#main-grad)" class="ink"/>
+  <!-- ========== END MAIN ICON CONTENT ========== -->
+</svg>
