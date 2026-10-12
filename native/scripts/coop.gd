@@ -7,7 +7,7 @@ var party_seen={}
 
 # Transport-independent authoritative world. Important events are reliable;
 # poses/snapshots use unreliable ordered delivery. Never deserialize objects.
-const PROTOCOL="wildforge-0.8.2-direct-6"
+const PROTOCOL="wildforge-forge-boss-7"
 const PORT=29736
 const DISCOVERY_PORT=29737
 var discovery: PacketPeerUDP
@@ -38,6 +38,7 @@ var force_requests_received=0
 var saw_force_pulse=false
 var last_snapshot=0.0
 var test_mode=false
+var test_finished_peers={}
 var joined=false
 var saw_pause=false
 var saw_realm=false
@@ -253,7 +254,7 @@ func pose() -> Dictionary:
 func snapshot() -> Dictionary:
 	var actors=[]
 	for enemy in game.enemies:
-		if not enemy.dead: actors.append({"id":enemy.net_id,"position":array(enemy.node.position),"biome":enemy.biome,"species":enemy.species,"height":enemy.height,"radius":enemy.radius,"hp":enemy.hp,"maxHp":enemy.maxHp,"xp_reward":enemy.xp_reward,"boss":enemy.boss,"guardian":enemy.get("guardian",false),"title":enemy.get("title",""),"elite":enemy.elite,"corruption":enemy.get("corruption",0),"surface_up":array(enemy.node.basis.y),"surface_forward":array(-enemy.node.basis.z),"fire":enemy.fire,"poison":enemy.poison,"freeze":enemy.freeze,"blind":enemy.blind,"slip_until":enemy.get("slip_until",0),"windup":enemy.get("windup",0)})
+		if not enemy.dead: actors.append({"id":enemy.net_id,"position":array(enemy.node.position),"biome":enemy.biome,"species":enemy.species,"height":enemy.height,"radius":enemy.radius,"hp":enemy.hp,"maxHp":enemy.maxHp,"xp_reward":enemy.xp_reward,"boss":enemy.boss,"boss_id":enemy.get("boss_id",-1),"guardian":enemy.get("guardian",false),"title":enemy.get("title",""),"elite":enemy.elite,"corruption":enemy.get("corruption",0),"surface_up":array(enemy.node.basis.y),"surface_forward":array(-enemy.node.basis.z),"fire":enemy.fire,"poison":enemy.poison,"freeze":enemy.freeze,"blind":enemy.blind,"slip_until":enemy.get("slip_until",0),"windup":enemy.get("windup",0)})
 	var poses=members.duplicate(true);poses[local_id]=pose()
 	for member in poses.values():
 		var stats=member.get("stats",{})
@@ -270,6 +271,9 @@ func receive(sender: int,message):
 	if not message is Dictionary or not message.get("type","") is String: return
 	if game.update.receive(sender,message): return
 	var kind=message.type
+	if kind=="test_done":
+		if test_mode and (members.has(sender) if hosting else sender==owner_id): test_finished_peers[sender]=int(message.get("realm",-1))
+		return
 	if hosting:
 		if kind=="hello":
 			if game.run_active or message.get("protocol","")!=PROTOCOL or members.size()>=3: send_to(sender,{"type":"reject","reason":"Party is full, already playing, or on a different version."});return
@@ -405,7 +409,7 @@ func receive(sender: int,message):
 		elif kind=="journey_announcement": game.Journey.announce(game,str(message.title),str(message.detail))
 		elif kind=="shot": show_shot(message)
 		elif kind=="hazard" and int(message.get("realm",-1))==game.realm:
-			game.warn_at(vector(message.position),float(message.radius),float(message.delay),float(message.damage),str(message.style))
+			game.warn_at(vector(message.position),float(message.radius),float(message.delay),float(message.damage),str(message.style),true)
 		elif kind=="kill":
 			kills_received+=1
 			for enemy in game.enemies:
@@ -413,6 +417,7 @@ func receive(sender: int,message):
 			if message.has("actor"): game.kill_enemy(game.spawn_network_enemy(message.actor),str(message.cause))
 		elif kind=="damage":
 			game.take_damage(float(message.amount),vector(message.position),str(message.sound))
+			if message.get("status","")=="poison" and not game.buffs.has("poison"): game.player_poison=3
 		elif kind=="credit":
 			# Divide by party size so a 4-player run doesn't 4x the pace.
 			var party_size=members.size()+1
@@ -513,7 +518,7 @@ func stomp(enemy: Dictionary):
 	if active and not hosting: send_to(owner_id,{"type":"stomp","id":enemy.net_id})
 
 func died(enemy: Dictionary,cause: String):
-	if active and hosting: broadcast({"type":"kill","id":enemy.net_id,"position":array(enemy.node.position),"cause":cause,"actor":{"id":enemy.net_id,"position":array(enemy.node.position),"biome":enemy.biome,"species":enemy.species,"height":enemy.height,"radius":enemy.radius,"hp":enemy.hp,"maxHp":enemy.maxHp,"xp_reward":enemy.xp_reward,"boss":enemy.boss,"guardian":enemy.get("guardian",false),"title":enemy.get("title",""),"elite":enemy.elite}})
+	if active and hosting: broadcast({"type":"kill","id":enemy.net_id,"position":array(enemy.node.position),"cause":cause,"actor":{"id":enemy.net_id,"position":array(enemy.node.position),"biome":enemy.biome,"species":enemy.species,"height":enemy.height,"radius":enemy.radius,"hp":enemy.hp,"maxHp":enemy.maxHp,"xp_reward":enemy.xp_reward,"boss":enemy.boss,"boss_id":enemy.get("boss_id",-1),"guardian":enemy.get("guardian",false),"title":enemy.get("title",""),"elite":enemy.elite}})
 
 func target(origin: Vector3) -> Dictionary:
 	var result={"id":local_id,"position":game.player.position};var distance=origin.distance_squared_to(game.player.position) if game.hp>0 else INF
@@ -525,14 +530,14 @@ func target(origin: Vector3) -> Dictionary:
 			if d<distance: distance=d;result={"id":id,"position":p}
 	return result
 
-func damage_player(id: int,amount: float,origin: Vector3,sound: String):
+func damage_player(id: int,amount: float,origin: Vector3,sound: String,status: String=""):
 	if id==local_id: game.take_damage(amount,origin,sound)
 	elif hosting:
 		if game.update.downed_ids.has(id): return
 		members[id].rescue_hold=false
 		members[id].rescue_interrupt_until=game.elapsed+.4
 		game.update.rescue_progress.clear()
-		send_to(id,{"type":"damage","amount":amount,"position":array(origin),"sound":sound})
+		send_to(id,{"type":"damage","amount":amount,"position":array(origin),"sound":sound,"status":status})
 
 func shot(weapon: String,origin: Vector3,target_position: Vector3,duration: float=.44):
 	if not active: return

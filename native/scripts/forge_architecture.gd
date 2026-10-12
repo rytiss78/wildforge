@@ -16,7 +16,7 @@ static func build(world: Node3D):
 			# Broken carved lintels stay above the existing walkable surface.
 			for j in range(4):
 				var block=BoxMesh.new();block.size=Vector3(1.8,.48,.8)
-				var stone=ToonArt.part(root,block,Color("324d47"),p+Vector3(side*(.7+j*1.8),6.7-j*.1,0))
+				var stone=ToonArt.part(root,block,Color("5c9690"),p+Vector3(side*(.7+j*1.8),6.7-j*.1,0))
 				stone.rotation.z=side*.035
 	# A thin engraved ground seal follows the existing terrain; no new step/collider.
 	var mesh=SurfaceTool.new();mesh.begin(Mesh.PRIMITIVE_TRIANGLES)
@@ -25,4 +25,4 @@ static func build(world: Node3D):
 			var angle=corner.x*TAU/64;var p=Vector3(cos(angle)*corner.y,0,-15+sin(angle)*corner.y);p.y=world.height_at(p.x,p.z)+.025
 			mesh.add_vertex(p)
 	mesh.generate_normals()
-	var seal=MeshInstance3D.new();seal.mesh=mesh.commit();seal.material_override=ToonArt.paint(Color("a68c50"));root.add_child(seal)
+	var seal=MeshInstance3D.new();seal.mesh=mesh.commit();seal.material_override=ToonArt.paint(Color("e9bd63"));root.add_child(seal)

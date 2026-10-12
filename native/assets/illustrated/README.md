@@ -52,3 +52,7 @@ Starting in 0.8.5, individual content icons are hand-crafted SVGs in `content/` 
 - Consistent stroke weight
 - Watercolor gradients, no 3D rendering
 - No potato blobs or featureless shapes
+
+## 1.0.0 development — vivid Clover Woods paving
+
+`forge-basalt-moss.png` replaces the first overly realistic, muted terrain experiment with original painted jade/teal paving. Generated with the built-in image tool on October 12, 2026; no Hades image is included in the game. Prompt: seamless orthographic albedo texture, 12–18 broad irregular stone slabs, thin navy ink seams, clean hand-painted angular facets, saturated jade/teal midtones, narrow emerald moss seams and sparse old-gold chips; no photographs, gravel/noise, objects, text, vignette or directional shadows. The runtime retains its authored color instead of desaturating it. The original experiment remains recoverable from commit `be0a086` and the preserved scene evidence.

@@ -1,0 +1,61 @@
+{
+  "generator": "scripts/build-forge-bosses.py",
+  "assets": [
+    {
+      "asset": "boss_0",
+      "triangles": 3256,
+      "mesh_nodes": 40,
+      "bytes": 139376,
+      "reference_height": 3
+    },
+    {
+      "asset": "boss_1",
+      "triangles": 2796,
+      "mesh_nodes": 21,
+      "bytes": 108720,
+      "reference_height": 3
+    },
+    {
+      "asset": "boss_2",
+      "triangles": 2760,
+      "mesh_nodes": 22,
+      "bytes": 106140,
+      "reference_height": 3
+    },
+    {
+      "asset": "boss_3",
+      "triangles": 3160,
+      "mesh_nodes": 34,
+      "bytes": 129504,
+      "reference_height": 3
+    },
+    {
+      "asset": "boss_4",
+      "triangles": 6096,
+      "mesh_nodes": 44,
+      "bytes": 230500,
+      "reference_height": 3
+    },
+    {
+      "asset": "boss_5",
+      "triangles": 3052,
+      "mesh_nodes": 32,
+      "bytes": 126372,
+      "reference_height": 3
+    },
+    {
+      "asset": "boss_6",
+      "triangles": 2836,
+      "mesh_nodes": 31,
+      "bytes": 121960,
+      "reference_height": 3
+    },
+    {
+      "asset": "boss_7",
+      "triangles": 2876,
+      "mesh_nodes": 24,
+      "bytes": 114204,
+      "reference_height": 3
+    }
+  ]
+}

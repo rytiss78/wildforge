@@ -10,9 +10,9 @@ func _draw():
 		preload("res://scripts/health_emblem.gd").draw(self,Vector2(x+32,49),21,boss.hp/boss.maxHp)
 		draw_string(font,Vector2(x+68,55),str(boss.get("title",game.boss_name)),HORIZONTAL_ALIGNMENT_LEFT,-1,19,ThemeTokens.PAPER)
 	if game.elapsed<float(game.events.get("announcement_until",-1)):
-		draw_style_box(game.hud.style(Color("17293d"),Color("d6b474"),12),Rect2(620,92,680,85))
-		draw_string(font,Vector2(640,124),str(game.events.get("announcement","")),HORIZONTAL_ALIGNMENT_LEFT,-1,27,Color("ffdf9a"))
-		draw_string(font,Vector2(640,154),str(game.events.get("announcement_detail","")),HORIZONTAL_ALIGNMENT_LEFT,-1,15,Color("fff8de"))
+		draw_style_box(game.hud.style(Color("17293d"),Color("d6b474"),12),Rect2(32,340,680,85))
+		draw_string(font,Vector2(52,372),str(game.events.get("announcement","")),HORIZONTAL_ALIGNMENT_LEFT,-1,27,Color("ffdf9a"))
+		draw_string(font,Vector2(52,402),str(game.events.get("announcement_detail","")),HORIZONTAL_ALIGNMENT_LEFT,-1,15,Color("fff8de"))
 	if game.realm_time>=600:
 		draw_style_box(game.hud.style(Color("592e47"),Color("e38d6c"),5),Rect2(24,274,254,30))
 		draw_string(font,Vector2(34,296),"ECLIPSE · threat %d" % (1+int((game.realm_time-600)/30)),HORIZONTAL_ALIGNMENT_LEFT,-1,16,Color("ffdf9a"))

@@ -18,9 +18,8 @@ vec3 biome_paint(float b,vec2 uv) {
  else if(b>.5){paint=texture(t1,uv).rgb;base=vec3(.16,.27,.23);}
  else {
    vec3 stone=texture(t0,p.xz*.07).rgb;
-   stone=mix(vec3(dot(stone,vec3(.3,.59,.11))),stone,.55);
    float moss=sin(p.x*.073+sin(p.z*.11))*cos(p.z*.063);
-   return stone*1.5*mix(vec3(.8,1.02,.91),vec3(.55,.91,.61),smoothstep(.1,.75,moss));
+   return stone*mix(vec3(.95,1.02,1.06),vec3(.78,1.08,.94),smoothstep(.1,.75,moss));
  }
  float wash=sin(uv.x*.57+sin(uv.y*.8))*.025+cos(uv.y*.66)*.02;
  float grain=dot(paint,vec3(.299,.587,.114));
@@ -39,5 +38,5 @@ void fragment(){
  float a=atan(p.z,p.x);
  float coast=344.0+24.0*sin(3.0*(a+phase))+14.0*sin(5.0*(a-phase))+8.0*cos(7.0*(a+phase*.5));
  paint=mix(paint,vec3(.79,.68,.43),smoothstep(coast-22.0,coast-3.0,length(p.xz)));
- ALBEDO=mix(paint,paint*.8+vec3(.13,.10,.06),path*.65);EMISSION=paint*.035;ROUGHNESS=1.0;SPECULAR=0.0;
+ ALBEDO=mix(paint,paint*1.08+vec3(.08,.065,.025),path*.45);EMISSION=paint*.065;ROUGHNESS=1.0;SPECULAR=0.0;
 }

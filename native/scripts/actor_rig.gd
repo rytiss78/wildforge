@@ -34,7 +34,7 @@ var thumb_clock=0.0
 var thumb_glove: Node3D
 
 func setup_solid(model_name: String) -> bool:
-	var asset=model_name if model_name.begins_with("creature_") else "count_duck" if model_name=="rubber_duck_toy" else "hero_"+model_name
+	var asset=model_name if model_name.begins_with("creature_") or model_name.begins_with("boss_") else "count_duck" if model_name=="rubber_duck_toy" else "hero_"+model_name
 	if not ResourceLoader.exists("res://assets/style3d/"+asset+".glb"): return false
 	solid=StyleModel.new();solid.setup(asset);add_child(solid)
 	head.free();body.free()
@@ -268,6 +268,8 @@ func animate(delta: float,movement: Vector3,on_floor: bool=true,slamming: bool=f
 	if solid!=null:
 		solid.hit_clock=maxf(solid.hit_clock,hurt)
 		solid.animate(delta,movement.length() if batched==null else 0.0,on_floor)
+		if identity.begins_with("boss_"):
+			BossBook.animate(self,clock,movement.length(),clampf(attack,0,1));hurt=maxf(0,hurt-delta);return
 	if batched!=null:
 		batched.set_shader_parameter("clock",clock)
 		batched.set_shader_parameter("moving",clampf(movement.length()/8,0,1))

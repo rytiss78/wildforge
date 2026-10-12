@@ -33,6 +33,8 @@ var realm_time = 0.0
 var elapsed = 0.0
 var realm_bosses = 0
 var run_bosses = 0
+var boss_history: Array = []
+var network_test_realms: Array = []
 var run_chests = 0
 var paid_chests = 0
 var gold = 0
@@ -166,7 +168,7 @@ func _ready():
 	smoke=smoke or OS.get_cmdline_user_args().has("--golden-scene")
 	smoke=smoke or OS.get_cmdline_user_args().has("--ui-review")
 	smoke=smoke or OS.get_cmdline_user_args().has("--journey-review") or OS.get_cmdline_user_args().has("--scenery-review") or OS.get_cmdline_user_args().has("--hunt-review")
-	smoke=smoke or OS.get_cmdline_user_args().has("--forge-review") or OS.get_cmdline_user_args().has("--combat-review") or OS.get_cmdline_user_args().has("--pace-review")
+	smoke=smoke or OS.get_cmdline_user_args().has("--boss-review") or OS.get_cmdline_user_args().has("--forge-review") or OS.get_cmdline_user_args().has("--combat-review") or OS.get_cmdline_user_args().has("--pace-review")
 	camera_locked=OS.get_cmdline_user_args().has("--golden-scene") or OS.get_cmdline_user_args().has("--ui-review")
 	career = ProfileScript.new(rules.data,smoke)
 	if network_test_role!="": career.file="user://coop-test-"+network_test_role+".json"
@@ -268,6 +270,7 @@ func _ready():
 	elif OS.get_cmdline_user_args().has("--journey-review"): preload("res://scripts/journey_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--ui-review"): preload("res://scripts/ui_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--pace-review"): preload("res://scripts/pace_review.gd").run.call_deferred(self)
+	elif OS.get_cmdline_user_args().has("--boss-review"): preload("res://scripts/boss_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--forge-review"): preload("res://scripts/forge_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--combat-review"): preload("res://scripts/combat_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--golden-scene"): call_deferred("golden_scene")
@@ -371,6 +374,7 @@ func start_run(shared_seed: int=-1):
 	gold = 0
 	paid_chests = 0
 	run_bosses = 0
+	boss_history.clear();network_test_realms.clear()
 	run_chests = 0
 	low_health_warned = false
 	affordable_warned = false
@@ -389,14 +393,15 @@ func start_run(shared_seed: int=-1):
 	career.bump("runs")
 	career.bump("play_"+hero.id)
 	sound.start(seed_value)
-	enter_realm(0)
+	enter_realm(0,false)
 	hud.close()
 	if shared_seed<0: coop.run_started()
 
 var kills = 0
 var realm_difficulty = 1.0
 
-func enter_realm(index: int):
+func enter_realm(index: int,broadcast_transition: bool=true):
+	if network_test_role!="": network_test_realms.append(index)
 	clear_entities()
 	realm = index
 	realm_time = 0
@@ -436,7 +441,7 @@ func enter_realm(index: int):
 	for i in range(9+realm): spawn_enemy(11.0+randf()*5.0)
 	hud.tell("%d / 3  ·  %s" % [realm+1,RealmWorld.NAMES[realm]],4)
 	if realm > 0: sound.say("realm",0)
-	if index>0: coop.realm_changed()
+	if broadcast_transition: coop.realm_changed()
 
 func make_chests():
 	# Four stratified radial bands in each biome, with independent deterministic jitter.
@@ -805,8 +810,10 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 	var biome=world.biome_at(p)
 	var species=CreatureBook.pick(biome,rules.rng)
 	var elite=not boss and rules.rng.randf()<.08
-	var height=9.0+realm*2.0 if boss else species.height*(1.25 if elite else 1.0)
-	var radius_value=2.8+realm*.5 if boss else species.radius*(1.25 if elite else 1.0)
+	var boss_id=BossBook.choose(seed_value,realm,biome,boss_history) if boss else -1
+	var boss_entry=BossBook.entry(boss_id) if boss else {}
+	var height=boss_entry.height if boss else species.height*(1.25 if elite else 1.0)
+	var radius_value=boss_entry.radius if boss else species.radius*(1.25 if elite else 1.0)
 	var valid_spawn=false
 	for attempt in range(24):
 		if spawn_is_clear(p,boss) and not enemies.any(func(e):return not e.dead and Vector2(e.node.position.x-p.x,e.node.position.z-p.z).length()<radius_value+e.radius+.1):
@@ -819,7 +826,7 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 	var collider=CollisionShape3D.new();var capsule=CylinderShape3D.new()
 	capsule.radius=radius_value;capsule.height=maxf(height,radius_value*2)
 	collider.shape=capsule;collider.position.y=capsule.height*.5;node.add_child(collider)
-	var rig=world.model("creature_%d_5" % biome if boss else species.model,height)
+	var rig=world.model("boss_"+str(boss_id) if boss else species.model,height)
 	node.add_child(rig);node.set_meta("rig",rig)
 	node.position=p+Vector3.UP*.15
 	add_child(node)
@@ -846,12 +853,9 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 	if realm_time>=600: EclipseCorruption.apply(enemy,1+int((realm_time-600)/30))
 	enemy.xp_reward=enemy_xp_reward(enemy)
 	if boss:
-		boss_name = ["World Maw","Sun Breaker","Star Eater"][realm]
-		var crown = TorusMesh.new()
-		crown.inner_radius = .72
-		crown.outer_radius = .87
-		shape(crown,Color("e7cb79"),node,Vector3(0,3.4,0),.3)
-		enemy.speed = 2.7+realm*.3
+		enemy.boss_id=boss_id;enemy.model="boss_"+str(boss_id);enemy.name=boss_entry.name
+		enemy.damage=1.0;enemy.sound="roar_bump";enemy.speed=boss_entry.speed
+		boss_history.append(boss_id);boss_name=boss_entry.name
 		sound.say("boss",0);update.quip("boss")
 		vibrate(.5,.8,.35)
 		hud.tell("☠  " + boss_name,5)
@@ -976,13 +980,14 @@ func blood_hit(enemy: Dictionary):
 
 func spawn_network_enemy(actor: Dictionary) -> Dictionary:
 	var node=CharacterBody3D.new();node.collision_layer=4;node.collision_mask=1
-	var collision=CollisionShape3D.new();var capsule=CapsuleShape3D.new();capsule.radius=1.05 if actor.boss else .53;capsule.height=3.4 if actor.boss else 1.7;collision.shape=capsule;collision.position.y=capsule.height*.5;node.add_child(collision)
-	var entry=CreatureBook.entry(int(actor.biome),int(actor.species));var height=float(actor.get("height",9.0+realm*2 if actor.boss else entry.height*(1.25 if actor.elite else 1.0)));capsule.height=height;capsule.radius=float(actor.get("radius",2.8 if actor.boss else entry.radius));collision.position.y=height*.5;var rig=world.model("creature_%d_5" % int(actor.biome) if actor.boss else entry.model,height);node.add_child(rig);node.set_meta("rig",rig);node.position=CoopSession.vector(actor.position);add_child(node)
+	var collision=CollisionShape3D.new();var capsule=CylinderShape3D.new();capsule.radius=1.05 if actor.boss else .53;capsule.height=3.4 if actor.boss else 1.7;collision.shape=capsule;collision.position.y=capsule.height*.5;node.add_child(collision)
+	var entry=CreatureBook.entry(int(actor.biome),int(actor.species));var height=float(actor.get("height",9.0+realm*2 if actor.boss else entry.height*(1.25 if actor.elite else 1.0)));capsule.height=height;capsule.radius=float(actor.get("radius",2.8 if actor.boss else entry.radius));collision.position.y=height*.5;var rig=world.model("boss_"+str(clampi(int(actor.get("boss_id",0)),0,7)) if actor.boss else entry.model,height);node.add_child(rig);node.set_meta("rig",rig);node.position=CoopSession.vector(actor.position);add_child(node)
 	var enemy={"net_id":int(actor.id),"node":node,"hp":float(actor.hp),"maxHp":float(actor.maxHp),"boss":bool(actor.boss),"elite":bool(actor.elite),"biome":int(actor.biome),"dead":false,"speed":0.0,"fire":0.0,"poison":0.0,"status_time":0.0,"freeze":0.0,"blind":0.0,"slow":0.0,"phase":1,"startDamage":health_damage,"contact":0.0,"attack":2.5};enemy.merge(entry);enemy.height=height;enemy.radius=capsule.radius;enemy.flying=entry.flying and not enemy.boss;enemy.xp_reward=float(actor.get("xp_reward",enemy_xp_reward(enemy)))
-	enemy.guardian=bool(actor.get("guardian",false));enemy.title=str(actor.get("title","Guardian"))
+	enemy.guardian=bool(actor.get("guardian",false));enemy.title=str(actor.get("title","Guardian"));enemy.boss_id=clampi(int(actor.get("boss_id",0)),0,7)
+	if enemy.boss: enemy.model="boss_"+str(enemy.boss_id);enemy.name=BossBook.entry(enemy.boss_id).name
 	if not enemy.boss: rig.bake_enemy()
 	if enemy.boss:
-		boss_name=["World Maw","Sun Breaker","Star Eater"][realm]
+		boss_name=enemy.title
 		
 	enemies.append(enemy)
 	# Apply eclipse corruption for newly spawned remote enemies
@@ -1540,22 +1545,12 @@ func lightning_bolt(from: Vector3, to: Vector3):
 
 
 func telegraph(enemy: Dictionary):
-	enemy.node.get_meta("rig").attack=1.0
-	var target=coop.target(enemy.node.position).position
-	var style_name=["roots","toxic","meteor","storm","lava","void"][enemy.biome]
-	var count=2+enemy.phase if enemy.biome in [0,2,3,4] else 1
-	for i in range(count):
-		var p=target+Vector3.RIGHT.rotated(Vector3.UP,i*TAU/count+elapsed)*(0 if i==0 else 3.5+enemy.phase)
-		var radius_value=3.0 if count>1 else 5.0+enemy.phase
-		var dmg=roundi((25+realm*10)*realm_difficulty)
-		warn_at(p,radius_value,1.4+i*.18,dmg,style_name)
-		if coop.active and coop.hosting: coop.broadcast({"type":"hazard","position":CoopSession.array(p),"radius":radius_value,"delay":1.4+i*.18,"damage":dmg,"style":style_name,"realm":realm})
+	BossBook.attack(self,enemy)
 
-func warn_at(p: Vector3,radius_value: float,delay: float,damage_value: float,style_name: String):
+func warn_at(p: Vector3,radius_value: float,delay: float,damage_value: float,style_name: String,visual_only: bool=false):
 	p.y=world.height_at(p.x,p.z)
-	var ring=TorusMesh.new();ring.inner_radius=radius_value-.12;ring.outer_radius=radius_value
-	var node=shape(ring,Color("d67565") if style_name!="void" else Color("9683c5"),self,p+Vector3.UP*.08,.3)
-	hazards.append({"node":node,"life":delay,"radius":radius_value,"damage":damage_value,"style":style_name})
+	var node=preload("res://scripts/danger_mark.gd").make(self,p,radius_value,style_name)
+	hazards.append({"node":node,"life":delay,"radius":radius_value,"damage":damage_value,"style":style_name,"duration":delay,"visual_only":visual_only})
 
 func update_combat(delta: float):
 	update_melee(delta)
@@ -1726,25 +1721,7 @@ func update_combat(delta: float):
 			enemy.phase = 2 if enemy.hp<enemy.maxHp*.5 else 1
 			enemy.attack -= enemy_delta
 			if enemy.attack<=0 and enemy.blind<=0 and enemy.freeze<=0:
-					# Boss attack telegraph: ground ring before attack
-					var tele_ring=MeshInstance3D.new()
-					var tele_mesh=TorusMesh.new();tele_mesh.inner_radius=1.5;tele_mesh.outer_radius=1.6
-					tele_ring.mesh=tele_mesh
-					var tele_mat=ShaderMaterial.new();tele_mat.shader=preload("res://shaders/portal.gdshader")
-					tele_ring.material_override=tele_mat
-					tele_ring.rotation.x=-PI/2;tele_ring.position.y=.1
-					add_child(tele_ring)
-					effects.append({"node":tele_ring,"life":1.5,"type":"telegraph","velocity":Vector3.ZERO,"stationary":true})
-					# Flash warning ring
-					var warn_ring=MeshInstance3D.new()
-					var warn_mesh=TorusMesh.new();warn_mesh.inner_radius=1.5;warn_mesh.outer_radius=3.5
-					warn_ring.mesh=warn_mesh
-					warn_ring.material_override=material(Color("ff2200"),3.0)
-					warn_ring.rotation.x=-PI/2;warn_ring.position.y=.15
-					add_child(warn_ring)
-					effects.append({"node":warn_ring,"life":1.0,"type":"telegraph","velocity":Vector3.ZERO,"stationary":true})
-					sound.say("attack_warn",25)
-					telegraph(enemy);enemy.recovery=realm_time+1.3;enemy.attack=2.7 if enemy.phase==2 else 4
+				BossBook.attack(self,enemy)
 		if hp>0 and stats.auraDamage>0 and distance<4: hurt_enemy(enemy,stats.auraDamage*enemy_delta,"aura")
 
 	update_aura_visual()
@@ -1792,15 +1769,16 @@ func update_combat(delta: float):
 				if pool.get("gravity",false) and not enemy.boss: enemy.node.move_and_collide((pool.node.position-enemy.node.position).normalized()*delta*3)
 	for hazard in hazards:
 		hazard.life-=delta
-		hazard.node.rotation.y+=delta*.6
+		if hazard.has("duration"): hazard.node.material_override.set_shader_parameter("progress",clampf(1.0-hazard.life/maxf(.01,hazard.duration),0,1))
+		else: hazard.node.rotation.y+=delta*.6
 		if hazard.get("style","")=="void" and hazard.node.position.distance_to(player.position)<hazard.radius*1.8:
 			player.move_and_collide((hazard.node.position-player.position).normalized()*delta*2)
 		if hazard.life<=0:
 			if hazard.get("friendly",false): damage_area(hazard.node.position,hazard.radius,hazard.damage,"meteor",{},str(hazard.get("weapon_id","meteor")))
-			elif player.position.distance_to(hazard.node.position)<hazard.radius: take_damage(hazard.damage)
+			elif not hazard.get("visual_only",false) and player.position.distance_to(hazard.node.position)<hazard.radius: take_damage(hazard.damage)
 			if not hazard.get("friendly",false) and coop.active and coop.hosting:
 				for id in coop.members:
-					if CoopSession.vector(coop.members[id].get("position",[])).distance_to(hazard.node.position)<hazard.radius: coop.damage_player(id,hazard.damage,hazard.node.position,"blast")
+					if CoopSession.vector(coop.members[id].get("position",[])).distance_to(hazard.node.position)<hazard.radius: coop.damage_player(id,hazard.damage,hazard.node.position,"blast","poison" if hazard.get("style","")=="toxic" else "")
 			burst(hazard.node.position+Vector3.UP,Color("f69559"),10)
 			explosion_fx(hazard.node.position,hazard.radius)
 			match hazard.get("style",""):
@@ -1811,7 +1789,7 @@ func update_combat(delta: float):
 						var spike_node=shape(spike,Color("8ea57c"),self,hazard.node.position+Vector3.RIGHT.rotated(Vector3.UP,spike_index*1.4)*2+Vector3.UP*1.4)
 						effects.append({"node":spike_node,"life":.55,"velocity":Vector3.UP*2})
 				"toxic":
-					if not hazard.get("friendly",false): player_poison=3 if player.position.distance_to(hazard.node.position)<hazard.radius and not buffs.has("poison") else player_poison
+					if not hazard.get("friendly",false) and not hazard.get("visual_only",false): player_poison=3 if player.position.distance_to(hazard.node.position)<hazard.radius and not buffs.has("poison") else player_poison
 			hazard.node.queue_free()
 	for pot in pots:
 		if player.position.distance_to(pot.node.position)<3:
@@ -2604,10 +2582,16 @@ func run_coop_test():
 	var down_sent=false;var saw_down=false;var saw_rescue=false;var saw_ping=false;var purchase_sent=false;var supply_sent=false;var saw_purchase=false;var saw_supply=false;var gold_before=0
 	var down_sent2=false;var rescued2=false;var pause_done2=false
 	var realm_cycle_done=false;var realm_cycle_done2=false
-	var saw_remote_flowers=false;var saw_own_numbers=false
+	var saw_remote_flowers=false;var saw_own_numbers=false;var saw_boss_identity=false;var saw_remote_vitals=false
 	var hunt_sent=false;var hunt_seen=false;var hunt_reward=false;var guardian_sent=false;var guardian_seen=false
 	while Time.get_ticks_msec()-started<(360000 if network_test_role=="host" else 360000):
 		var seconds=(Time.get_ticks_msec()-started)/1000.0
+		saw_boss_identity=saw_boss_identity or enemies.any(func(e):return e.boss and e.get("boss_id",-1)>=0 and e.node.get_meta("rig").identity=="boss_"+str(e.boss_id))
+		for id in coop.avatars:
+			var member=coop.members.get(id,{})
+			var maximum=float(member.get("vitals",{}).get("max_hp",member.get("stats",{}).get("maxHp",0)))
+			if maximum>0:
+				saw_remote_vitals=saw_remote_vitals or is_equal_approx(coop.avatars[id].get_meta("rig").solid.fill,clampf(float(member.get("hp",0))/maximum,0,1))
 		saw_remote_flowers=saw_remote_flowers or not coop.flower_visuals.is_empty()
 		saw_own_numbers=saw_own_numbers or not damage_numbers.is_empty()
 		shared_enemies=shared_enemies or enemies.size()>0
@@ -2655,7 +2639,7 @@ func run_coop_test():
 				down_sent2=true;player.position=Vector3(2,0.1,0);invulnerable=1000
 				coop.send_to(coop.members.keys()[0],{"type":"damage","amount":100000,"position":[0,0,0],"sound":"hit"})
 			if seconds>30 and Time.get_ticks_msec()%60000>1000 and Time.get_ticks_msec()%60000<2000 and update.downed and not rescued2:
-				rescued2=true;player.hp=5000;update.downed=false;update.downed_ids.clear()
+				rescued2=true;hp=5000;update.downed=false;update.downed_ids.clear()
 			if seconds>30 and Time.get_ticks_msec()%60000>2000 and Time.get_ticks_msec()%60000<3000 and not pause_done2:
 				pause_done2=true;mode="paused";await get_tree().create_timer(0.5).timeout;mode="playing"
 		if network_test_role=="host":
@@ -2682,9 +2666,17 @@ func run_coop_test():
 			await RenderingServer.frame_post_draw
 			get_viewport().get_texture().get_image().save_png("user://coop-"+network_test_role+".png")
 		await get_tree().create_timer(.1).timeout
-	var checks={"remote_flowers":saw_remote_flowers,"own_damage_numbers":saw_own_numbers,"force_pulses":coop.force_requests_received>0 if network_test_role=="host" else coop.saw_force_pulse,"lobby_blocked":lobby_blocked,"hero_change_clears_ready":hero_reset,"lobby_hero_ready_synced":lobby_synced,"role":network_test_role,"standalone":not Engine.has_singleton("Steam"),"discovery":discovered_party if network_test_role=="client" else true,"connected":coop.active,"avatars":maximum_avatars,"members":coop.members.size(),"same_enemies":shared_enemies,"remote_hits":coop.remote_hits,"kills_received":coop.kills_received,"snapshots":coop.snapshots_received,"moved":moved,"party_pause":coop.saw_pause if network_test_role=="client" else true,"realm":realm,"realm_received":coop.saw_realm,"downed":saw_down,"rescued":saw_rescue,"ping":saw_ping,"merchant":saw_purchase,"supply":saw_supply,"hunt_started":hunt_seen,"hunt_reward":hunt_reward,"guardian_defeated":guardian_seen}
-	var passed=checks.remote_flowers and checks.own_damage_numbers and checks.force_pulses and lobby_blocked and hero_reset and lobby_synced and checks.hunt_started and checks.hunt_reward and checks.guardian_defeated and checks.downed and checks.rescued and checks.ping and checks.merchant and checks.supply and checks.standalone and checks.discovery and checks.connected and checks.avatars>0 and shared_enemies and realm==1 and (coop.remote_hits>0 if network_test_role=="host" else coop.snapshots_received>20 and coop.saw_pause and coop.saw_realm and moved)
-	print("COOP_TEST "+JSON.stringify(checks));var report=FileAccess.open("user://coop-"+network_test_role+"-results.json",FileAccess.WRITE);report.store_string(JSON.stringify(checks,"  "));report.close();coop.leave()
+	# Both peers record their final state while the transport is still connected.
+	if coop.hosting: coop.broadcast({"type":"test_done","realm":realm})
+	else: coop.send_to(coop.owner_id,{"type":"test_done","realm":realm})
+	var finish_deadline=Time.get_ticks_msec()+8000
+	while coop.test_finished_peers.is_empty() and Time.get_ticks_msec()<finish_deadline:
+		await get_tree().create_timer(.1).timeout
+	var checks={"realm_trace":network_test_realms,"all_realm_transitions":network_test_realms==[0,1,2,0],"finish_handshake":not coop.test_finished_peers.is_empty() and coop.test_finished_peers.values().all(func(r):return r==realm),"boss_identity":saw_boss_identity,"remote_vitals":saw_remote_vitals,"remote_flowers":saw_remote_flowers,"own_damage_numbers":saw_own_numbers,"force_pulses":coop.force_requests_received>0 if network_test_role=="host" else coop.saw_force_pulse,"lobby_blocked":lobby_blocked,"hero_change_clears_ready":hero_reset,"lobby_hero_ready_synced":lobby_synced,"role":network_test_role,"standalone":not Engine.has_singleton("Steam"),"discovery":discovered_party if network_test_role=="client" else true,"connected":coop.active,"avatars":maximum_avatars,"members":coop.members.size(),"same_enemies":shared_enemies,"remote_hits":coop.remote_hits,"kills_received":coop.kills_received,"snapshots":coop.snapshots_received,"moved":moved,"party_pause":coop.saw_pause if network_test_role=="client" else true,"realm":realm,"realm_received":coop.saw_realm,"downed":saw_down,"rescued":saw_rescue,"ping":saw_ping,"merchant":saw_purchase,"supply":saw_supply,"hunt_started":hunt_seen,"hunt_reward":hunt_reward,"guardian_defeated":guardian_seen}
+	var passed=checks.all_realm_transitions and checks.finish_handshake and checks.boss_identity and checks.remote_vitals and checks.remote_flowers and checks.own_damage_numbers and checks.force_pulses and lobby_blocked and hero_reset and lobby_synced and checks.hunt_started and checks.hunt_reward and checks.guardian_defeated and checks.downed and checks.rescued and checks.ping and checks.merchant and checks.supply and checks.standalone and checks.discovery and checks.connected and checks.avatars>0 and shared_enemies and realm==0 and (coop.remote_hits>0 if network_test_role=="host" else coop.snapshots_received>20 and coop.saw_pause and coop.saw_realm and moved)
+	print("COOP_TEST "+JSON.stringify(checks));var report=FileAccess.open("user://coop-"+network_test_role+"-results.json",FileAccess.WRITE);report.store_string(JSON.stringify(checks,"  "));report.close()
+	await get_tree().create_timer(.75).timeout
+	coop.leave()
 	mode="test_finished";clear_entities();sound.active=false
 	for channel in sound.get_children():
 		if channel is AudioStreamPlayer or channel is AudioStreamPlayer3D: channel.stop();channel.stream=null

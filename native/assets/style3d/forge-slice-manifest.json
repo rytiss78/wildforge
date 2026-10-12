@@ -5,61 +5,61 @@
       "asset": "count_duck",
       "triangles": 2900,
       "mesh_nodes": 28,
-      "bytes": 116740
+      "bytes": 116732
     },
     {
       "asset": "mint_pistol",
       "triangles": 272,
       "mesh_nodes": 11,
-      "bytes": 18864
+      "bytes": 18860
     },
     {
       "asset": "creature_0_0",
       "triangles": 2584,
       "mesh_nodes": 15,
-      "bytes": 94412
+      "bytes": 94396
     },
     {
       "asset": "creature_0_1",
       "triangles": 2384,
       "mesh_nodes": 10,
-      "bytes": 82408
+      "bytes": 82392
     },
     {
       "asset": "creature_0_2",
       "triangles": 6460,
       "mesh_nodes": 16,
-      "bytes": 210784
+      "bytes": 210764
     },
     {
       "asset": "creature_0_3",
       "triangles": 2396,
       "mesh_nodes": 14,
-      "bytes": 86404
+      "bytes": 86388
     },
     {
       "asset": "creature_0_4",
       "triangles": 3160,
       "mesh_nodes": 14,
-      "bytes": 110156
+      "bytes": 110136
     },
     {
       "asset": "creature_0_5",
       "triangles": 2640,
       "mesh_nodes": 18,
-      "bytes": 100228
+      "bytes": 100216
     },
     {
       "asset": "prop_0_0",
       "triangles": 480,
       "mesh_nodes": 15,
-      "bytes": 31476
+      "bytes": 31464
     },
     {
       "asset": "prop_0_1",
       "triangles": 340,
       "mesh_nodes": 8,
-      "bytes": 20616
+      "bytes": 20612
     },
     {
       "asset": "prop_0_2",
@@ -77,13 +77,13 @@
       "asset": "prop_0_4",
       "triangles": 320,
       "mesh_nodes": 12,
-      "bytes": 21136
+      "bytes": 21132
     },
     {
       "asset": "prop_0_5",
       "triangles": 448,
       "mesh_nodes": 15,
-      "bytes": 28808
+      "bytes": 28804
     }
   ]
 }

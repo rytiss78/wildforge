@@ -73,7 +73,9 @@
     "native/scripts/weapon_model.gd",
     "native/scripts/world.gd",
     "native/scripts/forge_architecture.gd",
-    "native/scripts/health_emblem.gd"
+    "native/scripts/health_emblem.gd",
+    "native/scripts/boss_book.gd",
+    "native/scripts/danger_mark.gd"
   ],
   "refs": [
     {
@@ -2135,11 +2137,11 @@
     },
     {
       "path": "native/assets/illustrated/content/augment-air-damage.svg",
-      "bytes": 3763,
+      "bytes": 824,
       "sha256": "77fd8ed1bb713061c2407c070d265f2e7c4862aba7c819262d6b91e1ec8e675a",
       "owner": "IllustratedIcons / WeaponModel",
       "generator": "scripts/forge-icons.mjs",
-      "replacement": "original engraved SVG; exported UI reviewed at 720/810/1080",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
       "deletion": "replaced in place; retain current asset"
     },
     {
@@ -6023,11 +6025,11 @@
     },
     {
       "path": "native/assets/illustrated/content/augment-dash-rate.svg",
-      "bytes": 3453,
+      "bytes": 937,
       "sha256": "7df5b7c0bf6546ed769af9b75092fb54e7300d9c4a2afc7739ab855390039109",
       "owner": "IllustratedIcons / WeaponModel",
       "generator": "scripts/forge-icons.mjs",
-      "replacement": "original engraved SVG; exported UI reviewed at 720/810/1080",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
       "deletion": "replaced in place; retain current asset"
     },
     {
@@ -9731,11 +9733,11 @@
     },
     {
       "path": "native/assets/illustrated/content/augment-kill-speed.svg",
-      "bytes": 3757,
+      "bytes": 935,
       "sha256": "20b7f152e5bbc899bd1b2539241ff2e071ffdbc47cd537b518c62c3e47be04ff",
       "owner": "IllustratedIcons / WeaponModel",
       "generator": "scripts/forge-icons.mjs",
-      "replacement": "original engraved SVG; exported UI reviewed at 720/810/1080",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
       "deletion": "replaced in place; retain current asset"
     },
     {
@@ -21665,11 +21667,11 @@
     },
     {
       "path": "native/assets/illustrated/content/jump-boots-item.svg",
-      "bytes": 3820,
+      "bytes": 870,
       "sha256": "083aff52346b48464380951d98d23d0b0d352c9bd0158642b0a8a3d49c2ed306",
       "owner": "IllustratedIcons / WeaponModel",
       "generator": "scripts/forge-icons.mjs",
-      "replacement": "original engraved SVG; exported UI reviewed at 720/810/1080",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
       "deletion": "replaced in place; retain current asset"
     },
     {
@@ -21701,11 +21703,11 @@
     },
     {
       "path": "native/assets/illustrated/content/jump-boots-skill.svg",
-      "bytes": 3434,
+      "bytes": 870,
       "sha256": "b5c30781fb83beb4a08d0a09a1b90a89c5be70cbad522638b8bef21897dd372d",
       "owner": "IllustratedIcons / WeaponModel",
       "generator": "scripts/forge-icons.mjs",
-      "replacement": "original engraved SVG; exported UI reviewed at 720/810/1080",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
       "deletion": "replaced in place; retain current asset"
     },
     {
@@ -30918,11 +30920,11 @@
     {
       "path": "native/assets/illustrated/forge-basalt-moss.png",
       "owner": "Forge representative scene",
-      "bytes": 3489279,
-      "sha256": "d7178ef1023b5fd14e06ef2ab7502d707b6f35e4d0c4fbe1a58dc8a08147945f",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "bytes": 1886310,
+      "sha256": "76256faaf6f61394675153746bab99bb2fe96e24c0023598c952b903a61aaae0",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
       "deletion": "replaced in place; retain current asset",
-      "generator": "built-in imagegen; prompt provenance in visual-scene-1.0.0.md"
+      "generator": "built-in imagegen; painted jade paving prompt in native/assets/illustrated/README.md"
     },
     {
       "path": "native/assets/illustrated/forge-basalt-moss.png.import",
@@ -38774,11 +38776,11 @@
     },
     {
       "path": "native/assets/illustrated/weapon-icons/gun.png",
-      "bytes": 8354,
-      "sha256": "e85298397a985cc3b7f8ce4b68574abed52ffdfafccef2a134f3b2aa568ff526",
+      "bytes": 11038,
+      "sha256": "804a834346a9a100c53b99c0cf5bcb70ac284c71785612efa31e3c75b5b5545e",
       "owner": "IllustratedIcons primary weapon art",
       "generator": "native/scripts/render_weapon_icons.gd --forge-slice",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
       "deletion": "replaced in place; retain current asset"
     },
     {
@@ -40344,115 +40346,115 @@
       "sha256": "d0f53b1da0b25d74ef64c1764c9bba9f5fd4db772373fa760e9ccb9138cca48f",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
       "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
       "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/baked/creature_0_0-core.res",
       "bytes": 24937,
-      "sha256": "30079ab8d02c0b971520d503d00ac1d4ee4399acf5cce878e24bc6247174a00d",
+      "sha256": "4a34cd8aa84b358ec742dd71055e0caeec8c95a909c268cb80724eea2fb82a96",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
       "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
       "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/baked/creature_0_0.res",
-      "bytes": 62301,
-      "sha256": "c97609f7161a5bd8391dd96a77b9ec26c23c8ec16cd53ac564ea5426a74c51dd",
+      "bytes": 62289,
+      "sha256": "3e3c56063121825d0b0bb67c7f32d032d1e83e852d72db3008072dbd1ff13631",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
       "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
-      "deletion": "replaced in place; retain current asset"
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement"
     },
     {
       "path": "native/assets/style3d/baked/creature_0_1-core.res",
       "bytes": 24937,
-      "sha256": "208533f07a7e88c5b7d2134a43750cb7c5da5e77f4dfaecac2be521692fc8b88",
+      "sha256": "e11616e495057f0550cf5f5bf4586946d19baf021f3b1caaa382f6fbaa8df66c",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
       "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
       "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/baked/creature_0_1.res",
-      "bytes": 55825,
-      "sha256": "f34ac1160f484ab17632fa4c34471735b928bbc2b774f9f8ce78a21eb3a927da",
+      "bytes": 55849,
+      "sha256": "3da83ab04ac7e21e94e613a37605fa6a0c06d0904bf1a1b791bc7da934770d49",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
       "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
-      "deletion": "replaced in place; retain current asset"
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement"
     },
     {
       "path": "native/assets/style3d/baked/creature_0_2-core.res",
       "bytes": 24937,
-      "sha256": "8d0b4afb2068040aa117d701d837fadffadeee6ef804f099e092a6d97278b0d0",
+      "sha256": "0f505bfbe02be0572dacb1663ff04e54c8a391ae3d2cb2d65c0e3fe8c7b88792",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
       "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
       "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/baked/creature_0_2.res",
-      "bytes": 178321,
-      "sha256": "7028f6c40ce7b33e5b70710a280cb163e35b2827cc5436a58db96335ebbb087e",
+      "bytes": 178417,
+      "sha256": "940fe03958e1c3e3244fb4a968f4bd32935d21698a16df914840d296841e3ccc",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
       "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
       "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/baked/creature_0_3-core.res",
       "bytes": 24937,
-      "sha256": "9862ab2a6c728c0d2010a49f78359ac51d72fd70c6ea574c8423106aecd15c95",
+      "sha256": "2c268db0f14c89a55f7c5148406dbced923b17f0bfb042b06174cfbdccff345b",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
       "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
       "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/baked/creature_0_3.res",
-      "bytes": 55945,
-      "sha256": "cb3e5f3f5c0bcb6b04ca10e68bc027f6ffde56aefa3f3a21e52b2251be3f97de",
+      "bytes": 55993,
+      "sha256": "974b7c5f01c3f76d6ef7d6c11e877681c8aed36386b891d9ee217d70db742f58",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
       "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
-      "deletion": "replaced in place; retain current asset"
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement"
     },
     {
       "path": "native/assets/style3d/baked/creature_0_4-core.res",
       "bytes": 24937,
-      "sha256": "cf56a0cae1c3fcc31897ca8ae728dcbbf3a69ededd07f4d5a745900405958838",
+      "sha256": "c116cc030066d0732871dbe26415a884b47e1c23085d7d9dcaaedc0920f07b2e",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
       "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
       "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/baked/creature_0_4.res",
-      "bytes": 80061,
-      "sha256": "f8a1ce619fa8cbbb5bb240b988659880d1f712a5101acb8494ad18380471d1e4",
+      "bytes": 80025,
+      "sha256": "aa46fc8fafaed00ac108214100392293fdc5ffd45712d21af5d861bb20a9859b",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
       "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
-      "deletion": "replaced in place; retain current asset"
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement"
     },
     {
       "path": "native/assets/style3d/baked/creature_0_5-core.res",
       "bytes": 24937,
-      "sha256": "ed7174882e46ede665b495a14d8f6b2c78ff61c7defb5d36dfff8da98a55e889",
+      "sha256": "d5c2603974f290430b4b64c98152f76cc0ded21678b3f240e67adacfe199ac1e",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
       "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
       "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/baked/creature_0_5.res",
-      "bytes": 65533,
-      "sha256": "684dfac1c5de447b824e225e8eb51d3f3c450ec395d3780f44c0644a6dfa15c1",
+      "bytes": 65317,
+      "sha256": "61b6adcc7f9766eeccc11ec92b54f8c99ddf5ee0450781560dd0091c1bf9cc53",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
       "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
       "deletion": "replaced in place; retain current asset"
     },
     {
@@ -40998,56 +41000,56 @@
     {
       "path": "native/assets/style3d/baked/prop_0_0.res",
       "bytes": 16637,
-      "sha256": "2e4be2e537e3794a02533df256a0c393e686aed82769939ee2f273ebf8dc1cb3",
+      "sha256": "0290880c81730d033bc977153623adf9ee10f84b16c65059e5d4ec32b0fd3e43",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
       "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
-      "deletion": "replaced in place; retain current asset"
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement"
     },
     {
       "path": "native/assets/style3d/baked/prop_0_1.res",
       "bytes": 11665,
-      "sha256": "71068a297864dc95a66a8bb77d4e905f6cab8919b4003fce43fff7784ea389b6",
+      "sha256": "910ea012665dc5517212e246ea1005eb3a331965e053b0b24cd7273b24cba14e",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
       "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
       "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/style3d/baked/prop_0_2.res",
       "bytes": 10645,
-      "sha256": "b96052c262506cdfdf063f61ca471cbed60b21f43176bcb43627101522d4373c",
+      "sha256": "7fcb519a0491fdf6af4395536eec37c3f6f5cd0b197401f290be81f549dac7d1",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
       "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
-      "deletion": "replaced in place; retain current asset"
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement"
     },
     {
       "path": "native/assets/style3d/baked/prop_0_3.res",
       "bytes": 15317,
-      "sha256": "ced25ffa83952a26e6ffb6875875c559fc9f869b59090a7614f3a0db2801efe3",
+      "sha256": "1bf70f8b8b2bb679d26a08965447dc8b7aa69a54601a7ffe49adee8b2819a5f1",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
       "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
-      "deletion": "replaced in place; retain current asset"
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement"
     },
     {
       "path": "native/assets/style3d/baked/prop_0_4.res",
       "bytes": 10669,
-      "sha256": "5331556b2d07bd1aef99b47c3ffc396a10c03d538055d7247035f620c375386e",
+      "sha256": "d6c6c97d6092410a144e9f055e18876a6c4cecb91de1b414dcb675ef6db23cf2",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
       "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
-      "deletion": "replaced in place; retain current asset"
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement"
     },
     {
       "path": "native/assets/style3d/baked/prop_0_5.res",
       "bytes": 15317,
-      "sha256": "10e70bdeae2c0c00cf211e175e2dd00cf92d44954af96ed7062399694821de81",
+      "sha256": "1b8a89fc8ebe60716d4ba355fc4fb3018b861a3ee3f8dd405a195e8de8459b5b",
       "owner": "PaintedBatch / StyleModel / RealmWorld",
       "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
-      "deletion": "replaced in place; retain current asset"
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement"
     },
     {
       "path": "native/assets/style3d/baked/prop_1_0.res",
@@ -41347,6 +41349,150 @@
       "deletion": "retain"
     },
     {
+      "path": "native/assets/style3d/boss_0.glb",
+      "owner": "BossBook / ActorRig / StyleModel",
+      "bytes": 139376,
+      "sha256": "763f3767d0e7bf31add98a6eb7d1f0cb4372263e0c2ebdbcef8af6fe87064373",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement",
+      "generator": "scripts/build-forge-bosses.py"
+    },
+    {
+      "path": "native/assets/style3d/boss_0.glb.import",
+      "owner": "BossBook / ActorRig / StyleModel",
+      "bytes": 1148,
+      "sha256": "902e2c75dd1e544cee4be8d18771a43db77f18bacbcb1e5c21cb64d007b48084",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement",
+      "generator": "scripts/build-forge-bosses.py"
+    },
+    {
+      "path": "native/assets/style3d/boss_1.glb",
+      "owner": "BossBook / ActorRig / StyleModel",
+      "bytes": 108720,
+      "sha256": "25529aec37f2675a8b29bb603d0130724210ea27c9a9363b7dc8f12330c07751",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement",
+      "generator": "scripts/build-forge-bosses.py"
+    },
+    {
+      "path": "native/assets/style3d/boss_1.glb.import",
+      "owner": "BossBook / ActorRig / StyleModel",
+      "bytes": 1148,
+      "sha256": "4e40f37901f048b43f586a0c9a89899f47048f11a50c5af33cb3b5d30eb61370",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement",
+      "generator": "scripts/build-forge-bosses.py"
+    },
+    {
+      "path": "native/assets/style3d/boss_2.glb",
+      "owner": "BossBook / ActorRig / StyleModel",
+      "bytes": 106140,
+      "sha256": "e98f21e38a6a351d7f77110165a2e6f8638f0fce579805f3e23f9bd9638f8208",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement",
+      "generator": "scripts/build-forge-bosses.py"
+    },
+    {
+      "path": "native/assets/style3d/boss_2.glb.import",
+      "owner": "BossBook / ActorRig / StyleModel",
+      "bytes": 1148,
+      "sha256": "f73f9c39a250299cea77d52543332116d86cc65899b1ca00821b711993a08050",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement",
+      "generator": "scripts/build-forge-bosses.py"
+    },
+    {
+      "path": "native/assets/style3d/boss_3.glb",
+      "owner": "BossBook / ActorRig / StyleModel",
+      "bytes": 129504,
+      "sha256": "475b639355e1e3ddf58e9c4a3ac5479ba070cb1d20b414bd22dd12fb68879c24",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement",
+      "generator": "scripts/build-forge-bosses.py"
+    },
+    {
+      "path": "native/assets/style3d/boss_3.glb.import",
+      "owner": "BossBook / ActorRig / StyleModel",
+      "bytes": 1147,
+      "sha256": "5b8a9607a5c0f7126905363cc2ad762603cff2521ac9a0adf6a189fe83194340",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement",
+      "generator": "scripts/build-forge-bosses.py"
+    },
+    {
+      "path": "native/assets/style3d/boss_4.glb",
+      "owner": "BossBook / ActorRig / StyleModel",
+      "bytes": 230500,
+      "sha256": "bad035e2fe25ecb0b5653bc3bfc3178a6dac804e0c4af1737c9f57cf4cf1564c",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement",
+      "generator": "scripts/build-forge-bosses.py"
+    },
+    {
+      "path": "native/assets/style3d/boss_4.glb.import",
+      "owner": "BossBook / ActorRig / StyleModel",
+      "bytes": 1147,
+      "sha256": "d450872d0033fded363d282065952e5a19d1b0c7401cc6869ff6e6b72a106696",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement",
+      "generator": "scripts/build-forge-bosses.py"
+    },
+    {
+      "path": "native/assets/style3d/boss_5.glb",
+      "owner": "BossBook / ActorRig / StyleModel",
+      "bytes": 126372,
+      "sha256": "8daacdb7461710b1390a77775571ea1ad7ae2549e99fec593db6e288dc12416a",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement",
+      "generator": "scripts/build-forge-bosses.py"
+    },
+    {
+      "path": "native/assets/style3d/boss_5.glb.import",
+      "owner": "BossBook / ActorRig / StyleModel",
+      "bytes": 1148,
+      "sha256": "7b4dffc2db485953f324c31791ae9bd1131513aa0e8ff6b161e682239a91fb9e",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement",
+      "generator": "scripts/build-forge-bosses.py"
+    },
+    {
+      "path": "native/assets/style3d/boss_6.glb",
+      "owner": "BossBook / ActorRig / StyleModel",
+      "bytes": 121960,
+      "sha256": "08ea0067b0d79777c83e649514329ff2eae12de2b53ca8363f60e075ae45e37b",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement",
+      "generator": "scripts/build-forge-bosses.py"
+    },
+    {
+      "path": "native/assets/style3d/boss_6.glb.import",
+      "owner": "BossBook / ActorRig / StyleModel",
+      "bytes": 1148,
+      "sha256": "73d697d31cee67db36036a364e920c429a02f2d9001092a0a76625b0451d8e4a",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement",
+      "generator": "scripts/build-forge-bosses.py"
+    },
+    {
+      "path": "native/assets/style3d/boss_7.glb",
+      "owner": "BossBook / ActorRig / StyleModel",
+      "bytes": 114204,
+      "sha256": "d100f27ac96882a4c24cafe12019a62b8d6f1b1aa7c3149172d51601e8f3410d",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement",
+      "generator": "scripts/build-forge-bosses.py"
+    },
+    {
+      "path": "native/assets/style3d/boss_7.glb.import",
+      "owner": "BossBook / ActorRig / StyleModel",
+      "bytes": 1148,
+      "sha256": "7515efd4037850eb342ac58621e0b0bf05d790c27ec7a02edc3b2c73e59e020d",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement",
+      "generator": "scripts/build-forge-bosses.py"
+    },
+    {
       "path": "native/assets/style3d/bottlebite.glb",
       "bytes": 660336,
       "sha256": "c1cba79a58bdab870bae2021d1edad278b1e87f56f0e4f2bffdbc2247132e8d8",
@@ -41384,12 +41530,12 @@
     },
     {
       "path": "native/assets/style3d/count_duck.glb",
-      "bytes": 116740,
-      "sha256": "0ddf0ea6c42fa3b14b0b8ef38a95eb4cc9d33e7a796bb935e508cdc43f525ebc",
+      "bytes": 116732,
+      "sha256": "b61eceee0404fbad100f91f0411229dfbeced27c8ae6888bb343e4782a180868",
       "owner": "StyleModel / WeaponModel / RealmWorld",
       "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
-      "deletion": "replaced in place; retain current asset"
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement"
     },
     {
       "path": "native/assets/style3d/count_duck.glb.import",
@@ -41402,12 +41548,12 @@
     },
     {
       "path": "native/assets/style3d/creature_0_0.glb",
-      "bytes": 94412,
-      "sha256": "ecce35de64d9ee9da238fd84d330e7d3e3aeba184f153a403047ac1405253a8b",
+      "bytes": 94396,
+      "sha256": "ed555df08b321b46a382e01e997cf1c84eb993faf5e2df5fa80f10366ee8e0c4",
       "owner": "StyleModel / WeaponModel / RealmWorld",
       "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
-      "deletion": "replaced in place; retain current asset"
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement"
     },
     {
       "path": "native/assets/style3d/creature_0_0.glb.import",
@@ -41420,12 +41566,12 @@
     },
     {
       "path": "native/assets/style3d/creature_0_1.glb",
-      "bytes": 82408,
-      "sha256": "213ca172efc21e171211129c638c9f3a8687f1d1dfb558a43120418f7be6fee3",
+      "bytes": 82392,
+      "sha256": "9674382753c3dc1f252f44822c4ef26d4b7ed209801f40cafa46b5d1446687a3",
       "owner": "StyleModel / WeaponModel / RealmWorld",
       "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
-      "deletion": "replaced in place; retain current asset"
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement"
     },
     {
       "path": "native/assets/style3d/creature_0_1.glb.import",
@@ -41438,11 +41584,11 @@
     },
     {
       "path": "native/assets/style3d/creature_0_2.glb",
-      "bytes": 210784,
-      "sha256": "a77f2f833898e9d20632d6435764b921092f25824368f175823d2d5f2380fe92",
+      "bytes": 210764,
+      "sha256": "4176d1dffe7d947ba487d1b639f71d66e080db2add9c7729073cfbabd31f6ea3",
       "owner": "StyleModel / WeaponModel / RealmWorld",
       "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
       "deletion": "replaced in place; retain current asset"
     },
     {
@@ -41456,12 +41602,12 @@
     },
     {
       "path": "native/assets/style3d/creature_0_3.glb",
-      "bytes": 86404,
-      "sha256": "8249b0e6f485170b65e2d1880dfe45c2ef7d97e849a05e6a87e5e5095e8e3ec6",
+      "bytes": 86388,
+      "sha256": "78ae12f68bf17c8a44988fb0cb6e67a5e650639200557d00f7462627f7ddfdad",
       "owner": "StyleModel / WeaponModel / RealmWorld",
       "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
-      "deletion": "replaced in place; retain current asset"
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement"
     },
     {
       "path": "native/assets/style3d/creature_0_3.glb.import",
@@ -41474,12 +41620,12 @@
     },
     {
       "path": "native/assets/style3d/creature_0_4.glb",
-      "bytes": 110156,
-      "sha256": "56ee89f91bfa405fca89e7afaf7012a073d09bb6ebd72b27df67ae684c4e86f4",
+      "bytes": 110136,
+      "sha256": "37292fa1853f2286a1c9a8ef45739a7fd33271d469f6689bbc8a5a232460b6fd",
       "owner": "StyleModel / WeaponModel / RealmWorld",
       "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
-      "deletion": "replaced in place; retain current asset"
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement"
     },
     {
       "path": "native/assets/style3d/creature_0_4.glb.import",
@@ -41492,11 +41638,11 @@
     },
     {
       "path": "native/assets/style3d/creature_0_5.glb",
-      "bytes": 100228,
-      "sha256": "8fd02d149da561519e78069b697e3dd86ff8fad48739e907e3bd2656460fc849",
+      "bytes": 100216,
+      "sha256": "fba5868156a48f5cad2cdfa1fba909c1bd49ae8086025e759291f4f54e00fb7c",
       "owner": "StyleModel / WeaponModel / RealmWorld",
       "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
       "deletion": "replaced in place; retain current asset"
     },
     {
@@ -42049,12 +42195,21 @@
       "deletion": "retain"
     },
     {
+      "path": "native/assets/style3d/forge-boss-manifest.json",
+      "owner": "BossBook / ActorRig / StyleModel",
+      "bytes": 1234,
+      "sha256": "24b64a69fa465ddd91a057913def0b36df95ce3b0f81a878f876c1b325f97d7e",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement",
+      "generator": "scripts/build-forge-bosses.py"
+    },
+    {
       "path": "native/assets/style3d/forge-slice-manifest.json",
       "owner": "Forge representative scene",
       "bytes": 1722,
-      "sha256": "be6b7bebbd4699f7c59208be77336898a5060e0ad573b2d297ca2d5dfdfdc2a4",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
-      "deletion": "replaced in place; retain current asset",
+      "sha256": "acd89928fbd42f08ddbc9ad9517da63fe794ed11315d4e5d1f54a7defb4bd0e7",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement",
       "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice"
     },
     {
@@ -42428,12 +42583,12 @@
     },
     {
       "path": "native/assets/style3d/mint_pistol.glb",
-      "bytes": 18864,
-      "sha256": "20280f5631104b620de8e0be980e79bc5936d0325fd537c09fc86c75e4742b11",
+      "bytes": 18860,
+      "sha256": "b6457ddb75ca02f4de0b1d1e8caef27c1306668d2a0565ce5c827f6001745225",
       "owner": "StyleModel / WeaponModel / RealmWorld",
       "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
-      "deletion": "replaced in place; retain current asset"
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement"
     },
     {
       "path": "native/assets/style3d/mint_pistol.glb.import",
@@ -42455,12 +42610,12 @@
     },
     {
       "path": "native/assets/style3d/prop_0_0.glb",
-      "bytes": 31476,
-      "sha256": "a846bb7f847f15e4668f8e0c884dc7b99f9d4bad8454f410f9238ae46569d3a0",
+      "bytes": 31464,
+      "sha256": "25d9972626489fecefeba673dd6d2549a9862cb94432eac67737901ff82653d2",
       "owner": "StyleModel / WeaponModel / RealmWorld",
       "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
-      "deletion": "replaced in place; retain current asset"
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement"
     },
     {
       "path": "native/assets/style3d/prop_0_0.glb.import",
@@ -42473,11 +42628,11 @@
     },
     {
       "path": "native/assets/style3d/prop_0_1.glb",
-      "bytes": 20616,
-      "sha256": "f31ae90e18a5e3fa0df3422bcf54560bb7c8a90402b2c42fccc6d7b9952b6b7c",
+      "bytes": 20612,
+      "sha256": "5131eb08fb913c826ac9d7da77ead34f24b0d695981c0ab23cd6922f3dabc45f",
       "owner": "StyleModel / WeaponModel / RealmWorld",
       "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
       "deletion": "replaced in place; retain current asset"
     },
     {
@@ -42492,11 +42647,11 @@
     {
       "path": "native/assets/style3d/prop_0_2.glb",
       "bytes": 21288,
-      "sha256": "314e46aafa7018df08267e6c6b53be447f0e2377fd16bf7cbf41c8233911b9af",
+      "sha256": "9f0c7809554e2fe7f3d2de92e79c4f0afca7b3940de9d78d7a313ed403534c12",
       "owner": "StyleModel / WeaponModel / RealmWorld",
       "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
-      "deletion": "replaced in place; retain current asset"
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement"
     },
     {
       "path": "native/assets/style3d/prop_0_2.glb.import",
@@ -42510,11 +42665,11 @@
     {
       "path": "native/assets/style3d/prop_0_3.glb",
       "bytes": 28952,
-      "sha256": "80d55fbb0c73f73c909c6071e2b702cf872ab3458731b731c4374d1ae7af10bd",
+      "sha256": "af58013ff438b859421570547a30b3c79a65a7b8305b09473113b486f972c779",
       "owner": "StyleModel / WeaponModel / RealmWorld",
       "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
-      "deletion": "replaced in place; retain current asset"
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement"
     },
     {
       "path": "native/assets/style3d/prop_0_3.glb.import",
@@ -42527,12 +42682,12 @@
     },
     {
       "path": "native/assets/style3d/prop_0_4.glb",
-      "bytes": 21136,
-      "sha256": "ac5960b60a5dd57553ebd121b5eb13a455de9a57e744666cfd47067e018419f4",
+      "bytes": 21132,
+      "sha256": "b4900c5189afbc8192c66c69eee33f61dce01505b357f1df01bac59608626237",
       "owner": "StyleModel / WeaponModel / RealmWorld",
       "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
-      "deletion": "replaced in place; retain current asset"
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement"
     },
     {
       "path": "native/assets/style3d/prop_0_4.glb.import",
@@ -42545,12 +42700,12 @@
     },
     {
       "path": "native/assets/style3d/prop_0_5.glb",
-      "bytes": 28808,
-      "sha256": "19f4363b0fb3c181860b339d17a4c900e01eeeb4f043ce8f4794dfcabb630c56",
+      "bytes": 28804,
+      "sha256": "41d4b0f0a93ab547dfcb9e4b0466229357d68cc0500782beed33e51268042820",
       "owner": "StyleModel / WeaponModel / RealmWorld",
       "generator": "scripts/build-forge-slice.py; native/scripts/bake_models.gd --forge-slice",
-      "replacement": "forge scene: original replacement; rendered source/export validation 2026-10-12",
-      "deletion": "replaced in place; retain current asset"
+      "replacement": "original forge asset; vivid palette and corrected silhouettes; source reviewed 2026-10-12; exported runtime reviewed at 720p, 810p and 1080p",
+      "deletion": "retain current replacement"
     },
     {
       "path": "native/assets/style3d/prop_0_5.glb.import",

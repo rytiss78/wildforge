@@ -63,7 +63,7 @@ Mark a milestone complete only after its listed behavior and visual checks pass.
 - Bring all six harvestables into the new visual language while retaining names, biome matching, descriptions and the verified timed effects. Keep their placement clear of scenery.
 - Validate every biome in normal play, across realms and with dark/bright effects active. Check streamed chunks and local/network consistency, traversal, performance and visual cohesion. Push each finished biome group.
 
-### 5 — Expanded monster boss rotation `[ ]`
+### 5 — Expanded monster boss rotation `[x done — development checkpoint]`
 
 - Create eight original bosses with unmistakable silhouettes, purposeful animation, distinct telegraphs and encounter roles. Concept directions may include a signal-tower giant, bell-crowned walker, lantern-ribbed sentinel, hollow procession, many-jointed watcher, drowned spire, hanging maw and antlered monument; names/designs may evolve for quality.
 - At least one towering signal/siren-inspired creature should express the user's monster reference. Avoid eight recolors of one skeleton. Keep boss HP expressed through the orb system and make the orb readable at the existing camera distance.
@@ -98,7 +98,8 @@ Mark a milestone complete only after its listed behavior and visual checks pass.
 | Roadmap and reference handoff | Prepared in the original repair session | This document and local reference manifest; implementation starts in the new session |
 | 0 — audited source baseline | Source checkpoint pushed; orb coverage pending | `4ffec33`; [audit/inventory](visual-baseline-1.0.0.md); original mixed index preserved |
 | 1a — UI foundation + bottom damage | Validated development sub-batch | [Evidence/build/screenshots](visual-foundation-1.0.0.md); `46ace7c`, pushed |
-| 1b — Clover Woods models + orb replication | Validated development sub-batch | [Scene evidence/build](visual-scene-1.0.0.md); commit recorded in next ledger update |
-| 1c–7 | Open | Scene polish, complete catalogs/rosters/biomes/bosses, cleanup and release remain |
+| 1b — Clover Woods models + orb replication | Validated development sub-batch | [Scene evidence/build](visual-scene-1.0.0.md); `be0a086`, pushed |
+| 1c + 5 — vivid palette and eight-boss rotation | Validated development checkpoint | [Boss, network, brightness and executable evidence](visual-bosses-1.0.0.md); commit/push pending |
+| 2–4, 6–7 | Open | Complete UI/catalogs/rosters/biomes, cleanup and release remain |
 
 Baseline context: [0.8.10 repair](gameplay-repair-0.8.10.md), [earlier audit](repair-audit-2026-10-12.md), [project rules](../../AGENTS.md).

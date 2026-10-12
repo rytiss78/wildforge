@@ -57,6 +57,7 @@ Prefix every action below with `node scripts/agent-workflow.mjs`.
 | `capture-ui` | Menu, co-op selection, HUD, cards and pause screens | Rendered; inspect the PNGs |
 | `controls-review` | Keyboard/controller bindings and settings | Rendered; includes saved-setting checks |
 | `forge-review` | Representative overhaul scene, orb snapshot and camera checks | Rendered; inspect full/half/low/empty/remote/reward captures |
+| `boss-review` | Eight bosses, seeded rotations, warnings and network identities | Rendered; inspect each silhouette and attack capture; includes real portal/guardian path |
 | `bake-forge` | Rebuild only Clover Woods baked meshes | Run after `python scripts/build-forge-slice.py`; preserves other biome cores |
 | `forge-weapon-icon` | Render the rebuilt pistol thumbnail | Rendered; only writes gun.png |
 | `combat-review` | Combat, damage numbers and frame measurements | Rendered; metrics alone do not prove improvement |
@@ -65,13 +66,13 @@ Prefix every action below with `node scripts/agent-workflow.mjs`.
 | `pace-review` | XP/level pacing | Review measurements against the intended design |
 | `eclipse-review` | Eclipse handling and music state | Known acceptance mismatch; see audit |
 | `coop-feedback` | Focused multiplayer feedback behavior | Not a substitute for the two-process network test |
-| `coop` | Real host/client networking | Approximately six minutes; known wraparound/teardown failures |
+| `coop` | Real host/client networking | Approximately six minutes; includes full 0 → 1 → 2 → 0 route and peer completion handshake |
 | `build` | New Windows executable and pack | Imports/parses, exports and smoke-tests that executable |
 | `test-build` | Broader rendered checks of the last exported build | Does not rebuild; currently reaches known Eclipse failures |
 
 Run networking checks sequentially. `capture-ui` also hosts a party; running it during `coop` causes an ENet port error. Ports are UDP 29736 (game) and 29737 (discovery). Do not terminate an unrelated player's game to free them.
 
-The [repair audit](repair-audit-2026-10-12.md) records the October 12 baseline: Eclipse `quick_control`/`brakes` expectations conflict with slower planned drift, and the long co-op test has realm wraparound/teardown failures. Recheck these when working in those areas. Known failures must remain visible in the report, not silently excluded.
+The [repair audit](repair-audit-2026-10-12.md) records the October 12 baseline. Eclipse `quick_control`/`brakes` expectations still conflict with slower planned drift. The earlier co-op wraparound/teardown failures are repaired in the [boss checkpoint](visual-bosses-1.0.0.md), with the complete route verified on both peers. Known failures must remain visible in the report, not silently excluded.
 
 ## Read evidence and screenshots
 

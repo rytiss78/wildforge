@@ -11,7 +11,7 @@ from pathlib import Path
 spec=importlib.util.spec_from_file_location('world',Path(__file__).with_name('build-world-models.py'))
 w=importlib.util.module_from_spec(spec);spec.loader.exec_module(w)
 s=w.s;TAU=math.tau;sin=math.sin;cos=math.cos
-INK='15252c';STONE='435b58';BONE='d8cda4';GOLD='bb914c';GREEN='5ed19e';RED='802e46'
+INK='15253b';STONE='65968e';BONE='fff0bf';GOLD='efba50';GREEN='58f8a4';RED='c62f58'
 
 class Asset(s.Asset):
     def material(self,color,texture=0):
@@ -21,7 +21,28 @@ class Asset(s.Asset):
         return index
 
 def slab(a,name,points,depth,color,parent,p=(0,0,0)):
-    n=s.panel(a,name,points,depth,color,parent);w.place(a,n,p);return n
+    # Normalize winding and triangulate concave silhouettes so front faces survive culling.
+    points=list(points)
+    if sum(x*points[(i+1)%len(points)][1]-points[(i+1)%len(points)][0]*y for i,(x,y) in enumerate(points))<0:
+        points.reverse()
+    def cross2(a,b,c):return (b[0]-a[0])*(c[1]-a[1])-(b[1]-a[1])*(c[0]-a[0])
+    indices=list(range(len(points)));faces=[]
+    while len(indices)>3:
+        for j,b in enumerate(indices):
+            c=indices[(j+1)%len(indices)];v=indices[j-1]
+            if cross2(points[v],points[b],points[c])<=1e-9:continue
+            if any(all(cross2(points[k],points[l],points[q])>=-1e-9 for k,l in [(v,b),(b,c),(c,v)]) for q in indices if q not in [v,b,c]):continue
+            faces.append((v,b,c));indices.pop(j);break
+        else:raise ValueError('Invalid silhouette: '+name)
+    faces.append(tuple(indices));count=len(points)
+    vertices=[(x,y,-depth/2) for x,y in points]+[(x,y,depth/2) for x,y in points]
+    triangles=[]
+    for v,b,c in faces:triangles.extend([(v,c,b),(v+count,b+count,c+count)])
+    for i in range(count):
+        j=(i+1)%count;triangles.extend([(i,j,count+i),(j,count+j,count+i)])
+    xs=[x for x,y in points];ys=[y for x,y in points]
+    uv=[((x-min(xs))/max(.01,max(xs)-min(xs)),(y-min(ys))/max(.01,max(ys)-min(ys))) for x,y,z in vertices]
+    n=a.mesh(name,vertices,triangles,uv,color,parent);w.place(a,n,p);return n
 
 def beam(a,name,points,radii,color,parent):
     return s.sweep(a,name,points,radii,radii,color,parent)
@@ -121,7 +142,7 @@ def prop(index):
             angle=j*2.4;side=1 if j%2 else -1;y=2+j*.48
             beam(a,'DeadBranch',[(0,y,0),(sin(angle)*1.1,y+.4,cos(angle)*1.1),(sin(angle)*1.8,y+1.1,cos(angle)*1.8)],[.10,.07,.002],STONE,root)
             if index==0:
-                node=slab(a,'BladeFoliage',[(-1.3,0),(-.6,.8),(0,1.2),(.7,.3),(1.2,0),(.3,-.18)],.11,'246750',root,(sin(angle),y+.6,cos(angle)))
+                node=slab(a,'BladeFoliage',[(-1.3,0),(-.6,.8),(0,1.2),(.7,.3),(1.2,0),(.3,-.18)],.11,'259b6b',root,(sin(angle),y+.6,cos(angle)))
                 a.doc['nodes'][node]['rotation']=[0,sin(angle/2),0,cos(angle/2)]
     else:
         height=[0,0,2.8,3.7,7.0,8.0][index]

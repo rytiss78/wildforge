@@ -3,7 +3,9 @@ import assert from 'node:assert/strict';
 import {mkdtempSync, writeFileSync, readFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
-import {runStep, assessSmoke, assessPng} from '../scripts/agent-workflow.mjs';
+import {runStep, assessSmoke, assessPng, diffFingerprint} from '../scripts/agent-workflow.mjs';
+import {spawnSync} from 'node:child_process';
+import {createHash, randomBytes} from 'node:crypto';
 
 test('wrapper preserves a failing process exit and handles spaces plus paths', async () => {
   const dir=mkdtempSync(join(tmpdir(),'workflow + '));
@@ -27,4 +29,17 @@ test('capture evidence rejects stale or invalid image files', () => {
   const dir=mkdtempSync(join(tmpdir(),'workflow-png-')); const path=join(dir,'old.png');
   writeFileSync(path,'not a png'); assert.throws(()=>assessPng(path,0),/not a PNG/);
   assert.throws(()=>assessPng(path,Date.now()+10000),/stale/);
+});
+
+test('source fingerprint includes a binary diff beyond the default capture limit', async () => {
+  const dir=mkdtempSync(join(tmpdir(),'workflow-large-diff-'));
+  const git=(...args)=>{
+    const result=spawnSync('git',['-C',dir,...args],{windowsHide:true,maxBuffer:16*1024*1024});
+    assert.equal(result.status,0);return result.stdout;
+  };
+  git('init');writeFileSync(join(dir,'seed.txt'),'baseline');git('add','seed.txt');
+  git('-c','user.name=Workflow fixture','-c','user.email=fixture@example.invalid','commit','-m','Fixture');
+  writeFileSync(join(dir,'large.bin'),randomBytes(2*1024*1024));git('add','large.bin');
+  const complete=git('diff','--binary','HEAD');assert.ok(complete.length>1024*1024);
+  assert.equal(await diffFingerprint(dir),createHash('sha256').update(complete).digest('hex'));
 });

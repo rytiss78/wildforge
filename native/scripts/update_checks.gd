@@ -61,7 +61,7 @@ static func run(game: Node3D):
 	checks.disc_bounces=game.projectiles.filter(func(s):return s.kind=="disc")[0].bounce>=3
 	game.hit_enemy(enemy,{"kind":"bubble","damage":1});checks.bubble_trap=enemy.get("bubble",0)>0
 	game.clear_entities();game.spawn_enemy(20,true)
-	checks.huge_boss=game.enemies[0].height>=9 and game.enemies[0].radius>=2.8
+	checks.huge_boss=game.enemies[0].height>=8 and game.enemies[0].height==BossBook.entry(game.enemies[0].boss_id).height and is_equal_approx(game.enemies[0].radius,BossBook.entry(game.enemies[0].boss_id).radius) and BossBook.ROSTER.all(func(b):return b.height>=8 and b.radius>=1.8)
 	game.telegraph(game.enemies[0]);checks.boss_telegraph=game.hazards.size()>=1
 	checks.draw_distance=game.camera.far<=230
 	checks.character_voices=game.rules.data.heroes.all(func(h):return ResourceLoader.exists("res://assets/voices/hurt_"+h.id+"_0.wav") and ResourceLoader.exists("res://assets/voices/hurt_"+h.id+"_1.wav"))

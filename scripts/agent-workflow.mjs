@@ -9,6 +9,17 @@ const godot = join(root, 'tools/godot/Godot_v4.7.2-stable_win64_console.exe');
 const stage = join(root, '.build-staging/agent-workflow');
 const fatal = /SCRIPT ERROR:|Parse Error:|Compile Error:/;
 
+// A staged executable can make a binary diff exceed spawnSync's capture limit.
+// Hash every byte as it streams; never certify a truncated prefix as source evidence.
+export async function diffFingerprint(cwd) {
+  const hash=createHash('sha256');
+  const child=spawn('git',['-C',cwd,'diff','--binary','HEAD'],{windowsHide:true,stdio:['ignore','pipe','ignore']});
+  child.stdout.on('data',chunk=>hash.update(chunk));
+  const code=await new Promise((resolve,reject)=>{child.on('error',reject);child.on('close',resolve);});
+  if(code!==0) throw new Error('Could not fingerprint Git diff: exit '+code);
+  return hash.digest('hex');
+}
+
 // Keep full evidence on disk and only a bounded tail in memory/chat.
 export async function runStep(exe, args, {cwd, env, timeoutMs, logPath}) {
   mkdirSync(resolve(logPath, '..'), {recursive: true});
@@ -57,7 +68,7 @@ export function assessPng(path, started, minimum=320) {
 }
 
 async function main(action) {
-  if (!['forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'skill-icons', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
+  if (!['boss-review', 'forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'skill-icons', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
     console.error('Usage: node scripts/agent-workflow.mjs check|smoke|capture|capture-ui|combat-review|pace-review|soak|integration|build|status'); return 2;
   }
   const git = (...args) => spawnSync('git', ['-C', root, ...args], {encoding:'utf8', windowsHide:true}).stdout?.trim() ?? '';
@@ -68,7 +79,9 @@ async function main(action) {
   const env = {...process.env, APPDATA:join(runDir,'profile/Roaming'), LOCALAPPDATA:join(runDir,'profile/Local'), TEMP:join(runDir,'temp'), TMP:join(runDir,'temp')};
   for (const dir of [env.APPDATA, env.LOCALAPPDATA, env.TEMP]) mkdirSync(dir,{recursive:true});
   const report = {action, started:new Date(started).toISOString(), head:git('rev-parse','HEAD'),
-    diffSha256:createHash('sha256').update(git('diff','--binary','HEAD')).digest('hex'), isolatedProfile:env.APPDATA, steps:[], success:false};
+    diffSha256:await diffFingerprint(root),
+    untrackedFiles:git('ls-files','--others','--exclude-standard','-z').split('\0').filter(Boolean).map(path=>({path,sha256:createHash('sha256').update(readFileSync(join(root,path))).digest('hex')})),
+    isolatedProfile:env.APPDATA, steps:[], success:false};
   async function step(name, exe, args, timeoutMs) {
     const result = await runStep(exe,args,{cwd:root,env,timeoutMs,logPath:join(runDir,name+'.log')});
     const {output,...record}=result; report.steps.push(record);
@@ -115,6 +128,13 @@ async function main(action) {
       const output=await step('forge-weapon-icon',godot,['--path',join(root,'native'),'--script','res://scripts/render_weapon_icons.gd','--','--forge-slice'],120000);
       if(!output.includes('WEAPON_ICONS_COMPLETE 1')) throw new Error('Missing weapon render');
       report.capture=assessPng(join(root,'native/assets/illustrated/weapon-icons/gun.png'),started,128);
+    }
+    if (action === 'boss-review') {
+      const output=await step('boss-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--boss-review'],180000);
+      const line=output.split(/\r?\n/).findLast(x=>x.startsWith('BOSS_REVIEW '));
+      if(!line) throw new Error('Missing boss review');report.bosses=JSON.parse(line.slice(12));
+      if(Object.values(report.bosses.checks).some(v=>v===false)) throw new Error('Boss review assertions failed');
+      report.capture=Array.from({length:8},(_,i)=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','boss-'+i+'.png'),started));
     }
     if (action === 'forge-review') {
       const output=await step('forge-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--forge-review'],120000);

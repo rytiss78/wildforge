@@ -26,8 +26,8 @@ var sky_paint: ShaderMaterial
 var build_in_progress=false
 var build_cells=[]
 var build_cell_index=0
-var sky_top=Color("101c27")
-var sky_horizon=Color("325c50")
+var sky_top=Color("162a44")
+var sky_horizon=Color("347f84")
 var environment: Environment
 var weather: GPUParticles3D
 var active_biome=-1
@@ -40,8 +40,8 @@ var border_patches=[]
 var edge_near=false
 var eclipse=false
 static var prop_meshes={}
-const SKY_TOP=[Color("101c27"),Color("7fb7a9"),Color("18234d"),Color("83cdeb"),Color("f49a78"),Color("302457")]
-const SKY_HORIZON=[Color("325c50"),Color("c1d8b7"),Color("a3b8d9"),Color("fff7e2"),Color("ffd3a0"),Color("ba9bd5")]
+const SKY_TOP=[Color("162a44"),Color("7fb7a9"),Color("18234d"),Color("83cdeb"),Color("f49a78"),Color("302457")]
+const SKY_HORIZON=[Color("347f84"),Color("c1d8b7"),Color("a3b8d9"),Color("fff7e2"),Color("ffd3a0"),Color("ba9bd5")]
 
 static func coast_radius(angle: float,world_seed: int,world_realm: int) -> float:
 	var phase=float(world_seed%23)*.03+world_realm*.4
@@ -76,8 +76,8 @@ func weather_tick(delta: float,p: Vector3):
 	for pair in [["moon_strength",biome==2],["space_strength",biome==5],["fire_strength",biome==4]]:
 		var parameter=sky_paint.get_shader_parameter(pair[0]);var previous=float(parameter) if parameter!=null else 0.0;sky_paint.set_shader_parameter(pair[0],lerpf(previous,1.0 if pair[1] else 0.0,1-exp(-delta*.6)))
 	environment.fog_light_color=sky_horizon
-	environment.ambient_light_color=Color("739f95") if biome==0 else Color("e6efff")
-	environment.ambient_light_energy=.44 if biome==0 else .36
+	environment.ambient_light_color=Color("a4b8ed") if biome==0 else Color("e6efff")
+	environment.ambient_light_energy=.56 if biome==0 else .36
 	environment.fog_depth_begin=lerpf(environment.fog_depth_begin,35.0 if biome in [1,3] else 45.0,1-exp(-delta*.6))
 	environment.fog_depth_end=lerpf(environment.fog_depth_end,140.0 if biome in [1,3] else 165.0,1-exp(-delta*.6))
 	edge_near=false
@@ -143,6 +143,8 @@ func portal_site() -> Vector3:
 	return p
 
 func model(name: String,height: float) -> Node3D:
+	if name.begins_with("boss_"):
+		var rig=ActorRig.new();rig.setup(name);rig.scale=Vector3.ONE*(height/3.0);return rig
 	if ResourceLoader.exists("res://assets/illustrated/"+("creatures/" if name.begins_with("creature_") else "heroes/")+name+".png") or name in ["pipe_wrench","rubber_duck_toy","sweet_potato","marble_bust_01","street_rat","hamburger_buns","florist","acorn","toad","crab","penguin","lizard","beetle"]:
 		var rig=ActorRig.new();rig.setup(name);var reference_height=1.65
 		if name.begins_with("creature_") and ResourceLoader.exists("res://assets/style3d/baked/"+name+".res"):
@@ -368,7 +370,7 @@ func make_environment():
 	sky_paint=gradient;environment=env;active_biome=-1
 	weather=GPUParticles3D.new();weather.amount=180;weather.lifetime=4;weather.visibility_aabb=AABB(Vector3(-25,-15,-25),Vector3(50,40,50));add_child(weather)
 	var particles=ParticleProcessMaterial.new();particles.emission_shape=ParticleProcessMaterial.EMISSION_SHAPE_BOX;particles.emission_box_extents=Vector3(14,4,14);particles.direction=Vector3.DOWN;particles.spread=35;weather.process_material=particles
-	var sun=DirectionalLight3D.new();sun.rotation_degrees=Vector3(-42,-35,0);sun.light_energy=.85;sun.light_color=Color("fff8ef");sun.shadow_enabled=true;sun.directional_shadow_max_distance=38;add_child(sun)
+	var sun=DirectionalLight3D.new();sun.rotation_degrees=Vector3(-42,-35,0);sun.light_energy=1.25;sun.light_color=Color("ffe4b5");sun.shadow_enabled=true;sun.directional_shadow_max_distance=38;add_child(sun)
 	for i in range(16):
 		var cloud=Node3D.new();cloud.position=Vector3(cos(i*TAU/16)*370,60+sin(i)*15,sin(i*TAU/16)*370);add_child(cloud);clouds.append(cloud)
 		for j in range(3): ToonArt.ball(cloud,Color("fff2de"),Vector3(j*6,0,0),Vector3(20,9,12))
