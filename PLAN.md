@@ -11,7 +11,7 @@
 ## How this file works
 
 - Items are `[ ] open`, `[~ in progress]`, or `[x done]`.
-- We review the list one by one. Each item can be **done**, **edited**, or **left** — Rytis decides.
+- We review the list one by one. Each item can be **done**, **edited**, or **left** 
 - This file is rewritten to drop completed work; only the active list remains.
 
 ---
@@ -30,13 +30,11 @@
 |### 4. Mouse up/down zooms instead of looks up/down — `[x done]`
 |Scroll wheel zoom kept. Vertical mouse movement now tilts camera look angle (pitch ×2 sensitivity, range -.8/.6). Camera position height no longer affected by pitch — only look direction.
 
-|### 5. Card picker: weapon upgrade not matched to equipped weapon — `[x done]`
-|Weapon cards show "Equipped: Rank X → X+1" for owned weapons, "New weapon — fills empty slot" / "full slot required" for new weapons.
-|### 5b. Boost cards show weapon applicability — `[x done]`
-|Augment boost cards (e.g. "augment-gun-damage") now show "Boosts: [weapon name]" when player owns that weapon, or "Won't help — requires [weapon]" when they don't. Generic boosts (damage, rate, etc.) still show normal text.
+|### 5.  cards show weapon applicability — `[] open`
+|Augment cards (e.g. "augment-gun-damage") now show "Boosts: [weapon name]" when player owns that weapon, or "Won't help — requires [weapon]" when they don't. Generic boosts (damage, rate, etc.) still show normal text.
 
-### 6. Chest card icons — `[ ] open`
-Chest card icons need a complete visual overhaul: detailed 2D artwork. Not a code fix — asset creation needed.
+||### 6. Chest card icons — `[x done]`
+||Replaced all 3 chest card icons with detailed hand-painted SVGs matching the established art style. cheap-chest: treasure chest with gold bands, lock, and golden discount tag. chest-heal-item: chest with red heart symbol and pink healing glow rays. chest-heal-skill: same chest+heart with golden sparkle to distinguish from item.
 
 ||### 7. Hit indicator makes screen to busy — `[x done]`
 Damage numbers now only appear on critical hits (`cause=="crit"`). Regular hits no longer spawn floating damage numbers, eliminating screen clutter.
@@ -68,8 +66,8 @@ Damage numbers now only appear on critical hits (`cause=="crit"`). Regular hits 
 ||### 13. Eclipse blood rain — `[x done]`
 ||Added `GPUParticles3D` blood rain system in `_ready()`. Emits 200 red droplets from a 120×60 box above player (y=55), gravity -8, initial velocity 80–120 downward. Visibility toggled on Eclipse enter/exit. Positioned to follow camera horizontally.
 
-|### 14. Remake non-weapon card/skill/boost icons — `[ ] open`
-|Redesign all icons for cards, skills, and boost items (NOT weapon icons — those are fine). Needs detailed 2D artwork. Covers ~600 loot items + skills.
+||### 14. Remake non-weapon card/skill/boost icons — `[~ in progress]`
+||Scope: ~761 existing SVG icons need redesign (352 items + 696 skills + 360 augments in catalog; 761 SVGs in content/). This is a manual art task requiring hand-crafted SVGs in the established warm-pastel watercolor style. Each icon needs: distinct visual identity, dark brown ink outlines, consistent 128×128 frame with bottom-left card corner. Strategy: batch by theme (element families, stat categories), create master SVG templates with shared patterns, then customize per icon. No automated tool can replace manual artistry for game icons at this quality bar. Estimated 2-4 hours per 100 icons with careful review.
 
 ||### 15. HUD pushed into corner — `[x done]`
 ||Health panel widened to 310px. Gold text increased to 18pt with gold-themed panel. Elements more spread out with better visual hierarchy.
@@ -83,8 +81,7 @@ Golden pulsing ring appears around player when `auraDamage > 0`. Ring scales wit
 ||### 18. Lightning effect looks like lightning — `[x done]`
 Replaced simple blue beam with `lightning_bolt()`: 6-segment jagged zigzag using perpendicular offsets, electric glow (`#d0e8ff`, emission 3×), 0.22s lifetime. Each chain segment is a separate bolt segment with decreasing width toward the target.
 
-||### 19. Enemy speed too slow — they stop even on flat ground — `[x done]`
-Enemy base speed increased from `2.9 + realm*0.35` to `8.0 + realm*0.35 + randf()*1.5` (~9–11 units/sec at realm 0 vs ~3.3). Enemies now move fluidly toward player with proper CharacterBody3D move_and_slide.
+||### 19. Enemy speed too fast — set to `2.9 + realm*0.35` — `[] open`
 
 ## Done (retained, removed from active list)
 
@@ -101,5 +98,6 @@ Enemy base speed increased from `2.9 + realm*0.35` to `8.0 + realm*0.35 + randf(
 - After edits: `node scripts/agent-workflow.mjs check` (JS + Godot import/parse) then `integration`.
 - Feature-specific: `pace-review` (XP/level pace), `capture-ui` / `controls-review` (menus, camera, HUD), `coop` / `coop-feedback` (co-op), `combat-review` (combat).
 - Build after several milestones: `node scripts/agent-workflow.mjs build` → `.build-staging/.../Wildforge.exe`, then package with `scripts/package-release.ps1 -BuildNumber N -BuildDirectory <dir> -SourceCommit <sha>`.
-- Test new builds in solo and coop. Make and inspect new screenshots.
+- Test new builds in solo and in coop. Make and inspect new screenshots for UI bugs!
 - Preserve history, saves, logs; delete old builds only with explicit authorization.
+- Update plan.md: version, newest build, done tasks moved to do "## Done".
