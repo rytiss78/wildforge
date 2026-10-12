@@ -39,11 +39,11 @@ func setup(model_name: String,weapon: String="gun",armour: float=0,shield_capaci
 	hero.sync_equipment([{"id":weapon,"rank":1}]);hero.arms[0].rotation.x=.06
 	var floor_mesh=CylinderMesh.new()
 	floor_mesh.top_radius=1.2;floor_mesh.bottom_radius=1.2;floor_mesh.height=.06
-	ToonArt.part(stage,floor_mesh,Color("a3b6a2"),Vector3(0,-.03,0))
+	ToonArt.part(stage,floor_mesh,Color("263b38"),Vector3(0,-.03,0))
 	var env=WorldEnvironment.new()
 	env.environment=Environment.new()
 	env.environment.background_mode=Environment.BG_COLOR
-	env.environment.background_color=Color("e4e8ce")
+	env.environment.background_color=Color("101d21")
 	env.environment.ambient_light_source=Environment.AMBIENT_SOURCE_COLOR
 	env.environment.ambient_light_color=Color("fff2d7")
 	env.environment.ambient_light_energy=.55

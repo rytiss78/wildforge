@@ -122,7 +122,7 @@ func label(text: String, font_size: int = 18, color: Color = ThemeTokens.INK_RUN
 	var item = Label.new()
 	item.text = text
 	item.add_theme_font_size_override("font_size",font_size)
-	item.add_theme_color_override("font_color",color.lerp(ink,.65) if color.get_luminance()>.45 else color)
+	item.add_theme_color_override("font_color",color.lerp(ThemeTokens.PAPER,.72) if color.get_luminance()<.35 else color)
 	item.add_theme_color_override("font_outline_color",ThemeTokens.INK_RUNTIME)
 	item.add_theme_constant_override("outline_size",0)
 	item.mouse_filter = Control.MOUSE_FILTER_IGNORE
@@ -131,12 +131,12 @@ func label(text: String, font_size: int = 18, color: Color = ThemeTokens.INK_RUN
 func style(color: Color = ThemeTokens.PAPER_RUNTIME, border: Color = Color("a99070"), radius: int = 3) -> StyleBoxFlat:
 	var box=StyleBoxFlat.new()
 	# Every UI surface is opaque; only the surface colour conveys selection.
-	box.bg_color=Color(color.r,color.g,color.b,1)
+	box.bg_color=Color(color.r,color.g,color.b,1) if color.get_luminance()<.18 else ThemeTokens.PAPER_RUNTIME.lerp(color,.10)
 	box.border_color=Color(border.r,border.g,border.b,1) if border.a>.7 else Color("b9a58a")
 	box.set_border_width_all(1)
 	box.border_width_bottom=2
 	box.shadow_color=ThemeTokens.SHADOW.color;box.shadow_size=ThemeTokens.SHADOW.size;box.shadow_offset=ThemeTokens.SHADOW.offset
-	box.set_corner_radius_all(radius)
+	box.set_corner_radius_all(mini(radius,3))
 	box.content_margin_left=ThemeTokens.MARGINS.left
 	box.content_margin_right=ThemeTokens.MARGINS.right
 	box.content_margin_top=ThemeTokens.MARGINS.top
@@ -153,7 +153,7 @@ func button(text: String, action: Callable, accent: bool = false, radius_key: St
 	item.add_theme_stylebox_override("normal",style(bg,Color("c8d9c23c"),r))
 	item.add_theme_stylebox_override("hover",style(Color("efd3a7"),Color("977657"),r))
 	item.add_theme_stylebox_override("pressed",style(Color("dcb48a"),Color("70543b"),r))
-	var focus=StyleBoxFlat.new();focus.bg_color=Color.TRANSPARENT;focus.border_color=ThemeTokens.INK;focus.set_border_width_all(3);focus.set_corner_radius_all(r)
+	var focus=StyleBoxFlat.new();focus.bg_color=Color.TRANSPARENT;focus.border_color=ThemeTokens.STAR_GOLD;focus.set_border_width_all(3);focus.set_corner_radius_all(r)
 	item.add_theme_stylebox_override("focus",focus)
 	item.add_theme_color_override("font_color",ink)
 	item.add_theme_color_override("font_hover_color",ink)
@@ -196,10 +196,10 @@ func setup(owner_game):
 	health_text=label("",16);health_column.add_child(health_text)
 	health_bar=ProgressBar.new();health_bar.custom_minimum_size.y=12;health_bar.show_percentage=false
 	health_bar.add_theme_stylebox_override("background",style(Color("d5d9c8"),Color.TRANSPARENT,4))
-	health_bar.add_theme_stylebox_override("fill",style(Color("559c78"),Color.TRANSPARENT,4));health_column.add_child(health_bar)
+	health_bar.add_theme_stylebox_override("fill",style(Color("559c78"),Color.TRANSPARENT,4));health_bar.get_theme_stylebox("fill").bg_color=Color("b8334d");health_column.add_child(health_bar)
 	shield_bar=ProgressBar.new();shield_bar.custom_minimum_size.y=8;shield_bar.show_percentage=false
 	shield_bar.add_theme_stylebox_override("background",style(Color("d5d9c8"),Color.TRANSPARENT,3))
-	shield_bar.add_theme_stylebox_override("fill",style(Color("5b9cd8"),Color.TRANSPARENT,3));shield_bar.visible=false;health_column.add_child(shield_bar)
+	shield_bar.add_theme_stylebox_override("fill",style(Color("5b9cd8"),Color.TRANSPARENT,3));shield_bar.get_theme_stylebox("fill").bg_color=Color("70c9df");shield_bar.visible=false;health_column.add_child(shield_bar)
 	armor_text=label("",12,ink);health_column.add_child(armor_text)
 	journey_overlay=preload("res://scripts/journey_hud.gd").new();journey_overlay.game=game;journey_overlay.mouse_filter=Control.MOUSE_FILTER_IGNORE;root.add_child(journey_overlay)
 	map_view.position = Vector2(1573,32)
@@ -222,11 +222,11 @@ func setup(owner_game):
 	xp.custom_minimum_size.y = 6
 	xp.show_percentage = false
 	xp.add_theme_stylebox_override("fill",style(Color("a5de9d"),Color.TRANSPARENT,3))
-	info_box.add_child(xp)
+	xp.get_theme_stylebox("fill").bg_color=Color("62c69b");info_box.add_child(xp)
 	coins = label("GOLD  0    BOX PRICE  30",18,ThemeTokens.STAR_GOLD)
 	box_counter=label("",15);box_counter.position=Vector2(32,265);box_counter.add_theme_stylebox_override("normal",style());root.add_child(box_counter)
 	var coins_panel=PanelContainer.new();coins_panel.position=Vector2(32,230);coins_panel.custom_minimum_size=Vector2(413,48)
-	coins_panel.add_theme_stylebox_override("panel",style(ThemeTokens.STAR_GOLD,Color("c8a840"),8));root.add_child(coins_panel)
+	coins_panel.add_theme_stylebox_override("panel",style(paper,ThemeTokens.STAR_GOLD,3));root.add_child(coins_panel)
 	coins.add_theme_color_override("font_color",ink);coins_panel.add_child(coins)
 	weapons = WeaponBar.new()
 	weapons.game = game
@@ -277,8 +277,8 @@ func setup(owner_game):
 	_ach_note_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_ach_note_panel.z_index=100
 	var achievement_style=StyleBoxFlat.new()
-	achievement_style.bg_color=Color("086b24");achievement_style.border_color=Color("35934c")
-	achievement_style.set_border_width_all(1);achievement_style.set_corner_radius_all(10)
+	achievement_style.bg_color=Color("12322c");achievement_style.border_color=ThemeTokens.STAR_GOLD
+	achievement_style.set_border_width_all(1);achievement_style.set_corner_radius_all(3)
 	achievement_style.shadow_color=Color(0,0,0,.3);achievement_style.shadow_size=8;achievement_style.shadow_offset=Vector2(0,4)
 	_ach_note_panel.add_theme_stylebox_override("panel",achievement_style)
 	_ach_note_row=HBoxContainer.new();_ach_note_row.mouse_filter=Control.MOUSE_FILTER_IGNORE
@@ -320,6 +320,7 @@ func open(title: String, subtitle: String = "") -> VBoxContainer:
 	var shade=ColorRect.new();shade.color=Color(.025,.05,.08,.72);modal.add_child(shade);shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	panel.add_theme_stylebox_override("panel",style(paper,Color("a99070"),22))
 	modal.add_child(panel)
+	var frame=preload("res://scripts/forge_frame.gd").new();frame.panel=panel;frame.position=panel.position;frame.size=panel.size;frame.z_index=2;modal.add_child(frame)
 	content = VBoxContainer.new()
 	content.add_theme_constant_override("separation",10)
 	panel.add_child(content)
@@ -407,7 +408,7 @@ func update(delta: float):
 			var timer=label("",12);timer.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;column.add_child(timer);buff_widgets[key]=timer
 		var benefit=UpgradeFit.for_key(game,str(PotionBook.TYPES[key].key))
 		buff_widgets[key].text="%s\n%ds · %s" % [PotionBook.TYPES[key].name,ceil(game.buffs[key]),"Active" if benefit.useful else "No benefit"]
-		buff_widgets[key].add_theme_color_override("font_color",ink if benefit.useful else Color("973426"))
+		buff_widgets[key].add_theme_color_override("font_color",ink if benefit.useful else Color("f49b86"))
 		buff_widgets[key].get_parent().get_parent().tooltip_text=benefit.text
 	health_text.text="HP  %d / %d" % [ceili(game.hp),roundi(game.stats.maxHp)]
 	health_bar.max_value=game.stats.maxHp;health_bar.value=game.hp
@@ -484,7 +485,7 @@ func update(delta: float):
 		if toast_time <= 0: toast.text = ""
 	# Render damage numbers (2D UI - rise from bottom)
 	for damage_label in damage_labels: damage_label.visible=false
-	if game.damage_numbers:
+	if game.damage_numbers and not modal.visible:
 		for index in range(game.damage_numbers.size()):
 			var dn=game.damage_numbers[index]
 			# Color by damage type (from game.gd source of truth)
@@ -515,16 +516,12 @@ func update(delta: float):
 			label.add_theme_color_override("font_shadow_color",Color(0,0,0,.8))
 			label.add_theme_constant_override("shadow_offset_y",3)
 			label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			# Position: starts at bottom, rises up, fades out
+			# Emit above the occupied lower HUD, independent of actor/camera position.
 			var screen_size=get_viewport().get_visible_rect().size
-			var inset=maxf(32,label.get_combined_minimum_size().y+6)
-			label.position=Vector2(screen_size.x*dn.screen_x,screen_size.y-inset-(1.0-life_ratio)*screen_size.y*.35)
-			var world_position: Vector3=dn.get("world_position",Vector3.INF)
-			if world_position.is_finite():
-				if game.camera.is_position_behind(world_position): label.visible=false;continue
-				label.position=game.camera.unproject_position(world_position)+Vector2((dn.screen_x-.5)*70,-35-(1-life_ratio)*85)
-				label.position.x=clampf(label.position.x,12,screen_size.x-label.get_combined_minimum_size().x-12)
-				label.position.y=clampf(label.position.y,12,screen_size.y-inset-110)
+			var label_size=label.get_combined_minimum_size()
+			var band_bottom=screen_size.y-210.0-floorf(float(dn.get("lane",0))/8.0)*56.0
+			var rise=(1.0-life_ratio)*190.0*float(dn.get("fly_speed",1.0))
+			label.position=Vector2(clampf(screen_size.x*dn.screen_x-label_size.x*.5,32,screen_size.x-label_size.x-32),band_bottom-label_size.y-rise)
 
 			label.modulate.a = clampf(life_ratio * 2.0, 0.0, 1.0)
 
@@ -747,7 +744,7 @@ func offer_card(item: Dictionary, index: int, select: Callable) -> Button:
 	hover.shadow_color=Color(accent,.5);hover.shadow_size=10;hover.shadow_offset=Vector2i(0,4)
 	card.add_theme_stylebox_override("hover",hover)
 	card.add_theme_stylebox_override("pressed",hover)
-	var focus=StyleBoxFlat.new();focus.bg_color=Color(accent,.08);focus.border_color=accent;focus.set_border_width_all(4);focus.set_corner_radius_all(12)
+	var focus=StyleBoxFlat.new();focus.bg_color=Color(accent,.08);focus.border_color=accent;focus.set_border_width_all(4);focus.set_corner_radius_all(3)
 	focus.shadow_color=Color(accent,.6);focus.shadow_size=14;focus.shadow_offset=Vector2i(0,0)
 	card.add_theme_stylebox_override("focus",focus)
 	var column=VBoxContainer.new();card.add_child(column)
@@ -758,7 +755,7 @@ func offer_card(item: Dictionary, index: int, select: Callable) -> Button:
 	var rarity=label(RunRules.RARITIES[item.tier].to_upper()+"   ·   #"+str(index+1),12,accent.darkened(.4))
 	rarity.add_theme_color_override("font_outline_color",accent);rarity.add_theme_color_override("font_outline_color",accent)
 	rarity.add_theme_font_size_override("font_size",12)
-	rarity.add_theme_color_override("font_color",accent.darkened(.5))
+	rarity.add_theme_color_override("font_color",accent.lightened(.3))
 	column.add_child(rarity)
 	# Icon with subtle background
 	var icon_bg=ColorRect.new()
@@ -789,7 +786,7 @@ func offer_card(item: Dictionary, index: int, select: Callable) -> Button:
 	var useful=true
 	if item.kind!="weapon":
 		var fit=UpgradeFit.describe(game,item);note=fit.text;useful=fit.useful
-	var footer=label(note,15,Color("245b35") if useful else Color("973426"))
+	var footer=label(note,15,Color("8ee4b3") if useful else Color("973426"))
 	footer.name="LoadoutBenefit";footer.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;footer.custom_minimum_size.y=68
 	footer.max_lines_visible=4;footer.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
 	column.add_child(footer);card.tooltip_text+="\n"+note

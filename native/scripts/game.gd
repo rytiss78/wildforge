@@ -1158,6 +1158,9 @@ func record_damage_number(enemy_id: int, damage: float, cause: String,position_v
 			entry.life=1.2
 			return
 	if damage_numbers.size()>=MAX_DAMAGE_NUMBERS: return
+	# Stable free lanes keep simultaneous hits legible without tying them to actors.
+	var lane=0
+	while damage_numbers.any(func(entry):return int(entry.get("lane",-1))==lane): lane+=1
 	var dmg_color=Color.WHITE
 	var fly_speed=0.6
 	var size_boost=false
@@ -1197,7 +1200,7 @@ func record_damage_number(enemy_id: int, damage: float, cause: String,position_v
 		dmg_color=Color("00ff00")  # Green for healing
 	else:
 		dmg_color=Color("ffffff")  # White fallback
-	damage_numbers.append({"enemy_id":enemy_id,"amount":damage,"value":maxi(1,roundi(damage)),"world_position":position_value,"screen_x":randf_range(.2,.8),"life":1.2,"maxLife":1.2,"cause":cause,"color":dmg_color,"fly_speed":fly_speed,"size_boost":size_boost,"flash_timer":1.2 if cause in ["crit","heal"] else 0})
+	damage_numbers.append({"enemy_id":enemy_id,"amount":damage,"value":maxi(1,roundi(damage)),"world_position":position_value,"lane":lane,"screen_x":.2+float(lane%8)*.6/7.0,"life":1.2,"maxLife":1.2,"cause":cause,"color":dmg_color,"fly_speed":fly_speed,"size_boost":size_boost,"flash_timer":1.2 if cause in ["crit","heal"] else 0})
 
 func create_status_indicator(enemy: Dictionary, color: Color, name: String) -> Node3D:
 	if not enemy.node.has_meta("status_fx"): enemy.node.set_meta("status_fx",{})

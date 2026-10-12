@@ -9,7 +9,7 @@ func _draw():
 	var font=ThemeDB.fallback_font
 	var text="%02d:%02d" % [int(seconds)/60,int(seconds)%60]
 	var frame_time=Time.get_ticks_msec()*TAU/30000.0
-	var plate=StyleBoxFlat.new();plate.bg_color=Color("17293d");plate.set_corner_radius_all(9)
+	var plate=StyleBoxFlat.new();plate.bg_color=ThemeTokens.INK;plate.set_corner_radius_all(2);plate.border_color=ThemeTokens.STAR_GOLD;plate.set_border_width_all(1)
 	# Warning glow when time is low
 	if seconds<60:
 		var pulse=.25+sin(frame_time*3)*.12

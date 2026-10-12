@@ -21,7 +21,7 @@ func refresh():
 		var filled = i < game.equipped.size()
 		var panel = PanelContainer.new()
 		panel.custom_minimum_size = Vector2(116,78)
-		panel.add_theme_stylebox_override("panel",game.hud.style(Color("f6eddc"),Color("a7885c") if filled else Color("b9ad93"),12))
+		panel.add_theme_stylebox_override("panel",game.hud.style(ThemeTokens.PAPER_RUNTIME,Color("a7885c") if filled else Color("b9ad93"),12))
 		# Subtle entrance pop for newly equipped weapons
 		if filled and new_slots.has(i):
 			panel.scale=Vector2(.88,.88)
@@ -39,13 +39,13 @@ func refresh():
 			icon.color = PowerIcon.color_for(icon.key)
 			icon.custom_minimum_size = Vector2(88,48)
 			column.add_child(icon)
-			var badge = game.hud.label("Lv. %d" % weapon.rank,13,Color("574536"))
+			var badge = game.hud.label("Lv. %d" % weapon.rank,13,ThemeTokens.STAR_GOLD)
 			badge.position=Vector2(65,0)
 			icon.add_child(badge)
 			var name_label = game.hud.label(weapon.name,12)
 			name_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 			column.add_child(name_label)
 		else:
-			var empty=game.hud.label("+\nEMPTY SLOT",12,Color("8c7861"))
+			var empty=game.hud.label("+\nEMPTY SLOT",12,Color("a1ada8"))
 			empty.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 			column.add_child(empty)

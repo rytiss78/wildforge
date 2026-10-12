@@ -96,6 +96,8 @@ Mark a milestone complete only after its listed behavior and visual checks pass.
 | Step | Status | Evidence / commit / push |
 | --- | --- | --- |
 | Roadmap and reference handoff | Prepared in the original repair session | This document and local reference manifest; implementation starts in the new session |
-| 0–7 | Open | No 1.0.0 implementation or completion claim yet |
+| 0 — audited source baseline | Source checkpoint pushed; orb coverage pending | `4ffec33`; [audit/inventory](visual-baseline-1.0.0.md); original mixed index preserved |
+| 1a — UI foundation + bottom damage | Validated development sub-batch | [Evidence/build/screenshots](visual-foundation-1.0.0.md); commit/push recorded below |
+| 1b–7 | Open | Representative scene, complete catalogs/rosters/biomes/bosses, cleanup and release remain |
 
 Baseline context: [0.8.10 repair](gameplay-repair-0.8.10.md), [earlier audit](repair-audit-2026-10-12.md), [project rules](../../AGENTS.md).

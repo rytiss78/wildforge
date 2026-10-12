@@ -21,6 +21,21 @@ static func run(game):
 	if not (aggregated and regular_hits_hidden and bounded and cleared and reused):
 		push_error("Damage feedback burst/reuse contract failed");game.get_tree().quit(1);return
 	game.damage_numbers.clear()
+	# Behind-camera actors must still emit feedback above the lower HUD.
+	game.record_damage_number(10001,128,"crit",game.camera.position+game.camera.global_basis.z*20)
+	game.damage_numbers[0].screen_x=.5
+	game.hud.update(0)
+	var start_rect=game.hud.damage_labels[0].get_global_rect()
+	var band_clear=start_rect.end.y<=game.get_viewport().get_visible_rect().size.y-200 and game.hud.damage_labels[0].visible
+	game.damage_numbers[0].life=.5;game.hud.update(0)
+	var rises=game.hud.damage_labels[0].position.y<start_rect.position.y-50
+	var fades=game.hud.damage_labels[0].modulate.a<1
+	game.hud.pause_menu();game.hud.update(0)
+	var modal_clear=game.hud.damage_labels.all(func(n):return not n.visible)
+	game.hud.close()
+	if not (band_clear and rises and fades and modal_clear):
+		push_error("Bottom-band damage motion/clearance contract failed");game.get_tree().quit(1);return
+	game.damage_numbers.clear()
 	game.xp_target=100000;game.stats.damage=4
 	for id in ["shotgun","ice"]:
 		var item=game.rules.data.weapons.filter(func(w):return w.id==id)[0].duplicate(true)
@@ -44,6 +59,6 @@ static func run(game):
 	for index in range(6):
 		var mesh=load("res://assets/style3d/baked/creature_0_%d.res" % index)
 		heights.append({"species":index,"asset_height":mesh.get_aabb().size.y,"requested_height":CreatureBook.HEIGHTS[index]})
-	var result={"damage_aggregated":aggregated,"damage_bounded":bounded,"damage_cleared":cleared,"damage_labels_reused":reused,"p50_ms":frames[frames.size()/2],"p95_ms":frames[int(frames.size()*.95)],"frames":frames.size(),"nodes":nodes,"enemies":game.enemies.size(),"kills":game.kills,"draw_calls":Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME),"mesh_heights":heights,"renderer":RenderingServer.get_video_adapter_name()}
+	var result={"bottom_band_clear":band_clear,"damage_rises":rises,"damage_fades":fades,"damage_hidden_in_menu":modal_clear,"static_memory_bytes":Performance.get_monitor(Performance.MEMORY_STATIC),"damage_aggregated":aggregated,"damage_bounded":bounded,"damage_cleared":cleared,"damage_labels_reused":reused,"p50_ms":frames[frames.size()/2],"p95_ms":frames[int(frames.size()*.95)],"frames":frames.size(),"nodes":nodes,"enemies":game.enemies.size(),"kills":game.kills,"draw_calls":Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME),"mesh_heights":heights,"renderer":RenderingServer.get_video_adapter_name()}
 	var file=FileAccess.open("user://combat-review.json",FileAccess.WRITE);file.store_string(JSON.stringify(result,"  "));file.close()
 	print("COMBAT_REVIEW "+JSON.stringify(result));game.get_tree().quit()

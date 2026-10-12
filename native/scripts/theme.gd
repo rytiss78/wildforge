@@ -4,15 +4,15 @@
 class_name ThemeTokens
 
 # ── Core palette (verified in code, art-direction.md §2) ────────────
-const INK = Color("#17293D")
-const PAPER = Color("#FFF8DE")
+const INK = Color("#0C151A")
+const PAPER = Color("#EEE4C8")
 const WARM_LIGHT = Color("#FFF2DE")
-const STAR_GOLD = Color("#FFF1C8")
+const STAR_GOLD = Color("#CDAE69")
 const EARTH_TERRACOTTA = Color("#B67552")
 
 # Runtime-derived aliases (used by hud.gd for ink/paper constants)
-const INK_RUNTIME = INK
-const PAPER_RUNTIME = PAPER
+const INK_RUNTIME = PAPER
+const PAPER_RUNTIME = Color("#141F25")
 
 # Supporting tones
 const SKY_AMBIENT = Color("#E6EFFF")
@@ -87,7 +87,7 @@ const RADIUS = {
 
 # ── Shadows ─────────────────────────────────────────────────────────
 const SHADOW = {
-	"color": Color(0.18, 0.12, 0.08, 0.24),
+	"color": Color(0.01, 0.02, 0.025, 0.7),
 	"size": 4,
 	"offset": Vector2(1, 2),
 }

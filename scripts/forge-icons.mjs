@@ -1,0 +1,11 @@
+import {writeFileSync} from 'node:fs';
+// Hand-authored silhouettes for the representative reward screen, not randomized motifs.
+const boots='<path d="M76 55h43l-5 66 34 20 22 5v25H73l-12-13 5-33z" fill="#dfc38a"/><path d="M77 66h29l-3 53-27 2z" fill="#6ab89c"/><path d="m74 127 28 3m-31 13 42 2m-44 14 88 1" stroke="#273833" stroke-width="7"/><path d="m119 105 28-35 22 1-14 32 21-8-13 23-32 9" fill="#9ce7c2"/><path d="M68 174h106" stroke="#f4da92" stroke-width="6"/>';
+const wing='<path d="m101 141 13-63 35-36-8 38 45-22-21 37 36-3-40 31-30 4-7 36z" fill="#a7dfc5"/><path d="m76 65 23 9-15 87-15 22-10-26z" fill="#e8c884"/><path d="m49 119 50 8-5 13-48-8z" fill="#bd854a"/><path d="m83 80-11 71m61-61-12 32 38-20" fill="none" stroke="#20352d" stroke-width="6"/>';
+const metronome='<path d="m110 47 36 11 31 120H71z" fill="#405762"/><path d="m117 66 17 4 21 84H94z" fill="#151f2a"/><path d="m123 155 45-79" stroke="#ddbf74" stroke-width="10"/><path d="m150 84 23 13-9 18-24-12z" fill="#96d9c2"/><circle cx="123" cy="156" r="13" fill="#d9b779"/><path d="M53 93h39M44 116h39M53 140h28" stroke="#80cfbc" stroke-width="7"/><path d="M73 180h106" stroke="#e6cb8a" stroke-width="7"/>';
+const icons={'jump-boots-item':boots,'jump-boots-skill':boots.replaceAll('#6ab89c','#a287cb'),'augment-air-damage':wing,'augment-dash-rate':metronome,'augment-kill-speed':boots.replaceAll('#9ce7c2','#ef9979')+'<path d="m162 41 8 13 15-6-4 19-34 3-6-18 15 5z" fill="#e8be64"/>'};
+for(const [id,shape] of Object.entries(icons)){
+ const svg=`<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256" viewBox="0 0 256 256"><path d="M128 9 243 128 128 247 13 128Z" fill="#0b151d" stroke="#a58951" stroke-width="3"/><path d="m128 24 100 104-100 104L28 128Z" fill="#192b30" stroke="#3b6152" stroke-width="2"/><path d="M40 128h176M128 38v180" stroke="#2a443e"/><circle cx="128" cy="128" r="78" fill="none" stroke="#b59458" stroke-width="1"/><g stroke="#070e14" stroke-width="5" stroke-linejoin="round">${shape}</g><path d="m128 10 5 10-5 10-5-10m0 207 5-10 5 10-5 10" fill="#e6c47f"/></svg>`;
+ writeFileSync(`native/assets/illustrated/content/${id}.svg`,svg+'\n');
+}
+console.log(`Wrote ${Object.keys(icons).length} original representative icons.`);

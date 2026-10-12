@@ -2116,11 +2116,11 @@
     {
       "path": "native/assets/illustrated/content/augment-air-damage.svg",
       "bytes": 3763,
-      "sha256": "ef38c48b2e0ba8628a793ee9055aa5469c5b578982b91d973ecae2756f61c86c",
+      "sha256": "77fd8ed1bb713061c2407c070d265f2e7c4862aba7c819262d6b91e1ec8e675a",
       "owner": "IllustratedIcons / WeaponModel",
-      "generator": "scripts/create-content-art.mjs",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/forge-icons.mjs",
+      "replacement": "original engraved SVG; exported UI reviewed at 720/810/1080",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/illustrated/content/augment-air-damage.svg.import",
@@ -6004,11 +6004,11 @@
     {
       "path": "native/assets/illustrated/content/augment-dash-rate.svg",
       "bytes": 3453,
-      "sha256": "150077f33d38228b71fb1ab0799bc6668cadaa3bb37bdc3855a7dbf6d128ef55",
+      "sha256": "7df5b7c0bf6546ed769af9b75092fb54e7300d9c4a2afc7739ab855390039109",
       "owner": "IllustratedIcons / WeaponModel",
-      "generator": "scripts/create-content-art.mjs",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/forge-icons.mjs",
+      "replacement": "original engraved SVG; exported UI reviewed at 720/810/1080",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/illustrated/content/augment-dash-rate.svg.import",
@@ -9712,11 +9712,11 @@
     {
       "path": "native/assets/illustrated/content/augment-kill-speed.svg",
       "bytes": 3757,
-      "sha256": "dfee8b3e685d9e1aff429d95fe94fb5756ccd124ecda57f857afb3ccf333027f",
+      "sha256": "20b7f152e5bbc899bd1b2539241ff2e071ffdbc47cd537b518c62c3e47be04ff",
       "owner": "IllustratedIcons / WeaponModel",
-      "generator": "scripts/create-content-art.mjs",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/forge-icons.mjs",
+      "replacement": "original engraved SVG; exported UI reviewed at 720/810/1080",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/illustrated/content/augment-kill-speed.svg.import",
@@ -21646,11 +21646,11 @@
     {
       "path": "native/assets/illustrated/content/jump-boots-item.svg",
       "bytes": 3820,
-      "sha256": "f79f52518276ddebabde24e69c3ec52ed817819ba051e992f852c41aa061a5db",
+      "sha256": "083aff52346b48464380951d98d23d0b0d352c9bd0158642b0a8a3d49c2ed306",
       "owner": "IllustratedIcons / WeaponModel",
-      "generator": "scripts/create-content-art.mjs",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/forge-icons.mjs",
+      "replacement": "original engraved SVG; exported UI reviewed at 720/810/1080",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/illustrated/content/jump-boots-item.svg.import",
@@ -21682,11 +21682,11 @@
     {
       "path": "native/assets/illustrated/content/jump-boots-skill.svg",
       "bytes": 3434,
-      "sha256": "d7e0e1e82db6691f6b059e8e050a405ccffc6b488c2b75e6958e07b5191ad0b1",
+      "sha256": "b5c30781fb83beb4a08d0a09a1b90a89c5be70cbad522638b8bef21897dd372d",
       "owner": "IllustratedIcons / WeaponModel",
-      "generator": "scripts/create-content-art.mjs",
-      "replacement": "pending",
-      "deletion": "retain"
+      "generator": "scripts/forge-icons.mjs",
+      "replacement": "original engraved SVG; exported UI reviewed at 720/810/1080",
+      "deletion": "replaced in place; retain current asset"
     },
     {
       "path": "native/assets/illustrated/content/jump-boots-skill.svg.import",
