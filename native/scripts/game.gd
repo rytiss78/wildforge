@@ -104,6 +104,17 @@ var reveal_clock = 0.0
 var reveal_duration = 0.0
 var reveal_tier = 0
 var next_save = 0.0
+# Shared co-op reward state. XP/level are a single host-authoritative pool: the host
+# owns level/xp/xp_target and syncs them to members via pose; members mirror the host
+# and never advance the shared level on their own. Gold is deliberately per-player
+# (shared gold broke gold-getting buffs) and is never broadcast.
+var party_shown_offer = []
+var party_shown_source = ""
+var party_offers = []
+var party_source = ""
+var party_seen = {}          # player name -> {"name":..., "items":[...]} (companion panel)
+var pickup_seq = 0           # unique pickup id source (prevents duplicate shared-XP credit)
+var awarded_pickups = {}    # pickup id -> true; host-side dedupe for shared credits
 var projectile_mesh = SphereMesh.new()
 var brass_mesh: Mesh
 var painted_shot: ShaderMaterial
@@ -222,29 +233,36 @@ func _ready():
 	add_child(hud)
 	hud.setup(self)
 	hud.start_menu()
-	# Blood rain particle system for Eclipse
+	# Eclipse blood rain. Keep the emitter within the camera's range; the
+	# original emitter sat at world Y=55 and had the default tiny culling AABB.
 	blood_rain=GPUParticles3D.new()
 	var bp=ParticleProcessMaterial.new()
-	bp.gravity=Vector3(0,-8,0)
-	bp.initial_velocity_min=80
-	bp.initial_velocity_max=120
-	bp.direction=Vector3(0,-1,0)
-	bp.spread=5
+	bp.gravity=Vector3(0,-12,0)
+	bp.initial_velocity_min=15
+	bp.initial_velocity_max=22
+	bp.direction=Vector3.DOWN
+	bp.spread=7
 	bp.emission_shape=ParticleProcessMaterial.EMISSION_SHAPE_BOX
-	bp.emission_box_extents=Vector3(60,0,60)
+	bp.emission_box_extents=Vector3(23,0,23)
 	blood_rain.process_material=bp
-	blood_rain.emitting=true
-	blood_rain.amount=200
-	blood_rain.lifetime=3.5
+	blood_rain.amount=280
+	blood_rain.lifetime=1.65
 	blood_rain.preprocess=0.5
 	blood_rain.one_shot=false
+	blood_rain.visibility_aabb=AABB(Vector3(-30,-47,-30),Vector3(60,64,60))
 	var mat=StandardMaterial3D.new()
-	mat.albedo_color=Color("#8b0000")
+	mat.albedo_color=Color("b93646")
+	mat.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED
 	mat.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA
-	var drop_mesh=SphereMesh.new();drop_mesh.radius=.045;drop_mesh.height=.5
+	mat.cull_mode=BaseMaterial3D.CULL_DISABLED
+	mat.emission_enabled=true
+	mat.emission=Color("942433")
+	mat.emission_energy_multiplier=.7
+	var drop_mesh=SphereMesh.new();drop_mesh.radius=.055;drop_mesh.height=.30
 	blood_rain.draw_pass_1=drop_mesh
-	blood_rain.material_override=mat
+	blood_rain.draw_pass_1.surface_set_material(0,mat)
 	add_child(blood_rain)
+	blood_rain.emitting=false
 	blood_rain.visible=false
 	add_child(coop);coop.setup(self)
 	add_child(update);update.setup(self)
@@ -381,6 +399,11 @@ func start_run(shared_seed: int=-1):
 	elapsed = 0.0
 	level = 1
 	xp = 0
+	pickup_seq = 0
+	awarded_pickups.clear()
+	party_seen.clear()
+	coop.last_remote_reward_level = 1
+	hud.party_panel_open = false
 	xp_target = rules.next_xp(level)
 	level_choice_cooldown=0
 	stats = rules.data.stats.duplicate(true)
@@ -575,6 +598,12 @@ func buy_chest(chest: Dictionary):
 	offer_source = "chest"
 	reveal_tier = offers.map(func(item):return item.tier).max()
 	if reveal_tier == 3: achievement_event("LEGENDARY")
+	# Co-op: the chest is shared. The opener already spent their own gold (per-player,
+	# never shared); broadcast the rolled pool so every member opens the same chest
+	# and each filters it to their own loadout, and hide the chest from every map.
+	if coop.active:
+		coop.broadcast({"type":"chest_open","offers":offers,"kind":"item","elite":bool(chest.elite)})
+		coop.broadcast({"type":"chest_hide","pos":[int(chest.node.position.x),int(chest.node.position.y),int(chest.node.position.z)]})
 	reveal_duration = [2.6,2.9,3.3,3.8][reveal_tier]
 	sound.chest_open(reveal_tier,reveal_duration)
 	reveal_clock = 0
@@ -587,6 +616,7 @@ func buy_chest(chest: Dictionary):
 	else: sound.say("treasure",18)
 
 func level_up():
+	if coop.active and not coop.hosting: return  # Host owns shared levels.
 	if mode != "playing" or hp<=0 or level_choice_cooldown>0: return
 	xp -= xp_target
 	level_choice_cooldown=LEVEL_CHOICE_GAP
@@ -606,12 +636,17 @@ func level_up():
 	sound.say("level",0)
 	vibrate(.4,.65,.25)
 	hud.tell("LEVEL %d  ·  NEW POWER!" % level,1.2)
+	# Host-authoritative: only the host rolls/advances the shared level. Broadcast the
+	# rolled pool AND the resulting level/xp/xp_target so every member mirrors the host
+	# and opens the same choice — members never level up on their own.
+	if coop.active and coop.hosting:
+		coop.broadcast({"type":"level_up","offers":offers,"kind":kind,"level":level,"xp":xp,"xp_target":xp_target})
 
 func choose_offer(index: int):
 	if mode != "offer" or index < 0 or index >= offers.size(): return
 	var item = offers[index]
 	var weapon_sounds={"flame":"burn","fire-turret":"burn","poison":"poison","poison-turret":"poison","ice":"freeze","ice-turret":"freeze","lightning":"chain","lightning-turret":"chain","flowers":"flowerPower","ghost":"ghost","rocket":"explosion","rocket-turret":"explosion","turret":"turretDamage"}
-	sound.choose_power(weapon_sounds.get(item.id,"damage") if item.kind=="weapon" else item.effects[0].key)
+	sound.choose_power(weapon_sounds.get(item.id,"damage") if item.kind=="weapon" else (item.get("effects",[]).front() if item.get("effects",[]).size()>0 else {}).get("key","damage"))
 	if item.kind == "weapon":
 		if not rules.can_weapon(equipped,item.id):
 			mode="replace";hud.replace_menu(item)
@@ -619,16 +654,26 @@ func choose_offer(index: int):
 		equip_weapon(item)
 	else:
 		var previous_hp = stats.maxHp
-		rules.apply_effects(stats,item.effects)
+		var item_effects=item.get("effects",[])
+		rules.apply_effects(stats,item_effects)
 		hp += maxf(0,stats.maxHp-previous_hp)
-		shield_hp = minf(stats.shield+stats.jumpShield,shield_hp+float(item.effects.filter(func(e):return e.key=="shield").reduce(func(sum,e):return sum+e.amount,0)))
+		shield_hp = minf(stats.shield+stats.jumpShield,shield_hp+float(item_effects.filter(func(e):return e.key=="shield").reduce(func(sum,e):return sum+e.amount,0)))
 		owned.append(item)
 		career.bump("loot")
 		families[item.family] = int(families.get(item.family,0))+1
 		career.best("family_"+item.family,families[item.family])
+	# Record both weapon and skill choices. Clients must send to the host,
+	# since broadcast() only sends to their directly connected peer(s).
+	if coop.active:
+		var item_desc=""
+		if item.has("effects") and item.effects.size()>0: item_desc=rules.describe(item.effects[0])
+		party_seen[hero.name]={"name":hero.name,"items":[item.name],"items_full":[item_desc],"kind":offer_kind,"elite":offer_elite}
+		var announcement={"type":"reward_chosen","name":hero.name,"items":[item.name]}
+		if coop.hosting: coop.broadcast(announcement)
+		else: coop.send_to(coop.owner_id,announcement)
 	hud.tell("+  " + item.name)
 	hud.close()
-	if xp >= xp_target: level_up()
+	if (not coop.active or coop.hosting) and xp >= xp_target: level_up()
 
 func reroll_price() -> int:
 	return maxi(10,level*4)*int(pow(2,mini(offer_rerolls,16)))
@@ -646,7 +691,7 @@ func reroll_offers():
 func skip_offer():
 	if mode!="offer" or not offers.any(func(item):return item.kind=="weapon"): return
 	offers.clear();hud.close();hud.tell("Kept your weapons")
-	if xp>=xp_target: level_up()
+	if (not coop.active or coop.hosting) and xp>=xp_target: level_up()
 
 func equip_weapon(item: Dictionary):
 	for weapon in equipped:
@@ -784,6 +829,8 @@ func _input(event):
 		if index >= 0 and index < offers.size(): choose_offer(index)
 	if mode == "reveal" and (event.is_action_pressed("jump") or event.is_action_pressed("interact")):
 		finish_reveal();get_viewport().set_input_as_handled();return
+	if coop.active and mode=="offer" and event.is_action_pressed("party"):
+		hud.party_panel_toggle();return
 	if mode != "playing": return
 	if event.is_action_pressed("next_turret"):
 		selected_turret+=1
@@ -798,12 +845,34 @@ func _input(event):
 	if event.is_action_pressed("deploy"):
 		var turrets = equipped.filter(func(weapon):return weapon.turret)
 		if not turrets.is_empty() and turrets[selected_turret%turrets.size()].deploy_clock <= 0: deploy_turret(turrets[selected_turret%turrets.size()])
+	if coop.active and event.is_action_pressed("party"): hud.party_panel_toggle()
 
 func finish_reveal():
 	if mode != "reveal": return
 	mode = "offer"
 	hud.blast.color.a = 0
-	hud.show_offers(offers,"chest")
+	if coop.active: open_shared_offer(offers,offer_kind,offer_elite,offer_source)
+	else: hud.show_offers(offers,"chest")
+
+# Shared chest/level pool. Rolled once by the opener/host, identical on every
+# machine. Filter this player's visible cards to their own loadout so the shared
+# level does NOT force a shared build — the companion panel (party_seen /
+# hud.show_party_panel) shows what the other players picked instead.
+func open_shared_offer(pool: Array, kind: String, elite: bool, source: String):
+	if pool.is_empty(): return
+	mode = "offer"  # Network-delivered rewards must allow choose_offer().
+	party_offers = pool
+	party_source = source
+	var shown := []
+	for item in pool:
+		if item.kind == "weapon" and not rules.can_weapon(equipped,item.id): continue
+		shown.append(item)
+	if shown.is_empty(): shown = pool.duplicate(true)
+	offers = shown
+	offer_kind = kind;offer_elite = elite;offer_rerolls = 0
+	if not party_seen.has(hero.name):
+		party_seen[hero.name] = {"name":hero.name,"items":[],"items_full":[]}
+	hud.show_offers(offers,source)
 
 func random_spawn(radius: float,anchor: Vector3=Vector3.INF) -> Vector3:
 	var angle = rules.rng.randf()*TAU
@@ -930,9 +999,11 @@ func enemy_center(enemy: Dictionary) -> Vector3:
 func melee_contact(enemy: Dictionary,origin: Vector3) -> Vector3:
 	var radius_value=float(enemy.get("radius",.6))
 	var height_value=float(enemy.get("height",1.7))
-	var up: Vector3=enemy.node.basis.y
-	var axis=enemy.node.position+up*clampf((origin-enemy.node.position).dot(up),radius_value,maxf(radius_value,height_value-radius_value))
-	return axis+(origin-axis).normalized()*minf(radius_value,origin.distance_to(axis))
+	# Enemy colliders are finite cylinders, including the giant and wall crawlers.
+	var up: Vector3=enemy.node.basis.y.normalized()
+	var offset=origin-enemy.node.position
+	var along=offset.dot(up);var radial=offset-up*along
+	return enemy.node.position+up*clampf(along,0,height_value)+radial.normalized()*minf(radius_value,radial.length())
 
 func enemy_touching(enemy: Dictionary,target: Vector3) -> bool:
 	if enemy.get("surface_attached",false):
@@ -1047,12 +1118,12 @@ func fire(weapon: Dictionary, origin: Vector3):
 	if is_instance_valid(weapon.node) and weapon.node.has_meta("model"): weapon.node.get_meta("model").recoil = float(weapon.get("recoil", 0.05))
 	coop.shot(weapon.id,origin,enemy_center(target))
 	var shot_count = (3 if kind == "shotgun" else 1)+int(mods.get("extraShots",0))+mini(7,int(stats.multishot))
-	var aim = (enemy_center(target)-origin).normalized()
+	var aim = ((melee_contact(target,origin) if kind=="horn" else enemy_center(target))-origin).normalized()
 	var base_damage=stat("damage")*weapon.damage*float(weapon.get("power",1.0))*stats.get(kind+"Power",1.0)*(1+stats.get("airDamage",0.0) if not player.is_on_floor() else 1.0)
 	if kind=="horn":
 		for enemy in enemies:
-			var offset=enemy_center(enemy)-origin
-			if not enemy.dead and offset.length()<effective_range and offset.normalized().dot(aim)>float(mods.get("coneDot",.55)):
+			var offset=melee_contact(enemy,origin)-origin
+			if not enemy.dead and offset.length()<effective_range and (offset.length()<.01 or offset.normalized().dot(aim)>float(mods.get("coneDot",.55))):
 				hurt_enemy(enemy,base_damage,"sonic",weapon.id);enemy.freeze=maxf(enemy.freeze,.35+stats.hornStun+float(mods.get("stunBonus",0)))
 				if not enemy.boss: enemy.node.move_and_collide(aim*1.5)
 		beam(origin,origin+aim*effective_range,Color("e5cb98"));burst(origin+aim*3,Color("e5cb98"),8);return
@@ -1169,7 +1240,7 @@ func hit_enemy(enemy: Dictionary, shot: Dictionary,cause: String="hit"):
 
 func record_damage_number(enemy_id: int, damage: float, cause: String,position_value: Vector3=Vector3.INF):
 	# Show damage numbers for meaningful hits: crits (always), fire/ice (DOTs), explosions, melee, slam, heal
-	var show_causes=["crit","fire","ice","slam","explosion","melee","sonic","thorn","poison","aura","burn","heal"]
+	var show_causes=["crit","fire","ice","slam","explosion","melee","sonic","thorn","poison","aura","burn","heal","coop"]
 	if cause not in show_causes: return
 	# De-dup: merge damage within 400ms for same enemy+cause to reduce visual noise
 	for entry in damage_numbers:
@@ -1302,9 +1373,11 @@ func hurt_enemy(enemy: Dictionary, damage: float, cause: String,mechanic: String
 	var credited=minf(enemy.hp,damage)
 	var owner=int(enemy.get("hit_owner",enemy.get(cause+"_owner",enemy.get("status_owner",coop.local_id)) if cause in ["poison","fire"] else coop.local_id))
 	update.party_damage+=credited
+	# Host displays confirmed damage, including hits from teammates. Client
+	# receives its own authoritative total via big_damage below.
+	record_damage_number(enemy.net_id,credited,cause,enemy_center(enemy))
 	if owner==coop.local_id:
 		update.run_damage+=credited;credit_damage(mechanic if not mechanic.is_empty() else "effect:"+cause,credited)
-		record_damage_number(enemy.net_id,credited,cause,enemy_center(enemy))
 	elif coop.hosting and coop.members.has(owner): coop.send_to(owner,{"type":"big_damage","enemy_id":enemy.net_id,"position":coop.array(enemy_center(enemy)),"cause":cause,"amount":credited,"source":mechanic if not mechanic.is_empty() else "effect:"+cause,"realm":realm})
 	enemy.hp -= damage
 	enemy.node.get_meta("rig").set_health(enemy.hp/enemy.maxHp,enemy.boss or enemy.health>=1.8)
@@ -1360,11 +1433,19 @@ func kill_enemy(enemy: Dictionary, cause: String):
 		pools.append({"node":node,"life":5.0,"damage":stats.pools})
 		if pools.size()>16: pools[0].node.queue_free();pools.pop_front()
 	if rules.rng.randf()<stats.salvage: heal(4)
-	var death=create_tween();death.tween_property(enemy.node,"scale",Vector3(.9,.08,.9),.24);death.tween_callback(enemy.node.queue_free)
+	# Dead flying enemies should settle toward the terrain instead of
+	# shrinking permanently at their airborne position.
+	var landing=enemy.node.position
+	var ground_y=world.height_at(landing.x,landing.z)
+	if landing.y>ground_y+maxf(1.2,float(enemy.get("height",1.7))*.45): landing.y=ground_y+.2
+	var death=create_tween()
+	death.tween_property(enemy.node,"position",landing,.34).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
+	death.parallel().tween_property(enemy.node,"scale",Vector3(.9,.08,.9),.34)
+	death.tween_callback(enemy.node.queue_free)
 
 func damage_area(origin: Vector3,radius: float,damage: float,cause: String,excluded: Dictionary = {},source: String=""):
 	for enemy in enemies.duplicate():
-		if enemy != excluded and not enemy.dead and origin.distance_to(enemy.node.position) < radius:
+		if enemy != excluded and not enemy.dead and origin.distance_to(melee_contact(enemy,origin)) < radius:
 			if cause=="slam": update_reaction(enemy,"slam",damage)
 			hurt_enemy(enemy,damage,cause,source)
 	# Hit stop on heavy hits
@@ -1514,8 +1595,22 @@ func update_pickups(delta: float):
 					else: pickup.velocity=Vector3.ZERO;pickup.settled=true
 		pickup.node.rotation.y+=delta*2
 		if hp>0 and player.position.distance_to(pickup.node.position)<1.05+float(pickup.get("radius",.12))-.12:
-			if pickup.kind=="gold": update.run_coins+=pickup.value;gold+=roundi(pickup.value*stat("goldGain")/stat("goldGain"));heal(stats.coinHeal*pickup.get("units",1));sound.effect("coin")
-			else: update.run_xp+=pickup.value;xp+=pickup.value
+			if pickup.kind=="gold":
+				# Gold is per-player, never shared: apply locally only, no broadcast.
+				update.run_coins+=pickup.value;gold+=roundi(pickup.value*stat("goldGain")/stat("goldGain"));heal(stats.coinHeal*pickup.get("units",1));sound.effect("coin")
+			else:
+				# XP is a single shared pool owned by the host. pickup.value already
+				# carries the xpGain buff (applied at spawn), so collect it raw.
+				var gained = roundi(pickup.value)
+				# Offline runs award XP locally; in co-op, only the host owns XP.
+				if not coop.active or coop.hosting:
+					update.run_xp+=gained;xp+=gained
+					if xp>=xp_target: level_up()
+				elif coop.active:
+					# Client sends its pickup credit to the host; client XP and
+					# level are mirrored from authoritative host snapshots.
+					var pickup_id = "xp_"+str(pickup_seq);pickup_seq+=1
+					coop.send_to(coop.owner_id,{"type":"credit","pickup_id":pickup_id,"xp":gained})
 			pickup.node.queue_free();pickup.age=-1
 	pickups=pickups.filter(func(pickup):return pickup.age>=0)
 
@@ -1701,7 +1796,7 @@ func update_combat(delta: float):
 			# Attack windup telegraph: enemy glows red before attacking
 			if body.has_meta("rig"):
 				body.set_meta("attack_windup",0.5)
-			coop.damage_player(target_player.id,(18+realm*5 if enemy.boss else 11+realm*4)*enemy.damage*(1+enemy.get("biome",0)*.12),enemy.node.position,enemy.sound)
+			coop.damage_player(target_player.id,(18+realm*5 if enemy.boss else 11+realm*4)*enemy.damage*(1+enemy.get("biome",0)*.12)*(2.5 if events.get("eclipse",false) else 1.0),enemy.node.position,enemy.sound)
 			if target_player.id==coop.local_id:
 				if enemy.get("biome",0)==1 and not buffs.has("poison"): player_poison=3
 				if enemy.get("biome",0)==4 and not buffs.has("fire"): player_fire=3
@@ -1712,7 +1807,7 @@ func update_combat(delta: float):
 			enemy.attack -= enemy_delta
 			if enemy.attack<=0 and enemy.blind<=0 and enemy.freeze<=0:
 				BossBook.attack(self,enemy)
-		if hp>0 and stats.auraDamage>0 and distance<4: hurt_enemy(enemy,stats.auraDamage*enemy_delta,"aura")
+		if hp>0 and stats.auraDamage>0 and player.position.distance_to(melee_contact(enemy,player.position))<4: hurt_enemy(enemy,stats.auraDamage*enemy_delta,"aura")
 
 	update_aura_visual()
 	for shot in projectiles:
@@ -1754,7 +1849,7 @@ func update_combat(delta: float):
 	for pool in pools:
 		pool.life-=delta
 		for enemy in enemies:
-			if not enemy.dead and enemy.node.position.distance_to(pool.node.position)<pool.get("radius",2.5)+enemy.get("radius",0):
+			if not enemy.dead and pool.node.position.distance_to(melee_contact(enemy,pool.node.position))<pool.get("radius",2.5):
 				hurt_enemy(enemy,pool.damage*delta,"gravity" if pool.get("gravity",false) else "poison",str(pool.get("mechanic","gravity")) if pool.get("gravity",false) else "",pool.node.position)
 				if pool.get("gravity",false) and not enemy.boss: enemy.node.move_and_collide((pool.node.position-enemy.node.position).normalized()*delta*3)
 	for hazard in hazards:
@@ -1814,7 +1909,7 @@ func update_combat(delta: float):
 		if hp>0 and stats.nova>0:
 			damage_area(player.position,7,stats.nova,"explosion");CombatInk.wave(self,player.position,7,Color("af71ff"));sound.effect("nova")
 		nova_clock=6
-	if xp>=xp_target and mode=="playing" and hp>0: level_up()
+	if (not coop.active or coop.hosting) and xp>=xp_target and mode=="playing" and hp>0: level_up()
 
 func update_events():
 	if realm<3: Hunt.tick(self)
@@ -1842,6 +1937,16 @@ func _physics_process(delta: float):
 	update.tick(delta)
 	update.contact_shadows()
 	if update.downed:
+		# Preserve gravity after a co-op knockout. Otherwise an airborne hero
+		# freezes in midair because normal movement stops while downed.
+		player.velocity.x=move_toward(player.velocity.x,0,10*delta)
+		player.velocity.z=move_toward(player.velocity.z,0,10*delta)
+		if not player.is_on_floor(): player.velocity.y-=24*delta
+		else: player.velocity.y=0
+		player.move_and_slide()
+		if player.position.y<world.height_at(player.position.x,player.position.z)-5:
+			player.position.y=world.height_at(player.position.x,player.position.z)+1
+			player.velocity=Vector3.ZERO
 		elapsed+=delta;realm_time+=delta;update_events();update_combat(delta);return
 	update_exploration(delta)
 	level_choice_cooldown=maxf(0,level_choice_cooldown-delta)
@@ -1928,7 +2033,7 @@ func _physics_process(delta: float):
 		if not can_afford: affordable_warned=false
 
 func update_aura_visual():
-	var active=hp>0 and stats.auraDamage>0 and enemies.any(func(e):return not e.dead and e.node.position.distance_squared_to(player.position)<16)
+	var active=hp>0 and stats.auraDamage>0 and enemies.any(func(e):return not e.dead and player.position.distance_squared_to(melee_contact(e,player.position))<16)
 	if not active:
 		if has_meta("aura_node"):
 			var old=get_meta("aura_node")
@@ -1960,18 +2065,21 @@ func _process(delta: float):
 	world.stream(player.position,coop.members.values().filter(func(m):return m.has("position") and m.get("hp",0)>0).map(func(m):return CoopSession.vector(m.position)) if coop.hosting else [])
 	world.build_tick(delta)
 	world.eclipse=events.get("eclipse",false)
-	# Blood rain: positioned high above player, follows horizontally with camera
+	# Keep rain near the active camera, not fixed to an arbitrary world height.
 	if is_instance_valid(blood_rain):
-		blood_rain.visible=events.get("eclipse",false) and run_active
-		if blood_rain.visible:
-			blood_rain.position.x=player.position.x+sin(yaw)*camera_distance*.3
-			blood_rain.position.z=player.position.z+cos(yaw)*camera_distance*.3
-			blood_rain.position.y=55
+		var wants_rain=bool(events.get("eclipse",false)) and run_active
+		if blood_rain.emitting!=wants_rain: blood_rain.emitting=wants_rain
+		blood_rain.visible=wants_rain
+		if wants_rain:
+			blood_rain.global_position=player.global_position+Vector3(0,13,0)
 	world.weather_tick(delta,player.position)
 	sound.weapon_loop("steam",world.edge_near,player.position)
 	if mode=="level_reveal":
 		level_reveal-=delta
-		if level_reveal<=0: mode="offer";hud.show_offers(offers,"level")
+		if level_reveal<=0:
+			mode="offer"
+			if coop.active: open_shared_offer(offers,offer_kind,offer_elite,offer_source)
+			else: hud.show_offers(offers,"level")
 	for dn in damage_numbers:
 		dn.life-=delta
 		if dn.get("flash_timer",0)>0: dn.flash_timer-=delta
@@ -2475,16 +2583,16 @@ func update_garden(delta: float):
 		if flower.age<1.5: continue
 		for enemy in enemies:
 			if enemy.dead or not is_instance_valid(enemy.node): continue
-			if enemy.node.position.distance_to(flower.node.position)<3:
+			if flower.node.position.distance_to(melee_contact(enemy,flower.node.position))<3:
 				enemy.slow=maxf(enemy.slow,stats.flowerRoots);set_damage_status(enemy,"poison",stats.flowerPollen,coop.local_id);enemy.status_time=3
 				achievement_event("ROOTS");achievement_event("POLLEN")
-		if flower.bloom<=0 and enemies.any(func(e): return not e.dead and e.node.position.distance_to(flower.node.position)<3+e.get("radius",0)):
+		if flower.bloom<=0 and enemies.any(func(e): return not e.dead and flower.node.position.distance_to(melee_contact(e,flower.node.position))<3):
 			var chain=flowers.filter(func(f):return f.age>=1.5 and f.bloom<=0 and f.node.position.distance_to(flower.node.position)<5)
 			if chain.size()>=3: achievement_event("BLOOM_CHAIN")
 			for bloom in chain:
 				bloom.bloom=3.5
 				for enemy in enemies:
-					if not enemy.dead and enemy.boss and enemy.node.position.distance_to(bloom.node.position)<3.5: achievement_event("FLOWER_BOSS")
+					if not enemy.dead and enemy.boss and bloom.node.position.distance_to(melee_contact(enemy,bloom.node.position))<3.5: achievement_event("FLOWER_BOSS")
 				damage_area(bloom.node.position,3.5,stat("damage")*stats.flowerPower*bloom.power*.8,"bloom",{},"flowers")
 				burst(bloom.node.position+Vector3.UP*.85,Color("f5a8c4"),5)
 				if player.position.distance_to(bloom.node.position)<4 and hp<stats.maxHp: heal(stats.flowerHeal);achievement_event("FLOWER_HEAL")
