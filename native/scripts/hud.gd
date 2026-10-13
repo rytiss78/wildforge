@@ -9,6 +9,8 @@ var clock = RunClock.new()
 var map_view = ExploreMap.new()
 var xp: ProgressBar
 var xp_text: Label
+var rescue_meter: ProgressBar
+var rescue_text: Label
 var coins: Label
 var status: Label
 var weapons: WeaponBar
@@ -39,6 +41,9 @@ var box_counter: Label
 var party_label: Label
 var party_list: VBoxContainer
 var party_list_key=""
+var party_overlay: PanelContainer
+var party_rows: VBoxContainer
+var party_panel_open=false
 var offer_tween: Tween
 var preview_id=""
 var health_text: Label
@@ -202,12 +207,11 @@ func setup(owner_game):
 	shield_text=label("",13,Color("70c9df"));health_column.add_child(shield_text)
 	armor_text=label("",12,ink);health_column.add_child(armor_text)
 	journey_overlay=preload("res://scripts/journey_hud.gd").new();journey_overlay.game=game;journey_overlay.mouse_filter=Control.MOUSE_FILTER_IGNORE;root.add_child(journey_overlay)
-	map_view.position = Vector2(1633,32)
-	map_view.size = Vector2(246,246)
+	# Larger, frameless rotating minimap; the hero remains centered.
+	map_view.position=Vector2(1592,26)
+	map_view.size=Vector2(296,296)
+	map_view.clip_contents=true
 	root.add_child(map_view)
-	var header = label("ISLAND MAP",13)
-	header.position = Vector2(1690,13)
-	root.add_child(header)
 	var info = PanelContainer.new()
 	info.add_theme_stylebox_override("panel",style())
 	info.position = Vector2(32,940)
@@ -218,11 +222,32 @@ func setup(owner_game):
 	status = label("",14)
 	info_box.add_child(status)
 	xp_text=label("XP  0 / 41 to next level",12);info_box.add_child(xp_text)
+	# Bottom-edge full-viewport XP meter, independent of the compact stat panel.
 	xp = ProgressBar.new()
-	xp.custom_minimum_size.y = 6
 	xp.show_percentage = false
-	xp.add_theme_stylebox_override("fill",style(Color("a5de9d"),Color.TRANSPARENT,3))
-	xp.get_theme_stylebox("fill").bg_color=Color("62c69b");info_box.add_child(xp)
+	xp.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	var xp_bg=StyleBoxFlat.new();xp_bg.bg_color=Color("121b23")
+	var xp_fill=StyleBoxFlat.new();xp_fill.bg_color=Color("62c69b")
+	xp.add_theme_stylebox_override("background",xp_bg)
+	xp.add_theme_stylebox_override("fill",xp_fill)
+	root.add_child(xp)
+	xp.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	xp.offset_left=0;xp.offset_right=0;xp.offset_top=-10;xp.offset_bottom=0
+	xp.z_index=12
+	# Co-op revive state is driven by the host-authoritative rescue progress.
+	rescue_text=label("",17,ThemeTokens.STAR_GOLD)
+	rescue_text.position=Vector2(780,742)
+	rescue_text.size=Vector2(360,24)
+	rescue_text.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
+	root.add_child(rescue_text)
+	rescue_meter=ProgressBar.new()
+	rescue_meter.position=Vector2(780,774);rescue_meter.size=Vector2(360,10)
+	rescue_meter.max_value=3.0;rescue_meter.show_percentage=false
+	rescue_meter.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	rescue_meter.add_theme_stylebox_override("background",xp_bg)
+	var rescue_fill=StyleBoxFlat.new();rescue_fill.bg_color=Color("e4be78")
+	rescue_meter.add_theme_stylebox_override("fill",rescue_fill)
+	root.add_child(rescue_meter)
 	coins = label("GOLD  0    BOX PRICE  30",18,ThemeTokens.STAR_GOLD)
 	box_counter=label("",15);box_counter.position=Vector2(32,243);box_counter.add_theme_stylebox_override("normal",style());root.add_child(box_counter)
 	var coins_panel=PanelContainer.new();coins_panel.position=Vector2(32,192);coins_panel.custom_minimum_size=Vector2(310,40)
@@ -305,6 +330,18 @@ func setup(owner_game):
 	root.add_child(_ach_note_panel)
 	root.add_child(modal)
 	modal.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
+	# A small companion panel above the ordinary HUD (and reward modal).
+	party_overlay=PanelContainer.new()
+	party_overlay.anchor_left=1.0;party_overlay.anchor_right=1.0
+	party_overlay.offset_left=-420;party_overlay.offset_right=-24
+	party_overlay.offset_top=210;party_overlay.offset_bottom=510
+	party_overlay.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	party_overlay.add_theme_stylebox_override("panel",style(Color("182d30"),ThemeTokens.STAR_GOLD,10))
+	party_rows=VBoxContainer.new()
+	party_rows.add_theme_constant_override("separation",8)
+	party_overlay.add_child(party_rows)
+	root.add_child(party_overlay)
+	party_overlay.visible=false
 	modal.visible = false
 
 func open(title: String, subtitle: String = "") -> VBoxContainer:
@@ -341,6 +378,27 @@ func close():
 func tell(text: String, duration: float = 3.0):
 	toast.text = text
 	toast_time = duration
+
+func show_party_panel(selections: Dictionary):
+	if not is_instance_valid(party_rows): return
+	for child in party_rows.get_children(): child.queue_free()
+	party_rows.add_child(label("PARTY REWARDS",18,ThemeTokens.STAR_GOLD))
+	if selections.is_empty():
+		party_rows.add_child(label("No rewards chosen yet",15))
+	for person in selections.values():
+		if not person is Dictionary: continue
+		var names=[]
+		for item in person.get("items",[]): names.append(str(item).left(55))
+		var row=label(str(person.get("name","Player")).left(32)+": "+(", ".join(names) if not names.is_empty() else "Choosing…"),15)
+		row.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+		party_rows.add_child(row)
+	party_panel_open=true
+	party_overlay.visible=game.coop.active and game.run_active
+
+func party_panel_toggle():
+	party_panel_open=not party_panel_open
+	if party_panel_open: show_party_panel(game.party_seen)
+	else: party_overlay.visible=false
 
 func show_achievement_notification(ach_name: String, ach_desc: String):
 	_ach_note_queue.append({"name":ach_name,"description":ach_desc})
@@ -384,7 +442,8 @@ func update(delta: float):
 	update_skill_strip()
 	journey_overlay.queue_redraw()
 	for widget in root.get_children():
-		if widget is CanvasItem and widget!=modal and widget!=blast and widget!=_ach_note_panel: widget.visible=not modal.visible
+		if widget is CanvasItem and widget!=modal and widget!=blast and widget!=_ach_note_panel and widget!=party_overlay: widget.visible=not modal.visible
+	party_overlay.visible=party_panel_open and game.coop.active and game.run_active
 	_ach_note_panel.visible=_ach_note_active and not modal.visible
 	level_plate.visible=game.mode=="level_reveal"
 	level_plate.text="LEVEL %d  ·  NEW POWER!" % game.level
@@ -432,6 +491,18 @@ func update(delta: float):
 	xp_text.text="XP  %d / %d to next level" % [floori(game.xp),game.xp_target]
 	if game.xp>=game.xp_target and game.level_choice_cooldown>0:
 		xp_text.text="Level ready in %ds · %d XP saved" % [ceili(game.level_choice_cooldown),floori(game.xp)]
+	# The host is the source of truth for rescue progress; party snapshots
+	# mirror it to clients. A meter is shown both for helper and downed hero.
+	var rescue_id=0
+	if game.coop.active:
+		rescue_id=game.coop.local_id if game.update.downed else game.update.rescue_target(game.player.position,game.coop.local_id)
+	var rescue_visible=rescue_id>0 and not modal.visible
+	rescue_text.visible=rescue_visible
+	rescue_meter.visible=rescue_visible
+	if rescue_visible:
+		var progress=float(game.update.rescue_progress.get(rescue_id,game.update.rescue_progress.get(str(rescue_id),0.0)))
+		rescue_meter.value=clampf(progress,0,3)
+		rescue_text.text=("BEING REVIVED" if game.update.downed else "REVIVING FRIEND")+"  ·  %.1f / 3.0s" % progress
 	coins.text = "%d gold  ·  Chest %d  ·  %d left" % [game.gold,game.rules.chest_price(game.paid_chests,game.stats.discount),game.chests.filter(func(c):return not c.opened and not c.get("destroyed",false)).size()]
 	box_counter.visible=false
 	weapons.refresh()
@@ -776,7 +847,9 @@ func offer_card(item: Dictionary, index: int, select: Callable) -> Button:
 	var title=label(item.name,20);title.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;title.custom_minimum_size.y=58
 	title.add_theme_color_override("font_outline_color",ink);title.add_theme_color_override("font_outline_color",ink)
 	column.add_child(title)
-	var text=WeaponDetails.describe(item.id) if item.kind=="weapon" else game.rules.describe(item.effects[0])
+	var effect_desc=""
+	if item.kind!="weapon" and item.has("effects") and item.effects.size()>0: effect_desc=game.rules.describe(item.effects[0])
+	var text=WeaponDetails.describe(item.id) if item.kind=="weapon" else effect_desc
 	var description=label(text,14);description.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;description.max_lines_visible=4;description.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS;card.tooltip_text=text;description.size_flags_vertical=Control.SIZE_EXPAND_FILL
 	column.add_child(description)
 	var note=item.kind.capitalize()+" · "+str(item.get("family","Weapon"))
@@ -822,12 +895,14 @@ func preview_offer(item: Dictionary):
 		var after=before+item.strength*.3 if before>0 else item.strength
 		comparison="Weapon power %.2f → %.2f  ·  " % [before,after]+("Upgrades your equipped weapon" if before>0 else "Uses one of three weapon slots")+"  ·  "+WeaponDetails.describe(item.id)
 	else:
-		var candidate=game.stats.duplicate(true);game.rules.apply_effects(candidate,item.effects)
-		var effect=item.effects[0];var source=game.rules.loot_by_id.get(item.id,{})
-		comparison=game.rules.describe(effect)
+		var candidate=game.stats.duplicate(true);game.rules.apply_effects(candidate,item.get("effects",[]))
+		var effects=item.get("effects",[])
+		var effect={} if effects.is_empty() else effects[0]
+		var source=game.rules.loot_by_id.get(item.id,{})
+		comparison=game.rules.describe(effect) if effect else ""
 		comparison+=" · "+UpgradeFit.describe(game,item).text
-		if not str(effect.key).begins_with("augment-"): comparison+="  ·  Current %s → %s" % [snappedf(game.stats.get(effect.key,0),.01),snappedf(candidate.get(effect.key,0),.01)]
-		if not source.is_empty() and item.tier>0: comparison+="  ·  Common version: "+game.rules.describe(source.effects[0])
+		if effect and not str(effect.key).begins_with("augment-"): comparison+="  ·  Current %s → %s" % [snappedf(game.stats.get(effect.key,0),.01),snappedf(candidate.get(effect.key,0),.01)]
+		if not source.is_empty() and item.tier>0 and source.has("effects") and source.effects.size()>0: comparison+="  ·  Common version: "+game.rules.describe(source.effects[0])
 	var detail=label(comparison,15);detail.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;offer_detail.add_child(detail)
 
 func show_offers(items: Array, source: String,animate: bool=true):
