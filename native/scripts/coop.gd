@@ -43,6 +43,7 @@ var joined=false
 var saw_pause=false
 var saw_realm=false
 var turret_models={}
+var last_remote_reward_level=1
 
 func setup(owner_game):
 	game=owner_game
@@ -122,7 +123,7 @@ func leave():
 	for actor in avatars.values(): actor.queue_free()
 	for turret in turret_models.values(): turret.queue_free()
 	turret_models.clear()
-	avatars.clear();members.clear();active=false;hosting=false;paused=false;transport="";joined=false;welcomed=false;connection_clock=0;last_snapshot=0
+	avatars.clear();members.clear();active=false;hosting=false;paused=false;transport="";joined=false;welcomed=false;connection_clock=0;last_snapshot=0;last_remote_reward_level=1
 
 func connection_lost():
 	leave();status="Host disconnected. Return to solo or host a new party."
@@ -230,7 +231,9 @@ func tick(delta: float):
 			var node=avatars[id];var target=vector(state.position);var movement=(target-node.position)*8
 			node.position=node.position.lerp(target,1-exp(-delta*12));node.rotation.y=float(state.get("yaw",0));node.get_meta("rig").animate(delta,movement,true)
 			if state.has("weapons"): node.get_meta("rig").sync_equipment(state.weapons)
-			if node.has_meta("nameplate"): node.get_meta("nameplate").text="DOWNED · HOLD E / X" if game.update.downed_ids.has(id) else ""
+			var is_downed=game.update.downed_ids.has(int(id))
+			if node.has_meta("nameplate"): node.get_meta("nameplate").text="DOWNED · HOLD E / X" if is_downed else ""
+			if node.has_meta("down_beacon"): node.get_meta("down_beacon").visible=is_downed
 			update_avatar_vitals(node.get_meta("rig"),state)
 
 func update_avatar_vitals(rig,state: Dictionary):
@@ -260,7 +263,7 @@ func snapshot() -> Dictionary:
 		var stats=member.get("stats",{})
 		member.vitals={"max_hp":stats.get("maxHp",100),"armor":stats.get("armor",0),"shield_capacity":float(stats.get("shield",0))+float(stats.get("jumpShield",0))}
 		member.erase("stats");member.erase("last_seen")
-	return {"type":"world","actors":actors,"players":poses,"seconds":game.realm_time,"elapsed":game.elapsed,"realm":game.realm,"journey":game.events,"wardens":game.realm_bosses,"pause":frozen() or game.mode not in ["playing","ended"],"big_update":game.update.world_state()}
+	return {"type":"world","actors":actors,"players":poses,"seconds":game.realm_time,"elapsed":game.elapsed,"realm":game.realm,"journey":game.events,"wardens":game.realm_bosses,"level":game.level,"xp":game.xp,"xp_target":game.xp_target,"run_xp":game.update.run_xp,"pause":frozen() or game.mode not in ["playing","ended"],"big_update":game.update.world_state()}
 
 static func array(v: Vector3) -> Array: return [v.x,v.y,v.z]
 static func vector(v) -> Vector3:
@@ -306,44 +309,38 @@ func receive(sender: int,message):
 			var weapon=str(message.get("weapon",""))
 			if members[sender].get("weapons",[]).any(func(w):return w.get("id","")==weapon):
 				message.actor=sender;show_shot(message);broadcast(message,false)
-		elif kind=="credit":
-			# Divide by party size so a 4-player run doesn't 4x the pace.
-			var party_size=members.size()+1
-			var g=int(message.get("gold",0))
-			if party_size>1: g=maxi(1,int(g/party_size))
-			if g>0: game.gold+=g; game.update.run_coins+=g
-			var xp=int(message.get("xp",0))
-			if party_size>1: xp=maxi(1,int(xp/party_size))
-			if xp>0: game.update.run_xp+=xp; game.xp+=xp
-			if game.xp>=game.xp_target: game.level_up()
-		elif kind=="reward_chosen":
-			# Co-op Item 4: the others are choosing rewards too — record this
-			# player's offered cards + name so they can be shown in the companion panel.
-			var who=message.get("name","Friend")
-			var items=message.get("items",[])
-			var copies=[]
-			for it in items: copies.append(it.duplicate())
-			party_seen[who]={"name":who,"items":copies}
-			if is_instance_valid(game) and game.mode=="offer":
-				game.hud.show_party_panel(party_seen)
-		elif kind=="level_up":
-			# Shared level-up reward: every member opens the same pool locally,
-			# each filtered to their own loadout, with the others cards in a panel.
-			game.open_shared_offer(message.get("offers",[]),message.get("kind","skill"),bool(message.get("elite",false)),"level")
-		elif kind=="chest_open":
-			# Shared chest reward: opener paid; everyone opens the same pool.
-			game.open_shared_offer(message.get("offers",[]),message.get("kind","item"),bool(message.get("elite",false)),"chest")
-		elif kind=="chest_hide":
-			# The opener opened a chest — remove it from everyone else's world and mini-map.
-			var pos=message.get("pos",[])
-			for ch in game.chests:
-				if ch is Dictionary and ch.get("node"):
-					var cp=ch.node.position
-					if int(cp.x)==int(pos[0]) and int(cp.y)==int(pos[1]) and int(cp.z)==int(pos[2]):
-						if not ch.get("opened",false):
-							ch.opened=true
-							if is_instance_valid(ch.node): ch.node.visible=false
-						break
+		elif kind=="credit" and game.run_active:
+			# XP is host-authoritative. Each client pickup is credited once, with no
+			# second division. Gold stays local to the player who collected it.
+			var pickup_id=str(message.get("pickup_id",""))
+			if pickup_id.is_empty() or pickup_id.length()>64: return
+			var key=str(sender)+":"+pickup_id
+			if game.awarded_pickups.has(key): return
+			game.awarded_pickups[key]=true
+			var gained=clampi(int(message.get("xp",0)),0,10000)
+			if gained>0:
+				game.update.run_xp+=gained
+				game.xp+=gained
+				if game.xp>=game.xp_target: game.level_up()
+		elif kind=="reward_chosen" and game.run_active:
+			var who=str(members[sender].get("name",message.get("name","Friend"))).left(40)
+			var raw_items=message.get("items",[])
+			if not raw_items is Array: return
+			var items=[]
+			for item in raw_items.slice(0,5): items.append(str(item).left(100))
+			game.party_seen[who]={"name":who,"items":items}
+			if game.mode=="offer": game.hud.show_party_panel(game.party_seen)
+			# The host is the relay: broadcast sends only to remote peers.
+			broadcast({"type":"reward_chosen","name":who,"items":items})
+		elif kind=="chest_open" and game.run_active:
+			game.open_shared_offer(message.get("offers",[]),str(message.get("kind","item")),bool(message.get("elite",false)),"chest")
+			# Forward the opener's pool to the other clients, not back to opener.
+			for id in members:
+				if id!=sender: send_to(id,message)
+		elif kind=="chest_hide" and game.run_active:
+			apply_chest_hide(message.get("pos",[]))
+			for id in members:
+				if id!=sender: send_to(id,message)
 
 		elif kind=="hunt_start" and int(message.get("realm",-1))==game.realm and not frozen() and float(members[sender].get("hp",0))>0:
 			game.Hunt.activate(game,vector(members[sender].get("position",[])))
@@ -418,41 +415,29 @@ func receive(sender: int,message):
 		elif kind=="damage":
 			game.take_damage(float(message.amount),vector(message.position),str(message.sound))
 			if message.get("status","")=="poison" and not game.buffs.has("poison"): game.player_poison=3
-		elif kind=="credit":
-			# Divide by party size so a 4-player run doesn't 4x the pace.
-			var party_size=members.size()+1
-			var g=int(message.get("gold",0))
-			if party_size>1: g=maxi(1,int(g/party_size))
-			if g>0: game.gold+=g; game.update.run_coins+=g
-			var xp=int(message.get("xp",0))
-			if party_size>1: xp=maxi(1,int(xp/party_size))
-			if xp>0: game.update.run_xp+=xp; game.xp+=xp
-			if game.xp>=game.xp_target: game.level_up()
 		elif kind=="reward_chosen":
-			# Co-op Item 4: the others are choosing rewards too — record this
-			# player's offered cards + name so they can be shown in the companion panel.
-			var who=message.get("name","Friend")
-			var items=message.get("items",[])
-			var copies=[]
-			for it in items: copies.append(it.duplicate())
-			party_seen[who]={"name":who,"items":copies}
-			if is_instance_valid(game) and game.mode=="offer":
-				game.hud.show_party_panel(party_seen)
+			var who=str(message.get("name","Friend")).left(40)
+			var raw_items=message.get("items",[])
+			if not raw_items is Array: return
+			var items=[]
+			for item in raw_items.slice(0,5): items.append(str(item).left(100))
+			game.party_seen[who]={"name":who,"items":items}
+			if game.mode=="offer": game.hud.show_party_panel(game.party_seen)
 		elif kind=="level_up":
-			game.open_shared_offer(message.get("offers",[]),message.get("kind","skill"),bool(message.get("elite",false)),"level")
+			var shared_level=int(message.get("level",game.level))
+			if shared_level<game.level: return
+			if shared_level>last_remote_reward_level:
+				last_remote_reward_level=shared_level
+				game.heal(game.stats.maxHp*.15)
+				game.shield_hp=game.stats.shield
+			game.level=shared_level
+			game.xp=int(message.get("xp",game.xp))
+			game.xp_target=int(message.get("xp_target",game.xp_target))
+			game.open_shared_offer(message.get("offers",[]),str(message.get("kind","skill")),bool(message.get("elite",false)),"level")
 		elif kind=="chest_open":
-			game.open_shared_offer(message.get("offers",[]),message.get("kind","item"),bool(message.get("elite",false)),"chest")
+			game.open_shared_offer(message.get("offers",[]),str(message.get("kind","item")),bool(message.get("elite",false)),"chest")
 		elif kind=="chest_hide":
-			# The opener opened a chest — remove it from everyone else's world and mini-map.
-			var pos=message.get("pos",[])
-			for ch in game.chests:
-				if ch is Dictionary and ch.get("node"):
-					var cp=ch.node.position
-					if int(cp.x)==int(pos[0]) and int(cp.y)==int(pos[1]) and int(cp.z)==int(pos[2]):
-						if not ch.get("opened",false):
-							ch.opened=true
-							if is_instance_valid(ch.node): ch.node.visible=false
-						break
+			apply_chest_hide(message.get("pos",[]))
 
 		elif kind=="finish": game.end_run(bool(message.win))
 
@@ -470,6 +455,19 @@ func ensure_avatar(id: int,state: Dictionary):
 			var box=BoxShape3D.new();box.size=Vector3(capsule.radius*2,definition.height,2.3);collider.shape=box;collider.position.y=definition.height*.5
 		var rig=game.world.model(model,float(definition.get("height",1.65)));node.add_child(rig);node.set_meta("rig",rig);game.add_child(node);avatars[id]=node
 		var nameplate=Label3D.new();nameplate.text="";nameplate.position.y=float(definition.get("height",1.65))+.4;nameplate.font_size=26;nameplate.billboard=BaseMaterial3D.BILLBOARD_ENABLED;node.add_child(nameplate);node.set_meta("nameplate",nameplate)
+		# A long, translucent cyan column makes a fallen teammate findable
+		# over terrain, while the screen-edge marker works out of view.
+		var beacon=MeshInstance3D.new()
+		var beam_mesh=CylinderMesh.new();beam_mesh.top_radius=.09;beam_mesh.bottom_radius=.28;beam_mesh.height=26;beam_mesh.radial_segments=10
+		beacon.mesh=beam_mesh;beacon.position=Vector3(0,13,0)
+		var beacon_material=StandardMaterial3D.new()
+		beacon_material.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED
+		beacon_material.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA
+		beacon_material.albedo_color=Color(0.18,0.82,1.0,0.32)
+		beacon_material.emission_enabled=true;beacon_material.emission=Color("45c5ef")
+		beacon.material_override=beacon_material
+		beacon.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		beacon.visible=false;node.add_child(beacon);node.set_meta("down_beacon",beacon)
 		if state.has("position"): node.position=vector(state.position)
 	update_avatar_vitals(avatars[id].get_meta("rig"),state)
 	var wanted={}
@@ -482,8 +480,23 @@ func ensure_avatar(id: int,state: Dictionary):
 	for key in turret_models.keys():
 		if key.begins_with(str(id)+":") and not wanted.has(key): turret_models[key].queue_free();turret_models.erase(key)
 
+func apply_chest_hide(position):
+	if not position is Array or position.size()!=3: return
+	for chest in game.chests:
+		if not chest is Dictionary or not is_instance_valid(chest.get("node")): continue
+		var p=chest.node.position
+		if int(p.x)==int(position[0]) and int(p.y)==int(position[1]) and int(p.z)==int(position[2]):
+			chest.opened=true
+			chest.node.visible=false
+			break
+
 func apply_world(message: Dictionary):
 	if not game.run_active or int(message.realm)!=game.realm: return
+	# Refresh shared progression even when no level-up message is in flight.
+	game.level=int(message.get("level",game.level))
+	game.xp=int(message.get("xp",game.xp))
+	game.xp_target=int(message.get("xp_target",game.xp_target))
+	game.update.run_xp=int(message.get("run_xp",game.update.run_xp))
 	game.update.apply_state(message.get("big_update",{}))
 	game.events=message.get("journey",game.events).duplicate(true);game.realm_bosses=int(message.get("wardens",game.realm_bosses))
 	snapshots_received+=1;paused=bool(message.pause);saw_pause=saw_pause or paused
