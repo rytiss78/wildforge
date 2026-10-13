@@ -213,11 +213,13 @@ func tick(delta: float):
 			var sender=peer.get_packet_peer();var bytes=peer.get_packet()
 			if bytes.size()<=60000: receive(sender,bytes_to_var(bytes))
 			if peer==null or not active: return
+	# Full world packets include every enemy, player and event. Ten updates per
+	# second saves bandwidth and serialization work without dropping reliable hits.
 	accumulator+=delta
-	if accumulator>=.075:
-		accumulator=0
+	if accumulator>=.10:
+		accumulator=fmod(accumulator,.10)
 		if hosting:
-			if game.run_active: broadcast(snapshot(),false)
+			if game.run_active and not members.is_empty(): broadcast(snapshot(),false)
 		else:
 			send_to(owner_id,pose(),false)
 			if game.run_active and last_snapshot>0 and Time.get_ticks_msec()/1000.0-last_snapshot>12: connection_lost()
