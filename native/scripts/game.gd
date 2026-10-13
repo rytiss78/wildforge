@@ -139,6 +139,7 @@ var crowd = {}
 var player_chill=0.0
 var player_blind=0.0
 var status_tick=0.0
+var lava_clock=0.0
 var enemy_step=0.0
 var pickup_merge_clock=0.0
 var eclipse_run_velocity=Vector3.ZERO
@@ -743,6 +744,11 @@ func heal(amount: float):
 	if update.downed: return
 	var actual = maxf(0,minf(stats.maxHp-hp,amount))
 	hp += actual
+	# Shield-invested tank builds can bank half of otherwise wasted healing.
+	# No new stat/key is needed; shield cards are already in the reward catalog.
+	var overflow=maxf(0,amount-actual)
+	if overflow>0 and stats.shield>0:
+		shield_hp=minf(stats.shield+stats.jumpShield,shield_hp+overflow*.5)
 	if actual > 0:
 		if actual>=5: sound.effect("heal");CombatInk.burst(self,player.position+Vector3.UP,Color("65f8bd"),6)
 		career.bump("healing",actual)
@@ -1469,6 +1475,9 @@ func take_damage(amount: float, source: Vector3=Vector3.ZERO, voice_type: String
 		achievement_event("BUBBLE")
 		if shield_hp == 0: sound.say("shield_down",20)
 	var taken = maxf(0,amount-absorbed)*100/(100+stat("armor")*6)
+	# Full-health heroes survive one readable hit; follow-up hits remain lethal.
+	# Prevent sudden unavoidable one-hit deaths without weakening repeated attacks.
+	if hp>=stats.maxHp*.95 and taken>=hp: taken=stats.maxHp*.85
 	hp -= taken
 	last_damage_taken=taken;damage_feedback_time=.65
 	damage_feedback_strength=clampf((taken+absorbed*.3)/maxf(1,stats.maxHp)*3,.22,1)
@@ -2854,6 +2863,13 @@ func update_exploration(delta: float):
 		status_tick=0
 		if player_poison>0: take_damage(1.2)
 		elif player_fire>0: take_damage(1.8)
+	# Molten rivers are ground hazards, not instant kills. Jumping clears them.
+	if player.is_on_floor() and world.lava_at(player.position):
+		lava_clock+=delta
+		if lava_clock>=1.0:
+			lava_clock-=1.0
+			take_damage(maxf(7.0,stats.maxHp*.06),player.position,"fire")
+	else: lava_clock=0.0
 	for drop in consumables:
 		drop.age+=delta
 		drop.node.position.y=drop.base_y+sin(drop.age*2)*.08
@@ -2868,27 +2884,40 @@ func make_gate():
 	gate.position = gate_position
 	add_child(gate)
 	var ring = TorusMesh.new()
-	ring.inner_radius = 3.0
-	ring.outer_radius = 3.5
-	var rim = shape(ring,Color("a89db1"),gate,Vector3(0,3.3,0),.8)
+	ring.inner_radius = 4.15
+	ring.outer_radius = 4.85
+	var rim = shape(ring,Color("bda7da"),gate,Vector3(0,5.0,0),1.4)
 	rim.rotation.x = PI/2
-	for x in [-3.5,3.5]:
+	var inner_ring=TorusMesh.new();inner_ring.inner_radius=3.75;inner_ring.outer_radius=3.94
+	var trim=shape(inner_ring,Color("f2c978"),gate,Vector3(0,5.0,.12),2.0)
+	trim.rotation.x=PI/2
+	for x in [-5.3,5.3]:
 		var pillar = CylinderMesh.new()
-		pillar.top_radius = .5
-		pillar.bottom_radius = .7
-		pillar.height = 6.8
-		shape(pillar,Color("788a92"),gate,Vector3(x,3.4,0))
+		pillar.top_radius = .52
+		pillar.bottom_radius = .92
+		pillar.height = 10.2
+		shape(pillar,Color("788a92"),gate,Vector3(x,5.1,0))
+		for y in [1.3,7.9]:
+			var collar=CylinderMesh.new();collar.top_radius=.85;collar.bottom_radius=.95;collar.height=.35
+			shape(collar,Color("e5bd79"),gate,Vector3(x,y,0),1.5)
+		var spire=CylinderMesh.new();spire.top_radius=0;spire.bottom_radius=.68;spire.height=2.1
+		shape(spire,Color("d0b4cd"),gate,Vector3(x,11.2,0),1.3)
+	# Eight visible engraved nodes give the arch an ornate profile at distance.
+	for i in range(8):
+		var angle=i*TAU/8.0
+		var crystal=SphereMesh.new();crystal.radius=.31;crystal.height=.62
+		shape(crystal,Color("9de4ef") if i%2==0 else Color("ffb65e"),gate,Vector3(cos(angle)*4.5,5.0+sin(angle)*4.5,.25),2.8)
 	var marker = Label3D.new()
 	marker.text = "PORTAL · 2 WARDENS"
 	marker.font_size = 48
-	marker.position.y = 8
+	marker.position.y = 12.9
 	marker.billboard = BaseMaterial3D.BILLBOARD_ENABLED
 	gate.add_child(marker)
 	gate.set_meta("marker",marker)
-	var disk=MeshInstance3D.new();var quad=QuadMesh.new();quad.size=Vector2(6,6);disk.mesh=quad
-	var vortex=ShaderMaterial.new();vortex.shader=preload("res://shaders/portal.gdshader");disk.material_override=vortex;disk.position.y=3.3;gate.add_child(disk)
-	var beam_mesh=CylinderMesh.new();beam_mesh.top_radius=.18;beam_mesh.bottom_radius=.8;beam_mesh.height=55
-	var beacon=shape(beam_mesh,Color("ffd767"),gate,Vector3(0,27.5,0),1.8);beacon.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var disk=MeshInstance3D.new();var quad=QuadMesh.new();quad.size=Vector2(8.2,8.2);disk.mesh=quad
+	var vortex=ShaderMaterial.new();vortex.shader=preload("res://shaders/portal.gdshader");disk.material_override=vortex;disk.position.y=5.0;gate.add_child(disk)
+	var beam_mesh=CylinderMesh.new();beam_mesh.top_radius=.22;beam_mesh.bottom_radius=1.05;beam_mesh.height=65
+	var beacon=shape(beam_mesh,Color("ffd767"),gate,Vector3(0,32.5,0),2.0);beacon.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	var beam_paint=ShaderMaterial.new();beam_paint.shader=preload("res://shaders/portal_beacon.gdshader");beacon.material_override=beam_paint
 
 func nearest_consumable() -> Dictionary:

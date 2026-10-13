@@ -8,6 +8,7 @@ var drums = AudioStreamPlayer.new()
 var rhythm = AudioStreamPlayer.new()
 var lead = AudioStreamPlayer.new()
 var synth = AudioStreamPlayer.new()
+var boss_melody = AudioStreamPlayer.new()
 var atmosphere = AudioStreamPlayer.new()
 var eclipse_music=AudioStreamPlayer.new()
 var eclipse_active=false
@@ -63,7 +64,8 @@ func setup(options: Dictionary):
 		var reverb=AudioEffectReverb.new();reverb.room_size=.82;reverb.damping=.65;reverb.wet=.24;reverb.dry=.90;reverb.spread=.85;reverb.predelay_msec=65
 		AudioServer.add_bus_effect(sky_bus,reverb)
 	voice.bus="SkyVoice";voice.attenuation_model=AudioStreamPlayer3D.ATTENUATION_DISABLED;voice.max_distance=120;voice.panning_strength=.65
-	for player in [voice,drums,rhythm,lead,synth,atmosphere,eclipse_music]: add_child(player)
+	for player in [voice,drums,rhythm,lead,synth,boss_melody,atmosphere,eclipse_music]: add_child(player)
+	boss_melody.stream=make_boss_motif()
 	for channel in [step_player,engine_player]:
 		channel.unit_size=5;channel.max_distance=32;add_child(channel)
 	engine_player.stream=make_supra_engine()
@@ -104,7 +106,7 @@ func start(seed_value: int):
 	clock = 0
 	active = true
 	boss_voice_last=-100;boss_voice.stop();last_hurt=-100;hurt_voice.stop();hurt_source=null;pending_biome=""
-	theme_realm=-1;atmosphere.stop();eclipse_music.stop();eclipse_active=false
+	theme_realm=-1;atmosphere.stop();eclipse_music.stop();eclipse_active=false;boss=false;boss_melody.stop()
 	step_clock=0;step_player.stop();engine_player.stop()
 	play_phrase()
 
@@ -123,6 +125,28 @@ func play_phrase():
 	var section=(phrase/4)%8
 	if not boss and section in [0,4]: drums.volume_db-=4;lead.volume_db-=4
 	for player in [drums,rhythm,lead,synth]: player.play()
+	# Distinct, original minor-key boss motif layered over the existing drums.
+	# Reset on phrase boundaries to avoid drift, and silence it during Eclipse.
+	boss_melody.volume_db=linear_to_db(maxf(.0001,volume))-17
+	if boss and not eclipse_active: boss_melody.play()
+	else: boss_melody.stop()
+
+static func make_boss_motif() -> AudioStreamWAV:
+	var audio=AudioStreamWAV.new();audio.mix_rate=22050;audio.format=AudioStreamWAV.FORMAT_16_BITS
+	var duration=BAR_LOOP;var samples=int(duration*audio.mix_rate)
+	var bytes=PackedByteArray();bytes.resize(samples*2)
+	# D minor motif, 16 notes across one phrase. Each note fades before the next.
+	var notes=[293.66,349.23,440.0,293.66,261.63,220.0,261.63,174.61,293.66,349.23,440.0,523.25,466.16,349.23,293.66,220.0]
+	var beat=duration/16.0
+	for i in range(samples):
+		var t=float(i)/audio.mix_rate
+		var index=mini(notes.size()-1,int(t/beat))
+		var phase=fposmod(t,beat);var envelope=minf(1,phase*85.0)*pow(maxf(0,1-phase/beat),1.9)
+		var frequency=notes[index]
+		var sample=(sin(TAU*frequency*t)+.24*sin(TAU*frequency*2*t)+.08*sin(TAU*frequency*3*t))*.19*envelope
+		bytes.encode_s16(i*2,int(clampf(sample,-.9,.9)*32767))
+	audio.data=bytes
+	return audio
 
 func tick(delta: float, playing: bool, has_boss: bool):
 	achievement_voice.volume_db=linear_to_db(maxf(.0001,float(settings.sfx)))-3
@@ -140,7 +164,7 @@ func tick(delta: float, playing: bool, has_boss: bool):
 			if active: play_phrase()
 	eclipse_music.stream_paused=not playing
 	eclipse_music.volume_db=linear_to_db(maxf(.0001,float(settings.music)))-8
-	for channel in [drums,rhythm,lead,synth]:
+	for channel in [drums,rhythm,lead,synth,boss_melody]:
 		if eclipse_active: channel.volume_db=-80
 	if boss!=has_boss and active:
 		boss=has_boss;clock=0;play_phrase()
@@ -153,7 +177,7 @@ func tick(delta: float, playing: bool, has_boss: bool):
 	update_motion_audio(delta,playing)
 	if playing and not voice.playing and not pending_biome.is_empty():
 		var id=pending_biome;pending_biome="";say(id,0)
-	for player in [drums,rhythm,lead,synth,atmosphere]: player.stream_paused = not playing
+	for player in [drums,rhythm,lead,synth,boss_melody,atmosphere]: player.stream_paused = not playing
 	var realm_index=clampi(get_parent().realm,0,2)
 	if active and theme_realm!=realm_index:
 		theme_realm=realm_index

@@ -690,10 +690,7 @@ func start_menu(focus_hero: bool=false):
 	var mechanics=label(WeaponDetails.describe(game.hero.weapon),16)
 	mechanics.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	bio.add_child(mechanics)
-	var rules=label("3 weapon slots   •   3 worlds + Red Moon   •   One choice per chest",16)
-	rules.position=Vector2(565,938)
-	rules.add_theme_color_override("font_color",Color("d6e2d4"))
-	modal.add_child(rules)
+	# Keep hero selection focused on the selected hero; repeat rules in Help only.
 	var footer=HBoxContainer.new()
 	footer.position=Vector2(120,997)
 	modal.add_child(footer)

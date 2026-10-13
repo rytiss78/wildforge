@@ -20,6 +20,7 @@ var harvest_sites: Array[Vector3]=[]
 var chunks={}
 var pending=[]
 var terrain_material: ShaderMaterial
+var lava_material: StandardMaterial3D
 var scenery_material: ShaderMaterial
 var last_cell=Vector2i(999,999)
 var stream_signature=""
@@ -65,10 +66,11 @@ func weather_tick(delta: float,p: Vector3):
 		for cloud in clouds: cloud.visible=biome in [1,3]
 		stars.visible=biome in [2,5];moon.visible=biome==2
 		weather.emitting=biome in [0,1,3,4,5]
-		weather.amount=45 if biome==0 else 180
+		weather.amount=240 if biome==1 else 80 if biome in [3,4,5] else 38
 		var material: ParticleProcessMaterial=weather.process_material
-		material.gravity=Vector3(4,-12,1) if biome==1 else Vector3(2,-2,1) if biome==3 else Vector3(-3,1,0)
-		material.initial_velocity_min=2;material.initial_velocity_max=5 if biome==1 else 2.5
+		# Marsh: rain in wind; cloud: drifting motes; hell: rising sparks.
+		material.gravity=Vector3(3,-13,1) if biome==1 else Vector3(2,-.5,1) if biome==3 else Vector3(-2,4,0) if biome==4 else Vector3(-2,.7,0)
+		material.initial_velocity_min=1.5;material.initial_velocity_max=4.0 if biome==1 else 2.5
 		var paint=StandardMaterial3D.new();paint.albedo_color=Color("b5dfec") if biome==1 else Color("fff8ed") if biome==3 else Color("ffcb88") if biome==4 else Color("bd9af0") if biome==5 else Color("a0c681")
 		paint.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED
 		var mesh=SphereMesh.new();mesh.radius=.035 if biome==1 else .022 if biome==0 else .07;mesh.height=.6 if biome==1 else .044 if biome==0 else .14;mesh.material=paint;weather.draw_pass_1=mesh
@@ -183,6 +185,14 @@ func build(index: int,world_seed: int):
 	stream(Vector3.ZERO)
 
 func make_material():
+	# Restrained glowing lava, separate from the terrain shader and its biome atlas.
+	lava_material=StandardMaterial3D.new()
+	lava_material.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED
+	lava_material.albedo_color=Color("ed642c")
+	lava_material.emission_enabled=true
+	lava_material.emission=Color("ff8c32")
+	lava_material.emission_energy_multiplier=2.0
+	lava_material.cull_mode=BaseMaterial3D.CULL_DISABLED
 	var shader=load("res://shaders/terrain.gdshader")
 	terrain_material=ShaderMaterial.new();terrain_material.shader=shader;terrain_material.set_shader_parameter("phase",float(seed_value%23)*.03+realm*.4)
 	terrain_material.set_shader_parameter("red_moon",realm==3)
@@ -207,6 +217,7 @@ func make_chunk(cell: Vector2i):
 	surface.generate_normals()
 	var terrain=MeshInstance3D.new();terrain.mesh=surface.commit();terrain.material_override=terrain_material;root.add_child(terrain)
 	terrain.create_trimesh_collision()
+	make_lava_chunk(root,cell)
 	var scenery=[]
 	var scenery_groups={}
 	var local_rng=RandomNumberGenerator.new();local_rng.seed=seed_value+cell.x*73856093+cell.y*19349663
@@ -218,6 +229,7 @@ func make_chunk(cell: Vector2i):
 		if Vector2(p.x-portal.x,p.z-portal.z).length()<14: continue
 		if Vector2(p.x-60,p.z+35).length()<7: continue
 		if Vector2(p.x,p.z).length()<13 or absf(p.x+sin(p.z*.035)*9)<6: continue
+		if lava_at(p): continue  # Keep the molten channels legible and traversable.
 		if crossing_distance(p)<12 and i%3!=0: continue
 		if MassiveArchitecture.occupied(self,p): continue
 		if harvest_sites.any(func(site):return Vector2(site.x-p.x,site.z-p.z).length()<4): continue
@@ -278,6 +290,47 @@ func make_chunk(cell: Vector2i):
 	var grass=MultiMeshInstance3D.new();grass.multimesh=multimesh
 	grass.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	var material=ShaderMaterial.new();material.shader=preload("res://shaders/flora.gdshader");grass.material_override=material;root.add_child(grass)
+
+# Candy Hell (biome 4): three deterministic winding lava streams.
+# Render into terrain chunks so distant geometry is discarded with the chunk.
+func lava_center(radius: float,lane: int) -> Vector3:
+	var phase=float(seed_value%23)*.03+realm*.4
+	var angle=4.5*TAU/6-phase+float(lane)*.17+sin(radius*.024+lane*1.7)*.035
+	return Vector3(cos(angle)*radius,0,sin(angle)*radius)
+
+func lava_at(p: Vector3) -> bool:
+	if realm==3 or biome_at(p)!=4: return false
+	var radius=Vector2(p.x,p.z).length()
+	if radius<95 or radius>310: return false
+	for lane in [-1,0,1]:
+		var center=lava_center(radius,lane)
+		if Vector2(center.x-p.x,center.z-p.z).length()<3.1: return true
+	return false
+
+func make_lava_chunk(root: Node3D,cell: Vector2i):
+	if realm==3: return
+	var surface=SurfaceTool.new();surface.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var faces=0
+	for lane in [-1,0,1]:
+		for distance in range(96,310,4):
+			var a=lava_center(float(distance),lane)
+			var b=lava_center(float(distance+4),lane)
+			var mid=(a+b)*.5
+			if biome_at(mid)!=4: continue
+			if floori(mid.x/CHUNK)!=cell.x or floori(mid.z/CHUNK)!=cell.y: continue
+			var forward=Vector2(b.x-a.x,b.z-a.z).normalized()
+			var side=Vector2(-forward.y,forward.x)*2.65
+			var left_a=Vector3(a.x-side.x,height_at(a.x-side.x,a.z-side.y)+.18,a.z-side.y)-root.position
+			var right_a=Vector3(a.x+side.x,height_at(a.x+side.x,a.z+side.y)+.18,a.z+side.y)-root.position
+			var left_b=Vector3(b.x-side.x,height_at(b.x-side.x,b.z-side.y)+.18,b.z-side.y)-root.position
+			var right_b=Vector3(b.x+side.x,height_at(b.x+side.x,b.z+side.y)+.18,b.z+side.y)-root.position
+			for vertex in [left_a,right_a,left_b,right_a,right_b,left_b]: surface.add_vertex(vertex)
+			faces+=2
+	if faces==0: return
+	var river=MeshInstance3D.new();river.name="CandyLava";river.mesh=surface.commit()
+	river.material_override=lava_material
+	river.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	root.add_child(river)
 
 func stream(position_value: Vector3,party: Array=[]):
 	var centers=[Vector2i(floori(position_value.x/CHUNK),floori(position_value.z/CHUNK))]
@@ -343,7 +396,7 @@ func make_environment():
 	env.fog_enabled=true;env.fog_mode=Environment.FOG_MODE_DEPTH;env.fog_light_color=sky_horizon;env.fog_density=1.0;env.fog_depth_begin=35;env.fog_depth_end=155;env.fog_sky_affect=0
 	var world_env=WorldEnvironment.new();world_env.environment=env;add_child(world_env)
 	sky_paint=gradient;environment=env;active_biome=-1
-	weather=GPUParticles3D.new();weather.amount=180;weather.lifetime=4;weather.visibility_aabb=AABB(Vector3(-25,-15,-25),Vector3(50,40,50));add_child(weather)
+	weather=GPUParticles3D.new();weather.amount=180;weather.lifetime=4;weather.visibility_aabb=AABB(Vector3(-40,-55,-40),Vector3(80,85,80));add_child(weather)
 	var particles=ParticleProcessMaterial.new();particles.emission_shape=ParticleProcessMaterial.EMISSION_SHAPE_BOX;particles.emission_box_extents=Vector3(14,4,14);particles.direction=Vector3.DOWN;particles.spread=35;weather.process_material=particles
 	var sun=DirectionalLight3D.new();sun.rotation_degrees=Vector3(-42,-35,0);sun.light_energy=1.05;sun.light_color=Color("ffe4b5");sun.shadow_enabled=true;sun.directional_shadow_max_distance=38;add_child(sun)
 	for i in range(16):
