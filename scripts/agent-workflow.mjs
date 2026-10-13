@@ -157,6 +157,13 @@ async function main(action) {
           copyFileSync(source,join(runDir,name+'-'+resolution+'.png'));
         }
       }
+      for(const [name,prefix] of [['forge','FORGE_REVIEW '],['style','STYLE_REVIEW '],['boss','BOSS_REVIEW '],['biome','BIOME_REVIEW ']]){
+        const output=await step('exported-'+name,previous.build,['--resolution','1440x810','--','--'+name+'-review'],180000);
+        const line=output.split(/\r?\n/).findLast(x=>x.startsWith(prefix));
+        if(!line)throw new Error('Missing exported '+name+' result');
+        const result=JSON.parse(line.slice(prefix.length));report[name]=result;
+        if(Object.values(result.checks).includes(false))throw new Error('Exported '+name+' assertions failed');
+      }
     }
     if (action === 'style-review') {
       const output=await step('style-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--style-review'],120000);
@@ -210,7 +217,7 @@ async function main(action) {
       report.capture=assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge/coop-feedback.png'),started);
     }
     if (action === 'eclipse-review') {
-      const output=await step('eclipse-review',godot,['--headless','--path',join(root,'native'),'--','--eclipse-review'],180000);
+      const output=await step('eclipse-review',godot,['--verbose','--headless','--path',join(root,'native'),'--','--eclipse-review'],180000);
       const line=output.split(/\r?\n/).findLast(x=>x.startsWith('ECLIPSE_REVIEW '));
       if(!line) throw new Error('Missing Eclipse checks');
       report.eclipse=JSON.parse(line.slice('ECLIPSE_REVIEW '.length));

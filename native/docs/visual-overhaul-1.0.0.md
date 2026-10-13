@@ -1,6 +1,6 @@
 # Wildforge 1.0.0 — complete visual overhaul
 
-Requested October 12, 2026. This is the active roadmap for a new implementation session. Target release: **1.0.0**. The verified local starting build is **0.8.10**; this document does not declare 1.0.0 implemented.
+Requested October 12, 2026. The original overhaul is implemented and validated as local build **1.0.0**. [Final executable and evidence](release-1.0.0.md). GitHub Build 4 remains the public download. The user subsequently requested merging and continuing on `main`. New October 13 follow-up requirements are open in [PLAN.md](../../PLAN.md).
 
 ## User requirements and fixed constraints
 
@@ -25,7 +25,7 @@ Reference files are copied locally to `.build-staging/visual-overhaul-1.0.0/refe
 
 Mark a milestone complete only after its listed behavior and visual checks pass. Add commit, push, evidence and build information to the ledger below. Continue autonomously through the milestones; a checkpoint is not an automatic permission stop.
 
-### 0 — Audited baseline and asset inventory `[ ]`
+### 0 — Audited baseline and asset inventory `[x done — local 1.0.0]`
 
 - Read `AGENTS.md`, `HERMES.md`, the Godot workflow and repair reports. Inspect both staged and unstaged content. The incoming index contains 728 changed files plus previous repair work; preserve it and classify changes before making commits. Never sweep everything into a visual-overhaul commit without reviewing it.
 - Establish branch `codex/1.0.0-visual-overhaul` from the actual current working state, including the 0.8.10 repair files. Do not start from a clean remote branch that silently loses the local repairs. Record pre-overhaul source/index state recoverably.
@@ -33,7 +33,7 @@ Mark a milestone complete only after its listed behavior and visual checks pass.
 - Inventory every runtime asset family, generator, import and fallback path. Record replacement owner, references, replacement status and eventual deletion status in an asset manifest. Include embedded meshes, shader materials, baked resources and UI-drawn icons, not just PNGs.
 - Record baseline screenshots, camera parameters, orb states, frame/node/memory measurements and known failing checks. Run the relevant wrapper checks against the current state.
 
-### 1 — Shared visual foundations and first playable scene `[ ]`
+### 1 — Shared visual foundations and first playable scene `[x done — local 1.0.0]`
 
 - Introduce reusable palette/material, lighting, outline, typography and panel/icon rules. Use actual modeled silhouettes and painted detail; avoid applying a dark tint to unchanged pastel assets and calling the overhaul complete.
 - Build one finished representative scene: one biome area with terrain, architecture and props, one hero, common enemies, one weapon, one harvestable and an early boss design, together with the HUD and one reward screen.
@@ -41,7 +41,7 @@ Mark a milestone complete only after its listed behavior and visual checks pass.
 - Capture source and exported gameplay at the unchanged camera, 720p/810p/1080p UI layouts, and compare representative frame measurements. Resolve readability/performance problems before multiplying assets across the game.
 - Commit and push this working scene, including real screenshots and review notes.
 
-### 2 — Complete UI, illustrated icons and portraits `[ ]`
+### 2 — Complete UI, illustrated icons and portraits `[x done — local 1.0.0]`
 
 - Apply the visual system to main menu, solo/co-op hero selection, specialty previews, pause, settings, controls, run report, About, chest reveal, reward selection, build/inventory, minimap and map overlays, party indicators, tooltips, prompts and achievement banners.
 - Redesign all card, skill, item, buff/potion, gun/weapon, achievement and hero portrait/bust art. Use semantically distinct designs and full-catalog contact sheets to find duplicates or meaningless variations. Preserve rarity, selected/focus/disabled states, conditions and current-loadout compatibility.
@@ -49,14 +49,14 @@ Mark a milestone complete only after its listed behavior and visual checks pass.
 - Exercise actual mouse/controller and co-op hero selection paths, long descriptions, full inventories and stacked buffs. Screens must remain readable at 720p and unclipped at 1080p.
 - Commit and push coherent batches rather than one enormous undifferentiated asset commit.
 
-### 3 — Heroes, enemies, weapons and combat visuals `[ ]`
+### 3 — Heroes, enemies, weapons and combat visuals `[x done — local 1.0.0]`
 
 - Redesign all 21 heroes and the common/elite enemy roster, preserving recognizable identities, animation attachments, melee contacts and weapon sockets. Replace visibly primitive placeholder geometry with intentional forms and surface detail.
 - Restyle all handheld/deployed weapons, turrets, flowers, projectiles, pickups, shields, status effects, explosions, hit effects and orb HP visuals. Preserve useful color distinctions and accessibility at gameplay distance.
 - Verify orb response across full/half/low HP, healing, shield/armor states, death, bosses and network snapshots. Cover both local and remote characters.
 - Recheck collision bounds, small hills, walls, ceilings, hit locations, co-op visuals, damage-source accounting and render cost. Push each validated roster family.
 
-### 4 — All biomes, map, architecture and harvestables `[ ]`
+### 4 — All biomes, map, architecture and harvestables `[x done — local 1.0.0]`
 
 - Finish Clover Woods, Puffcap Marsh, Moon Craters, Cloud City, Candy Hell and Starfall Space as six distinct environments within the shared art direction.
 - Replace terrain materials/textures, sky/atmosphere, foliage, rocks, roads/ruins, buildings, landmark structures, portal/hunt/shop architecture, environmental effects and minimap styling. Preserve movement geometry and camera behavior unless a specific collision repair is necessary.
@@ -70,14 +70,14 @@ Mark a milestone complete only after its listed behavior and visual checks pass.
 - Implement deterministic host-authoritative selection from the larger roster with no immediate repeats, appropriate biome/realm weights, collision sizes and correct rewards. Do not add bosses that exist only in preview scenes.
 - Exercise every boss and multiple seeded rotations; verify host/client agreement, attack fairness, orb feedback, death, drops and guardian/portal progression. Push boss batches and rotation logic after targeted checks.
 
-### 6 — Replacement audit and obsolete-asset removal `[ ]`
+### 6 — Replacement audit and obsolete-asset removal `[x done — local 1.0.0]`
 
 - Complete the replacement manifest and remove old runtime fallbacks and outdated generators that could restore obsolete visuals.
 - Search references, preload/load paths, `.tscn`/`.tres`/`.res`, JSON catalogs, shaders, import sidecars and scripts. Delete only verified superseded project assets and their unused metadata. Resolve each absolute deletion target inside the intended project asset directories before deleting; never use a broad root cleanup.
 - Remove tracked assets with normal Git deletion commits so the local project and GitHub branch both lose the old current files. Existing Git history remains recoverable; no force-push/history purge is authorized by this plan.
 - Test a fresh import and export without relying on stale `.godot` cache. Check the exported pack for missing resources and obsolete assets. Commit and push the cleanup manifest and deletions.
 
-### 7 — 1.0.0 release validation and documentation `[ ]`
+### 7 — 1.0.0 release validation and documentation `[~ local build verified; intermittent UI review open]`
 
 - Run `check`, `smoke`, `integration`, relevant rendered feature reviews, all-boss/biome coverage and exported executable checks. Run the two-process co-op test sequentially with other port-using checks. Fix relevant regressions; investigate/document the existing realm-wraparound/teardown and Eclipse expectation failures instead of weakening assertions.
 - Confirm camera invariants, bottom-rising damage, orb HP, weapon compatibility, leveling and harvest effects. Compare render measurements against the baseline; do not claim optimization without comparable evidence.
@@ -97,11 +97,13 @@ Mark a milestone complete only after its listed behavior and visual checks pass.
 | Step | Status | Evidence / commit / push |
 | --- | --- | --- |
 | Roadmap and reference handoff | Prepared in the original repair session | This document and local reference manifest; implementation starts in the new session |
-| 0 — audited source baseline | Source checkpoint pushed; orb coverage pending | `4ffec33`; [audit/inventory](visual-baseline-1.0.0.md); original mixed index preserved |
+| 0 — audited source baseline | Complete; final orb coverage passed | `4ffec33`; [audit/inventory](visual-baseline-1.0.0.md); original mixed index preserved |
 | 1a — UI foundation + bottom damage | Validated development sub-batch | [Evidence/build/screenshots](visual-foundation-1.0.0.md); `46ace7c`, pushed |
 | 1b — Clover Woods models + orb replication | Validated development sub-batch | [Scene evidence/build](visual-scene-1.0.0.md); `be0a086`, pushed |
 | 1c + 5 — vivid palette and eight-boss rotation | Technical checkpoint passed; ground palette rejected by user | `37e9df1`, pushed; [boss/network/build evidence](visual-bosses-1.0.0.md); [corrected Hades direction](hades-style-research-1.0.0.md) governs further visual work |
 | 1d + 3 — quiet ground, focused lamps, ink combat effects | Light source checks and rendered review passed; full testing deferred by user | [Changes, captures and evidence](visual-combat-1.0.0.md); development checkpoint on main |
-| 2–4, 6–7 | Open | Complete UI/catalogs/rosters/biomes, cleanup and release remain |
+| 2–4 — UI, rosters and biomes | Implemented and reviewed | `dee8240`, `63d60d9`, pushed; [rollout](visual-rollout-1.0.0.md) |
+| 6 — obsolete assets | Archived, removed; fresh import/export passed | `63d60d9`, pushed; [manifest](visual-cleanup-1.0.0.json) |
+| 7 — local release | Local artifact verified; one intermittent UI review needs diagnosis; public download unchanged | [Executable, hashes and evidence](release-1.0.0.md); final source/docs checkpoint follows |
 
 Baseline context: [0.8.10 repair](gameplay-repair-0.8.10.md), [earlier audit](repair-audit-2026-10-12.md), [project rules](../../AGENTS.md).

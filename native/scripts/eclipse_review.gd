@@ -1,6 +1,9 @@
 extends RefCounted
 static func run(game):
 	AudioServer.set_bus_volume_db(0,-80);game.start_run(614);game.set_physics_process(false);game.clear_entities()
+	game.set_process(false)
+	# Music transitions need mixer frames, as they receive during actual play.
+	await game.get_tree().create_timer(.1).timeout
 	var checks={};var speed=game.stat("speed")
 	game.events.eclipse=false
 	var normal=game.eclipse_running(Vector3.RIGHT,1./60,true)
@@ -23,11 +26,19 @@ static func run(game):
 	checks.air_unchanged=game.eclipse_running(Vector3.LEFT,1./60,false).is_equal_approx(Vector3.LEFT*speed)
 	game.events.eclipse=false;checks.exit_immediate=game.eclipse_running(Vector3.RIGHT,1./60,true).is_equal_approx(Vector3.RIGHT*speed)
 	game.sound.tick(.016,true,false);checks.normal_music=not game.sound.eclipse_active
+	await game.get_tree().create_timer(.1).timeout
 	game.events.eclipse=true;game.sound.tick(.016,true,true)
+	await game.get_tree().create_timer(.1).timeout
 	checks.eclipse_music=game.sound.eclipse_active and game.sound.eclipse_music.playing and game.sound.eclipse_music.stream.loop_mode==AudioStreamWAV.LOOP_FORWARD and game.sound.eclipse_music.stream.get_length()>110
 	checks.no_overlap=game.sound.drums.volume_db< -70 and game.sound.atmosphere.volume_db< -70
 	game.sound.tick(.016,false,true);checks.paused=game.sound.eclipse_music.stream_paused
+	await game.get_tree().create_timer(.1).timeout
 	game.career.data.settings.music=0;game.sound.tick(.016,true,true);checks.volume=game.sound.eclipse_music.volume_db< -70 and not game.sound.eclipse_music.stream_paused
+	await game.get_tree().create_timer(.1).timeout
 	game.career.data.settings.music=.45;game.events.eclipse=false;game.sound.tick(.016,true,false)
+	await game.get_tree().create_timer(.1).timeout
 	checks.music_restored=not game.sound.eclipse_music.playing and game.sound.drums.volume_db> -70
+	game.set_process(false)
+	game.sound.shutdown()
+	await game.get_tree().create_timer(.15).timeout
 	print("ECLIPSE_REVIEW "+JSON.stringify(checks));game.get_tree().quit(0 if not checks.values().has(false) else 1)

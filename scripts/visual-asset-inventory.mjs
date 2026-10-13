@@ -11,12 +11,13 @@ const families = [
   ['native/assets/illustrated/effects/','IllustratedIcons compact semantic symbols','scripts/create-content-art.mjs'],
   ['native/assets/illustrated/achievements/','Achievement menu seals','scripts/create-content-art.mjs'],
   ['native/assets/illustrated/weapon-icons/','IllustratedIcons primary weapon art','native/scripts/render_weapon_icons.gd'],
-  ['native/assets/illustrated/','Shared terrain, portrait render targets, potions and UI','scripts/prepare-illustrations.py; scripts/create-*-icons.py'],
+  ['native/assets/illustrated/','Shared terrain, portrait render targets, potions and UI','scripts/create-content-art.mjs; preserved shared terrain sources'],
   ['native/assets/','Runtime auxiliary assets; audio preserved','existing family generators'],
 ];
 const assets=walk('native/assets').filter(p=>!p.includes('/local/')).map(path=>{
   const family=families.find(([root])=>path.startsWith(root));
-  return {path,bytes:statSync(path).size,sha256:createHash('sha256').update(readFileSync(path)).digest('hex'),owner:family?.[1],generator:family?.[2],replacement:'active runtime family; see visual-rollout-1.0.0.md',deletion:'retain'};
+  const exploratory=path.includes('/explore_dredge.glb');
+  return {path,bytes:statSync(path).size,sha256:createHash('sha256').update(readFileSync(path)).digest('hex'),owner:family?.[1],generator:exploratory?'local exploratory work':family?.[2],replacement:exploratory?'preserved untracked exploratory asset; not part of the visual rollout':'active runtime family; see visual-rollout-1.0.0.md',deletion:'retain'};
 });
 const embedded=sources.filter(p=>p.startsWith('native/')).filter(p=>/Mesh\.new|shader\.code|_draw\(/.test(readFileSync(p,'utf8')));
 writeFileSync('native/docs/visual-asset-manifest.json',JSON.stringify({version:1,policy:'No deletion is authorized by this inventory alone. Dynamic roots and import sidecars require runtime/export validation.',families,embedded,refs,assets},null,2)+'\n');

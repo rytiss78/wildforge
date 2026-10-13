@@ -57,6 +57,11 @@ Prefix every action below with `node scripts/agent-workflow.mjs`.
 | `capture-ui` | Menu, co-op selection, HUD, cards and pause screens | Rendered; inspect the PNGs |
 | `controls-review` | Keyboard/controller bindings and settings | Rendered; includes saved-setting checks |
 | `forge-review` | Representative overhaul scene, orb snapshot and camera checks | Rendered; inspect full/half/low/empty/remote/reward captures |
+| `fresh-import` | Import an isolated copy with no `.godot` cache, then smoke-test | Preserves the working project cache |
+| `roster-review` | Hero/enemy orbs, scenery and full catalogue contact sheets | Inspect the rendered sheets |
+| `biome-review` | Stream and render all six biomes with combat | Normal camera, isolated profile |
+| `release-review` | Exported 720p/1080p menus and 810p forge/combat/boss/biome captures | Uses the latest successful staged build |
+| `bake-roster` | Rebuild all baked enemy/prop resources | After Forge generators |
 | `style-review` | Short lighting and combat-art iteration | Eight rendered captures; actual explosion damage, effect expiry and unchanged camera checks. Full regression/export testing remains separate. |
 | `boss-review` | Eight bosses, seeded rotations, warnings and network identities | Rendered; inspect each silhouette and attack capture; includes real portal/guardian path |
 | `bake-forge` | Rebuild only Clover Woods baked meshes | Run after `python scripts/build-forge-slice.py`; preserves other biome cores |
@@ -65,15 +70,15 @@ Prefix every action below with `node scripts/agent-workflow.mjs`.
 | `surface-review` | Wall, ceiling, ledge and slope traversal | Rendered; captures several positions |
 | `feedback-review`, `progression-review` | Feedback, reports and progression UI | Rendered; inspect feature captures |
 | `pace-review` | XP/level pacing | Review measurements against the intended design |
-| `eclipse-review` | Eclipse handling and music state | Known acceptance mismatch; see audit |
+| `eclipse-review` | Eclipse handling and music state | Drift, settling and frame-rate invariance; see 1.0.0 rollout |
 | `coop-feedback` | Focused multiplayer feedback behavior | Not a substitute for the two-process network test |
 | `coop` | Real host/client networking | Approximately six minutes; includes full 0 → 1 → 2 → 0 route and peer completion handshake |
 | `build` | New Windows executable and pack | Imports/parses, exports and smoke-tests that executable |
-| `test-build` | Broader rendered checks of the last exported build | Does not rebuild; currently reaches known Eclipse failures |
+| `test-build` | Broader rendered checks of the last exported build | Does not rebuild; release-review adds full exported visual coverage |
 
 Run networking checks sequentially. `capture-ui` also hosts a party; running it during `coop` causes an ENet port error. Ports are UDP 29736 (game) and 29737 (discovery). Do not terminate an unrelated player's game to free them.
 
-The [repair audit](repair-audit-2026-10-12.md) records the October 12 baseline. Eclipse `quick_control`/`brakes` expectations still conflict with slower planned drift. The earlier co-op wraparound/teardown failures are repaired in the [boss checkpoint](visual-bosses-1.0.0.md), with the complete route verified on both peers. Known failures must remain visible in the report, not silently excluded.
+The [repair audit](repair-audit-2026-10-12.md) records the October 12 baseline. Eclipse settlement expectations were reconciled with the planned drift and checked at 30/144 Hz in the [1.0.0 rollout](visual-rollout-1.0.0.md). The earlier co-op wraparound/teardown failures are repaired in the [boss checkpoint](visual-bosses-1.0.0.md), with the complete route verified on both peers. Known failures must remain visible in the report, not silently excluded.
 
 ## Read evidence and screenshots
 

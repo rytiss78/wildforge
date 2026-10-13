@@ -1,12 +1,12 @@
 # Wildforge — Development Plan
 
-> **Active next release: 1.0.0.** Follow the [staged visual-overhaul roadmap](native/docs/visual-overhaul-1.0.0.md), requested October 12. It supersedes the earlier visual direction: Hades-inspired visuals throughout, unchanged camera, damage numbers rising from the bottom, retained HP orbs, expanded monster-boss rotation, verified removal of old assets, regular GitHub pushes and updated About/README/screenshots. The implementation runs in a new session; 0.8.10 below remains the tested starting build.
+> **Active local release: 1.0.0.** Follow the [staged visual-overhaul roadmap](native/docs/visual-overhaul-1.0.0.md), requested October 12. It supersedes the earlier visual direction: Hades-inspired visuals throughout, unchanged camera, damage numbers rising from the bottom, retained HP orbs, expanded monster-boss rotation, verified removal of old assets, regular GitHub pushes and updated About/README/screenshots. The local overhaul is implemented and verified; see [final build and evidence](native/docs/release-1.0.0.md). The October 13 follow-up tasks below are the next pass.
 
 > **October 12 audit:** historical `[x done]` marks below overstate completion. The [original audit](native/docs/repair-audit-2026-10-12.md) records the baseline; the [0.8.10 gameplay repair](native/docs/gameplay-repair-0.8.10.md) supersedes its hill traversal, XP, compatibility, co-op specialty, damage readability and harvestable findings. Pause history, HP-bar removal, difficulty scaling, icon distinctness and performance claims remain partial or unverified.
 
 **One developer. Streamlined process.** No multi-agent orchestration, no heavy rules. Direct edits, commit after each meaningful step, group exports after several milestones (Rytis prefers less-frequent uploads).
 
-**Version:** 0.8.10 (local development). **Build:** Oct 12 2026. **Wrapper:** `node scripts/agent-workflow.mjs <action>`.
+**Version:** 1.0.0 (verified local build; GitHub Build 4 remains published). **Build:** Oct 13 2026. **Wrapper:** `node scripts/agent-workflow.mjs <action>`.
 
 **Working rule:** every change committed + validated with the wrapper (see bottom), make exe build. Update README + release current.
 
@@ -21,6 +21,23 @@
 ---
 
 ## Bugs to fix (new from 2026-10-11)
+
+### October 13 follow-up — next gameplay and visual pass
+
+These are newly requested, open tasks. The current 1.0.0 build does not certify their completion.
+
+1. **Boss indicators and health orbs — `[ ] open`:** Remove boss HP indicators and nameplates from the screen. Enemy/boss health orbs are sufficient; restyle the orbs to match the new visual design while preserving readable health states and co-op synchronization.
+2. **Denser environments and lighting — `[ ] open`:** Populate maps with more biome-appropriate objects, localized glow and cast shadows, using Hades as the reference. Keep the ground restrained and preserve clear movement and combat visibility.
+3. **Directional dash — `[ ] open`:** Give players usable control over dash direction so ranged attacks can be deliberately dodged. Verify keyboard/mouse and controller behavior, including movement independent of camera facing.
+4. **Dangerous enemy ranged attacks — `[ ] open`:** Make ranged enemy attacks substantially more threatening; a poorly prepared hero build can be killed. Preserve readable warnings and opportunities to dodge, and balance solo/co-op damage.
+5. **Final zone after the third map — `[ ] open`:** The third map's exit portal leads to a small mini-Mars arena with a huge, slow boss using several different ranged attacks. Tune its health for approximately five-minute battles with representative builds and party sizes. After its death, trigger Eclipse permanently until all heroes are dead. Verify portal progression, final boss death, co-op authority and the endless Eclipse phase. “Ellipse” is interpreted as the existing Eclipse event.
+6. **Practical minimal UI — `[ ] open`:** Rework the interface further toward a minimal, practical Hades-inspired style. Prioritize clear hierarchy, compact information and useful controls; verify actual navigation and 720p/1080p layouts.
+7. **Biome-specific creepy enemies — `[ ] open`:** Research internet creepypasta references and create more original, distinctly different enemy designs for each biome. Vary movement speeds and behaviors so enemies do not all arrive in one clump; verify combat readability and encounter pacing.
+8. **Visible celestial sky — `[ ] open`:** Create a clearly visible Destiny 2-inspired sky with bright celestial objects, adapted to the Hades-inspired palette and lighting. Compose the sky for the existing camera and each biome, retaining contrast between the sky, terrain and combat effects.
+
+The user requested adding these to the to-do list; implementation belongs to the next development pass.
+
+**Validation follow-up — `[ ] open`:** Diagnose the intermittent aggregate failure in the exported 720p UI review (`2026-10-13T08-01-54-716Z-release-review`) and add per-assertion reporting. Keep the failed evidence alongside successful runs; do not weaken assertions.
 
 ### October 12 follow-up — six gameplay repairs — `[x done]`
 

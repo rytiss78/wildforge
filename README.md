@@ -2,17 +2,17 @@
 
 **Grow strange. Fight hard. Start again.**
 
-A bright 3D survival game where a duck, a loaf of bread and an angry granny are perfectly reasonable hero choices. Explore strange places, grab unpredictable upgrades and become outrageously overpowered before the monsters catch you.
+A vivid 3D survival game where a duck, a loaf of bread and an angry granny are perfectly reasonable hero choices. Explore strange places, grab unpredictable upgrades and become outrageously overpowered before the monsters catch you.
 
 **[Download the Windows build](https://github.com/rytiss78/wildforge/releases/tag/build-4)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
 
 The current release is **0.8.4**: Half XP curve so levels feel like milestones, 5 banishes per realm (not shared in co-op), and vertical camera movement (mouse/stick now tilts up and down). Full changelog in [release notes](https://github.com/rytiss78/wildforge/releases/tag/build-4). Run `build/Wildforge.exe` locally, or unpack the Windows download and run `Wildforge.exe`.
 
-The local development version is **0.8.10**, with repaired hill traversal, smoother level choices, weapon compatibility on cards/buffs, co-op hero specialties, bolder damage numbers and six finished biome harvestables. Run `build/gameplay-0.8.10/Wildforge.exe`; keep its neighboring pack file. [Changes, verification and known limitations](native/docs/gameplay-repair-0.8.10.md). Modern Series X-style achievement banners and the original synthesized chime from [0.8.9](native/docs/achievement-ui-0.8.9.md) remain. No Xbox recording is loaded or included in new exports. The [original repair audit](native/docs/repair-audit-2026-10-12.md) records other unfinished plan items. Build 4 remains the published release.
+The local development version is **1.0.0**, with angular characters and scenery, dark engraved menus and icons, quieter ground, vivid combat effects and eight rotating monster bosses. Glass health orbs and the existing third-person camera remain. [Changes, local build and validation](native/docs/release-1.0.0.md). Build 4 remains the published download.
 
-![Two Count Ducks fighting strange creatures together in Clover Woods](docs/screenshots/co-op.png)
+![Co-op hero selection with the new dark interface](docs/screenshots/forge-1.0.0/release-coop.png)
 
-*Two ducks are better than one. Probably.*
+*Choose your hero and join a party.*
 
 ## Your hero. Your chaos.
 
@@ -20,9 +20,9 @@ Choose from 21 ridiculous heroes, each with their own trick. Count Duck steals l
 
 Carry three weapons at once. When two hands aren't enough, grow a third arm. Mix guns, blades, flowers and turrets with fire, poison, frost, ghosts, thorns and strange money tricks. Every upgrade helps you grow stronger; the next chest might send your run in a completely different direction.
 
-![Hero selection showing Admiral Bubbles, his bathtub and rocket weapon](docs/screenshots/choose-your-hero.png)
+![Hero selection with the new articulated characters](docs/screenshots/forge-1.0.0/release-hero.png)
 
-*Pick someone sensible. Or bring the bathtub.*
+*Tank Potato skipped every leg day.*
 
 ## Find trouble somewhere new
 
@@ -30,7 +30,7 @@ Roam through Clover Woods, Puffcap Marsh, Moon Craters, Cloud City, Candy Hell a
 
 Spend your coins on a chest, choose one of five rewards and keep building your ridiculous little disaster. Chase 108 achievements built around exploration, clever combinations and unusual challenges.
 
-![Detailed skill cards with paid rerolls](docs/screenshots/skill-cards.png)
+![Detailed skill cards with paid rerolls](docs/screenshots/forge-1.0.0/release-offers.png)
 
 *One choice. More trouble for the monsters.*
 
@@ -66,6 +66,6 @@ Published downloads use sequential build numbers: `Wildforge 0.8.4 — Build 4`,
 
 WASD / left stick moves; mouse / right stick looks; Space / A jumps; Shift / RT dashes; Ctrl / B slams; E / X interacts; B / Y opens your build; Escape / Menu pauses. Weapons attack automatically. Florist plants while moving.
 
-Achievements, scores and settings save locally in `%APPDATA%/Godot/app_userdata/Wildforge/career.json`. [Build notes](native/docs/build-0.8.3.md) · [Asset origins](community/ai-content-provenance.md)
+Achievements, scores and settings save locally in `%APPDATA%/Godot/app_userdata/Wildforge/career.json`. [Build notes](native/docs/build-0.8.3.md) · [Asset origins](native/assets/README.md)
 
 </details>

@@ -15,7 +15,7 @@ The old icon test required 761 unique image hashes even for cards granting the s
 
 Eclipse handling remains deliberately slippery (turn response 4/s; braking 6/s). Its old 0.32-second / 0.2-second settlement windows contradicted that behavior. The revised test retains the 2% threshold and initial drift check, with settlement windows 1.2 seconds / 0.75 seconds; it also compares 30 Hz against 144 Hz. No gameplay response rate was changed.
 
-Verbose integration identified the exit leak as nine audio playback/stream pairs. Explicitly stop and release channels, then allow 150 ms for the mixer before test exit. The final integration log is free of the earlier ObjectDB/resource diagnostics.
+Verbose integration identified the exit leak as nine audio playback/stream pairs. Explicitly stop and release channels, then allow 150 ms for the mixer before test exit. The final integration log is free of the earlier ObjectDB/resource diagnostics. The Eclipse review also disables automatic game updates while it drives explicit music transitions, allows mixer frames between transitions, and stops/releases audio before exit. Verbose logs identified the old exit-only diagnostics as music playback/WAV resources; the refreshed review is clean.
 
 A concurrent local edit used a nonexistent BLEND_MODE_ALPHA constant. Its intended alpha blending is preserved using [Godot's BLEND_MODE_MIX](https://docs.godotengine.org/en/stable/classes/class_basematerial3d.html#enum-basematerial3d-blendmode). That local edit, the map marker edit, the armour shader edit and explore_dredge.glb are outside this commit and preserved.
 

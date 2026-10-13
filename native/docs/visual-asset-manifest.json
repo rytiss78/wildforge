@@ -35,7 +35,7 @@
     [
       "native/assets/illustrated/",
       "Shared terrain, portrait render targets, potions and UI",
-      "scripts/prepare-illustrations.py; scripts/create-*-icons.py"
+      "scripts/create-content-art.mjs; preserved shared terrain sources"
     ],
     [
       "native/assets/",
@@ -964,6 +964,11 @@
       "path": "scripts/visual-asset-inventory.mjs",
       "line": 6,
       "text": "const refs = sources.flatMap(path=>readFileSync(path,'utf8').split(/\\r?\\n/).flatMap((text,i)=> /res:\\/\\/assets|\\.glb|\\.res[\"']|Mesh\\.new|shader\\.code|_draw\\(/.test(text)?[{path,line:i+1,text:text.trim()}]:[]));"
+    },
+    {
+      "path": "scripts/visual-asset-inventory.mjs",
+      "line": 19,
+      "text": "const exploratory=path.includes('/explore_dredge.glb');"
     }
   ],
   "assets": [
@@ -1414,15 +1419,6 @@
       "sha256": "234bacbf4fe9376506422984396c11b70d159ec2d1feb02f03d4a2d5b4757e9e",
       "owner": "Runtime auxiliary assets; audio preserved",
       "generator": "existing family generators",
-      "replacement": "active runtime family; see visual-rollout-1.0.0.md",
-      "deletion": "retain"
-    },
-    {
-      "path": "native/assets/illustrated/achievement-art.json",
-      "bytes": 14074,
-      "sha256": "a456ee086f4956faa58a50746a61bf5ddf04293c8e9f78d55a25fd976860e9e8",
-      "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -3371,29 +3367,11 @@
       "deletion": "retain"
     },
     {
-      "path": "native/assets/illustrated/achievements-locked.png",
-      "bytes": 598734,
-      "sha256": "b4e23ef2dbfd650c0dde318b0749ac56cf4e40f911f6cb528258b6c51cc8b8f5",
-      "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
-      "replacement": "active runtime family; see visual-rollout-1.0.0.md",
-      "deletion": "retain"
-    },
-    {
-      "path": "native/assets/illustrated/achievements-locked.png.import",
-      "bytes": 980,
-      "sha256": "e40b63d54735bdb0016e7fb6a95b99556c554d65dfc7e76448f421d4a1ebace0",
-      "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
-      "replacement": "active runtime family; see visual-rollout-1.0.0.md",
-      "deletion": "retain"
-    },
-    {
       "path": "native/assets/illustrated/art-0.6-prompts.json",
       "bytes": 6126,
       "sha256": "d544e9834b2d909d0fd3f42e8abf527ed77c60ac8f287087892493c459b2d05d",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -3402,7 +3380,7 @@
       "bytes": 53331,
       "sha256": "72cab566430f0cfb70b5949650630da1c3ba94550fee3bd3202e49c91afa3245",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -3411,7 +3389,7 @@
       "bytes": 935,
       "sha256": "da1333925d2743e313803451d0bc52b9421219642583beb4f239612e023eb8f8",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -26928,7 +26906,7 @@
       "bytes": 1886310,
       "sha256": "76256faaf6f61394675153746bab99bb2fe96e24c0023598c952b903a61aaae0",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -26937,7 +26915,7 @@
       "bytes": 973,
       "sha256": "50a8655119703f3848cd38f7d8cfc50cb58cb4ca655f026eb956f4645e36bc60",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -26946,7 +26924,7 @@
       "bytes": 53035,
       "sha256": "54948a6605cc8802062895b755036b7766e07250dddebcaf2cdc2f49f222a165",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -26955,7 +26933,7 @@
       "bytes": 937,
       "sha256": "7486f090b8c468a18e5f00a12eb78dbbfeb8c7f090916f35992b85c62045affe",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -26964,7 +26942,7 @@
       "bytes": 53238,
       "sha256": "4fbff1ffa96eff7bda38de5f3101c7446fd64d7d427b1f1e57112ac292042d22",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -26973,7 +26951,7 @@
       "bytes": 937,
       "sha256": "6063a91f2cd09d6d94ee84c54efdf5efa3e25c3d8f789550661b7f8ce5afc26d",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -26982,7 +26960,7 @@
       "bytes": 937,
       "sha256": "f5d0b0a0c35748d23d8c6ebb54f8f829fb9ef6ea829ca040b723c92437545d6d",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -26991,7 +26969,7 @@
       "bytes": 1199,
       "sha256": "55cd3d60eab1e0d32afa0d479f2d0e61e7399d594dae0201ab5fd24b78d72c20",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27000,7 +26978,7 @@
       "bytes": 1040,
       "sha256": "7da9c56847e6e907800d7fe89bb85722d80c1018e646c9e214a313b6835ea70c",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27009,7 +26987,7 @@
       "bytes": 1124,
       "sha256": "e60b1ea5b156000e1695de2a4ec7924bda5ffc7bd59d3a4211f2e946f1a1790f",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27018,7 +26996,7 @@
       "bytes": 1042,
       "sha256": "308e03b706104eed069256be6d4fc8cd59ed9b7987e61a27246bf77e6bb32455",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27027,7 +27005,7 @@
       "bytes": 1246,
       "sha256": "73f2d68760e01022d1d7fe997c0b668be21deb77a795041ddae944c068f4c031",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27036,7 +27014,7 @@
       "bytes": 1043,
       "sha256": "87b4b0dbe2c550cf65a93e532d5f822231ccafeb224b18113009635a1aaaab98",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27045,7 +27023,7 @@
       "bytes": 1193,
       "sha256": "7aaa079a0da536becd8d42e4b334854de9b31c6a45883f0c9b7165b01ac40145",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27054,7 +27032,7 @@
       "bytes": 1049,
       "sha256": "e6c05d34ae2a783f21186712b0f386af573df95a5e1593ace1d7c00a64bb15ff",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27063,7 +27041,7 @@
       "bytes": 1137,
       "sha256": "9ca0753f7bd6307b5ece0da3438037e02f4a14ad90adf4821b0ca81f52c6f056",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27072,7 +27050,7 @@
       "bytes": 1038,
       "sha256": "db3297855165e25b8f8109b50d61db7151ce977a76c59ee386e6141802f829a7",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27081,7 +27059,7 @@
       "bytes": 1141,
       "sha256": "decd024649bc2aa48c824136a40978a6c469777c06c60def44e3fa0f375f6435",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27090,7 +27068,7 @@
       "bytes": 1043,
       "sha256": "0a3e9f872e447dd8824b87b85864296028039be3d7a32898ea31543c985545e1",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27099,7 +27077,7 @@
       "bytes": 1110,
       "sha256": "c3b1dbde5ad88f5b3a0675addefac9d6134fe563bc52c6f28f02f4e744474831",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27108,7 +27086,7 @@
       "bytes": 1040,
       "sha256": "58ddcc157e5f8d8126a8f55e97f0c297e2880fe7b848b35b923c63b42b531411",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27117,7 +27095,7 @@
       "bytes": 1312,
       "sha256": "f28c29f99d31bcaaaeaec234c88d5bc9fb77b2822cbd60228dd2d4a6153f2c1f",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27126,7 +27104,7 @@
       "bytes": 1043,
       "sha256": "5aee4119495764d055f29e1e89a5ff3764240072a6f548ac647d6aa04f6f0e0b",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27135,7 +27113,7 @@
       "bytes": 1197,
       "sha256": "c750da85c141344815ea42b1a2ad9887e5b5fb9deb6414935e9038ef213c2b63",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27144,7 +27122,7 @@
       "bytes": 1046,
       "sha256": "fd6a1ee22943359dd0d32460f203c51f03a538c87de4d6635cc4a2edb90685cc",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27153,7 +27131,7 @@
       "bytes": 1182,
       "sha256": "6df8cc670ccddf84da052d23acd3c09f959cd4b7cf10327043fc86487774d0fd",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27162,7 +27140,7 @@
       "bytes": 1046,
       "sha256": "6ce86cde4c2cc1c33af01bb24a57af33397b4ac5dc6625894256a32300773eef",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27171,7 +27149,7 @@
       "bytes": 1174,
       "sha256": "5a93895e606be94cf79d08108f3a02cd4aff615f7dc87c962795961d7c61e805",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27180,7 +27158,7 @@
       "bytes": 1043,
       "sha256": "22c7a59cc941ea4ad779192bdffb7cb045867e3217700dd437d7b9bd9f0c43ed",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27189,7 +27167,7 @@
       "bytes": 1147,
       "sha256": "5ad8e71f7d8a7ebd7b8dc8dc94791bfa596061c3663febab853dab302bb0b9f0",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27198,7 +27176,7 @@
       "bytes": 1043,
       "sha256": "4ba5460a6ef2a99fbf90f622d661b07e2aea951be09b3aeaf78e3281e9c997c4",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27207,7 +27185,7 @@
       "bytes": 1190,
       "sha256": "e27eae5b1a9e92dcf62c171d94eca18be30dc53aad3a9257920c2ecec697449b",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27216,7 +27194,7 @@
       "bytes": 1043,
       "sha256": "f8f0072016a6a2add2c48d511a60995fa7cd9ec16bbebbcddc4dc7767e35c825",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27225,7 +27203,7 @@
       "bytes": 1163,
       "sha256": "d14731b4cdd57f6989d2ac0855965cbb4417c8e62d3439c09906f5c519b24ce9",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27234,7 +27212,7 @@
       "bytes": 1034,
       "sha256": "7827e059c92fc1a56a380bc6f14907ef962ff4f8f68853b3ef566df1acd14f11",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27243,7 +27221,7 @@
       "bytes": 8127,
       "sha256": "9eb4e7fdbc59a51d6da356dc0b6eeb8cdbb2a31be766316caaa33e7d49d4c7b1",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27252,7 +27230,7 @@
       "bytes": 52549,
       "sha256": "aeeabd7d816409af856a887a1133320a0ea3cbb7613eba3ff83d72bac64125af",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27261,7 +27239,7 @@
       "bytes": 937,
       "sha256": "cb461d14c7b7c8f34282c259e3cd1e46b7207bc2bd5565863777078664d30cdb",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27270,7 +27248,7 @@
       "bytes": 166406,
       "sha256": "ca531631525c1766dd00f5d988e64b2582d0e55c9598f98814a5aea47830af0d",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27279,7 +27257,7 @@
       "bytes": 950,
       "sha256": "fa74235f705b28fa361b8c590de8e12a4dfeba1a8c876057a4baab50f352c688",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27288,7 +27266,7 @@
       "bytes": 163948,
       "sha256": "8fd51882786bdade4273ec8dbc6cb3eda22c466bf1c2e7f74129c9c884f47723",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27297,7 +27275,7 @@
       "bytes": 949,
       "sha256": "ae82e8eecef65b2222ed5de80aa48552ac82d6d8883a0a84d55564b67abb2e5b",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27306,7 +27284,7 @@
       "bytes": 152057,
       "sha256": "f012b8e2cab904ee5a4b01e9c2152b4a7c44f28ffade339d75df33feb47e8fbd",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27315,7 +27293,7 @@
       "bytes": 950,
       "sha256": "ba9f547abfb58631db0b2b36223897f3fd503b0b9de4b681682e885214e3f052",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27324,7 +27302,7 @@
       "bytes": 126395,
       "sha256": "753fb78f7033ad6d9c35aab0d4e2b37fbf473395b697a2e0f7f2496b69f75133",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27333,7 +27311,7 @@
       "bytes": 950,
       "sha256": "733d8dac90b0a6d556ded3c7914e4b31923b93ba8dba481c636e777266a1e095",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27342,7 +27320,7 @@
       "bytes": 153761,
       "sha256": "37369ee38d0d1d3b9ca95b3a510cd57932597108ea23da3a22eb58a80eff5183",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27351,7 +27329,7 @@
       "bytes": 950,
       "sha256": "14a39f6a6ae2455b4d920f034e00386ebf1738c85da0e5bcfaf543f200fbf5e1",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27360,7 +27338,7 @@
       "bytes": 159881,
       "sha256": "bb0168a55dd2193ef4eabe31f13de03d29bbaa6d33319b04b9792633be689239",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27369,7 +27347,7 @@
       "bytes": 950,
       "sha256": "39406d0bd5246a9bf034541614facceb362b818792d008ddbf3a45d4ba35c644",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27378,7 +27356,7 @@
       "bytes": 2816167,
       "sha256": "a89044dd5613c6603b9cc56aa4e5e771a390b0f62ecf95a2910f20e522e4c43a",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27387,7 +27365,7 @@
       "bytes": 968,
       "sha256": "7c01b25bcc8704f78eff83264ac72c6ed123b04fbaef37c70e36ae42f00b59be",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27396,7 +27374,7 @@
       "bytes": 2580215,
       "sha256": "3581df88dbcd40720f7d87ce3a64fa6ec92f7a1967c8c53883d5cfa8b3682e30",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -27405,7 +27383,7 @@
       "bytes": 971,
       "sha256": "6975634e7406899e58815c5609055887f1b3eef81d3f7e08442656a567042d7d",
       "owner": "Shared terrain, portrait render targets, potions and UI",
-      "generator": "scripts/prepare-illustrations.py; scripts/create-*-icons.py",
+      "generator": "scripts/create-content-art.mjs; preserved shared terrain sources",
       "replacement": "active runtime family; see visual-rollout-1.0.0.md",
       "deletion": "retain"
     },
@@ -30960,8 +30938,8 @@
       "bytes": 335812,
       "sha256": "6c5afc2785fc9eb86deb7eaba698b7a788a01bb510e9b6c731b95a60286106ab",
       "owner": "StyleModel / WeaponModel / RealmWorld",
-      "generator": "scripts/build-forge-slice.py; scripts/build-forge-roster.py; scripts/build-forge-biomes.py",
-      "replacement": "active runtime family; see visual-rollout-1.0.0.md",
+      "generator": "local exploratory work",
+      "replacement": "preserved untracked exploratory asset; not part of the visual rollout",
       "deletion": "retain"
     },
     {
@@ -30969,8 +30947,8 @@
       "bytes": 1172,
       "sha256": "4e24faa50f4d27de3256f05a6e5e6394e0b47afbb1144c0b4fffaa8e3df74e10",
       "owner": "StyleModel / WeaponModel / RealmWorld",
-      "generator": "scripts/build-forge-slice.py; scripts/build-forge-roster.py; scripts/build-forge-biomes.py",
-      "replacement": "active runtime family; see visual-rollout-1.0.0.md",
+      "generator": "local exploratory work",
+      "replacement": "preserved untracked exploratory asset; not part of the visual rollout",
       "deletion": "retain"
     },
     {
