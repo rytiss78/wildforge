@@ -11,6 +11,11 @@ var synth = AudioStreamPlayer.new()
 var atmosphere = AudioStreamPlayer.new()
 var eclipse_music=AudioStreamPlayer.new()
 var eclipse_active=false
+# Procedural hero movement cues; no external sounds or licensing required.
+var step_player=AudioStreamPlayer3D.new()
+var engine_player=AudioStreamPlayer3D.new()
+var step_clock=0.0
+var step_samples={}
 var theme_realm=-1
 var rng = RandomNumberGenerator.new()
 var phrase = 0
@@ -59,6 +64,9 @@ func setup(options: Dictionary):
 		AudioServer.add_bus_effect(sky_bus,reverb)
 	voice.bus="SkyVoice";voice.attenuation_model=AudioStreamPlayer3D.ATTENUATION_DISABLED;voice.max_distance=120;voice.panning_strength=.65
 	for player in [voice,drums,rhythm,lead,synth,atmosphere,eclipse_music]: add_child(player)
+	for channel in [step_player,engine_player]:
+		channel.unit_size=5;channel.max_distance=32;add_child(channel)
+	engine_player.stream=make_supra_engine()
 	voice.pitch_scale = 1.0
 	for i in range(12):
 		var channel=AudioStreamPlayer3D.new();channel.unit_size=7;channel.max_distance=75;channel.max_db=0;add_child(channel);sfx_pool.append(channel)
@@ -97,6 +105,7 @@ func start(seed_value: int):
 	active = true
 	boss_voice_last=-100;boss_voice.stop();last_hurt=-100;hurt_voice.stop();hurt_source=null;pending_biome=""
 	theme_realm=-1;atmosphere.stop();eclipse_music.stop();eclipse_active=false
+	step_clock=0;step_player.stop();engine_player.stop()
 	play_phrase()
 
 func play_phrase():
@@ -141,6 +150,7 @@ func tick(delta: float, playing: bool, has_boss: bool):
 	hurt_voice.stream_paused=not playing
 	boss_voice.stream_paused=not playing
 	for channel in weapon_loops.values(): channel.stream_paused=not playing
+	update_motion_audio(delta,playing)
 	if playing and not voice.playing and not pending_biome.is_empty():
 		var id=pending_biome;pending_biome="";say(id,0)
 	for player in [drums,rhythm,lead,synth,atmosphere]: player.stream_paused = not playing
@@ -161,6 +171,68 @@ func tick(delta: float, playing: bool, has_boss: bool):
 		clock -= BAR_LOOP
 		phrase += 1
 		play_phrase()
+
+func update_motion_audio(delta: float,playing: bool):
+	var game=get_parent()
+	var live=playing and active and game.mode=="playing" and game.run_active and not game.update.downed and game.hp>0 and not game.coop.frozen() and not game.hud.modal.visible and float(settings.sfx)>0
+	if not live:
+		step_clock=0
+		engine_player.stop()
+		return
+	var speed=Vector2(game.player.velocity.x,game.player.velocity.z).length()
+	var grounded=game.player.is_on_floor()
+	var hero_id=str(game.hero.get("id",""))
+	var at=game.player.global_position+Vector3.UP*.2
+	if hero_id=="white-supra":
+		# The car has its own continuous engine, revving with actual movement.
+		step_player.stop();step_clock=0
+		engine_player.global_position=at
+		engine_player.pitch_scale=clampf(.80+speed*.055,.80,2.1)
+		engine_player.volume_db=linear_to_db(maxf(.0001,float(settings.sfx)))-(22 if speed<.7 else 13)
+		if not engine_player.playing: engine_player.play()
+		return
+	engine_player.stop()
+	if not grounded or speed<.7:
+		step_clock=0
+		return
+	step_clock-=delta
+	if step_clock>0: return
+	if not step_samples.has(hero_id): step_samples[hero_id]=make_footstep(hero_id)
+	step_player.stream=step_samples[hero_id]
+	step_player.global_position=at
+	step_player.pitch_scale=randf_range(.91,1.09)
+	step_player.volume_db=linear_to_db(maxf(.0001,float(settings.sfx)))-13
+	step_player.play()
+	step_clock=.44/clampf(speed/5.0,.8,1.75)
+
+static func make_supra_engine() -> AudioStreamWAV:
+	# One-second seamless, layered engine hum (integer-cycle harmonics).
+	var audio=AudioStreamWAV.new();audio.mix_rate=22050;audio.format=AudioStreamWAV.FORMAT_16_BITS
+	var bytes=PackedByteArray();bytes.resize(audio.mix_rate*2)
+	for i in range(audio.mix_rate):
+		var t=float(i)/audio.mix_rate
+		var pulse=1+.13*sin(TAU*7*t)
+		var sample=(sin(TAU*58*t)*.32+sin(TAU*116*t)*.20+sin(TAU*174*t)*.12+sin(TAU*29*t)*.12)*pulse
+		bytes.encode_s16(i*2,int(clampf(sample,-.9,.9)*32767))
+	audio.data=bytes;audio.loop_mode=AudioStreamWAV.LOOP_FORWARD
+	audio.loop_begin=0;audio.loop_end=audio.mix_rate
+	return audio
+
+static func make_footstep(hero_id: String) -> AudioStreamWAV:
+	# Distinct weight/timbre per hero, without dependency on new asset files.
+	var audio=AudioStreamWAV.new();audio.mix_rate=22050;audio.format=AudioStreamWAV.FORMAT_16_BITS
+	var length=.115
+	var bytes=PackedByteArray();bytes.resize(roundi(length*audio.mix_rate)*2)
+	var random=RandomNumberGenerator.new();random.seed=hero_id.hash()
+	var weight=float(posmod(hero_id.hash(),8))/7.0
+	var freq=75+weight*125
+	for i in range(bytes.size()/2):
+		var t=float(i)/audio.mix_rate
+		var envelope=exp(-t*(24+weight*16))*minf(1,t*200)
+		var sample=(sin(TAU*freq*t)*(.35-weight*.15)+random.randf_range(-.26,.26))*envelope
+		bytes.encode_s16(i*2,int(clampf(sample,-.9,.9)*32767))
+	audio.data=bytes
+	return audio
 
 func say(id: String, cooldown: float = 12.0):
 	if float(settings.voice) <= 0: return
