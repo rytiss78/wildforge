@@ -313,3 +313,10 @@ func boss_curse(position: Vector3,index: int=-1) -> int:
 		boss_voice.volume_db=linear_to_db(maxf(.0001,float(settings.voice)))-10
 		boss_voice.pitch_scale=.88;boss_voice.play()
 	return selected
+
+func shutdown():
+	# Release playback before the tree exits so the audio mixer can drain voices.
+	for player in get_children():
+		if player is AudioStreamPlayer or player is AudioStreamPlayer3D:
+			player.stop();player.stream=null
+	cache.clear()

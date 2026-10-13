@@ -13,7 +13,7 @@ static func run(g: Node3D):
 			await g.get_tree().process_frame
 		checks.biomes=checks.biomes and g.world.biome_at(p)==biome
 		checks.streaming=checks.streaming and g.world.chunks.size()>0
-		g.hud.update(0)
+		g.current_biome=biome;g.hud.update(0)
 		await RenderingServer.frame_post_draw
 		checks.captures=g.get_viewport().get_texture().get_image().save_png("user://biome-"+str(biome)+".png")==OK and checks.captures
 		g.damage_area(p+Vector3(2,0,-5),3,5,"explosion");g._process(.04)

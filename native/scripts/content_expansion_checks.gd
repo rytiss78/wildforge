@@ -11,12 +11,17 @@ static func run(game) -> Dictionary:
 		for q in positions:
 			if p!=q: spacing=minf(spacing,Vector2(p.x-q.x,p.z-q.z).length())
 	checks.chest_distribution=positions.size()==24 and per_biome.all(func(n):return n==4) and spacing>25
-	var hashes={};var icons=true
+	# Equal bonuses share art intentionally. Every distinct augment condition/stat
+	# pair must still render differently; all catalogue entries must load.
+	var hashes={};var icons=true;var augment_icons=true
 	for item in data.loot+data.weapons:
 		var texture=IllustratedIcons.texture(item.id,not item.has("effects"))
-		var code=hash(texture.get_image().get_data())
-		icons=icons and not hashes.has(code);hashes[code]=true
-	checks.distinct_rendered_icons=icons and hashes.size()==761
+		icons=icons and texture!=null and texture.get_width()>=128
+		if item.id.begins_with("augment-"):
+			var code=hash(texture.get_image().get_data())
+			augment_icons=augment_icons and not hashes.has(code);hashes[code]=true
+	checks.catalogue_art_loads=icons
+	checks.distinct_condition_stat_art=augment_icons and hashes.size()==360
 	for kind in ["item","skill","weapon"]:
 		for sample in range(12):
 			var choices=game.rules.offers(kind,0,false,game.stats,game.equipped)

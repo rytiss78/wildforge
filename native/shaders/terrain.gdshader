@@ -22,11 +22,11 @@ vec3 biome_paint(float b,vec2 uv) {
    // Remap the painted facets; gold chips and moss must not glow across the floor.
    float value=dot(stone,vec3(.2126,.7152,.0722));
    float facet=smoothstep(.012,.28,value);
-   return mix(vec3(.028,.038,.055),vec3(.105,.145,.155),facet);
+   return mix(vec3(.018,.025,.038),vec3(.058,.082,.090),facet);
  }
  float wash=sin(uv.x*.57+sin(uv.y*.8))*.025+cos(uv.y*.66)*.02;
  float grain=dot(paint,vec3(.299,.587,.114));
- return base*(.82+grain*.9)+vec3(wash*.55);
+ return base*(.40+grain*.42)+vec3(wash*.22);
 }
 void fragment(){
  vec2 uv=p.xz*.042;
@@ -40,6 +40,6 @@ void fragment(){
  float path=1.0-smoothstep(2.2,3.5,abs(p.x+sin(p.z*.035)*9.0));
  float a=atan(p.z,p.x);
  float coast=344.0+24.0*sin(3.0*(a+phase))+14.0*sin(5.0*(a-phase))+8.0*cos(7.0*(a+phase*.5));
- paint=mix(paint,vec3(.19,.15,.09),smoothstep(coast-22.0,coast-3.0,length(p.xz)));
+ paint=mix(paint,vec3(.075,.061,.043),smoothstep(coast-22.0,coast-3.0,length(p.xz)));
  ALBEDO=mix(paint,paint*1.06+vec3(.012,.008,.002),path*.4);ROUGHNESS=1.0;SPECULAR=0.0;
 }

@@ -1,4 +1,4 @@
-import {copyFileSync} from 'node:fs';
+import {copyFileSync,cpSync} from 'node:fs';
 import {spawn, spawnSync} from 'node:child_process';
 import {createWriteStream, existsSync, mkdirSync, readFileSync, statSync, writeFileSync} from 'node:fs';
 import {createHash} from 'node:crypto';
@@ -69,7 +69,7 @@ export function assessPng(path, started, minimum=320) {
 }
 
 async function main(action) {
-  if (!['biome-review', 'release-review', 'roster-review', 'bake-roster', 'style-review', 'boss-review', 'forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'skill-icons', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
+  if (!['fresh-import', 'biome-review', 'release-review', 'roster-review', 'bake-roster', 'style-review', 'boss-review', 'forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
     console.error('Usage: node scripts/agent-workflow.mjs check|smoke|capture|capture-ui|combat-review|pace-review|soak|integration|build|status'); return 2;
   }
   const git = (...args) => spawnSync('git', ['-C', root, ...args], {encoding:'utf8', windowsHide:true}).stdout?.trim() ?? '';
@@ -90,6 +90,12 @@ async function main(action) {
     return output;
   }
   try {
+    if(action==='fresh-import'){
+      const clean=join(runDir,'native');
+      cpSync(join(root,'native'),clean,{recursive:true,filter:p=>!/(^|[\\/])(\.godot|docs)([\\/]|$)/.test(p)});
+      await step('fresh-import',godot,['--headless','--path',clean,'--editor','--import'],240000);
+      report.smoke=assessSmoke(await step('fresh-smoke',godot,['--headless','--path',clean,'--','--smoke'],90000));
+    }
     if (action === 'check') await step('javascript-tests',process.execPath,['--test'],120000);
     if (action === 'check' || action === 'build' || action === 'bake-forge' || !existsSync(join(root,'native/.godot/global_script_class_cache.cfg'))) {
       await step('godot-import',godot,['--headless','--path',join(root,'native'),'--editor','--import'],180000);
@@ -111,12 +117,6 @@ async function main(action) {
         if(Object.values(report[key].checks ?? report[key]).some(v=>v===false)) throw new Error('Exported '+key+' checks failed');
       }
       report.featureCaptures=['coop-feedback','feedback-cards','feedback-hud-ping','feedback-report','controls-custom','surface-wall','surface-ceiling','surface-ledge','progression-stats','progression-cards','progression-recap','progression-mobility','journey-corruption-after'].map(name=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge',name+'.png'),started));
-    }
-    if(action === 'skill-icons') {
-      const output=await step('skill-icons',godot,['--path',join(root,'native'),'--script','res://scripts/render_skill_icons.gd'],180000);
-      const skills=JSON.parse(readFileSync(join(root,'native/data/catalog.json'),'utf8')).loot.filter(i=>i.kind==='skill');
-      if(!output.includes('SKILL_ICONS_COMPLETE '+skills.length)) throw new Error('Missing skill render completion');
-      report.icons=skills.map(i=>assessPng(join(root,'native/assets/illustrated/skill-icons',i.id+'.png'),started,128));
     }
     if (action === 'weapon-icons') {
       const output=await step('weapon-icons',godot,['--path',join(root,'native'),'--script','res://scripts/render_weapon_icons.gd'],180000);
@@ -150,9 +150,9 @@ async function main(action) {
       if(!previous.success || !existsSync(previous.build))throw new Error('No verified build');report.build=previous.build;
       for(const resolution of ['1280x720','1920x1080']){
         const out=await step('ui-'+resolution,previous.build,['--resolution',resolution,'--','--ui-review'],120000);
-        if(!out.includes('UI_REVIEW '))throw new Error('Missing UI result');
+        if(!out.includes('UI_REVIEW_SAVED: OK'))throw new Error('Missing UI result');
         const captureDir=join(env.APPDATA,'Godot/app_userdata/Wildforge');
-        for(const name of ['ui-menu','ui-hero','ui-coop','ui-hud','ui-offers','ui-pause','ui-build']){
+        for(const name of ['ui-menu','ui-about','ui-hero','ui-coop','ui-hud','ui-offers','ui-pause','ui-build']){
           const source=join(captureDir,name+'.png');assessPng(source,started);
           copyFileSync(source,join(runDir,name+'-'+resolution+'.png'));
         }
@@ -181,7 +181,7 @@ async function main(action) {
     }
     if (action === 'smoke') report.smoke=assessSmoke(await step('native-smoke',godot,['--headless','--path',join(root,'native'),'--','--smoke'],90000));
     if (action === 'integration') {
-      const output=await step('integration',godot,['--headless','--path',join(root,'native'),'--','--big-update-check'],180000);
+      const output=await step('integration',godot,['--verbose','--headless','--path',join(root,'native'),'--','--big-update-check'],180000);
       const line=output.split(/\r?\n/).findLast(x=>x.startsWith('BIG_UPDATE_CHECK '));
       if (!line) throw new Error('Missing integration result.');
       const result=JSON.parse(line.slice('BIG_UPDATE_CHECK '.length));

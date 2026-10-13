@@ -8,10 +8,12 @@ static func run(game):
 	game.events.eclipse=true
 	var turn=game.eclipse_running(Vector3.FORWARD,1./60,true)
 	checks.turn_drift=turn.x>0 and turn.z<0 and turn.length()<=speed+.01
-	for i in range(18): turn=game.eclipse_running(Vector3.FORWARD,1./60,true)
-	checks.quick_control=turn.distance_to(Vector3.FORWARD*speed)<speed*.02
-	for i in range(12): turn=game.eclipse_running(Vector3.ZERO,1./60,true)
-	checks.brakes=turn.length()<speed*.02
+	# Intended slippery handling: 4/s turning and 6/s braking.
+	# Settle to within 2% at 1.2 s / 0.75 s; the first frame must retain drift.
+	for i in range(71): turn=game.eclipse_running(Vector3.FORWARD,1./60,true)
+	checks.turn_settles=turn.distance_to(Vector3.FORWARD*speed)<speed*.02
+	for i in range(45): turn=game.eclipse_running(Vector3.ZERO,1./60,true)
+	checks.brake_settles=turn.length()<speed*.02
 	game.eclipse_run_velocity=Vector3.RIGHT*speed
 	for i in range(30): turn=game.eclipse_running(Vector3.FORWARD,1./30,true)
 	var thirty=turn

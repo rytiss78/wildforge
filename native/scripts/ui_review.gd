@@ -13,6 +13,12 @@ static func run(game):
 	AudioServer.set_bus_volume_db(0,-80)
 	game.set_physics_process(false)
 	var okay=await capture(game,"menu")
+	var about=game.hud.menu_controls().filter(func(c):return c is Button and c.text=="About Wildforge")[0]
+	about.pressed.emit();okay=await capture(game,"about") and okay
+	game.hud.menu_controls().filter(func(c):return c is Button and c.text=="BACK")[0].pressed.emit()
+	game.hud.menu_controls().filter(func(c):return c is Button and c.text=="About Wildforge")[0].pressed.emit()
+	game.hud.menu_controls().filter(func(c):return c is Button and c.text=="BACK")[0].pressed.emit()
+	await game.get_tree().process_frame
 	game.hud.coop_menu()
 	okay=game.hud.lobby_ready.disabled and game.hud.lobby_start.disabled and okay
 	game.coop.host_lan();game.hud.update_lobby_controls()

@@ -18,7 +18,15 @@ static func run(game: Node3D):
 	checks.extra_air_jump=game.rules.data.loot.any(func(i):return i.id=="extra-hop-item" and i.effects[0].key=="airJumps" and i.effects[0].amount==1)
 	game.hud.update(0)
 	var minimap=game.hud.map_view
-	checks.minimap_no_fog=minimap.terrain!=null and minimap.terrain.get_image().get_pixel(128,128)==RealmWorld.COLORS[0]
+	checks.minimap_no_fog=minimap.terrain!=null
+	var map_colors={}
+	for biome in range(6):
+		var angle=(biome+.5)*TAU/6-float(game.world.seed_value%23)*.03-game.realm*.4
+		var pixel=Vector2(cos(angle),sin(angle))*56+Vector2(128,128)
+		var color=minimap.terrain.get_image().get_pixel(int(pixel.x),int(pixel.y))
+		checks.minimap_no_fog=checks.minimap_no_fog and color.a==1 and color.get_luminance()>.025
+		map_colors[color.to_html()]=true
+	checks.minimap_biome_palette=map_colors.size()==6
 	checks.minimap_interactions=minimap.interactables.any(func(i):return i.kind=="merchant") and minimap.interactables.any(func(i):return i.kind=="supply") and minimap.interactables.filter(func(i):return i.kind=="landmark").size()==6
 	checks.rare_boxes=game.rules.chest_price(0)==30 and RunRules.WEAPON_CAP==3
 	checks.achievements=game.career.achievements.size()==108 and game.career.achievements.map(func(a):return a.id).size()==108
@@ -163,6 +171,8 @@ static func run(game: Node3D):
 	checks.separated_party_chunks=coverage.any(func(cell):return cell.x>3) and coverage.any(func(cell):return cell.x< -3)
 	var result={"checks":checks,"route_max_slope":worst_slope,"passed":checks.values().all(func(v):return bool(v))}
 	var file=FileAccess.open("user://big-update-results.json",FileAccess.WRITE);file.store_string(JSON.stringify(result,"  "));file.close()
+	game.set_process(false);game.sound.shutdown()
+	await game.get_tree().create_timer(.15).timeout
 	print("BIG_UPDATE_CHECK "+JSON.stringify(result));game.get_tree().quit(0 if result.passed else 1)
 
 static func ping_button() -> InputEventJoypadButton:

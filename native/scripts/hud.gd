@@ -558,6 +558,7 @@ func start_menu(focus_hero: bool=false):
 	nav.add_child(button("Local scores",func(): career_menu(true)))
 	nav.add_child(button("Play with friends",coop_menu))
 	nav.add_child(button("Sound & controls",settings_menu))
+	nav.add_child(button("About Wildforge",about_menu))
 	nav.add_child(button("Quit",func(): game.career.save();game.get_tree().quit()))
 	var hero_panel=PanelContainer.new()
 	hero_panel.position=Vector2(533,277)
@@ -1122,3 +1123,10 @@ func update_skill_strip():
 			var count_label=label(str(entry.count),12);count_label.position=Vector2(20,20);tile.add_child(count_label)
 		index+=1
 	if skills.size()>18: skill_strip.add_child(label("+"+str(skills.size()-18),14))
+
+func about_menu():
+	var box=open("ABOUT WILDFORGE", "Grow strange. Fight hard. Start again.")
+	box.add_child(label("Version "+str(ProjectSettings.get_setting("application/config/version")),24,ThemeTokens.STAR_GOLD))
+	for text in ["21 heroes · 65 weapons · 696 upgrades · 6 biomes · 8 rotating bosses", "Original angular artwork, engraved icons and vivid combat effects.", "Hero and enemy health is shown in glass orbs. Your camera controls stay familiar.", "Created by Rytis with AI-assisted code and original procedural artwork.", "Original synthesized achievement chime. Voice attribution and licenses ship with the game."]:
+		var line=label(text,20);line.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;box.add_child(line)
+	box.add_child(button("BACK",start_menu,true));box.get_child(box.get_child_count()-1).grab_focus()
