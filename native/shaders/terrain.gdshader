@@ -1,4 +1,5 @@
 shader_type spatial;
+uniform bool red_moon=false;
 render_mode diffuse_toon;
 uniform sampler2D t0:source_color,filter_linear_mipmap,repeat_enable;
 uniform sampler2D t1:source_color,filter_linear_mipmap,repeat_enable;
@@ -41,5 +42,6 @@ void fragment(){
  float a=atan(p.z,p.x);
  float coast=344.0+24.0*sin(3.0*(a+phase))+14.0*sin(5.0*(a-phase))+8.0*cos(7.0*(a+phase*.5));
  paint=mix(paint,vec3(.075,.061,.043),smoothstep(coast-22.0,coast-3.0,length(p.xz)));
+ if(red_moon) paint=vec3(.16,.045,.027)*(0.7+texture(t2,uv).r*.5);
  ALBEDO=mix(paint,paint*1.06+vec3(.012,.008,.002),path*.4);ROUGHNESS=1.0;SPECULAR=0.0;
 }

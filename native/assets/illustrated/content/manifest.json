@@ -2772,6 +2772,24 @@
     "sha256": "4c61f9fb7aebcc15ad3f978908725b0595f17ce985f2e5483e0ecb1eb03be4ce"
   },
   {
+    "id": "rebound-gear-item",
+    "path": "res://assets/illustrated/content/rebound-gear-item.svg",
+    "semantic": "slamRecovery",
+    "shape": -1,
+    "condition": "item",
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "af623882dae225496ffb4266ac06a0b09d46ff995c97ba73ba20f94908e51cd8"
+  },
+  {
+    "id": "rebound-gear-skill",
+    "path": "res://assets/illustrated/content/rebound-gear-skill.svg",
+    "semantic": "slamRecovery",
+    "shape": -1,
+    "condition": "skill",
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "c7700e18d3218dd21dbbeaf9c611ee6ceb28ae061fd7a9129a71087195e4bed5"
+  },
+  {
     "id": "slam-heal-item",
     "path": "res://assets/illustrated/content/slam-heal-item.svg",
     "semantic": "slamHeal",
@@ -6264,6 +6282,326 @@
     "sha256": "ed0582b57dd5cfca9d65e4a8050a8d3e1e594545189b206580848415d5817976"
   },
   {
+    "id": "augment-eclipse-damage",
+    "path": "res://assets/illustrated/content/augment-eclipse-damage.svg",
+    "semantic": "augment-eclipse-damage",
+    "shape": 0,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "de14cdd15b97878037f31b9517e82e2af6812e347994752705850dda17895bf3"
+  },
+  {
+    "id": "augment-eclipse-rate",
+    "path": "res://assets/illustrated/content/augment-eclipse-rate.svg",
+    "semantic": "augment-eclipse-rate",
+    "shape": 1,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "40ce2e278045c6d86dd861b48656976be2edd51ddc10d7bdbe498fa0f45e7ccc"
+  },
+  {
+    "id": "augment-eclipse-speed",
+    "path": "res://assets/illustrated/content/augment-eclipse-speed.svg",
+    "semantic": "augment-eclipse-speed",
+    "shape": 2,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "3c387e51f020f107c900d7f5237e7abb9dad977588424a5d9834ac3d75d44dfc"
+  },
+  {
+    "id": "augment-eclipse-regen",
+    "path": "res://assets/illustrated/content/augment-eclipse-regen.svg",
+    "semantic": "augment-eclipse-regen",
+    "shape": 3,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "8a641d4f2aab8376623d26bf598176b7f1513db044ae3e5294fefd396d30bcae"
+  },
+  {
+    "id": "augment-eclipse-armor",
+    "path": "res://assets/illustrated/content/augment-eclipse-armor.svg",
+    "semantic": "augment-eclipse-armor",
+    "shape": 4,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "e2c6e7d9ef5f4fed726ac0669ec6f0020af4d4c826ca8a8daa0fd2eff52333ac"
+  },
+  {
+    "id": "augment-eclipse-dodge",
+    "path": "res://assets/illustrated/content/augment-eclipse-dodge.svg",
+    "semantic": "augment-eclipse-dodge",
+    "shape": 5,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "691ff1a10da87ae9ce87bbdf532be11117e59c90b846fbd0a8b5fe377257cb2b"
+  },
+  {
+    "id": "augment-eclipse-crit",
+    "path": "res://assets/illustrated/content/augment-eclipse-crit.svg",
+    "semantic": "augment-eclipse-crit",
+    "shape": 6,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "f08384cec9daf25e8502189435690179407c0118abb9e24e6d1ff82d093fbf36"
+  },
+  {
+    "id": "augment-eclipse-critPower",
+    "path": "res://assets/illustrated/content/augment-eclipse-critPower.svg",
+    "semantic": "augment-eclipse-critPower",
+    "shape": 7,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "1aec6d3a871a4c9f0beae5f276ba42cfb20c0e3dd26888b1e7aa50ac8c475404"
+  },
+  {
+    "id": "augment-eclipse-range",
+    "path": "res://assets/illustrated/content/augment-eclipse-range.svg",
+    "semantic": "augment-eclipse-range",
+    "shape": 8,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "3031bbea2f49d361a0040f848f215654818bcb4db38491329122f361511a8634"
+  },
+  {
+    "id": "augment-eclipse-projectileSpeed",
+    "path": "res://assets/illustrated/content/augment-eclipse-projectileSpeed.svg",
+    "semantic": "augment-eclipse-projectileSpeed",
+    "shape": 9,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "0dd7de3a8d00c4d4349a981cf1fcaec178cc37a10059b7ab582b7beb7c65b1cd"
+  },
+  {
+    "id": "augment-eclipse-size",
+    "path": "res://assets/illustrated/content/augment-eclipse-size.svg",
+    "semantic": "augment-eclipse-size",
+    "shape": 10,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "37993fef03c4e448997ade10aaa6e98055f85c713e71e58c662b23a253bbe3df"
+  },
+  {
+    "id": "augment-eclipse-knockback",
+    "path": "res://assets/illustrated/content/augment-eclipse-knockback.svg",
+    "semantic": "augment-eclipse-knockback",
+    "shape": 11,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "950896c14e286730b8ba4e9927afbc7ca140a8ebea4defcfcfb0a668d7712704"
+  },
+  {
+    "id": "augment-eclipse-lifesteal",
+    "path": "res://assets/illustrated/content/augment-eclipse-lifesteal.svg",
+    "semantic": "augment-eclipse-lifesteal",
+    "shape": 12,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "2fa6eb9c347285c65c8b37073434cda9a281bb89ca5cf5b8b653cb3f0854fee7"
+  },
+  {
+    "id": "augment-eclipse-bossDamage",
+    "path": "res://assets/illustrated/content/augment-eclipse-bossDamage.svg",
+    "semantic": "augment-eclipse-bossDamage",
+    "shape": 13,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "c89efdd243ba607ca7d42e197819ecfe9b8fb3d17c7f7798fcf5d17aba1744d4"
+  },
+  {
+    "id": "augment-eclipse-xpGain",
+    "path": "res://assets/illustrated/content/augment-eclipse-xpGain.svg",
+    "semantic": "augment-eclipse-xpGain",
+    "shape": 14,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "3df5852ed2c5f042bad6426a62197328fcdfadd6d0f8d6ac1dfc0ca8b0d12ffb"
+  },
+  {
+    "id": "augment-eclipse-goldGain",
+    "path": "res://assets/illustrated/content/augment-eclipse-goldGain.svg",
+    "semantic": "augment-eclipse-goldGain",
+    "shape": 15,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "e55921842ff86dfa6077926b6e5784d5ecdbf86e3acac24ce8fed32bc76b1ecc"
+  },
+  {
+    "id": "augment-eclipse-pickup",
+    "path": "res://assets/illustrated/content/augment-eclipse-pickup.svg",
+    "semantic": "augment-eclipse-pickup",
+    "shape": 16,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "119162fac6c90f68268a22f883d0d4a26448b328da0e69cffa6f68ca2834e7fd"
+  },
+  {
+    "id": "augment-eclipse-turretDamage",
+    "path": "res://assets/illustrated/content/augment-eclipse-turretDamage.svg",
+    "semantic": "augment-eclipse-turretDamage",
+    "shape": 17,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "76f7ed823f3ba8a5d45fae59b59b0c0ef7207812bd0509ea3e3838f71e3c0bd4"
+  },
+  {
+    "id": "augment-eclipse-turretRate",
+    "path": "res://assets/illustrated/content/augment-eclipse-turretRate.svg",
+    "semantic": "augment-eclipse-turretRate",
+    "shape": 18,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "97e5ba3418fc893906e1689c79b7327913fb9083c78b5fcac952eadb448653f6"
+  },
+  {
+    "id": "augment-eclipse-turretRange",
+    "path": "res://assets/illustrated/content/augment-eclipse-turretRange.svg",
+    "semantic": "augment-eclipse-turretRange",
+    "shape": 19,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "72f63933450b0c6c714ee98a80cc239d6d6865a075188dc3219c9d6fb36947bb"
+  },
+  {
+    "id": "augment-guardian-damage",
+    "path": "res://assets/illustrated/content/augment-guardian-damage.svg",
+    "semantic": "augment-guardian-damage",
+    "shape": 0,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "1a90204c481c7b76e9f247f785589c65190fd59c633a7d65c83d845195bdb337"
+  },
+  {
+    "id": "augment-guardian-rate",
+    "path": "res://assets/illustrated/content/augment-guardian-rate.svg",
+    "semantic": "augment-guardian-rate",
+    "shape": 1,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "1fd8967e35d2e2294c01f6cbea12f86b1680c7c1fc42e901046bf3aa5cca2843"
+  },
+  {
+    "id": "augment-guardian-speed",
+    "path": "res://assets/illustrated/content/augment-guardian-speed.svg",
+    "semantic": "augment-guardian-speed",
+    "shape": 2,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "2353d0108cb4d99eeba6c48254d21e490f601dad791d1e10db24fa86994e13b6"
+  },
+  {
+    "id": "augment-guardian-regen",
+    "path": "res://assets/illustrated/content/augment-guardian-regen.svg",
+    "semantic": "augment-guardian-regen",
+    "shape": 3,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "2675cad29af13a8122e589061e0686592c25bb45d8de762a0c365ae9c00fd6cc"
+  },
+  {
+    "id": "augment-guardian-armor",
+    "path": "res://assets/illustrated/content/augment-guardian-armor.svg",
+    "semantic": "augment-guardian-armor",
+    "shape": 4,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "cb76dc2860c2de424f4276126f8160e7067fd0a17cda4eb70f051d453474f4d6"
+  },
+  {
+    "id": "augment-guardian-dodge",
+    "path": "res://assets/illustrated/content/augment-guardian-dodge.svg",
+    "semantic": "augment-guardian-dodge",
+    "shape": 5,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "3a60f67e21a286a9a69856856ad361b06c131832ca5f0ed32f886109d00e04ab"
+  },
+  {
+    "id": "augment-guardian-crit",
+    "path": "res://assets/illustrated/content/augment-guardian-crit.svg",
+    "semantic": "augment-guardian-crit",
+    "shape": 6,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "a78968ed3c11153a542caf5e8ae9ed0f36f6512a2944218f99184f434c180c2a"
+  },
+  {
+    "id": "augment-guardian-critPower",
+    "path": "res://assets/illustrated/content/augment-guardian-critPower.svg",
+    "semantic": "augment-guardian-critPower",
+    "shape": 7,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "219088b323ae529753939afd5f1536981db3f679a025ecb9903da33b69211adc"
+  },
+  {
+    "id": "augment-guardian-range",
+    "path": "res://assets/illustrated/content/augment-guardian-range.svg",
+    "semantic": "augment-guardian-range",
+    "shape": 8,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "7a4dc35538d464b7072c2f849e302534311e773bac2f05bb968e86f8dee9b41b"
+  },
+  {
+    "id": "augment-guardian-projectileSpeed",
+    "path": "res://assets/illustrated/content/augment-guardian-projectileSpeed.svg",
+    "semantic": "augment-guardian-projectileSpeed",
+    "shape": 9,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "209751b492f171b3d04e3b09a71208bc407fc8ea9806d27305c66c212cfdb2b7"
+  },
+  {
+    "id": "augment-guardian-size",
+    "path": "res://assets/illustrated/content/augment-guardian-size.svg",
+    "semantic": "augment-guardian-size",
+    "shape": 10,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "707f598f585708aab46e8e9cd0a3cb41ce4e1ce0211fc88c2f11ae5ac08bcab2"
+  },
+  {
+    "id": "augment-guardian-knockback",
+    "path": "res://assets/illustrated/content/augment-guardian-knockback.svg",
+    "semantic": "augment-guardian-knockback",
+    "shape": 11,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "3ad948727504d925c386ceba501a7fafd13cd5ebc7ccd92fc882d6c4f09b7cca"
+  },
+  {
+    "id": "augment-guardian-lifesteal",
+    "path": "res://assets/illustrated/content/augment-guardian-lifesteal.svg",
+    "semantic": "augment-guardian-lifesteal",
+    "shape": 12,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "3b6f81bc24879a96c4fb748bbbb418f71384c572fb2708a16a321001d96cf0a0"
+  },
+  {
+    "id": "augment-guardian-bossDamage",
+    "path": "res://assets/illustrated/content/augment-guardian-bossDamage.svg",
+    "semantic": "augment-guardian-bossDamage",
+    "shape": 13,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "07152f36013c2c46fce8a6689e3d73ec5b136e6953c6be3b3abe29aeed78291a"
+  },
+  {
+    "id": "augment-guardian-xpGain",
+    "path": "res://assets/illustrated/content/augment-guardian-xpGain.svg",
+    "semantic": "augment-guardian-xpGain",
+    "shape": 14,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "50b01bfce8320dc969fbb9df265dd79e583d5d99a30c511b1570da3ce3abeec3"
+  },
+  {
+    "id": "augment-guardian-goldGain",
+    "path": "res://assets/illustrated/content/augment-guardian-goldGain.svg",
+    "semantic": "augment-guardian-goldGain",
+    "shape": 15,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "777960d4f215b8caf3db102ea1d503e91449671fddcd492da0947ca765341e12"
+  },
+  {
+    "id": "augment-guardian-pickup",
+    "path": "res://assets/illustrated/content/augment-guardian-pickup.svg",
+    "semantic": "augment-guardian-pickup",
+    "shape": 16,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "c7027d0564575737ac4f51f3d33300c0c328523dcba5333a936218ee3775aaf8"
+  },
+  {
+    "id": "augment-guardian-turretDamage",
+    "path": "res://assets/illustrated/content/augment-guardian-turretDamage.svg",
+    "semantic": "augment-guardian-turretDamage",
+    "shape": 17,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "d45b3cf35ad53ec1f2107098730bb0a4ef63ac40e8420ba1e9a4752b5ac03b5b"
+  },
+  {
+    "id": "augment-guardian-turretRate",
+    "path": "res://assets/illustrated/content/augment-guardian-turretRate.svg",
+    "semantic": "augment-guardian-turretRate",
+    "shape": 18,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "0131a378692e0d0d4844053e4ac844655a517cf7e0bc4c18bc6ebe387dc0291d"
+  },
+  {
+    "id": "augment-guardian-turretRange",
+    "path": "res://assets/illustrated/content/augment-guardian-turretRange.svg",
+    "semantic": "augment-guardian-turretRange",
+    "shape": 19,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "7d61e37724c9dc4ad0d46b13fd2bfd6b1539ad27330e2c87bad9d43ff0c6d6bb"
+  },
+  {
     "id": "flowers",
     "path": "res://assets/illustrated/content/flowers.svg",
     "semantic": "flowers",
@@ -6462,6 +6800,38 @@
     "shape": -1,
     "source": "Original semantic vector geometry; intentional shared effect symbols",
     "sha256": "d8413f8d7797a2b37521a17ffc4e8916cf5829b0a65998a9007b243c0aa6e0f2"
+  },
+  {
+    "id": "ninja-shuriken",
+    "path": "res://assets/illustrated/content/ninja-shuriken.svg",
+    "semantic": "disc",
+    "shape": 5,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "cfe647bd13fc9b45659ee72c2d7f1e8f5cd2fcfb52b989b344cbd0f41119d08b"
+  },
+  {
+    "id": "smoke-censer",
+    "path": "res://assets/illustrated/content/smoke-censer.svg",
+    "semantic": "poison",
+    "shape": 6,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "eaa6e336a0c5734e54ab6dff5b1669d792adf65ae0129bba37f0af646037c19f"
+  },
+  {
+    "id": "bottle-barrage",
+    "path": "res://assets/illustrated/content/bottle-barrage.svg",
+    "semantic": "bomb",
+    "shape": 7,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "16b29bf41a376d8bfbb05b7dfb2e981d21066a3400a2e5186523db69ec1896b0"
+  },
+  {
+    "id": "supra-backfire",
+    "path": "res://assets/illustrated/content/supra-backfire.svg",
+    "semantic": "flame",
+    "shape": 8,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "5162b3190c4b62f57f6507954d0331240f09e9d66b098cfc25dbba87dc89b858"
   },
   {
     "id": "popcorn-repeater",

@@ -61,6 +61,15 @@ static func blast(g: Node3D,point: Vector3,radius: float):
 	root.shards(Color("ff8b23"),9,radius*4.0)
 	root.lamp(g,Color("ff8c28"),5.5,minf(14.0,radius*2.4+2),Vector3.UP*1.4)
 
+static func wave(g: Node3D,point: Vector3,radius: float,color: Color):
+	var root=begin(g,point,.55)
+	if root==null: return
+	var wave=preload("res://scripts/danger_mark.gd").make(g,point,radius,"storm")
+	wave.reparent(root,true)
+	wave.material_override=root.pigment(preload("res://shaders/ink_wave.gdshader"),color)
+	root.shards(color,12,radius*2.5)
+	root.lamp(g,color,4.5,minf(14,radius*2),Vector3.UP)
+
 static func ribbon(points: Array,width: float,camera: Camera3D) -> ArrayMesh:
 	var vertices=PackedVector3Array();var uvs=PackedVector2Array();var indices=PackedInt32Array()
 	for i in range(points.size()):
@@ -74,7 +83,7 @@ static func ribbon(points: Array,width: float,camera: Camera3D) -> ArrayMesh:
 	var arrays=[];arrays.resize(Mesh.ARRAY_MAX);arrays[Mesh.ARRAY_VERTEX]=vertices;arrays[Mesh.ARRAY_TEX_UV]=uvs;arrays[Mesh.ARRAY_INDEX]=indices
 	var mesh=ArrayMesh.new();mesh.add_surface_from_arrays(Mesh.PRIMITIVE_TRIANGLES,arrays);return mesh
 
-static func beam(g: Node3D,from: Vector3,to: Vector3,color: Color,jagged: bool=false):
+static func beam(g: Node3D,from: Vector3,to: Vector3,color: Color,jagged: bool=false,width_scale: float=1.0):
 	if from.distance_squared_to(to)<.001: return
 	var root=begin(g,from,.24 if jagged else .16)
 	if root==null: return
@@ -85,8 +94,8 @@ static func beam(g: Node3D,from: Vector3,to: Vector3,color: Color,jagged: bool=f
 		var t=float(i)/segments;var point=(to-from)*t
 		if jagged and i>0 and i<segments: point+=side*sin(i*2.17)*.70+Vector3.UP*cos(i*3.9)*.22
 		points.append(point)
-	root.mesh_part(ribbon(points,.12 if jagged else .075,g.camera),root.pigment(preload("res://shaders/ink_spark.gdshader"),color))
-	root.mesh_part(ribbon(points,.032 if jagged else .021,g.camera),root.pigment(preload("res://shaders/ink_spark.gdshader"),Color("fff9d4")))
+	root.mesh_part(ribbon(points,(.12 if jagged else .075)*width_scale,g.camera),root.pigment(preload("res://shaders/ink_spark.gdshader"),color))
+	root.mesh_part(ribbon(points,(.032 if jagged else .021)*width_scale,g.camera),root.pigment(preload("res://shaders/ink_spark.gdshader"),Color("fff9d4")))
 	if jagged:
 		root.lamp(g,color,2.4,5,to-from)
 		var sparks=begin(g,to,.27)

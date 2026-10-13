@@ -14,14 +14,16 @@ static func boss_arrived(g,enemy):
 	enemy.freeze=2.5;enemy.contact=3
 	enemy.title=BossBook.entry(int(enemy.boss_id)).name
 	g.boss_name=enemy.title
-	announce(g,enemy.title.to_upper(),("GUARDIAN · " if enemy.get("guardian",false) else "WARDEN · ")+BossBook.entry(int(enemy.boss_id)).role)
+	# Health and identity stay on the creature; attack ground marks carry the warning.
+	g.sound.effect("horn",enemy.node.position)
 	g.explosion_fx(enemy.node.position,8);g.burst(enemy.node.position+Vector3.UP*3,Color("f4cb80"),18)
 
 static func activate(g):
+	if g.realm==3: return
 	if state(g)=="sealed": g.achievement_event("LOCKED_GATE");g.hud.tell("Defeat two wardens or survive until the Eclipse.",4);return
 	if state(g)=="fighting": g.hud.tell("Defeat the portal guardian before travelling.",4);return
 	if state(g)=="cleared":
-		if g.realm==2: g.end_run(true)
+		if g.realm==2: g.enter_realm(3)
 		else: g.enter_realm(g.realm+1)
 		return
 	var before=g.enemies.size();g.spawn_enemy(15,true,g.gate_position,true)
@@ -31,6 +33,8 @@ static func activate(g):
 	g.gate.get_meta("marker").text="GUARDIAN AWAKENED"
 
 static func tick(g):
+	if g.realm==3:
+		preload("res://scripts/final_arena.gd").tick(g);return
 	if g.coop.active and not g.coop.hosting: return
 	if g.realm_time>=600 and not g.events.get("eclipse",false):
 		g.events.eclipse=true;g.events.eclipse_stage=0
@@ -52,8 +56,10 @@ static func tick(g):
 			if g.coop.active: g.coop.broadcast({"type":"hazard","realm":g.realm,"position":g.coop.array(p),"radius":2.2,"delay":1.8,"damage":dmg,"style":"void"})
 
 static func defeated(g,enemy):
+	if g.realm==3 and enemy.get("boss_id",-1)==8:
+		preload("res://scripts/final_arena.gd").defeated(g);return
 	if enemy.get("guardian",false):
 		g.events.guardian_defeated=true;g.gate.get_meta("marker").text="ENTER PORTAL"
-		announce(g,"ISLAND LIBERATED","Return to the portal · "+("Final victory awaits" if g.realm==2 else "Your build continues into the next world"))
+		announce(g,"ISLAND LIBERATED","Return to the portal · "+("The red moon awaits" if g.realm==2 else "Your build continues into the next world"))
 	elif state(g)=="ready":
 		g.gate.get_meta("marker").text="SUMMON GUARDIAN";announce(g,"THE PORTAL AWAKENS","Follow the gold beacon and summon this island's guardian")

@@ -15,6 +15,9 @@ var weapons: WeaponBar
 var control_hints: HBoxContainer
 var hint_device = ""
 var turret_hints = HBoxContainer.new()
+var turret_status: Label
+var slam_status: Label
+var damage_feedback: Control
 var prompt: Label
 var alert: Label
 var toast: Label
@@ -130,12 +133,12 @@ func label(text: String, font_size: int = 18, color: Color = ThemeTokens.INK_RUN
 
 func style(color: Color = ThemeTokens.PAPER_RUNTIME, border: Color = Color("a99070"), radius: int = 3) -> StyleBoxFlat:
 	var box=StyleBoxFlat.new()
-	# Every UI surface is opaque; only the surface colour conveys selection.
+	# Quiet opaque surfaces; focus and rarity use a thin accent edge.
 	box.bg_color=Color(color.r,color.g,color.b,1) if color.get_luminance()<.18 else ThemeTokens.PAPER_RUNTIME.lerp(color,.10)
 	box.border_color=Color(border.r,border.g,border.b,1) if border.a>.7 else Color("b9a58a")
 	box.set_border_width_all(1)
-	box.border_width_bottom=2
-	box.shadow_color=ThemeTokens.SHADOW.color;box.shadow_size=ThemeTokens.SHADOW.size;box.shadow_offset=ThemeTokens.SHADOW.offset
+	box.border_width_bottom=1
+	box.shadow_color=ThemeTokens.SHADOW.color;box.shadow_size=2;box.shadow_offset=ThemeTokens.SHADOW.offset
 	box.set_corner_radius_all(mini(radius,3))
 	box.content_margin_left=ThemeTokens.MARGINS.left
 	box.content_margin_right=ThemeTokens.MARGINS.right
@@ -190,20 +193,20 @@ func setup(owner_game):
 	clock.scale=Vector2.ONE*.75
 	clock.size = Vector2(400,149)
 	root.add_child(clock)
-	var health_panel=PanelContainer.new();health_panel.position=Vector2(32,122);health_panel.custom_minimum_size=Vector2(413,96)
+	var health_panel=PanelContainer.new();health_panel.position=Vector2(32,106);health_panel.custom_minimum_size=Vector2(310,76)
 	health_panel.add_theme_stylebox_override("panel",style(paper,Color("8eac93"),10));root.add_child(health_panel)
 	var health_row=HBoxContainer.new();health_panel.add_child(health_row)
-	health_orb=preload("res://scripts/hud_vessel.gd").new();health_orb.custom_minimum_size=Vector2(76,76);health_row.add_child(health_orb)
+	health_orb=preload("res://scripts/hud_vessel.gd").new();health_orb.custom_minimum_size=Vector2(60,60);health_row.add_child(health_orb)
 	var health_column=VBoxContainer.new();health_column.size_flags_horizontal=Control.SIZE_EXPAND_FILL;health_row.add_child(health_column)
 	health_text=label("",18);health_column.add_child(health_text)
 	shield_text=label("",13,Color("70c9df"));health_column.add_child(shield_text)
 	armor_text=label("",12,ink);health_column.add_child(armor_text)
 	journey_overlay=preload("res://scripts/journey_hud.gd").new();journey_overlay.game=game;journey_overlay.mouse_filter=Control.MOUSE_FILTER_IGNORE;root.add_child(journey_overlay)
-	map_view.position = Vector2(1573,32)
-	map_view.size = Vector2(306,306)
+	map_view.position = Vector2(1633,32)
+	map_view.size = Vector2(246,246)
 	root.add_child(map_view)
 	var header = label("ISLAND MAP",13)
-	header.position = Vector2(1659,13)
+	header.position = Vector2(1690,13)
 	root.add_child(header)
 	var info = PanelContainer.new()
 	info.add_theme_stylebox_override("panel",style())
@@ -221,8 +224,8 @@ func setup(owner_game):
 	xp.add_theme_stylebox_override("fill",style(Color("a5de9d"),Color.TRANSPARENT,3))
 	xp.get_theme_stylebox("fill").bg_color=Color("62c69b");info_box.add_child(xp)
 	coins = label("GOLD  0    BOX PRICE  30",18,ThemeTokens.STAR_GOLD)
-	box_counter=label("",15);box_counter.position=Vector2(32,265);box_counter.add_theme_stylebox_override("normal",style());root.add_child(box_counter)
-	var coins_panel=PanelContainer.new();coins_panel.position=Vector2(32,230);coins_panel.custom_minimum_size=Vector2(413,48)
+	box_counter=label("",15);box_counter.position=Vector2(32,243);box_counter.add_theme_stylebox_override("normal",style());root.add_child(box_counter)
+	var coins_panel=PanelContainer.new();coins_panel.position=Vector2(32,192);coins_panel.custom_minimum_size=Vector2(310,40)
 	coins_panel.add_theme_stylebox_override("panel",style(paper,ThemeTokens.STAR_GOLD,3));root.add_child(coins_panel)
 	coins.add_theme_color_override("font_color",ink);coins_panel.add_child(coins)
 	weapons = WeaponBar.new()
@@ -234,9 +237,11 @@ func setup(owner_game):
 	control_hints.position = Vector2(32,1033)
 	control_hints.add_theme_constant_override("separation",10)
 	root.add_child(control_hints)
-	turret_hints.position=Vector2(1400,980)
+	turret_hints.position=Vector2(1070,955)
 	root.add_child(turret_hints)
-	add_prompts(turret_hints,[["T","LB","Place"],["G","RB","Next turret"]])
+	turret_status=label("",14,ThemeTokens.STAR_GOLD);turret_hints.add_child(turret_status)
+	slam_status=label("",14,ThemeTokens.STAR_GOLD);slam_status.position=Vector2(825,940);root.add_child(slam_status)
+	damage_feedback=preload("res://scripts/damage_feedback.gd").new();damage_feedback.game=game;damage_feedback.mouse_filter=Control.MOUSE_FILTER_IGNORE;root.add_child(damage_feedback)
 	prompt = label("",18,ThemeTokens.BIOME_ACCENTS.verdant.petal)
 	prompt.position = Vector2(540,682);prompt.size=Vector2(840,110)
 	prompt.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;prompt.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
@@ -383,7 +388,7 @@ func update(delta: float):
 	_ach_note_panel.visible=_ach_note_active and not modal.visible
 	level_plate.visible=game.mode=="level_reveal"
 	level_plate.text="LEVEL %d  ·  NEW POWER!" % game.level
-	biome_label.text=RealmWorld.BIOMES[game.current_biome]
+	biome_label.text="The Red Moon" if game.realm==3 else RealmWorld.BIOMES[game.current_biome]
 	var harvest_lines=[]
 	for id in game.harvest_buffs:
 		var entry=HarvestBook.TYPES[int(id)]
@@ -417,7 +422,7 @@ func update(delta: float):
 		armor_text.visible=true
 	else:
 		armor_text.visible=false
-	clock.seconds = maxf(0,600.0-game.realm_time)
+	clock.seconds = game.realm_time if game.realm==3 else maxf(0,600.0-game.realm_time)
 	clock.realm = game.realm
 	clock.bosses = game.realm_bosses
 	clock.queue_redraw()
@@ -430,12 +435,17 @@ func update(delta: float):
 	coins.text = "%d gold  ·  Chest %d  ·  %d left" % [game.gold,game.rules.chest_price(game.paid_chests,game.stats.discount),game.chests.filter(func(c):return not c.opened and not c.get("destroyed",false)).size()]
 	box_counter.visible=false
 	weapons.refresh()
-	turret_hints.visible=not modal.visible and game.equipped.any(func(w):return w.turret)
+	slam_status.visible=not modal.visible and game.mode=="playing"
+	slam_status.text="[%s] SLAM · %s" % [ControlBindings.display(game.career.data.settings,"slam","controller" if game.input_kind=="xbox" else "keyboard"),"READY" if game.slam_cooldown<=0 else "%.1fs" % game.slam_cooldown]
+	var turrets=game.equipped.filter(func(w):return w.turret)
+	turret_hints.visible=not modal.visible and not turrets.is_empty()
+	if turret_hints.visible:
+		var selected=turrets[game.selected_turret%turrets.size()];var device="controller" if game.input_kind=="xbox" else "keyboard"
+		var readiness="READY" if selected.deploy_clock<=0 else "%.1fs" % selected.deploy_clock
+		turret_status.text="%s · %s\n[%s] Deploy   [%s] Switch turret" % [selected.name,readiness,ControlBindings.display(game.career.data.settings,"deploy",device),ControlBindings.display(game.career.data.settings,"next_turret",device)]
 	if hint_device != game.input_kind:
 		hint_device = game.input_kind;hints_until=game.elapsed+8
-		for child in turret_hints.get_children(): turret_hints.remove_child(child);child.queue_free()
 		var device="controller" if game.input_kind=="xbox" else "keyboard"
-		turret_hints.add_child(label(ControlBindings.display(game.career.data.settings,"deploy",device)+" · Place   "+ControlBindings.display(game.career.data.settings,"next_turret",device)+" · Next turret",12))
 		for child in control_hints.get_children():
 			control_hints.remove_child(child)
 			child.queue_free()
@@ -445,7 +455,7 @@ func update(delta: float):
 	prompt.visible=not modal.visible and not game.interaction_hint().is_empty()
 	prompt.text = game.interaction_hint().replace("E / X", ControlBindings.display(game.career.data.settings,"interact","controller" if game.input_kind=="xbox" else "keyboard"))
 	alert.visible=false
-	alert.text = "☠  %s" % game.boss_name if game.boss_active() else ""
+	alert.text = ""
 	if game.coop.frozen() and game.mode=="playing": alert.text="PARTY PAUSED  ·  A FRIEND IS CHOOSING";alert.visible=true
 	map_view.configure(game.world.seed_value,game.world.realm)
 	map_view.interactables.clear()
@@ -595,7 +605,7 @@ func start_menu(focus_hero: bool=false):
 	bio.add_child(description)
 	var perk=label(game.hero.perk,19,ThemeTokens.EARTH_TERRACOTTA);bio.add_child(perk)
 	var perk_description=label(game.hero.description,15);perk_description.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;bio.add_child(perk_description)
-	var bonuses=game.hero.effects.map(func(effect):return game.rules.describe(effect))
+	var bonuses=game.hero.effects.filter(func(effect):return effect.key not in ["speed","jumpHeight"]).map(func(effect):return game.rules.describe(effect))
 	var bonus_text=label("  •  ".join(bonuses),13);bonus_text.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;bio.add_child(bonus_text)
 	var starter=HBoxContainer.new()
 	var icon=PowerIcon.new()
@@ -609,7 +619,7 @@ func start_menu(focus_hero: bool=false):
 	var mechanics=label(WeaponDetails.describe(game.hero.weapon),16)
 	mechanics.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	bio.add_child(mechanics)
-	var rules=label("3 weapon slots   •   3 worlds   •   One choice per chest",16)
+	var rules=label("3 weapon slots   •   3 worlds + Red Moon   •   One choice per chest",16)
 	rules.position=Vector2(565,938)
 	rules.add_theme_color_override("font_color",Color("d6e2d4"))
 	modal.add_child(rules)
@@ -617,13 +627,13 @@ func start_menu(focus_hero: bool=false):
 	footer.position=Vector2(120,997)
 	modal.add_child(footer)
 	add_prompts(footer,[["↑↓","D-pad","Navigate"],["Enter","A","Select"]])
-	var version=label("DEVELOPMENT ALPHA  /  NATIVE PC",12)
-	version.position=Vector2(1440,1026)
+	var version=label("v%s  ·  BUILD %d  ·  DEVELOPMENT ALPHA" % [ProjectSettings.get_setting("application/config/version"),ProjectSettings.get_setting("application/config/build_number",0)],14)
+	version.name="ReleaseVersion";version.position=Vector2(1280,1026);version.size=Vector2(570,28);version.horizontal_alignment=HORIZONTAL_ALIGNMENT_RIGHT
 	version.add_theme_color_override("font_color",Color("b4c9bc"))
 	modal.add_child(version)
 	if focus_hero and is_instance_valid(selected_hero):
 		selected_hero.grab_focus()
-		hero_scroll.ensure_control_visible.call_deferred(selected_hero)
+		reveal_selection.call_deferred(hero_scroll,selected_hero)
 	else: menu_start.grab_focus()
 
 func coop_menu():
@@ -672,7 +682,7 @@ func coop_menu():
 	help.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;box.add_child(help)
 	box.add_child(button("Back",start_menu))
 	update_lobby_controls()
-	if selected!=null: selected.grab_focus();scroll.ensure_control_visible.call_deferred(selected)
+	if selected!=null: selected.grab_focus();reveal_selection.call_deferred(scroll,selected)
 
 func update_lobby_controls():
 	if not is_instance_valid(lobby_ready): return
@@ -970,7 +980,7 @@ func settings_menu():
 		row.add_child(slider)
 		box.add_child(row)
 	var genres = HBoxContainer.new()
-	for genre in ["metal","cyber"]: genres.add_child(button("HEAVY METAL" if genre == "metal" else "CYBERPUNK",func(): game.career.data.settings.genre=genre;game.career.dirty=true;game.sound.start(randi())))
+	for genre in ["metal","cyber"]: genres.add_child(button("PHONK" if genre == "metal" else "PHONK SOFT",func(): game.career.data.settings.genre=genre;game.career.dirty=true;game.sound.start(randi())))
 	box.add_child(genres)
 	var rumble = CheckButton.new()
 	rumble.text = "Xbox vibration"
@@ -1126,7 +1136,13 @@ func update_skill_strip():
 
 func about_menu():
 	var box=open("ABOUT WILDFORGE", "Grow strange. Fight hard. Start again.")
-	box.add_child(label("Version "+str(ProjectSettings.get_setting("application/config/version")),24,ThemeTokens.STAR_GOLD))
-	for text in ["21 heroes · 65 weapons · 696 upgrades · 6 biomes · 8 rotating bosses", "Original angular artwork, engraved icons and vivid combat effects.", "Hero and enemy health is shown in glass orbs. Your camera controls stay familiar.", "Created by Rytis with AI-assisted code and original procedural artwork.", "Original synthesized achievement chime. Voice attribution and licenses ship with the game."]:
+	box.add_child(label("Version %s · Build %d" % [ProjectSettings.get_setting("application/config/version"),ProjectSettings.get_setting("application/config/build_number",0)],24,ThemeTokens.STAR_GOLD))
+	for text in ["25 heroes · 69 weapons · 738 upgrades · 6 biomes · 9 bosses", "Original angular artwork, engraved icons and vivid combat effects.", "Hero and enemy health is shown in glass orbs. Your camera controls stay familiar.", "Created by Rytis with AI-assisted code and original procedural artwork.", "Original synthesized achievement chime. Voice attribution and licenses ship with the game."]:
 		var line=label(text,20);line.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;box.add_child(line)
 	box.add_child(button("BACK",start_menu,true));box.get_child(box.get_child_count()-1).grab_focus()
+
+func reveal_selection(scroll: ScrollContainer,selected: Control):
+	# The rebuilt list needs its container layout before its scroll range is valid.
+	await get_tree().process_frame
+	await get_tree().process_frame
+	if is_instance_valid(scroll) and is_instance_valid(selected): scroll.ensure_control_visible(selected)

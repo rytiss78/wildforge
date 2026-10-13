@@ -10,14 +10,18 @@ func bake():
 	for prefix in ["creature","prop"]:
 		for biome in range(6):
 			if slice and biome!=0: continue
-			for index in range(6):
+			for index in range(7 if prefix=="creature" else 6):
 				var id="%s_%d_%d" % [prefix,biome,index]
 				var scene=load("res://assets/style3d/"+id+".glb").instantiate();stage.add_child(scene)
 				var nodes=[];PaintedBatch.collect(scene,nodes)
 				if prefix=="creature":
 					var orb=scene.find_child("GlassCore",true,false) as MeshInstance3D
-					metadata[id]={"core_position":[orb.global_position.x,orb.global_position.y,orb.global_position.z],"radius":orb.mesh.get_aabb().size.y*.5}
-					ResourceSaver.save(orb.mesh,"res://assets/style3d/baked/"+id+"-core.res")
+					var core_mesh=orb.mesh
+					if not orb.global_basis.get_scale().is_equal_approx(Vector3.ONE):
+						var pivot=Node3D.new();stage.add_child(pivot);pivot.global_position=orb.global_position
+						core_mesh=PaintedBatch.merge(pivot,[orb]);pivot.free()
+					metadata[id]={"core_position":[orb.global_position.x,orb.global_position.y,orb.global_position.z],"radius":core_mesh.get_aabb().size.y*.5}
+					ResourceSaver.save(core_mesh,"res://assets/style3d/baked/"+id+"-core.res")
 					nodes=nodes.filter(func(node):return node.name!="GlassCore")
 				var merged=PaintedBatch.merge(scene,nodes)
 				var importer=ImporterMesh.new();importer.add_surface(Mesh.PRIMITIVE_TRIANGLES,merged.surface_get_arrays(0));importer.generate_lods(60,25,[])

@@ -2,8 +2,8 @@ extends RefCounted
 
 static func run(game) -> Dictionary:
 	var checks={};var data=game.rules.data
-	checks.content_count=data.loot.size()==696 and data.weapons.size()==65 and data.augments.size()==360
-	checks.unique_ids=(data.loot+data.weapons).map(func(i):return i.id).size()==761
+	checks.content_count=data.loot.size()==738 and data.weapons.size()==69 and data.augments.size()==400
+	checks.unique_ids=(data.loot+data.weapons).map(func(i):return i.id).size()==807
 	var positions=game.chests.map(func(c):return c.node.position)
 	var per_biome=[0,0,0,0,0,0];var spacing=1000.0
 	for p in positions:
@@ -21,7 +21,7 @@ static func run(game) -> Dictionary:
 			var code=hash(texture.get_image().get_data())
 			augment_icons=augment_icons and not hashes.has(code);hashes[code]=true
 	checks.catalogue_art_loads=icons
-	checks.distinct_condition_stat_art=augment_icons and hashes.size()==360
+	checks.distinct_condition_stat_art=augment_icons and hashes.size()==400
 	for kind in ["item","skill","weapon"]:
 		for sample in range(12):
 			var choices=game.rules.offers(kind,0,false,game.stats,game.equipped)
@@ -53,7 +53,7 @@ static func run(game) -> Dictionary:
 		if game.projectiles.size()+game.pools.size()+game.hazards.size()+game.melee_attacks.size()>before or enemy.hp<health: exercised+=1
 		game.clear_entities()
 		await game.get_tree().process_frame
-	checks.weapon_branches=exercised==40
+	checks.weapon_branches=exercised==44
 	game.equipped=originals;game.avatar.finish_melee();game.avatar.sync_equipment(game.equipped)
 	# A sheet reviews both conditional object/glyph combinations and behavioral weapon badges.
 	if DisplayServer.get_name()!="headless":

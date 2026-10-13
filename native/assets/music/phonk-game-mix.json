@@ -1,0 +1,188 @@
+{
+  "phonk_drums.wav": {
+    "seconds": 6.666666666666667,
+    "peak": 0.6067358307967798,
+    "rms": 0.07018457237974732,
+    "sha256": "3de47596147d4101acce5513cb3df537658e49324395aaf9f62c5ded0587c0de"
+  },
+  "phonk_boss_drums.wav": {
+    "seconds": 6.666666666666667,
+    "peak": 0.8675011452803625,
+    "rms": 0.08556718060062649,
+    "sha256": "a3ebc7d123e5083cce0a093051c745cf0e7539b163dbf92791d004b8b6337347"
+  },
+  "phonk_bass_0.wav": {
+    "seconds": 6.666666666666667,
+    "peak": 0.14090558191019661,
+    "rms": 0.07466794738862793,
+    "sha256": "746978efbb8331b89cd6d0084dae1c795a297f576f3ef87b2341c482f2c90595"
+  },
+  "phonk_bell_0.wav": {
+    "seconds": 6.666666666666667,
+    "peak": 0.11507895663428244,
+    "rms": 0.014605341964884444,
+    "sha256": "2267f999a0a46bb7e6dbbd8b2e3d2fb228b3edcacf965b0edac9cc10ad7b0d05"
+  },
+  "phonk_bass_1.wav": {
+    "seconds": 6.666666666666667,
+    "peak": 0.14088925610982328,
+    "rms": 0.07466955611925362,
+    "sha256": "22b0a2a0d4617aee05d2547840922863c938297f292eec0e1b101e0f4c55c98a"
+  },
+  "phonk_bell_1.wav": {
+    "seconds": 6.666666666666667,
+    "peak": 0.11507666054044134,
+    "rms": 0.0146091063649971,
+    "sha256": "1f1c4acfbb82b677a32fc3a9411f91478718f24106ffb19385eb31b30da1e3d8"
+  },
+  "phonk_bass_2.wav": {
+    "seconds": 6.666666666666667,
+    "peak": 0.14090558191019661,
+    "rms": 0.07466794738862793,
+    "sha256": "df8b9db356852a0f08bcff9a2d6a2c2a1bb347604954d68240228e8a4b1c35a5"
+  },
+  "phonk_bell_2.wav": {
+    "seconds": 6.666666666666667,
+    "peak": 0.11507895663428244,
+    "rms": 0.014605341964884444,
+    "sha256": "60b55dac5e221b5bc74b3225f9629986c4192cfde0c8e5cc535afd2921d8d7fd"
+  },
+  "phonk_bass_3.wav": {
+    "seconds": 6.666666666666667,
+    "peak": 0.14088925610982328,
+    "rms": 0.07466955611925363,
+    "sha256": "a7deeddb34673cb5687b0a1030646c5a01059898107aa053422faa1ea8af320c"
+  },
+  "phonk_bell_3.wav": {
+    "seconds": 6.666666666666667,
+    "peak": 0.11507666054044134,
+    "rms": 0.0146091063649971,
+    "sha256": "3411fa155d6593a6cab91962057283404dd59b37ef064c90560ae06239c1ae83"
+  },
+  "phonk_bass_4.wav": {
+    "seconds": 6.666666666666667,
+    "peak": 0.1409585713248675,
+    "rms": 0.07466611503821535,
+    "sha256": "23d8c948123447547449ad929cd91e60b9ba70897b11b85b8196fbb815d106a4"
+  },
+  "phonk_bell_4.wav": {
+    "seconds": 6.666666666666667,
+    "peak": 0.11521593847489706,
+    "rms": 0.014598304683034604,
+    "sha256": "7a1dbb298b2da056afd0724027a6088824983fdcedb98b40aaa158beda9b7291"
+  },
+  "phonk_bass_5.wav": {
+    "seconds": 6.666666666666667,
+    "peak": 0.140883478501336,
+    "rms": 0.07466859808919689,
+    "sha256": "2bfd5ea3827b80ab9846a55f76d3bd02622af4d026b9ea81d396e3a81e875bbe"
+  },
+  "phonk_bell_5.wav": {
+    "seconds": 6.666666666666667,
+    "peak": 0.115073571549993,
+    "rms": 0.014616180835798036,
+    "sha256": "7e939963558b634fbc35553a1a20947cd9f2f37a288604cfe9b9e5421938373b"
+  },
+  "phonk_air_0.wav": {
+    "seconds": 6.666666666666667,
+    "peak": 0.03607420540484279,
+    "rms": 0.015826174801638997,
+    "sha256": "160c654093b8460c50675f5ece6a0881c78977dd1c0e70780a6cc7c2e8fb211d"
+  },
+  "phonk_air_1.wav": {
+    "seconds": 6.666666666666667,
+    "peak": 0.036071371746100825,
+    "rms": 0.01582733709533662,
+    "sha256": "efc5632fa938307a88cf985cd011762177435762c0dfd5f3fb7426a359ff3580"
+  },
+  "phonk_air_2.wav": {
+    "seconds": 6.666666666666667,
+    "peak": 0.036065863271923335,
+    "rms": 0.01582693528671172,
+    "sha256": "5e49e87cf882d63457da6164c321834fbfb9a5043de43bba854799508962f361"
+  },
+  "eclipse_game_mix.wav": {
+    "seconds": 116.40163265306123,
+    "peak": 0.88,
+    "rms": 0.21494103264886386,
+    "sha256": "4b430b2f111e4f7be12e8f2bb3ca843236f60858f89784808132f8c891d36860"
+  },
+  "slam.wav": {
+    "seconds": 0.65,
+    "peak": 0.5767097184531682,
+    "rms": 0.08340520015449053,
+    "sha256": "0dd762079d880f7ffd41078ce44573e82796ce53933c4705d9b44b5c55268afe"
+  },
+  "dash.wav": {
+    "seconds": 0.35,
+    "peak": 0.26485007272096295,
+    "rms": 0.06263497108856152,
+    "sha256": "b223ec8eb744c70de2dc30d59c2b9f61426b93ed457798207eb6c69ddc12ec0b"
+  },
+  "hit.wav": {
+    "seconds": 0.35,
+    "peak": 0.3398782223357916,
+    "rms": 0.040642473466486397,
+    "sha256": "ae4c536007f27abc209b98edc22a4a9967cb9966eb99c936165858fac2616d9b"
+  },
+  "shield-hit.wav": {
+    "seconds": 0.35,
+    "peak": 0.42568564957672494,
+    "rms": 0.04090767033624647,
+    "sha256": "57adc30199850eb6b0d27ae269a606f11c0a090550eb02470544d5c38384aaba"
+  },
+  "deploy.wav": {
+    "seconds": 0.22,
+    "peak": 0.2652507179695901,
+    "rms": 0.05325096284081457,
+    "sha256": "7c56995d4273c67056bf43fc75b7c256f6bf6fd169ed4ef14542c41a360bc1ce"
+  },
+  "switch.wav": {
+    "seconds": 0.22,
+    "peak": 0.2749817637957625,
+    "rms": 0.053371540772943475,
+    "sha256": "44c1e955185706d96c5492a6f8f483a318e3662f23fc92ef714dedac56f6aa91"
+  },
+  "jump.wav": {
+    "seconds": 0.22,
+    "peak": 0.3126444204435667,
+    "rms": 0.06253023495220796,
+    "sha256": "afcbf06f9e8bd0c23c25cd1f86bdf5617b63f8b9db38dd7f563783959d4e628f"
+  },
+  "land.wav": {
+    "seconds": 0.35,
+    "peak": 0.5838202881946951,
+    "rms": 0.11418762300651275,
+    "sha256": "d15f5876a42ee252abf09ac6f3c21113443089323b090c1525a7b0ea5355f222"
+  },
+  "freeze.wav": {
+    "seconds": 0.35,
+    "peak": 0.2532705847378682,
+    "rms": 0.04221921678767283,
+    "sha256": "557e85ef2a4008191dff62e6a9f0b5e67e48bddde303b4b2fb432bc463ac8219"
+  },
+  "heal.wav": {
+    "seconds": 0.35,
+    "peak": 0.2643539738424939,
+    "rms": 0.042192568248523854,
+    "sha256": "6107a2966b53940492680a0834193e6f494da731c2e28bbe2fd1774f598b6dc9"
+  },
+  "blast.wav": {
+    "seconds": 0.65,
+    "peak": 0.49629524152027715,
+    "rms": 0.08356429769582115,
+    "sha256": "1d790e6c4124301afb0c3ea1462e18c44c5622b3396b811b4ffce738881e8e14"
+  },
+  "nova.wav": {
+    "seconds": 0.65,
+    "peak": 0.2524228854630643,
+    "rms": 0.03103124582515784,
+    "sha256": "b391fa1c0f092c4dbdd1aa983603334538b6b1e5c9a9d4bed3d761aacdf3b3a6"
+  },
+  "provenance": {
+    "phonk": "Original deterministic composition and synthesis; no external samples or Eclipse melody.",
+    "eclipse": "EQ remaster of the existing user-supplied-source MIDI arrangement, not a new original composition. Original WAV retained.",
+    "eclipse_source_sha256": "99308d7081a3d0f875e60f2db4832609bc98794104f9282950b872d12e775cc6",
+    "runtime_eclipse_gain_db": -8
+  }
+}

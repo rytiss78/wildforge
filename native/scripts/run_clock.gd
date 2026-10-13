@@ -11,7 +11,7 @@ func _draw():
 	var frame_time=Time.get_ticks_msec()*TAU/30000.0
 	var plate=StyleBoxFlat.new();plate.bg_color=ThemeTokens.INK;plate.set_corner_radius_all(2);plate.border_color=ThemeTokens.STAR_GOLD;plate.set_border_width_all(1)
 	# Warning glow when time is low
-	if seconds<60:
+	if seconds<60 and realm<3:
 		var pulse=.25+sin(frame_time*3)*.12
 		plate.shadow_color=Color(1,.25,.15,pulse);plate.shadow_size=12;plate.shadow_offset=Vector2.ZERO
 		draw_style_box(plate,Rect2(0,0,339,82))
@@ -19,7 +19,7 @@ func _draw():
 	else:
 		plate.shadow_color=ThemeTokens.SHADOW.color;plate.shadow_size=ThemeTokens.SHADOW.size;plate.shadow_offset=ThemeTokens.SHADOW.offset
 		draw_style_box(plate,Rect2(0,0,339,82))
-	draw_string(font,Vector2(14,40),text,HORIZONTAL_ALIGNMENT_LEFT,-1,34,Color("ffdf9a") if seconds<60 else Color("fff8de"))
-	draw_string(font,Vector2(137,28),"WORLD %d / 3" % (realm+1),HORIZONTAL_ALIGNMENT_LEFT,-1,17,Color("c9d7c4"))
-	draw_string(font,Vector2(137,54),"Wardens %d / 2" % mini(bosses,2),HORIZONTAL_ALIGNMENT_LEFT,-1,17,Color("c9d7c4"))
+	draw_string(font,Vector2(14,40),text,HORIZONTAL_ALIGNMENT_LEFT,-1,34,Color("ffdf9a") if seconds<60 and realm<3 else Color("fff8de"))
+	draw_string(font,Vector2(137,28),"RED MOON" if realm==3 else "WORLD %d / 3" % (realm+1),HORIZONTAL_ALIGNMENT_LEFT,-1,17,Color("c9d7c4"))
+	draw_string(font,Vector2(137,54),"SURVIVE" if realm==3 else "Wardens %d / 2" % mini(bosses,2),HORIZONTAL_ALIGNMENT_LEFT,-1,17,Color("c9d7c4"))
 	draw_rect(Rect2(14,67,310,4),Color("42545f"));draw_rect(Rect2(14,67,310*clampf(seconds/duration,0,1),4),Color("dfb869"))

@@ -35,10 +35,13 @@ var chest_voice=AudioStreamPlayer.new()
 var ui_voice=AudioStreamPlayer.new()
 var achievement_voice=AudioStreamPlayer.new()
 var weapon_samples={}
+var effect_samples={}
 const WEAPON_SFX=["gun","shotgun","turret","rocket","rocket-turret","bomb","meteor","rail","lightning","lightning-turret","ice","poison","gravity","harpoon","boomerang","disc","horn","bubble","saw","flame","fire-turret"]
 
 func setup(options: Dictionary):
 	settings = options
+	for id in ["slam","dash","hit","shield-hit","deploy","switch","jump","land","freeze","heal","blast","nova"]:
+		effect_samples[id]=load("res://assets/audio/effects/"+id+".wav")
 	for id in WEAPON_SFX:
 		weapon_samples[id]=load("res://assets/audio/weapons/"+id+".wav")
 	for id in ["saw","flame","fire-turret"]:
@@ -100,18 +103,16 @@ func play_phrase():
 	var riff = arrangement[phrase % arrangement.size()]
 	var volume = 0.0 if eclipse_active else float(settings.music)
 	for player in [drums,rhythm,lead,synth]: player.volume_db = linear_to_db(maxf(.0001, volume))
-	drums.stream = stream(genre + ("_boss_drums" if boss else "_drums"))
-	rhythm.stream = stream(("metal_" + str(riff)) if genre == "metal" else ("cyber_" + str(riff % 4)))
-	lead.stream = stream("lead_" + str(riff % 4))
-	synth.stream = stream("pad")
-	lead.volume_db -= 80 if genre=="metal" else 4 if boss or riff >= 2 else 12
-	# 32-phrase arc: leave breathing room between combat-heavy sections.
+	drums.stream = stream("phonk_boss_drums" if boss else "phonk_drums")
+	rhythm.stream = stream("phonk_bass_"+str(riff))
+	lead.stream = stream("phonk_bell_"+str(riff))
+	synth.stream = stream("phonk_air_0")
+	drums.volume_db-=7 if genre=="cyber" else 3
+	rhythm.volume_db-=5
+	lead.volume_db-=12 if genre=="cyber" else 7
+	synth.volume_db-=24
 	var section=(phrase/4)%8
-	if not boss:
-		if section in [0,4]: drums.volume_db-=9;rhythm.volume_db-=10
-		if section in [2,6]: lead.volume_db=linear_to_db(maxf(.0001,volume))-12
-		if section==7: rhythm.volume_db-=5
-	synth.volume_db -= 16
+	if not boss and section in [0,4]: drums.volume_db-=4;lead.volume_db-=4
 	for player in [drums,rhythm,lead,synth]: player.play()
 
 func tick(delta: float, playing: bool, has_boss: bool):
@@ -121,7 +122,7 @@ func tick(delta: float, playing: bool, has_boss: bool):
 	if eclipse_wanted!=eclipse_active:
 		eclipse_active=eclipse_wanted
 		if eclipse_active:
-			if not is_instance_valid(eclipse_music.stream): eclipse_music.stream=load("res://assets/music/eclipse_paranoia.wav") as AudioStreamWAV
+			if not is_instance_valid(eclipse_music.stream): eclipse_music.stream=load("res://assets/music/eclipse_game_mix.wav") as AudioStreamWAV
 			if is_instance_valid(eclipse_music.stream):
 				eclipse_music.stream.loop_mode=AudioStreamWAV.LOOP_FORWARD;eclipse_music.stream.loop_begin=0;eclipse_music.stream.loop_end=roundi(eclipse_music.stream.get_length()*eclipse_music.stream.mix_rate)
 				eclipse_music.play()
@@ -129,7 +130,7 @@ func tick(delta: float, playing: bool, has_boss: bool):
 			eclipse_music.stop();clock=0
 			if active: play_phrase()
 	eclipse_music.stream_paused=not playing
-	eclipse_music.volume_db=linear_to_db(maxf(.0001,float(settings.music)))-3
+	eclipse_music.volume_db=linear_to_db(maxf(.0001,float(settings.music)))-8
 	for channel in [drums,rhythm,lead,synth]:
 		if eclipse_active: channel.volume_db=-80
 	if boss!=has_boss and active:
@@ -146,10 +147,10 @@ func tick(delta: float, playing: bool, has_boss: bool):
 	var realm_index=clampi(get_parent().realm,0,2)
 	if active and theme_realm!=realm_index:
 		theme_realm=realm_index
-		var theme=stream("realm_theme_"+str(realm_index)).duplicate() as AudioStreamWAV
-		theme.loop_mode=AudioStreamWAV.LOOP_FORWARD;theme.loop_begin=0;theme.loop_end=theme.data.size()/2
+		var theme=stream("phonk_air_"+str(realm_index)).duplicate() as AudioStreamWAV
+		theme.loop_mode=AudioStreamWAV.LOOP_FORWARD;theme.loop_begin=0;theme.loop_end=roundi(theme.get_length()*theme.mix_rate)
 		atmosphere.stream=theme;atmosphere.play();atmosphere.stream_paused=not playing
-	atmosphere.volume_db=-80 if eclipse_active else linear_to_db(maxf(.0001,float(settings.music)))-(12 if boss else 3)
+	atmosphere.volume_db=-80 if eclipse_active else linear_to_db(maxf(.0001,float(settings.music)))-(24 if boss else 18)
 	voice.volume_db = linear_to_db(maxf(.0001, float(settings.voice)))
 	if not playing or not active: return
 	if genre != settings.get("genre", "metal"):
@@ -174,7 +175,8 @@ func say(id: String, cooldown: float = 12.0):
 func effect(id: String,position: Vector3=Vector3.ZERO):
 	if float(settings.sfx)<=0 or sfx_pool.is_empty(): return
 	var key="effect_"+id
-	if weapon_samples.has(id): cache[key]=weapon_samples[id]
+	if effect_samples.has(id): cache[key]=effect_samples[id]
+	elif weapon_samples.has(id): cache[key]=weapon_samples[id]
 	if not cache.has(key):
 		var audio=AudioStreamWAV.new();audio.mix_rate=22050;audio.format=AudioStreamWAV.FORMAT_16_BITS
 		var bass=id in ["shotgun","rocket","turret-rocket","land","blast","saw","meteor","bomb","horn"]

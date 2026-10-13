@@ -63,6 +63,8 @@ Prefix every action below with `node scripts/agent-workflow.mjs`.
 | `release-review` | Exported 720p/1080p menus and 810p forge/combat/boss/biome captures | Uses the latest successful staged build |
 | `bake-roster` | Rebuild all baked enemy/prop resources | After Forge generators |
 | `style-review` | Short lighting and combat-art iteration | Eight rendered captures; actual explosion damage, effect expiry and unchanged camera checks. Full regression/export testing remains separate. |
+| `red-moon-review` | Four new hero buttons, third portal, giant final boss, real damage/dodges/weapon hits and permanent Eclipse | Rendered; inspect silhouette, four patterns and impact. Health duration is a reference calculation, not a representative build playtest. |
+| `playfeel-review` | Slam progression, turret bindings, damage feedback, music, drops and massive buildings | Rendered; actual building walkthroughs and shared co-op stomp recovery. |
 | `boss-review` | Eight bosses, seeded rotations, warnings and network identities | Rendered; inspect each silhouette and attack capture; includes real portal/guardian path |
 | `bake-forge` | Rebuild only Clover Woods baked meshes | Run after `python scripts/build-forge-slice.py`; preserves other biome cores |
 | `forge-weapon-icon` | Render the rebuilt pistol thumbnail | Rendered; only writes gun.png |
@@ -72,7 +74,7 @@ Prefix every action below with `node scripts/agent-workflow.mjs`.
 | `pace-review` | XP/level pacing | Review measurements against the intended design |
 | `eclipse-review` | Eclipse handling and music state | Drift, settling and frame-rate invariance; see 1.0.0 rollout |
 | `coop-feedback` | Focused multiplayer feedback behavior | Not a substitute for the two-process network test |
-| `coop` | Real host/client networking | Approximately six minutes; includes full 0 → 1 → 2 → 0 route and peer completion handshake |
+| `coop` | Real host/client networking | Approximately six minutes; includes full 0 → 1 → 2 → 3 → 0 route, final death/Eclipse and peer completion handshake |
 | `build` | New Windows executable and pack | Imports/parses, exports and smoke-tests that executable |
 | `test-build` | Broader rendered checks of the last exported build | Does not rebuild; release-review adds full exported visual coverage |
 

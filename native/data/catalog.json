@@ -9,7 +9,7 @@
       "color": "#e6c16a",
       "shape": "engineer",
       "quip": "“Have you tried turning the monster off and on?”",
-      "description": "Turrets hit 35% harder. Heal 2 health per second near your turret.",
+      "description": "Turrets hit 35% harder. Heal 2 health per second near your turret. Height 1.70 m · Move 96% · Jump 95%.",
       "effects": [
         {
           "key": "turretDamage",
@@ -20,12 +20,24 @@
           "key": "repair",
           "amount": 2,
           "mode": "add"
+        },
+        {
+          "key": "speed",
+          "amount": -0.040000000000000036,
+          "mode": "multiply"
+        },
+        {
+          "key": "jumpHeight",
+          "amount": -0.050000000000000044,
+          "mode": "multiply"
         }
       ],
       "turret": "gun",
       "model": "pipe_wrench",
       "weapon": "turret",
-      "perk": "Fix It"
+      "perk": "Fix It",
+      "height": 1.7,
+      "radius": 0.43
     },
     {
       "id": "duck",
@@ -35,17 +47,29 @@
       "color": "#c0a5ff",
       "shape": "duck",
       "quip": "“I vant to suck your breadcrumbs.”",
-      "description": "Heal for 8% of the damage your weapons deal.",
+      "description": "Heal for 8% of the damage your weapons deal. Height 1.50 m · Move 102% · Jump 110%.",
       "effects": [
         {
           "key": "lifesteal",
           "amount": 0.08,
           "mode": "add"
+        },
+        {
+          "key": "speed",
+          "amount": 0.020000000000000018,
+          "mode": "multiply"
+        },
+        {
+          "key": "jumpHeight",
+          "amount": 0.10000000000000009,
+          "mode": "multiply"
         }
       ],
       "model": "rubber_duck_toy",
       "weapon": "gun",
-      "perk": "Blood Bank"
+      "perk": "Blood Bank",
+      "height": 1.5,
+      "radius": 0.38
     },
     {
       "id": "broccoli",
@@ -55,7 +79,7 @@
       "color": "#83d579",
       "shape": "broccoli",
       "quip": "“You are what you beet.”",
-      "description": "Start with 6 armour and 40% more health.",
+      "description": "Start with 6 armour and 40% more health. Height 2.05 m · Move 82% · Jump 80%.",
       "effects": [
         {
           "key": "armor",
@@ -66,11 +90,23 @@
           "key": "maxHp",
           "amount": 0.4,
           "mode": "multiply"
+        },
+        {
+          "key": "speed",
+          "amount": -0.18000000000000005,
+          "mode": "multiply"
+        },
+        {
+          "key": "jumpHeight",
+          "amount": -0.19999999999999996,
+          "mode": "multiply"
         }
       ],
       "model": "sweet_potato",
       "weapon": "gun",
-      "perk": "Iron Potato"
+      "perk": "Iron Potato",
+      "height": 2.05,
+      "radius": 0.57
     },
     {
       "id": "grandma",
@@ -80,7 +116,7 @@
       "color": "#ed97b4",
       "shape": "grandma",
       "quip": "“I brought cookies. And shrapnel.”",
-      "description": "Shots splash nearby enemies. Deal 25% more damage to bosses.",
+      "description": "Shots splash nearby enemies. Deal 25% more damage to bosses. Height 1.85 m · Move 86% · Jump 85%.",
       "effects": [
         {
           "key": "splash",
@@ -91,11 +127,23 @@
           "key": "bossDamage",
           "amount": 0.25,
           "mode": "multiply"
+        },
+        {
+          "key": "speed",
+          "amount": -0.14,
+          "mode": "multiply"
+        },
+        {
+          "key": "jumpHeight",
+          "amount": -0.15000000000000002,
+          "mode": "multiply"
         }
       ],
       "model": "marble_bust_01",
       "weapon": "rocket",
-      "perk": "Granny Splash"
+      "perk": "Granny Splash",
+      "height": 1.85,
+      "radius": 0.48
     },
     {
       "id": "goblin",
@@ -105,7 +153,7 @@
       "color": "#83d9c8",
       "shape": "goblin",
       "quip": "“That chest is a business expense.”",
-      "description": "Boxes cost 20% less. Earn 1% interest on saved coins each minute.",
+      "description": "Boxes cost 20% less. Earn 1% interest on saved coins each minute. Height 1.20 m · Move 117% · Jump 125%.",
       "effects": [
         {
           "key": "discount",
@@ -116,11 +164,23 @@
           "key": "interest",
           "amount": 0.01,
           "mode": "add"
+        },
+        {
+          "key": "speed",
+          "amount": 0.16999999999999993,
+          "mode": "multiply"
+        },
+        {
+          "key": "jumpHeight",
+          "amount": 0.25,
+          "mode": "multiply"
         }
       ],
       "model": "street_rat",
       "weapon": "gun",
-      "perk": "Tax Refund"
+      "perk": "Tax Refund",
+      "height": 1.2,
+      "radius": 0.31
     },
     {
       "id": "loaf",
@@ -130,17 +190,29 @@
       "color": "#eeb778",
       "shape": "loaf",
       "quip": "“They see me rollin’. They see me toastin’.”",
-      "description": "Dashing blasts nearby enemies for 30 damage.",
+      "description": "Dashing blasts nearby enemies for 30 damage. Height 1.50 m · Move 105% · Jump 105%.",
       "effects": [
         {
           "key": "dashBlast",
           "amount": 30,
           "mode": "add"
+        },
+        {
+          "key": "speed",
+          "amount": 0.050000000000000044,
+          "mode": "multiply"
+        },
+        {
+          "key": "jumpHeight",
+          "amount": 0.050000000000000044,
+          "mode": "multiply"
         }
       ],
       "model": "hamburger_buns",
       "weapon": "saw",
-      "perk": "Bread Rush"
+      "perk": "Bread Rush",
+      "height": 1.5,
+      "radius": 0.46
     },
     {
       "id": "florist",
@@ -163,10 +235,22 @@
           "key": "flowerHeal",
           "amount": 2,
           "mode": "add"
+        },
+        {
+          "key": "speed",
+          "amount": 0,
+          "mode": "multiply"
+        },
+        {
+          "key": "jumpHeight",
+          "amount": 0.050000000000000044,
+          "mode": "multiply"
         }
       ],
       "perk": "Flower Power",
-      "description": "Plant an extra seed with each step patch. Blooms hit 25% harder and heal 2 extra health."
+      "description": "Plant an extra seed with each step patch. Blooms hit 25% harder and heal 2 extra health. Height 1.70 m · Move 100% · Jump 105%.",
+      "height": 1.7,
+      "radius": 0.4
     },
     {
       "id": "teapot",
@@ -179,10 +263,22 @@
           "key": "regen",
           "amount": 2,
           "mode": "add"
+        },
+        {
+          "key": "speed",
+          "amount": -0.07999999999999996,
+          "mode": "multiply"
+        },
+        {
+          "key": "jumpHeight",
+          "amount": -0.09999999999999998,
+          "mode": "multiply"
         }
       ],
       "perk": "Tea Break",
-      "description": "Regenerate 2 health per second."
+      "description": "Regenerate 2 health per second. Height 1.65 m · Move 92% · Jump 90%.",
+      "height": 1.65,
+      "radius": 0.49
     },
     {
       "id": "octopus",
@@ -195,10 +291,22 @@
           "key": "multishot",
           "amount": 1,
           "mode": "add"
+        },
+        {
+          "key": "speed",
+          "amount": -0.06000000000000005,
+          "mode": "multiply"
+        },
+        {
+          "key": "jumpHeight",
+          "amount": 0.1499999999999999,
+          "mode": "multiply"
         }
       ],
       "perk": "Eight Shot",
-      "description": "Fire one extra projectile with each shot."
+      "description": "Fire one extra projectile with each shot. Height 1.85 m · Move 94% · Jump 115%.",
+      "height": 1.85,
+      "radius": 0.53
     },
     {
       "id": "astronaut",
@@ -216,10 +324,22 @@
           "key": "airDamage",
           "amount": 0.25,
           "mode": "add"
+        },
+        {
+          "key": "speed",
+          "amount": -0.040000000000000036,
+          "mode": "multiply"
+        },
+        {
+          "key": "jumpHeight",
+          "amount": 0.3500000000000001,
+          "mode": "multiply"
         }
       ],
       "perk": "Moon Boots",
-      "description": "Start with a double jump. Deal 25% more weapon damage while airborne."
+      "description": "Start with a double jump. Deal 25% more weapon damage while airborne. Height 1.80 m · Move 96% · Jump 135%.",
+      "height": 1.8,
+      "radius": 0.42
     },
     {
       "id": "cactus",
@@ -232,10 +352,22 @@
           "key": "thorns",
           "amount": 12,
           "mode": "add"
+        },
+        {
+          "key": "speed",
+          "amount": -0.09999999999999998,
+          "mode": "multiply"
+        },
+        {
+          "key": "jumpHeight",
+          "amount": -0.09999999999999998,
+          "mode": "multiply"
         }
       ],
       "perk": "Bad Hug",
-      "description": "Enemies touching you take 12 thorn damage twice per second."
+      "description": "Enemies touching you take 12 thorn damage twice per second. Height 1.95 m · Move 90% · Jump 90%.",
+      "height": 1.95,
+      "radius": 0.48
     },
     {
       "id": "book",
@@ -248,10 +380,22 @@
           "key": "chain",
           "amount": 2,
           "mode": "add"
+        },
+        {
+          "key": "speed",
+          "amount": 0.07000000000000006,
+          "mode": "multiply"
+        },
+        {
+          "key": "jumpHeight",
+          "amount": 0.19999999999999996,
+          "mode": "multiply"
         }
       ],
       "perk": "Chain Letter",
-      "description": "Hits chain lightning to two extra enemies."
+      "description": "Hits chain lightning to two extra enemies. Height 1.35 m · Move 107% · Jump 120%.",
+      "height": 1.35,
+      "radius": 0.36
     },
     {
       "id": "snail",
@@ -264,10 +408,27 @@
           "key": "poison",
           "amount": 8,
           "mode": "add"
+        },
+        {
+          "key": "armor",
+          "amount": 3,
+          "mode": "add"
+        },
+        {
+          "key": "speed",
+          "amount": -0.15000000000000002,
+          "mode": "multiply"
+        },
+        {
+          "key": "jumpHeight",
+          "amount": -0.30000000000000004,
+          "mode": "multiply"
         }
       ],
       "perk": "Slime Trail",
-      "description": "Weapon hits poison enemies for 8 damage per second."
+      "description": "Weapon hits poison enemies for 8 damage per second. A sturdy shell adds 3 armour. Height 1.25 m · Move 85% · Jump 70%.",
+      "height": 1.25,
+      "radius": 0.47
     },
     {
       "id": "bee",
@@ -285,10 +446,22 @@
           "key": "coinHeal",
           "amount": 0.5,
           "mode": "add"
+        },
+        {
+          "key": "speed",
+          "amount": 0.19999999999999996,
+          "mode": "multiply"
+        },
+        {
+          "key": "jumpHeight",
+          "amount": 0.3500000000000001,
+          "mode": "multiply"
         }
       ],
       "perk": "Honey Money",
-      "description": "Walking earns 0.25 coins per metre. Each coin drop heals 0.5 health."
+      "description": "Walking earns 0.25 coins per metre. Each coin drop heals 0.5 health. Height 1.20 m · Move 120% · Jump 135%.",
+      "height": 1.2,
+      "radius": 0.3
     },
     {
       "id": "sushi",
@@ -301,10 +474,22 @@
           "key": "crit",
           "amount": 0.2,
           "mode": "add"
+        },
+        {
+          "key": "speed",
+          "amount": 0.1200000000000001,
+          "mode": "multiply"
+        },
+        {
+          "key": "jumpHeight",
+          "amount": 0.1499999999999999,
+          "mode": "multiply"
         }
       ],
       "perk": "Sharp Slice",
-      "description": "20% chance for weapon hits to deal double damage."
+      "description": "20% chance for weapon hits to deal double damage. Height 1.40 m · Move 112% · Jump 115%.",
+      "height": 1.4,
+      "radius": 0.38
     },
     {
       "id": "mushroom",
@@ -317,10 +502,22 @@
           "key": "burn",
           "amount": 8,
           "mode": "add"
+        },
+        {
+          "key": "speed",
+          "amount": -0.020000000000000018,
+          "mode": "multiply"
+        },
+        {
+          "key": "jumpHeight",
+          "amount": 0.10000000000000009,
+          "mode": "multiply"
         }
       ],
       "perk": "Hot Seasoning",
-      "description": "Weapon hits burn enemies for 8 damage per second."
+      "description": "Weapon hits burn enemies for 8 damage per second. Height 1.60 m · Move 98% · Jump 110%.",
+      "height": 1.6,
+      "radius": 0.47
     },
     {
       "id": "clock",
@@ -333,10 +530,22 @@
           "key": "slow",
           "amount": 0.3,
           "mode": "add"
+        },
+        {
+          "key": "speed",
+          "amount": -0.050000000000000044,
+          "mode": "multiply"
+        },
+        {
+          "key": "jumpHeight",
+          "amount": 0,
+          "mode": "multiply"
         }
       ],
       "perk": "Slow Time",
-      "description": "Weapon hits slow enemies by 30%."
+      "description": "Weapon hits slow enemies by 30%. Height 1.75 m · Move 95% · Jump 100%.",
+      "height": 1.75,
+      "radius": 0.44
     },
     {
       "id": "icecream",
@@ -349,10 +558,22 @@
           "key": "freeze",
           "amount": 0.2,
           "mode": "add"
+        },
+        {
+          "key": "speed",
+          "amount": 0.030000000000000027,
+          "mode": "multiply"
+        },
+        {
+          "key": "jumpHeight",
+          "amount": 0.19999999999999996,
+          "mode": "multiply"
         }
       ],
       "perk": "Brain Freeze",
-      "description": "20% chance for weapon hits to freeze an enemy."
+      "description": "20% chance for weapon hits to freeze an enemy. Height 1.90 m · Move 103% · Jump 120%.",
+      "height": 1.9,
+      "radius": 0.39
     },
     {
       "id": "bathtub",
@@ -365,10 +586,22 @@
           "key": "shield",
           "amount": 25,
           "mode": "add"
+        },
+        {
+          "key": "speed",
+          "amount": -0.16000000000000003,
+          "mode": "multiply"
+        },
+        {
+          "key": "jumpHeight",
+          "amount": -0.30000000000000004,
+          "mode": "multiply"
         }
       ],
       "perk": "Bubble Bath",
-      "description": "Start with 25 shield. It recharges after avoiding damage."
+      "description": "Start with 25 shield. It recharges after avoiding damage. Height 1.35 m · Move 84% · Jump 70%.",
+      "height": 1.35,
+      "radius": 0.58
     },
     {
       "id": "peacock",
@@ -386,10 +619,22 @@
           "key": "chestHeal",
           "amount": 12,
           "mode": "add"
+        },
+        {
+          "key": "speed",
+          "amount": 0.08000000000000007,
+          "mode": "multiply"
+        },
+        {
+          "key": "jumpHeight",
+          "amount": 0.1499999999999999,
+          "mode": "multiply"
         }
       ],
       "perk": "Show Off",
-      "description": "Start with +25% luck. Opening a box heals 12 health."
+      "description": "Start with +25% luck. Opening a box heals 12 health. Height 2.00 m · Move 108% · Jump 115%.",
+      "height": 2,
+      "radius": 0.48
     },
     {
       "id": "toaster",
@@ -402,10 +647,139 @@
           "key": "explosion",
           "amount": 12,
           "mode": "add"
+        },
+        {
+          "key": "speed",
+          "amount": -0.040000000000000036,
+          "mode": "multiply"
+        },
+        {
+          "key": "jumpHeight",
+          "amount": -0.09999999999999998,
+          "mode": "multiply"
         }
       ],
       "perk": "Pop Goes Toast",
-      "description": "Defeated enemies explode for 12 damage."
+      "description": "Defeated enemies explode for 12 damage. Height 1.35 m · Move 96% · Jump 90%.",
+      "height": 1.35,
+      "radius": 0.45
+    },
+    {
+      "id": "ninja",
+      "name": "Ninja",
+      "title": "A small shadow with a very large grudge.",
+      "model": "ninja",
+      "weapon": "ninja-shuriken",
+      "perk": "Afterimage",
+      "description": "Fast feet, high jumps and 12% dodge, with 15% less health. Height 1.40 m · Move 124% · Jump 145%.",
+      "effects": [
+        {
+          "key": "dodge",
+          "amount": 0.12,
+          "mode": "add"
+        },
+        {
+          "key": "maxHp",
+          "amount": -0.15,
+          "mode": "multiply"
+        },
+        {
+          "key": "speed",
+          "amount": 0.24,
+          "mode": "multiply"
+        },
+        {
+          "key": "jumpHeight",
+          "amount": 0.44999999999999996,
+          "mode": "multiply"
+        }
+      ],
+      "height": 1.4,
+      "radius": 0.32
+    },
+    {
+      "id": "smoker",
+      "name": "Smoker",
+      "title": "An ash-grey coat and an ill-tempered chimney.",
+      "model": "smoker",
+      "weapon": "smoke-censer",
+      "perk": "Secondhand Hex",
+      "description": "Poison hits deal 10 extra damage per second. Height 2.10 m · Move 92% · Jump 90%.",
+      "effects": [
+        {
+          "key": "poison",
+          "amount": 10,
+          "mode": "add"
+        },
+        {
+          "key": "speed",
+          "amount": -0.07999999999999996,
+          "mode": "multiply"
+        },
+        {
+          "key": "jumpHeight",
+          "amount": -0.09999999999999998,
+          "mode": "multiply"
+        }
+      ],
+      "height": 2.1,
+      "radius": 0.43
+    },
+    {
+      "id": "alcoholic",
+      "name": "Alcoholic",
+      "title": "Last call. First into trouble.",
+      "model": "alcoholic",
+      "weapon": "bottle-barrage",
+      "perk": "Last Orders",
+      "description": "Bottle explosions and 30% more health. Height 1.75 m · Move 88% · Jump 80%.",
+      "effects": [
+        {
+          "key": "maxHp",
+          "amount": 0.3,
+          "mode": "multiply"
+        },
+        {
+          "key": "speed",
+          "amount": -0.12,
+          "mode": "multiply"
+        },
+        {
+          "key": "jumpHeight",
+          "amount": -0.19999999999999996,
+          "mode": "multiply"
+        }
+      ],
+      "height": 1.75,
+      "radius": 0.53
+    },
+    {
+      "id": "white-supra",
+      "name": "White Supra",
+      "title": "The white coupe has entered the dungeon.",
+      "model": "white-supra",
+      "weapon": "supra-backfire",
+      "perk": "Turbocharged",
+      "description": "Very fast, wide, low-jumping; dashes blast for 24 damage. Height 1.05 m · Move 142% · Jump 55%.",
+      "effects": [
+        {
+          "key": "dashBlast",
+          "amount": 24,
+          "mode": "add"
+        },
+        {
+          "key": "speed",
+          "amount": 0.41999999999999993,
+          "mode": "multiply"
+        },
+        {
+          "key": "jumpHeight",
+          "amount": -0.44999999999999996,
+          "mode": "multiply"
+        }
+      ],
+      "height": 1.05,
+      "radius": 0.7
     }
   ],
   "weapons": [
@@ -633,6 +1007,89 @@
       "rate": 0.5,
       "range": 25,
       "turret": false
+    },
+    {
+      "id": "ninja-shuriken",
+      "name": "Moon Shuriken",
+      "family": "Shots",
+      "damage": 0.6,
+      "rate": 0.95,
+      "range": 28,
+      "turret": false,
+      "archetype": "disc",
+      "modifiers": {
+        "extraShots": 1,
+        "spread": 0.12,
+        "extraPierce": 1
+      },
+      "description": "Twin piercing stars ricochet between enemies.",
+      "icon": "ninja-shuriken",
+      "art": {
+        "shape": 5,
+        "condition": 18
+      }
+    },
+    {
+      "id": "smoke-censer",
+      "name": "Smoke Censer",
+      "family": "Poison",
+      "damage": 0.38,
+      "rate": 0.9,
+      "range": 22,
+      "turret": false,
+      "archetype": "poison",
+      "modifiers": {
+        "extraShots": 2,
+        "spread": 0.22,
+        "shotScale": 1.5
+      },
+      "description": "Three heavy toxic shots spread out and poison enemies.",
+      "icon": "smoke-censer",
+      "art": {
+        "shape": 6,
+        "condition": 18
+      }
+    },
+    {
+      "id": "bottle-barrage",
+      "name": "Last Orders",
+      "family": "Boom",
+      "damage": 1.5,
+      "rate": 0.7,
+      "range": 25,
+      "turret": false,
+      "archetype": "bomb",
+      "modifiers": {
+        "fuse": 0.8,
+        "areaScale": 1.3,
+        "payload": "fire"
+      },
+      "description": "Explosive bottles burst after a short fuse.",
+      "icon": "bottle-barrage",
+      "art": {
+        "shape": 7,
+        "condition": 18
+      }
+    },
+    {
+      "id": "supra-backfire",
+      "name": "Turbo Backfire",
+      "family": "Fire",
+      "damage": 0.42,
+      "rate": 1.3,
+      "range": 18,
+      "turret": false,
+      "archetype": "flame",
+      "modifiers": {
+        "extraShots": 1,
+        "spread": 0.18
+      },
+      "description": "Twin exhaust jets burn a broad lane.",
+      "icon": "supra-backfire",
+      "art": {
+        "shape": 8,
+        "condition": 18
+      }
     },
     {
       "id": "popcorn-repeater",
@@ -5717,6 +6174,34 @@
         {
           "key": "landingHeal",
           "amount": 2,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "rebound-gear-item",
+      "name": "Rebound Gear",
+      "title": "Rebound Gear",
+      "family": "Arcane",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "slamRecovery",
+          "amount": 0.3,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "rebound-gear-skill",
+      "name": "Rebound Gear",
+      "title": "Rebound Gear",
+      "family": "Arcane",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "slamRecovery",
+          "amount": 0.3,
           "mode": "add"
         }
       ]
@@ -12952,6 +13437,766 @@
           "mode": "add"
         }
       ]
+    },
+    {
+      "id": "augment-eclipse-damage",
+      "name": "Eclipse Gauntlet",
+      "title": "Eclipse Gauntlet",
+      "family": "Spectral",
+      "kind": "item",
+      "icon": "augment-eclipse-damage",
+      "art": {
+        "shape": 0,
+        "condition": 18
+      },
+      "effects": [
+        {
+          "key": "augment-eclipse-damage",
+          "amount": 0.25,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-eclipse-rate",
+      "name": "Eclipse Metronome",
+      "title": "Eclipse Metronome",
+      "family": "Spectral",
+      "kind": "skill",
+      "icon": "augment-eclipse-rate",
+      "art": {
+        "shape": 1,
+        "condition": 18
+      },
+      "effects": [
+        {
+          "key": "augment-eclipse-rate",
+          "amount": 0.22,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-eclipse-speed",
+      "name": "Eclipse Boots",
+      "title": "Eclipse Boots",
+      "family": "Spectral",
+      "kind": "item",
+      "icon": "augment-eclipse-speed",
+      "art": {
+        "shape": 2,
+        "condition": 18
+      },
+      "effects": [
+        {
+          "key": "augment-eclipse-speed",
+          "amount": 0.18,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-eclipse-regen",
+      "name": "Eclipse Teacup",
+      "title": "Eclipse Teacup",
+      "family": "Spectral",
+      "kind": "skill",
+      "icon": "augment-eclipse-regen",
+      "art": {
+        "shape": 3,
+        "condition": 18
+      },
+      "effects": [
+        {
+          "key": "augment-eclipse-regen",
+          "amount": 1.2,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-eclipse-armor",
+      "name": "Eclipse Shield",
+      "title": "Eclipse Shield",
+      "family": "Spectral",
+      "kind": "item",
+      "icon": "augment-eclipse-armor",
+      "art": {
+        "shape": 4,
+        "condition": 18
+      },
+      "effects": [
+        {
+          "key": "augment-eclipse-armor",
+          "amount": 2,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-eclipse-dodge",
+      "name": "Eclipse Cloak",
+      "title": "Eclipse Cloak",
+      "family": "Spectral",
+      "kind": "skill",
+      "icon": "augment-eclipse-dodge",
+      "art": {
+        "shape": 5,
+        "condition": 18
+      },
+      "effects": [
+        {
+          "key": "augment-eclipse-dodge",
+          "amount": 0.06,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-eclipse-crit",
+      "name": "Eclipse Lens",
+      "title": "Eclipse Lens",
+      "family": "Spectral",
+      "kind": "item",
+      "icon": "augment-eclipse-crit",
+      "art": {
+        "shape": 6,
+        "condition": 18
+      },
+      "effects": [
+        {
+          "key": "augment-eclipse-crit",
+          "amount": 0.08,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-eclipse-critPower",
+      "name": "Eclipse Crown",
+      "title": "Eclipse Crown",
+      "family": "Spectral",
+      "kind": "skill",
+      "icon": "augment-eclipse-critPower",
+      "art": {
+        "shape": 7,
+        "condition": 18
+      },
+      "effects": [
+        {
+          "key": "augment-eclipse-critPower",
+          "amount": 0.25,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-eclipse-range",
+      "name": "Eclipse Compass",
+      "title": "Eclipse Compass",
+      "family": "Spectral",
+      "kind": "item",
+      "icon": "augment-eclipse-range",
+      "art": {
+        "shape": 8,
+        "condition": 18
+      },
+      "effects": [
+        {
+          "key": "augment-eclipse-range",
+          "amount": 0.2,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-eclipse-projectileSpeed",
+      "name": "Eclipse Arrow",
+      "title": "Eclipse Arrow",
+      "family": "Spectral",
+      "kind": "skill",
+      "icon": "augment-eclipse-projectileSpeed",
+      "art": {
+        "shape": 9,
+        "condition": 18
+      },
+      "effects": [
+        {
+          "key": "augment-eclipse-projectileSpeed",
+          "amount": 0.25,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-eclipse-size",
+      "name": "Eclipse Balloon",
+      "title": "Eclipse Balloon",
+      "family": "Spectral",
+      "kind": "item",
+      "icon": "augment-eclipse-size",
+      "art": {
+        "shape": 10,
+        "condition": 18
+      },
+      "effects": [
+        {
+          "key": "augment-eclipse-size",
+          "amount": 0.25,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-eclipse-knockback",
+      "name": "Eclipse Hammer",
+      "title": "Eclipse Hammer",
+      "family": "Spectral",
+      "kind": "skill",
+      "icon": "augment-eclipse-knockback",
+      "art": {
+        "shape": 11,
+        "condition": 18
+      },
+      "effects": [
+        {
+          "key": "augment-eclipse-knockback",
+          "amount": 0.8,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-eclipse-lifesteal",
+      "name": "Eclipse Fang",
+      "title": "Eclipse Fang",
+      "family": "Spectral",
+      "kind": "item",
+      "icon": "augment-eclipse-lifesteal",
+      "art": {
+        "shape": 12,
+        "condition": 18
+      },
+      "effects": [
+        {
+          "key": "augment-eclipse-lifesteal",
+          "amount": 0.04,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-eclipse-bossDamage",
+      "name": "Eclipse Spear",
+      "title": "Eclipse Spear",
+      "family": "Spectral",
+      "kind": "skill",
+      "icon": "augment-eclipse-bossDamage",
+      "art": {
+        "shape": 13,
+        "condition": 18
+      },
+      "effects": [
+        {
+          "key": "augment-eclipse-bossDamage",
+          "amount": 0.3,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-eclipse-xpGain",
+      "name": "Eclipse Book",
+      "title": "Eclipse Book",
+      "family": "Spectral",
+      "kind": "item",
+      "icon": "augment-eclipse-xpGain",
+      "art": {
+        "shape": 14,
+        "condition": 18
+      },
+      "effects": [
+        {
+          "key": "augment-eclipse-xpGain",
+          "amount": 0.2,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-eclipse-goldGain",
+      "name": "Eclipse Purse",
+      "title": "Eclipse Purse",
+      "family": "Spectral",
+      "kind": "skill",
+      "icon": "augment-eclipse-goldGain",
+      "art": {
+        "shape": 15,
+        "condition": 18
+      },
+      "effects": [
+        {
+          "key": "augment-eclipse-goldGain",
+          "amount": 0.2,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-eclipse-pickup",
+      "name": "Eclipse Magnet",
+      "title": "Eclipse Magnet",
+      "family": "Spectral",
+      "kind": "item",
+      "icon": "augment-eclipse-pickup",
+      "art": {
+        "shape": 16,
+        "condition": 18
+      },
+      "effects": [
+        {
+          "key": "augment-eclipse-pickup",
+          "amount": 1.2,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-eclipse-turretDamage",
+      "name": "Eclipse Anvil",
+      "title": "Eclipse Anvil",
+      "family": "Spectral",
+      "kind": "skill",
+      "icon": "augment-eclipse-turretDamage",
+      "art": {
+        "shape": 17,
+        "condition": 18
+      },
+      "effects": [
+        {
+          "key": "augment-eclipse-turretDamage",
+          "amount": 0.3,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-eclipse-turretRate",
+      "name": "Eclipse Gears",
+      "title": "Eclipse Gears",
+      "family": "Spectral",
+      "kind": "item",
+      "icon": "augment-eclipse-turretRate",
+      "art": {
+        "shape": 18,
+        "condition": 18
+      },
+      "effects": [
+        {
+          "key": "augment-eclipse-turretRate",
+          "amount": 0.25,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-eclipse-turretRange",
+      "name": "Eclipse Telescope",
+      "title": "Eclipse Telescope",
+      "family": "Spectral",
+      "kind": "skill",
+      "icon": "augment-eclipse-turretRange",
+      "art": {
+        "shape": 19,
+        "condition": 18
+      },
+      "effects": [
+        {
+          "key": "augment-eclipse-turretRange",
+          "amount": 0.25,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-guardian-damage",
+      "name": "Oathbound Gauntlet",
+      "title": "Oathbound Gauntlet",
+      "family": "Defense",
+      "kind": "skill",
+      "icon": "augment-guardian-damage",
+      "art": {
+        "shape": 0,
+        "condition": 19
+      },
+      "effects": [
+        {
+          "key": "augment-guardian-damage",
+          "amount": 0.25,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-guardian-rate",
+      "name": "Oathbound Metronome",
+      "title": "Oathbound Metronome",
+      "family": "Defense",
+      "kind": "item",
+      "icon": "augment-guardian-rate",
+      "art": {
+        "shape": 1,
+        "condition": 19
+      },
+      "effects": [
+        {
+          "key": "augment-guardian-rate",
+          "amount": 0.22,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-guardian-speed",
+      "name": "Oathbound Boots",
+      "title": "Oathbound Boots",
+      "family": "Defense",
+      "kind": "skill",
+      "icon": "augment-guardian-speed",
+      "art": {
+        "shape": 2,
+        "condition": 19
+      },
+      "effects": [
+        {
+          "key": "augment-guardian-speed",
+          "amount": 0.18,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-guardian-regen",
+      "name": "Oathbound Teacup",
+      "title": "Oathbound Teacup",
+      "family": "Defense",
+      "kind": "item",
+      "icon": "augment-guardian-regen",
+      "art": {
+        "shape": 3,
+        "condition": 19
+      },
+      "effects": [
+        {
+          "key": "augment-guardian-regen",
+          "amount": 1.2,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-guardian-armor",
+      "name": "Oathbound Shield",
+      "title": "Oathbound Shield",
+      "family": "Defense",
+      "kind": "skill",
+      "icon": "augment-guardian-armor",
+      "art": {
+        "shape": 4,
+        "condition": 19
+      },
+      "effects": [
+        {
+          "key": "augment-guardian-armor",
+          "amount": 2,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-guardian-dodge",
+      "name": "Oathbound Cloak",
+      "title": "Oathbound Cloak",
+      "family": "Defense",
+      "kind": "item",
+      "icon": "augment-guardian-dodge",
+      "art": {
+        "shape": 5,
+        "condition": 19
+      },
+      "effects": [
+        {
+          "key": "augment-guardian-dodge",
+          "amount": 0.06,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-guardian-crit",
+      "name": "Oathbound Lens",
+      "title": "Oathbound Lens",
+      "family": "Defense",
+      "kind": "skill",
+      "icon": "augment-guardian-crit",
+      "art": {
+        "shape": 6,
+        "condition": 19
+      },
+      "effects": [
+        {
+          "key": "augment-guardian-crit",
+          "amount": 0.08,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-guardian-critPower",
+      "name": "Oathbound Crown",
+      "title": "Oathbound Crown",
+      "family": "Defense",
+      "kind": "item",
+      "icon": "augment-guardian-critPower",
+      "art": {
+        "shape": 7,
+        "condition": 19
+      },
+      "effects": [
+        {
+          "key": "augment-guardian-critPower",
+          "amount": 0.25,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-guardian-range",
+      "name": "Oathbound Compass",
+      "title": "Oathbound Compass",
+      "family": "Defense",
+      "kind": "skill",
+      "icon": "augment-guardian-range",
+      "art": {
+        "shape": 8,
+        "condition": 19
+      },
+      "effects": [
+        {
+          "key": "augment-guardian-range",
+          "amount": 0.2,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-guardian-projectileSpeed",
+      "name": "Oathbound Arrow",
+      "title": "Oathbound Arrow",
+      "family": "Defense",
+      "kind": "item",
+      "icon": "augment-guardian-projectileSpeed",
+      "art": {
+        "shape": 9,
+        "condition": 19
+      },
+      "effects": [
+        {
+          "key": "augment-guardian-projectileSpeed",
+          "amount": 0.25,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-guardian-size",
+      "name": "Oathbound Balloon",
+      "title": "Oathbound Balloon",
+      "family": "Defense",
+      "kind": "skill",
+      "icon": "augment-guardian-size",
+      "art": {
+        "shape": 10,
+        "condition": 19
+      },
+      "effects": [
+        {
+          "key": "augment-guardian-size",
+          "amount": 0.25,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-guardian-knockback",
+      "name": "Oathbound Hammer",
+      "title": "Oathbound Hammer",
+      "family": "Defense",
+      "kind": "item",
+      "icon": "augment-guardian-knockback",
+      "art": {
+        "shape": 11,
+        "condition": 19
+      },
+      "effects": [
+        {
+          "key": "augment-guardian-knockback",
+          "amount": 0.8,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-guardian-lifesteal",
+      "name": "Oathbound Fang",
+      "title": "Oathbound Fang",
+      "family": "Defense",
+      "kind": "skill",
+      "icon": "augment-guardian-lifesteal",
+      "art": {
+        "shape": 12,
+        "condition": 19
+      },
+      "effects": [
+        {
+          "key": "augment-guardian-lifesteal",
+          "amount": 0.04,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-guardian-bossDamage",
+      "name": "Oathbound Spear",
+      "title": "Oathbound Spear",
+      "family": "Defense",
+      "kind": "item",
+      "icon": "augment-guardian-bossDamage",
+      "art": {
+        "shape": 13,
+        "condition": 19
+      },
+      "effects": [
+        {
+          "key": "augment-guardian-bossDamage",
+          "amount": 0.3,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-guardian-xpGain",
+      "name": "Oathbound Book",
+      "title": "Oathbound Book",
+      "family": "Defense",
+      "kind": "skill",
+      "icon": "augment-guardian-xpGain",
+      "art": {
+        "shape": 14,
+        "condition": 19
+      },
+      "effects": [
+        {
+          "key": "augment-guardian-xpGain",
+          "amount": 0.2,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-guardian-goldGain",
+      "name": "Oathbound Purse",
+      "title": "Oathbound Purse",
+      "family": "Defense",
+      "kind": "item",
+      "icon": "augment-guardian-goldGain",
+      "art": {
+        "shape": 15,
+        "condition": 19
+      },
+      "effects": [
+        {
+          "key": "augment-guardian-goldGain",
+          "amount": 0.2,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-guardian-pickup",
+      "name": "Oathbound Magnet",
+      "title": "Oathbound Magnet",
+      "family": "Defense",
+      "kind": "skill",
+      "icon": "augment-guardian-pickup",
+      "art": {
+        "shape": 16,
+        "condition": 19
+      },
+      "effects": [
+        {
+          "key": "augment-guardian-pickup",
+          "amount": 1.2,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-guardian-turretDamage",
+      "name": "Oathbound Anvil",
+      "title": "Oathbound Anvil",
+      "family": "Defense",
+      "kind": "item",
+      "icon": "augment-guardian-turretDamage",
+      "art": {
+        "shape": 17,
+        "condition": 19
+      },
+      "effects": [
+        {
+          "key": "augment-guardian-turretDamage",
+          "amount": 0.3,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-guardian-turretRate",
+      "name": "Oathbound Gears",
+      "title": "Oathbound Gears",
+      "family": "Defense",
+      "kind": "skill",
+      "icon": "augment-guardian-turretRate",
+      "art": {
+        "shape": 18,
+        "condition": 19
+      },
+      "effects": [
+        {
+          "key": "augment-guardian-turretRate",
+          "amount": 0.25,
+          "mode": "add"
+        }
+      ]
+    },
+    {
+      "id": "augment-guardian-turretRange",
+      "name": "Oathbound Telescope",
+      "title": "Oathbound Telescope",
+      "family": "Defense",
+      "kind": "item",
+      "icon": "augment-guardian-turretRange",
+      "art": {
+        "shape": 19,
+        "condition": 19
+      },
+      "effects": [
+        {
+          "key": "augment-guardian-turretRange",
+          "amount": 0.25,
+          "mode": "add"
+        }
+      ]
     }
   ],
   "stats": {
@@ -13047,6 +14292,7 @@
     "bombSize": 1,
     "airDamage": 0,
     "landingHeal": 0,
+    "slamRecovery": 0,
     "slamHeal": 0,
     "airControl": 0,
     "fallThreshold": 0,
@@ -13421,7 +14667,47 @@
     "augment-rich-pickup": 0,
     "augment-rich-turretDamage": 0,
     "augment-rich-turretRate": 0,
-    "augment-rich-turretRange": 0
+    "augment-rich-turretRange": 0,
+    "augment-eclipse-damage": 0,
+    "augment-eclipse-rate": 0,
+    "augment-eclipse-speed": 0,
+    "augment-eclipse-regen": 0,
+    "augment-eclipse-armor": 0,
+    "augment-eclipse-dodge": 0,
+    "augment-eclipse-crit": 0,
+    "augment-eclipse-critPower": 0,
+    "augment-eclipse-range": 0,
+    "augment-eclipse-projectileSpeed": 0,
+    "augment-eclipse-size": 0,
+    "augment-eclipse-knockback": 0,
+    "augment-eclipse-lifesteal": 0,
+    "augment-eclipse-bossDamage": 0,
+    "augment-eclipse-xpGain": 0,
+    "augment-eclipse-goldGain": 0,
+    "augment-eclipse-pickup": 0,
+    "augment-eclipse-turretDamage": 0,
+    "augment-eclipse-turretRate": 0,
+    "augment-eclipse-turretRange": 0,
+    "augment-guardian-damage": 0,
+    "augment-guardian-rate": 0,
+    "augment-guardian-speed": 0,
+    "augment-guardian-regen": 0,
+    "augment-guardian-armor": 0,
+    "augment-guardian-dodge": 0,
+    "augment-guardian-crit": 0,
+    "augment-guardian-critPower": 0,
+    "augment-guardian-range": 0,
+    "augment-guardian-projectileSpeed": 0,
+    "augment-guardian-size": 0,
+    "augment-guardian-knockback": 0,
+    "augment-guardian-lifesteal": 0,
+    "augment-guardian-bossDamage": 0,
+    "augment-guardian-xpGain": 0,
+    "augment-guardian-goldGain": 0,
+    "augment-guardian-pickup": 0,
+    "augment-guardian-turretDamage": 0,
+    "augment-guardian-turretRate": 0,
+    "augment-guardian-turretRange": 0
   },
   "labels": {
     "damage": "Power",
@@ -13508,6 +14794,7 @@
     "bombSize": "Big Bomb",
     "airDamage": "Air Power",
     "landingHeal": "Soft Heal",
+    "slamRecovery": "Rebound Gear",
     "slamHeal": "Slam Heal",
     "airControl": "Air Steer",
     "fallThreshold": "Safe Fall",
@@ -13882,7 +15169,47 @@
     "augment-rich-pickup": "Treasury Magnet",
     "augment-rich-turretDamage": "Treasury Anvil",
     "augment-rich-turretRate": "Treasury Gears",
-    "augment-rich-turretRange": "Treasury Telescope"
+    "augment-rich-turretRange": "Treasury Telescope",
+    "augment-eclipse-damage": "Eclipse Gauntlet",
+    "augment-eclipse-rate": "Eclipse Metronome",
+    "augment-eclipse-speed": "Eclipse Boots",
+    "augment-eclipse-regen": "Eclipse Teacup",
+    "augment-eclipse-armor": "Eclipse Shield",
+    "augment-eclipse-dodge": "Eclipse Cloak",
+    "augment-eclipse-crit": "Eclipse Lens",
+    "augment-eclipse-critPower": "Eclipse Crown",
+    "augment-eclipse-range": "Eclipse Compass",
+    "augment-eclipse-projectileSpeed": "Eclipse Arrow",
+    "augment-eclipse-size": "Eclipse Balloon",
+    "augment-eclipse-knockback": "Eclipse Hammer",
+    "augment-eclipse-lifesteal": "Eclipse Fang",
+    "augment-eclipse-bossDamage": "Eclipse Spear",
+    "augment-eclipse-xpGain": "Eclipse Book",
+    "augment-eclipse-goldGain": "Eclipse Purse",
+    "augment-eclipse-pickup": "Eclipse Magnet",
+    "augment-eclipse-turretDamage": "Eclipse Anvil",
+    "augment-eclipse-turretRate": "Eclipse Gears",
+    "augment-eclipse-turretRange": "Eclipse Telescope",
+    "augment-guardian-damage": "Oathbound Gauntlet",
+    "augment-guardian-rate": "Oathbound Metronome",
+    "augment-guardian-speed": "Oathbound Boots",
+    "augment-guardian-regen": "Oathbound Teacup",
+    "augment-guardian-armor": "Oathbound Shield",
+    "augment-guardian-dodge": "Oathbound Cloak",
+    "augment-guardian-crit": "Oathbound Lens",
+    "augment-guardian-critPower": "Oathbound Crown",
+    "augment-guardian-range": "Oathbound Compass",
+    "augment-guardian-projectileSpeed": "Oathbound Arrow",
+    "augment-guardian-size": "Oathbound Balloon",
+    "augment-guardian-knockback": "Oathbound Hammer",
+    "augment-guardian-lifesteal": "Oathbound Fang",
+    "augment-guardian-bossDamage": "Oathbound Spear",
+    "augment-guardian-xpGain": "Oathbound Book",
+    "augment-guardian-goldGain": "Oathbound Purse",
+    "augment-guardian-pickup": "Oathbound Magnet",
+    "augment-guardian-turretDamage": "Oathbound Anvil",
+    "augment-guardian-turretRate": "Oathbound Gears",
+    "augment-guardian-turretRange": "Oathbound Telescope"
   },
   "families": {
     "Engineering": "Turret",
@@ -16430,6 +17757,286 @@
       "stat": "turretRange",
       "mode": "multiply",
       "when": "while carrying at least 50 coins",
+      "label": "turret reach"
+    },
+    "augment-eclipse-damage": {
+      "condition": "eclipse",
+      "stat": "damage",
+      "mode": "multiply",
+      "when": "during the Eclipse",
+      "label": "weapon damage"
+    },
+    "augment-eclipse-rate": {
+      "condition": "eclipse",
+      "stat": "rate",
+      "mode": "multiply",
+      "when": "during the Eclipse",
+      "label": "attack speed"
+    },
+    "augment-eclipse-speed": {
+      "condition": "eclipse",
+      "stat": "speed",
+      "mode": "multiply",
+      "when": "during the Eclipse",
+      "label": "movement speed"
+    },
+    "augment-eclipse-regen": {
+      "condition": "eclipse",
+      "stat": "regen",
+      "mode": "add",
+      "when": "during the Eclipse",
+      "label": "health per second"
+    },
+    "augment-eclipse-armor": {
+      "condition": "eclipse",
+      "stat": "armor",
+      "mode": "add",
+      "when": "during the Eclipse",
+      "label": "armour"
+    },
+    "augment-eclipse-dodge": {
+      "condition": "eclipse",
+      "stat": "dodge",
+      "mode": "add",
+      "when": "during the Eclipse",
+      "label": "dodge chance"
+    },
+    "augment-eclipse-crit": {
+      "condition": "eclipse",
+      "stat": "crit",
+      "mode": "add",
+      "when": "during the Eclipse",
+      "label": "critical chance"
+    },
+    "augment-eclipse-critPower": {
+      "condition": "eclipse",
+      "stat": "critPower",
+      "mode": "multiply",
+      "when": "during the Eclipse",
+      "label": "critical damage"
+    },
+    "augment-eclipse-range": {
+      "condition": "eclipse",
+      "stat": "range",
+      "mode": "multiply",
+      "when": "during the Eclipse",
+      "label": "weapon reach"
+    },
+    "augment-eclipse-projectileSpeed": {
+      "condition": "eclipse",
+      "stat": "projectileSpeed",
+      "mode": "multiply",
+      "when": "during the Eclipse",
+      "label": "projectile speed"
+    },
+    "augment-eclipse-size": {
+      "condition": "eclipse",
+      "stat": "size",
+      "mode": "multiply",
+      "when": "during the Eclipse",
+      "label": "projectile size"
+    },
+    "augment-eclipse-knockback": {
+      "condition": "eclipse",
+      "stat": "knockback",
+      "mode": "add",
+      "when": "during the Eclipse",
+      "label": "knockback metres"
+    },
+    "augment-eclipse-lifesteal": {
+      "condition": "eclipse",
+      "stat": "lifesteal",
+      "mode": "add",
+      "when": "during the Eclipse",
+      "label": "lifesteal"
+    },
+    "augment-eclipse-bossDamage": {
+      "condition": "eclipse",
+      "stat": "bossDamage",
+      "mode": "multiply",
+      "when": "during the Eclipse",
+      "label": "damage to bosses"
+    },
+    "augment-eclipse-xpGain": {
+      "condition": "eclipse",
+      "stat": "xpGain",
+      "mode": "multiply",
+      "when": "during the Eclipse",
+      "label": "XP gain"
+    },
+    "augment-eclipse-goldGain": {
+      "condition": "eclipse",
+      "stat": "goldGain",
+      "mode": "multiply",
+      "when": "during the Eclipse",
+      "label": "coin gain"
+    },
+    "augment-eclipse-pickup": {
+      "condition": "eclipse",
+      "stat": "pickup",
+      "mode": "add",
+      "when": "during the Eclipse",
+      "label": "XP pickup metres"
+    },
+    "augment-eclipse-turretDamage": {
+      "condition": "eclipse",
+      "stat": "turretDamage",
+      "mode": "multiply",
+      "when": "during the Eclipse",
+      "label": "turret damage"
+    },
+    "augment-eclipse-turretRate": {
+      "condition": "eclipse",
+      "stat": "turretRate",
+      "mode": "multiply",
+      "when": "during the Eclipse",
+      "label": "turret attack speed"
+    },
+    "augment-eclipse-turretRange": {
+      "condition": "eclipse",
+      "stat": "turretRange",
+      "mode": "multiply",
+      "when": "during the Eclipse",
+      "label": "turret reach"
+    },
+    "augment-guardian-damage": {
+      "condition": "guardian",
+      "stat": "damage",
+      "mode": "multiply",
+      "when": "while a portal guardian or final boss lives",
+      "label": "weapon damage"
+    },
+    "augment-guardian-rate": {
+      "condition": "guardian",
+      "stat": "rate",
+      "mode": "multiply",
+      "when": "while a portal guardian or final boss lives",
+      "label": "attack speed"
+    },
+    "augment-guardian-speed": {
+      "condition": "guardian",
+      "stat": "speed",
+      "mode": "multiply",
+      "when": "while a portal guardian or final boss lives",
+      "label": "movement speed"
+    },
+    "augment-guardian-regen": {
+      "condition": "guardian",
+      "stat": "regen",
+      "mode": "add",
+      "when": "while a portal guardian or final boss lives",
+      "label": "health per second"
+    },
+    "augment-guardian-armor": {
+      "condition": "guardian",
+      "stat": "armor",
+      "mode": "add",
+      "when": "while a portal guardian or final boss lives",
+      "label": "armour"
+    },
+    "augment-guardian-dodge": {
+      "condition": "guardian",
+      "stat": "dodge",
+      "mode": "add",
+      "when": "while a portal guardian or final boss lives",
+      "label": "dodge chance"
+    },
+    "augment-guardian-crit": {
+      "condition": "guardian",
+      "stat": "crit",
+      "mode": "add",
+      "when": "while a portal guardian or final boss lives",
+      "label": "critical chance"
+    },
+    "augment-guardian-critPower": {
+      "condition": "guardian",
+      "stat": "critPower",
+      "mode": "multiply",
+      "when": "while a portal guardian or final boss lives",
+      "label": "critical damage"
+    },
+    "augment-guardian-range": {
+      "condition": "guardian",
+      "stat": "range",
+      "mode": "multiply",
+      "when": "while a portal guardian or final boss lives",
+      "label": "weapon reach"
+    },
+    "augment-guardian-projectileSpeed": {
+      "condition": "guardian",
+      "stat": "projectileSpeed",
+      "mode": "multiply",
+      "when": "while a portal guardian or final boss lives",
+      "label": "projectile speed"
+    },
+    "augment-guardian-size": {
+      "condition": "guardian",
+      "stat": "size",
+      "mode": "multiply",
+      "when": "while a portal guardian or final boss lives",
+      "label": "projectile size"
+    },
+    "augment-guardian-knockback": {
+      "condition": "guardian",
+      "stat": "knockback",
+      "mode": "add",
+      "when": "while a portal guardian or final boss lives",
+      "label": "knockback metres"
+    },
+    "augment-guardian-lifesteal": {
+      "condition": "guardian",
+      "stat": "lifesteal",
+      "mode": "add",
+      "when": "while a portal guardian or final boss lives",
+      "label": "lifesteal"
+    },
+    "augment-guardian-bossDamage": {
+      "condition": "guardian",
+      "stat": "bossDamage",
+      "mode": "multiply",
+      "when": "while a portal guardian or final boss lives",
+      "label": "damage to bosses"
+    },
+    "augment-guardian-xpGain": {
+      "condition": "guardian",
+      "stat": "xpGain",
+      "mode": "multiply",
+      "when": "while a portal guardian or final boss lives",
+      "label": "XP gain"
+    },
+    "augment-guardian-goldGain": {
+      "condition": "guardian",
+      "stat": "goldGain",
+      "mode": "multiply",
+      "when": "while a portal guardian or final boss lives",
+      "label": "coin gain"
+    },
+    "augment-guardian-pickup": {
+      "condition": "guardian",
+      "stat": "pickup",
+      "mode": "add",
+      "when": "while a portal guardian or final boss lives",
+      "label": "XP pickup metres"
+    },
+    "augment-guardian-turretDamage": {
+      "condition": "guardian",
+      "stat": "turretDamage",
+      "mode": "multiply",
+      "when": "while a portal guardian or final boss lives",
+      "label": "turret damage"
+    },
+    "augment-guardian-turretRate": {
+      "condition": "guardian",
+      "stat": "turretRate",
+      "mode": "multiply",
+      "when": "while a portal guardian or final boss lives",
+      "label": "turret attack speed"
+    },
+    "augment-guardian-turretRange": {
+      "condition": "guardian",
+      "stat": "turretRange",
+      "mode": "multiply",
+      "when": "while a portal guardian or final boss lives",
       "label": "turret reach"
     }
   },

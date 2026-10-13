@@ -1,4 +1,4 @@
-// 360 distinct condition/bonus combinations plus 40 behavioral weapon variants.
+// 400 distinct condition/bonus combinations plus 40 behavioral weapon variants.
 // One positive effect per card. IDs and artwork recipes are stable across exports.
 export const CONDITIONS=[
  ['air','Skybound','while airborne','Mobility'],['ground','Trail','while grounded','Mobility'],
@@ -9,7 +9,8 @@ export const CONDITIONS=[
  ['kill','Victory','for 3 seconds after a kill','Assassin'],['hurt','Defiant','for 4 seconds after taking damage','Defense'],
  ['boss','Giantkiller','within 25 metres of a boss','Precision'],['alone','Scout','with no enemy within 8 metres','Scavenging'],
  ['crowd','Crowd','with 4 enemies within 12 metres','Chaos'],['flower','Petal','within 8 metres of a flower','Garden'],
- ['turret','Workshop','within 8 metres of your turret','Engineering'],['rich','Treasury','while carrying at least 50 coins','Economy']
+ ['turret','Workshop','within 8 metres of your turret','Engineering'],['rich','Treasury','while carrying at least 50 coins','Economy'],
+ ['eclipse','Eclipse','during the Eclipse','Spectral'],['guardian','Oathbound','while a portal guardian or final boss lives','Defense']
 ];
 export const BONUSES=[
  ['damage','Gauntlet',.25,'multiply','weapon damage'],['rate','Metronome',.22,'multiply','attack speed'],

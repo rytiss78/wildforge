@@ -1,12 +1,12 @@
 # Wildforge — Development Plan
 
-> **Active local release: 1.0.0.** Follow the [staged visual-overhaul roadmap](native/docs/visual-overhaul-1.0.0.md), requested October 12. It supersedes the earlier visual direction: Hades-inspired visuals throughout, unchanged camera, damage numbers rising from the bottom, retained HP orbs, expanded monster-boss rotation, verified removal of old assets, regular GitHub pushes and updated About/README/screenshots. The local overhaul is implemented and verified; see [final build and evidence](native/docs/release-1.0.0.md). The October 13 follow-up tasks below are the next pass.
+> **Active release: 1.1.0 — Build 12.** The October 13 Red Moon checkpoint adds the final arena, four heroes, combat/build progression, environment and UI changes. See [release evidence and remaining work](native/docs/release-1.1.0.md) and [balance notes](native/docs/balance-1.1.0.md). The older [1.0.0 overhaul](native/docs/release-1.0.0.md) remains historical evidence.
 
 > **October 12 audit:** historical `[x done]` marks below overstate completion. The [original audit](native/docs/repair-audit-2026-10-12.md) records the baseline; the [0.8.10 gameplay repair](native/docs/gameplay-repair-0.8.10.md) supersedes its hill traversal, XP, compatibility, co-op specialty, damage readability and harvestable findings. Pause history, HP-bar removal, difficulty scaling, icon distinctness and performance claims remain partial or unverified.
 
 **One developer. Streamlined process.** No multi-agent orchestration, no heavy rules. Direct edits, commit after each meaningful step, group exports after several milestones (Rytis prefers less-frequent uploads).
 
-**Version:** 1.0.0 (verified local build; GitHub Build 4 remains published). **Build:** Oct 13 2026. **Wrapper:** `node scripts/agent-workflow.mjs <action>`.
+**Version:** 1.1.0 / Build 12. Previous published version was v0.8.10-alpha (Build 11), not Build 4; older release statements are historical and were stale. **Build:** Oct 13 2026. **Wrapper:** `node scripts/agent-workflow.mjs <action>`.
 
 **Working rule:** every change committed + validated with the wrapper (see bottom), make exe build. Update README + release current.
 
@@ -24,21 +24,39 @@
 
 ### October 13 follow-up — next gameplay and visual pass
 
-These are newly requested, open tasks. The current 1.0.0 build does not certify their completion.
+Implementation and evidence are recorded in [the 1.1.0 checkpoint](native/docs/release-1.1.0.md). Completed implementation does not imply finished long-run balancing or a measured performance improvement.
 
-1. **Boss indicators and health orbs — `[ ] open`:** Remove boss HP indicators and nameplates from the screen. Enemy/boss health orbs are sufficient; restyle the orbs to match the new visual design while preserving readable health states and co-op synchronization.
-2. **Denser environments and lighting — `[ ] open`:** Populate maps with more biome-appropriate objects, localized glow and cast shadows, using Hades as the reference. Keep the ground restrained and preserve clear movement and combat visibility.
-3. **Directional dash — `[ ] open`:** Give players usable control over dash direction so ranged attacks can be deliberately dodged. Verify keyboard/mouse and controller behavior, including movement independent of camera facing.
-4. **Dangerous enemy ranged attacks — `[ ] open`:** Make ranged enemy attacks substantially more threatening; a poorly prepared hero build can be killed. Preserve readable warnings and opportunities to dodge, and balance solo/co-op damage.
-5. **Final zone after the third map — `[ ] open`:** The third map's exit portal leads to a small mini-Mars arena with a huge, slow boss using several different ranged attacks. Tune its health for approximately five-minute battles with representative builds and party sizes. After its death, trigger Eclipse permanently until all heroes are dead. Verify portal progression, final boss death, co-op authority and the endless Eclipse phase. “Ellipse” is interpreted as the existing Eclipse event.
-6. **Practical minimal UI — `[ ] open`:** Rework the interface further toward a minimal, practical Hades-inspired style. Prioritize clear hierarchy, compact information and useful controls; verify actual navigation and 720p/1080p layouts.
-7. **Biome-specific creepy enemies — `[ ] open`:** Research internet creepypasta references and create more original, distinctly different enemy designs for each biome. Vary movement speeds and behaviors so enemies do not all arrive in one clump; verify combat readability and encounter pacing.
-8. **Visible celestial sky — `[ ] open`:** Create a clearly visible Destiny 2-inspired sky with bright celestial objects, adapted to the Hades-inspired palette and lighting. Compose the sky for the existing camera and each biome, retaining contrast between the sky, terrain and combat effects.
-9. **Pinned online co-op option: NodeTunnel — `[ ] open`:** The user selected NodeTunnel as the preferred option to evaluate. Bundle its Godot plugin with Wildforge and provide Host Online / Join Room Code without separate player software or router configuration. Retain LAN/direct-IP. Check compatibility with the bundled engine and test actual two-network host/client gameplay before adopting it. Measure host-client round-trip latency, jitter and loss, including ranged attacks and directional dodges. The [currently listed free relay](https://nodetunnel.io/) is US East; European routing may add substantial delay. The [plugin listing](https://store.godotengine.org/asset/androodev/nodetunnel/) labels it beta/unstable and supports self-hosting; consider an EU relay if measured latency is unsuitable. This pins the candidate, not a completed integration or a hosting purchase. October 13 connectivity probe: five TCP connection attempts from this PC to `us-east.nodetunnel.io:8080` timed out (2-second socket timeout); no latency sample was obtained. This does not establish a service outage or actual in-game latency.
+1. **Boss indicators and health orbs — `[x done]`:** Remove boss HP indicators and nameplates from the screen. Enemy/boss health orbs are sufficient; restyle the orbs to match the new visual design while preserving readable health states and co-op synchronization.
+2. **Denser environments and lighting — `[x done]`:** Populate maps with more biome-appropriate objects, localized glow and cast shadows, using Hades as the reference. Keep the ground restrained and preserve clear movement and combat visibility.
+3. **Directional dash — `[x done]`:** Give players usable control over dash direction so ranged attacks can be deliberately dodged. Verify keyboard/mouse and controller behavior, including movement independent of camera facing.
+4. **Dangerous enemy ranged attacks — `[x done]`:** Make ranged enemy attacks substantially more threatening; a poorly prepared hero build can be killed. Preserve readable warnings and opportunities to dodge, and balance solo/co-op damage.
+5. **Final zone after the third map — `[~ in progress]`:** The third map's exit portal leads to a small mini-Mars arena with a huge, slow boss using several different ranged attacks. Tune its health for approximately five-minute battles with representative builds and party sizes. After its death, trigger Eclipse permanently until all heroes are dead. Verify portal progression, final boss death, co-op authority and the endless Eclipse phase. “Ellipse” is interpreted as the existing Eclipse event.
+6. **Practical minimal UI — `[x done]`:** Rework the interface further toward a minimal, practical Hades-inspired style. Prioritize clear hierarchy, compact information and useful controls; verify actual navigation and 720p/1080p layouts.
+7. **Biome-specific creepy enemies — `[~ in progress]`:** Research internet creepypasta references and create more original, distinctly different enemy designs for each biome. Vary movement speeds and behaviors so enemies do not all arrive in one clump; verify combat readability and encounter pacing.
+8. **Visible celestial sky — `[x done]`:** Create a clearly visible Destiny 2-inspired sky with bright celestial objects, adapted to the Hades-inspired palette and lighting. Compose the sky for the existing camera and each biome, retaining contrast between the sky, terrain and combat effects.
+9. **New heroes, class weapons and physical variety — `[x done]`:** Add Ninja, Smoker, Alcoholic and a white Supra-inspired meme car, each with a distinct starting weapon. Review the whole roster for meaningful differences in size, speed and jump height, with matching collision and readable health orbs.
+10. **Deferred online co-op option: NodeTunnel — `[ ] later`:** The user selected NodeTunnel as the preferred option to evaluate. Bundle its Godot plugin with Wildforge and provide Host Online / Join Room Code without separate player software or router configuration. Retain LAN/direct-IP. Check compatibility with the bundled engine and test actual two-network host/client gameplay before adopting it. Measure host-client round-trip latency, jitter and loss, including ranged attacks and directional dodges. The [currently listed free relay](https://nodetunnel.io/) is US East; European routing may add substantial delay. The [plugin listing](https://store.godotengine.org/asset/androodev/nodetunnel/) labels it beta/unstable and supports self-hosting; consider an EU relay if measured latency is unsuitable. This pins the candidate, not a completed integration or a hosting purchase. October 13 connectivity probe: five TCP connection attempts from this PC to `us-east.nodetunnel.io:8080` timed out (2-second socket timeout); no latency sample was obtained. This does not establish a service outage or actual in-game latency.
 
-The user requested adding these to the to-do list; implementation belongs to the next development pass.
+October 13: items 1–9 implemented; item 5 remains open for representative five-minute solo/party balance, and item 7 for further reference research/encounter pacing. The final boss was revised to 42 m, 0.22 m/s, angular skull/spires/skeletal legs and four 95–120 damage attack patterns after user feedback. NodeTunnel/tunneling remains deferred. Input actions are verified automatically; physical gamepad feel still needs player feedback.
 
-**Validation follow-up — `[ ] open`:** Diagnose the intermittent aggregate failure in the exported 720p UI review (`2026-10-13T08-01-54-716Z-release-review`) and add per-assertion reporting. Keep the failed evidence alongside successful runs; do not weaken assertions.
+### October 13 additional requests — easiest first
+
+- `[x done]` Progression toward jump–slam chains: baseline 4.5s recovery shared with head stomps; no ordinary-enemy instant kill. Rebound Gear improves recharge, alongside extra jumps, bounce, slam radius/power and elemental upgrades. A visible readiness indicator uses the current binding. Verify real inputs, recovery, upgraded chains and co-op authority.
+
+- `[x done]` Turret selection: visibly mark the selected turret and show current deploy/switch bindings, including custom controls and controller input.
+- `[x done]` Clearer hero damage: stronger readable hit feedback; lower Eclipse music volume.
+- `[~ in progress]` Quick balance pass: all heroes (including older class identities), weapons, skills, items, enemy roles and drop rates. Add useful new items. Record calculations and any playtest limitations.
+- `[x done]` Enemy physiques: vary sizes with speed and health, including modest species variation and matching co-op collision/visuals.
+- `[~ in progress]` Eclipse arrangement: adapt the existing local arrangement for gameplay while preserving its recognizable character; keep the original file. Review clipping, loudness and loop continuity.
+- `[~ in progress]` Other music: original, simpler phonk arrangements, with Eclipse remaining the aggressive contrast.
+- `[x done]` Finish the bright Hades-inspired effect pass, especially slam and remaining legacy effects; add/remake matching sound effects.
+- `[x done]` Massive biome buildings: substantial architectural spaces beyond scattered trees and towers; preserve navigation, sightlines and performance.
+
+- `[x done]` Main-menu and About version/build labels use project metadata: v1.1.0 / Build 12, checked at 720p and 1080p.
+
+Balance calculations and drop fixes are implemented; long-run balance remains open. Eclipse is 5 dB quieter with a softened mix of the existing arrangement, and original simpler phonk stems are implemented. Playback/loops/peaks pass; subjective music listening remains open.
+
+**Validation follow-up — `[~ in progress]`:** Diagnose the intermittent aggregate failure in the exported 720p UI review (`2026-10-13T08-01-54-716Z-release-review`). Per-assertion reporting is now added; current source/exported 720p/1080p navigation passes, but the historical failure has not been reproduced or explained. Keep the failed evidence alongside successful runs; do not weaken assertions.
 
 ### October 12 follow-up — six gameplay repairs — `[x done]`
 

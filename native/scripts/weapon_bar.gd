@@ -5,8 +5,11 @@ var signature = ""
 var game
 
 func refresh():
-	var next = ""
+	var turrets=game.equipped.filter(func(w):return w.turret)
+	var selected=turrets[game.selected_turret%turrets.size()] if not turrets.is_empty() else {}
+	var next = str(selected.get("id",""))+":"+str(ceili(selected.get("deploy_clock",0)))+":"
 	for weapon in game.equipped: next += weapon.id+str(weapon.rank)+";"
+	if next==signature and get_child_count()==3: return
 	# Track which slots are newly filled for entrance animation
 	var new_slots: Array[int]=[]
 	if next!=signature:
@@ -32,6 +35,10 @@ func refresh():
 		panel.add_child(column)
 		if filled:
 			var weapon = game.equipped[i]
+			if weapon.id==selected.get("id",""):
+				var selected_style=game.hud.style(ThemeTokens.PAPER_RUNTIME,ThemeTokens.STAR_GOLD,3);selected_style.set_border_width_all(2)
+				panel.add_theme_stylebox_override("panel",selected_style);panel.set_meta("selected_turret",true)
+				var selected_label=game.hud.label("SELECTED",11,ThemeTokens.STAR_GOLD);selected_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;column.add_child(selected_label)
 			panel.tooltip_text = weapon.name+" · Level "+str(weapon.rank)+"\n"+WeaponDetails.describe(weapon.id)
 			var icon = PowerIcon.new()
 			icon.key = weapon.id

@@ -230,7 +230,7 @@ func tick(delta: float):
 			var node=avatars[id];var target=vector(state.position);var movement=(target-node.position)*8
 			node.position=node.position.lerp(target,1-exp(-delta*12));node.rotation.y=float(state.get("yaw",0));node.get_meta("rig").animate(delta,movement,true)
 			if state.has("weapons"): node.get_meta("rig").sync_equipment(state.weapons)
-			if node.has_meta("nameplate"): node.get_meta("nameplate").text=str(state.get("name","Friend"))+("\nDOWNED · HOLD E / X" if game.update.downed_ids.has(id) else "")
+			if node.has_meta("nameplate"): node.get_meta("nameplate").text="DOWNED · HOLD E / X" if game.update.downed_ids.has(id) else ""
 			update_avatar_vitals(node.get_meta("rig"),state)
 
 func update_avatar_vitals(rig,state: Dictionary):
@@ -355,13 +355,13 @@ func receive(sender: int,message):
 				if enemy.dead or enemy.net_id!=int(message.get("id",-1)): continue
 				var p=vector(members[sender].get("position",[]));var top=enemy.node.position.y+enemy.height
 				if Vector2(p.x-enemy.node.position.x,p.z-enemy.node.position.z).length()<enemy.radius+.5 and absf(p.y-top)<1.5:
+					var now=Time.get_ticks_msec()/1000.0
+					if now<float(members[sender].get("stomp_ready",0)): return
+					var stats=members[sender].get("stats",{})
+					members[sender].stomp_ready=now+4.5/(1+clampf(float(stats.get("slamRecovery",0)),0,5))
 					enemy.hit_owner=sender
-					if enemy.boss:
-						game.hurt_enemy(enemy,float(members[sender].get("stats",{}).get("damage",15))*4,"stomp")
-						enemy.erase("hit_owner")
-					else:
-						game.kill_enemy(enemy,"stomp")
-						enemy.erase("hit_owner")
+					game.hurt_enemy(enemy,float(stats.get("damage",15))*2*float(stats.get("slamPower",1)),"stomp")
+					enemy.erase("hit_owner")
 				return
 		elif kind=="hit" and game.mode=="playing" and not frozen():
 			for enemy in game.enemies:
@@ -464,8 +464,12 @@ func ensure_avatar(id: int,state: Dictionary):
 		if not game.rules.data.heroes.any(func(h):return h.model==model): return
 		var node=CharacterBody3D.new();node.collision_layer=2;node.collision_mask=1
 		var collider=CollisionShape3D.new();var capsule=CapsuleShape3D.new();capsule.radius=.42;capsule.height=1.6;collider.shape=capsule;collider.position.y=.8;node.add_child(collider)
-		var rig=game.world.model(model,1.65);node.add_child(rig);node.set_meta("rig",rig);game.add_child(node);avatars[id]=node
-		var nameplate=Label3D.new();nameplate.text=str(state.get("name","Friend")).left(24);nameplate.position.y=2.1;nameplate.font_size=26;nameplate.billboard=BaseMaterial3D.BILLBOARD_ENABLED;node.add_child(nameplate);node.set_meta("nameplate",nameplate)
+		var definition=game.rules.data.heroes.filter(func(h):return h.model==model)[0]
+		capsule.radius=float(definition.get("radius",.42));capsule.height=maxf(float(definition.get("height",1.65)),capsule.radius*2);collider.position.y=capsule.height*.5
+		if definition.id=="white-supra":
+			var box=BoxShape3D.new();box.size=Vector3(capsule.radius*2,definition.height,2.3);collider.shape=box;collider.position.y=definition.height*.5
+		var rig=game.world.model(model,float(definition.get("height",1.65)));node.add_child(rig);node.set_meta("rig",rig);game.add_child(node);avatars[id]=node
+		var nameplate=Label3D.new();nameplate.text="";nameplate.position.y=float(definition.get("height",1.65))+.4;nameplate.font_size=26;nameplate.billboard=BaseMaterial3D.BILLBOARD_ENABLED;node.add_child(nameplate);node.set_meta("nameplate",nameplate)
 		if state.has("position"): node.position=vector(state.position)
 	update_avatar_vitals(avatars[id].get_meta("rig"),state)
 	var wanted={}

@@ -69,7 +69,7 @@ export function assessPng(path, started, minimum=320) {
 }
 
 async function main(action) {
-  if (!['fresh-import', 'biome-review', 'release-review', 'roster-review', 'bake-roster', 'style-review', 'boss-review', 'forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
+  if (!['playfeel-review', 'red-moon-review', 'fresh-import', 'biome-review', 'release-review', 'roster-review', 'bake-roster', 'style-review', 'boss-review', 'forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
     console.error('Usage: node scripts/agent-workflow.mjs check|smoke|capture|capture-ui|combat-review|pace-review|soak|integration|build|status'); return 2;
   }
   const git = (...args) => spawnSync('git', ['-C', root, ...args], {encoding:'utf8', windowsHide:true}).stdout?.trim() ?? '';
@@ -117,6 +117,20 @@ async function main(action) {
         if(Object.values(report[key].checks ?? report[key]).some(v=>v===false)) throw new Error('Exported '+key+' checks failed');
       }
       report.featureCaptures=['coop-feedback','feedback-cards','feedback-hud-ping','feedback-report','controls-custom','surface-wall','surface-ceiling','surface-ledge','progression-stats','progression-cards','progression-recap','progression-mobility','journey-corruption-after'].map(name=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge',name+'.png'),started));
+    }
+    if (action === 'playfeel-review') {
+      const output=await step('playfeel-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--playfeel-review'],180000);
+      const line=output.split(/\r?\n/).findLast(x=>x.startsWith('PLAYFEEL_REVIEW '));
+      if(!line)throw new Error('Missing playfeel review');report.playfeel=JSON.parse(line.slice(15));
+      if(Object.values(report.playfeel.checks).includes(false))throw new Error('Playfeel assertions failed');
+      report.capture=['slam','turrets','damage',...Array.from({length:6},(_,i)=>'building-'+i)].map(n=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','playfeel-'+n+'.png'),started));
+    }
+    if (action === 'red-moon-review') {
+      const output=await step('red-moon-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--red-moon-review'],180000);
+      const line=output.split(/\r?\n/).findLast(x=>x.startsWith('RED_MOON_REVIEW '));
+      if(!line)throw new Error('Missing Red Moon review');report.redMoon=JSON.parse(line.slice(16));
+      if(Object.values(report.redMoon.checks).includes(false))throw new Error('Red Moon assertions failed');
+      report.capture=['ninja','smoker','alcoholic','white-supra','field','arena','silhouette','attack-0','attack-1','attack-2','attack-3','lance-impact','eclipse'].map(n=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','red-moon-'+n+'.png'),started));
     }
     if (action === 'weapon-icons') {
       const output=await step('weapon-icons',godot,['--path',join(root,'native'),'--script','res://scripts/render_weapon_icons.gd'],180000);

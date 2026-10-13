@@ -18,7 +18,7 @@ const SKILLS={
 	"poison":12,"pools":12,"slamPoison":12,"potionPower":12,
 	"burn":13,"splash":13,"explosion":13,"dashBlast":13,"jumpBlast":13,"slamFire":13,"bombSize":13,
 	"freeze":14,"slow":14,
-	"speed":15,"jumpPower":15,"jumpHeight":15,"airJumps":15,"bounceJump":15,"airControl":15,"airDamage":15,"fallThreshold":15
+	"speed":15,"jumpPower":15,"jumpHeight":15,"airJumps":15,"bounceJump":15,"slamRecovery":15,"airControl":15,"airDamage":15,"fallThreshold":15
 }
 const WEAPONS = {"gun":0,"shotgun":1,"flame":2,"poison":3,"ice":4,"rail":5,"lightning":6,"saw":7,"rocket":8,"ghost":9,"flowers":10,"turret":11,"fire-turret":11,"poison-turret":11,"ice-turret":11,"lightning-turret":11,"rocket-turret":11}
 const POWERS = {
@@ -27,7 +27,7 @@ const POWERS = {
 	"lifesteal":15,"maxHp":15,"regen":15,"salvage":15,"repair":15,"revive":15,
 	"armor":16,"shield":16,"dodge":16,
 	"goldGain":17,"discount":17,"walkGold":17,"hurtGold":17,"interest":17,"coinRadius":17,"potGold":17,
-	"keyPower":18,"speed":19,"dashCooldown":19,"jumpPower":19,"jumpHeight":19,"airJumps":19,"fallGuard":16,"slamPower":7,"slamRadius":12,"bounceJump":19,"burrow":19,
+	"keyPower":18,"speed":19,"dashCooldown":19,"jumpPower":19,"jumpHeight":19,"airJumps":19,"fallGuard":16,"slamPower":7,"slamRadius":12,"bounceJump":19,"slamRecovery":19,"burrow":19,
 	"pickup":20,"magnetPulse":20,"thorns":21,"blind":22,
 	"ghost":9,"nova":23,"chain":6,"storm":6,"rate":6,"damage":7,"crit":7,"critPower":7,
 	"multishot":1,"pierce":5,"projectileSpeed":5,"range":5,"size":8,"ricochet":6,"boomerang":7,"luck":23

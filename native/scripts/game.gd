@@ -50,6 +50,7 @@ var shield_hp = 0.0
 var shield_delay = 0.0
 var invulnerable = 0.0
 var dash_time = 0.0
+var dash_direction = Vector3.FORWARD
 var dash_cooldown = 0.0
 var ghost_time = 0.0
 var burrow_time = 0.0
@@ -112,6 +113,7 @@ var materials = {}
 var direction = Vector3.FORWARD
 var air_jumps = 0
 var slamming = false
+var slam_cooldown = 0.0
 var peak_height = 0.0
 var last_safe = Vector3.ZERO
 var landing_ready = false
@@ -131,6 +133,10 @@ var pickup_merge_clock=0.0
 var eclipse_run_velocity=Vector3.ZERO
 var knock_velocity=Vector3.ZERO
 var hit_shake=0.0
+var damage_feedback_time=0.0
+var damage_feedback_strength=0.0
+var damage_feedback_source=Vector3.ZERO
+var last_damage_taken=0.0
 var hit_stop=0.0
 const MAX_DAMAGE_NUMBERS=48
 var damage_numbers=[]
@@ -168,7 +174,7 @@ func _ready():
 	smoke=smoke or OS.get_cmdline_user_args().has("--golden-scene")
 	smoke=smoke or OS.get_cmdline_user_args().has("--ui-review")
 	smoke=smoke or OS.get_cmdline_user_args().has("--journey-review") or OS.get_cmdline_user_args().has("--scenery-review") or OS.get_cmdline_user_args().has("--hunt-review")
-	smoke=smoke or OS.get_cmdline_user_args().has("--biome-review") or OS.get_cmdline_user_args().has("--style-review") or OS.get_cmdline_user_args().has("--boss-review") or OS.get_cmdline_user_args().has("--forge-review") or OS.get_cmdline_user_args().has("--combat-review") or OS.get_cmdline_user_args().has("--pace-review")
+	smoke=smoke or OS.get_cmdline_user_args().has("--playfeel-review") or OS.get_cmdline_user_args().has("--red-moon-review") or OS.get_cmdline_user_args().has("--biome-review") or OS.get_cmdline_user_args().has("--style-review") or OS.get_cmdline_user_args().has("--boss-review") or OS.get_cmdline_user_args().has("--forge-review") or OS.get_cmdline_user_args().has("--combat-review") or OS.get_cmdline_user_args().has("--pace-review")
 	camera_locked=OS.get_cmdline_user_args().has("--golden-scene") or OS.get_cmdline_user_args().has("--ui-review")
 	career = ProfileScript.new(rules.data,smoke)
 	if network_test_role!="": career.file="user://coop-test-"+network_test_role+".json"
@@ -271,6 +277,8 @@ func _ready():
 	elif OS.get_cmdline_user_args().has("--ui-review"): preload("res://scripts/ui_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--pace-review"): preload("res://scripts/pace_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--biome-review"): preload("res://scripts/biome_review.gd").run.call_deferred(self)
+	elif OS.get_cmdline_user_args().has("--playfeel-review"): preload("res://scripts/playfeel_review.gd").run.call_deferred(self)
+	elif OS.get_cmdline_user_args().has("--red-moon-review"): preload("res://scripts/red_moon_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--style-review"): preload("res://scripts/style_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--boss-review"): preload("res://scripts/boss_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--forge-review"): preload("res://scripts/forge_review.gd").run.call_deferred(self)
@@ -322,12 +330,21 @@ func select_hero(item: Dictionary):
 	hero=item
 	if coop!=null: coop.hero_changed()
 	if is_instance_valid(avatar): avatar.queue_free()
-	avatar=world.model(hero.model,1.65)
+	avatar=world.model(hero.model,float(hero.get("height",1.65)))
+	for child in player.get_children():
+		if child is CollisionShape3D:
+			var height=float(hero.get("height",1.65));var radius=float(hero.get("radius",.42))
+			if hero.id=="white-supra":
+				var box=BoxShape3D.new();box.size=Vector3(radius*2,height,2.3);child.shape=box
+			else:
+				var capsule=CapsuleShape3D.new();capsule.radius=radius;capsule.height=maxf(height,radius*2);child.shape=capsule
+			child.position.y=height*.5
 	avatar.rotation.y=PI
 	player.add_child(avatar)
 
 func clear_entities():
 	coop.clear_flower_visuals();flower_serial=0
+	damage_feedback_time=0;last_damage_taken=0
 	eclipse_run_velocity=Vector3.ZERO;pickup_merge_clock=0;enemy_step=0;crowd.clear();damage_numbers.clear()
 	melee_attacks.clear()
 	if is_instance_valid(avatar): avatar.finish_melee()
@@ -427,21 +444,24 @@ func enter_realm(index: int,broadcast_transition: bool=true):
 	player.position = Vector3(0,1.2,0)
 	player.velocity = Vector3.ZERO
 	player.reset_physics_interpolation()
-	air_jumps=0;slamming=false;landing_ready=false;peak_height=player.position.y;last_safe=player.position
+	air_jumps=0;slamming=false;slam_cooldown=0;landing_ready=false;peak_height=player.position.y;last_safe=player.position
 	avatar.sync_equipment(equipped)
 	avatar.visible = true
 	hud.map_view.visited.clear()
-	make_chests()
-	make_harvestables()
+	if realm<3:
+		make_chests()
+		make_harvestables()
 	make_gate()
 	update.realm_started()
-	Hunt.setup(self)
+	if realm<3: Hunt.setup(self)
 	for weapon in equipped:
 		weapon.clock = 0
 		if weapon.turret: deploy_turret(weapon)
 	# A ring already converges on you at spawn. No free minute of idling.
-	for i in range(9+realm): spawn_enemy(11.0+randf()*5.0)
-	hud.tell("%d / 3  ·  %s" % [realm+1,RealmWorld.NAMES[realm]],4)
+	if realm<3:
+		for i in range(9+realm): spawn_enemy(11.0+randf()*5.0)
+	else: preload("res://scripts/final_arena.gd").setup(self)
+	hud.tell("THE RED MOON" if realm==3 else "%d / 3  ·  %s" % [realm+1,RealmWorld.NAMES[realm]],4)
 	if realm > 0: sound.say("realm",0)
 	if broadcast_transition: coop.realm_changed()
 
@@ -495,8 +515,8 @@ func interaction_hint() -> String:
 	if not chest.is_empty():
 		var price = 0 if chest.free else rules.chest_price(paid_chests,stats.discount)
 		return "E / X   ▣   %s" % ("FREE" if price == 0 else "● %d" % price) + ("   ✓" if gold >= price else "   ✕")
-	if player.position.distance_to(gate_position) < 4:
-		return {"sealed":"PORTAL · %d / 2 wardens" % realm_bosses,"ready":"E / X · SUMMON FINAL GUARDIAN","fighting":"DEFEAT THE PORTAL GUARDIAN","cleared":"E / X · "+("NEXT WORLD" if realm<2 else "VICTORY")}[Journey.state(self)]
+	if realm<3 and player.position.distance_to(gate_position) < 4:
+		return {"sealed":"PORTAL · %d / 2 wardens" % realm_bosses,"ready":"E / X · SUMMON FINAL GUARDIAN","fighting":"DEFEAT THE PORTAL GUARDIAN","cleared":"E / X · "+("NEXT WORLD" if realm<2 else "THE RED MOON")}[Journey.state(self)]
 	return ""
 
 func interact():
@@ -510,7 +530,7 @@ func interact():
 		pick_harvestable(harvest);return
 	var chest = nearest_chest()
 	if not chest.is_empty(): buy_chest(chest);return
-	if player.position.distance_to(gate_position) < 4:
+	if realm<3 and player.position.distance_to(gate_position) < 4:
 		if coop.active and not coop.hosting: coop.send_to(coop.owner_id,{"type":"travel"});return
 		Journey.activate(self)
 
@@ -668,6 +688,7 @@ func deploy_turret(weapon: Dictionary):
 	create_tween().tween_property(node,"scale",Vector3.ONE,.25).set_trans(Tween.TRANS_BACK)
 	weapon.node = node
 	weapon.deploy_clock = 2
+	sound.effect("deploy")
 	weapon.clock = 0
 
 func vibrate(weak: float, strong: float, duration: float):
@@ -678,6 +699,7 @@ func heal(amount: float):
 	var actual = maxf(0,minf(stats.maxHp-hp,amount))
 	hp += actual
 	if actual > 0:
+		if actual>=5: sound.effect("heal");CombatInk.burst(self,player.position+Vector3.UP,Color("65f8bd"),6)
 		career.bump("healing",actual)
 		record_damage_number(-1,actual,"heal",player.position if is_instance_valid(player) else Vector3.INF)
 	update_hero_vitals()
@@ -763,14 +785,16 @@ func _input(event):
 	if mode == "reveal" and (event.is_action_pressed("jump") or event.is_action_pressed("interact")):
 		finish_reveal();get_viewport().set_input_as_handled();return
 	if mode != "playing": return
-	if event.is_action_pressed("next_turret"): selected_turret+=1
+	if event.is_action_pressed("next_turret"):
+		selected_turret+=1
+		if equipped.filter(func(w):return w.turret).size()>1: sound.effect("switch")
 	if event.is_action_pressed("ping"): update.send_ping()
 	if update.downed: return
 	if event.is_action_pressed("interact"): interact()
 	if event.is_action_pressed("build"): hud.build_menu()
 	if event.is_action_pressed("dash"): dash()
 	if event.is_action_pressed("jump"): try_jump()
-	if event.is_action_pressed("slam") and not player.is_on_floor(): slamming=true;player.velocity.y=-24;sound.effect("dash")
+	if event.is_action_pressed("slam"): try_slam()
 	if event.is_action_pressed("deploy"):
 		var turrets = equipped.filter(func(weapon):return weapon.turret)
 		if not turrets.is_empty() and turrets[selected_turret%turrets.size()].deploy_clock <= 0: deploy_turret(turrets[selected_turret%turrets.size()])
@@ -812,10 +836,11 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 	var biome=world.biome_at(p)
 	var species=CreatureBook.pick(biome,rules.rng)
 	var elite=not boss and rules.rng.randf()<.08
-	var boss_id=BossBook.choose(seed_value,realm,biome,boss_history) if boss else -1
+	var boss_id=(8 if realm==3 else BossBook.choose(seed_value,realm,biome,boss_history)) if boss else -1
 	var boss_entry=BossBook.entry(boss_id) if boss else {}
-	var height=boss_entry.height if boss else species.height*(1.25 if elite else 1.0)
-	var radius_value=boss_entry.radius if boss else species.radius*(1.25 if elite else 1.0)
+	var body_scale=rules.rng.randf_range(.90,1.12) if not boss else 1.0
+	var height=boss_entry.height if boss else species.height*body_scale*(1.25 if elite else 1.0)
+	var radius_value=boss_entry.radius if boss else species.radius*body_scale*(1.25 if elite else 1.0)
 	var valid_spawn=false
 	for attempt in range(24):
 		if spawn_is_clear(p,boss) and not enemies.any(func(e):return not e.dead and Vector2(e.node.position.x-p.x,e.node.position.z-p.z).length()<radius_value+e.radius+.1):
@@ -840,19 +865,19 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 		glow_ring.material_override=material(Color("ff6633"),2.5);glow_ring.scale=Vector3(1,.01,1);node.add_child(glow_ring);node.set_meta("elite_ring",glow_ring)
 	var max_health = ((500+realm*500+realm_time*3) if boss else (35+realm*22+realm_time*.12))*realm_difficulty
 	max_health *= 1+biome*.18
-	if not boss: max_health*=species.health*(.42 if species.behavior=="spit" else 1.0)
+	if not boss: max_health*=species.health*pow(body_scale,1.5)*(.60 if species.behavior=="spit" else 1.0)
 	if elite: max_health*=2.5
 	var enemy = {"biome":biome,"elite":elite,"node":node,"hp":max_health,"maxHp":max_health,"speed":2.9+realm*.35+randf()*0.6,"boss":boss,"fire":0.0,"poison":0.0,"status_time":0.0,"freeze":0.0,"blind":0.0,"slow":0.0,"attack":2.5*realm_difficulty,"telegraph":0.0,"dead":false,"contact":0.0,"phase":1,"startDamage":health_damage}
 	enemy.guardian=guardian
-	enemy.merge(species);enemy.speed*=species.speed
+	enemy.merge(species);enemy.speed*=species.speed/pow(body_scale,.6)*(.9 if elite else 1.0)
 	enemy.height=height;enemy.radius=radius_value;enemy.flying=species.flying and not boss
 	if biome==1 and enemy.species==1 and not boss: enemy.behavior="charge"
 	rig.set_health(1,boss or species.health>=1.8)
 	if enemy.flying: node.floor_snap_length=0;node.position.y+=species.altitude
 	enemy.net_id=coop.next_entity;coop.next_entity+=1
-	if not boss and realm_time>=600:
-		var threat=1+int((realm_time-600)/30);enemy.speed*=1+minf(.75,threat*.08);enemy.damage*=realm_difficulty*(1+minf(3,threat*.15))
-	if realm_time>=600: EclipseCorruption.apply(enemy,1+int((realm_time-600)/30))
+	if not boss and events.get("eclipse",false):
+		var threat=maxi(1,int(events.get("eclipse_stage",1)));enemy.speed*=1+minf(.75,threat*.08);enemy.damage*=realm_difficulty*(1+minf(3,threat*.15))
+	if events.get("eclipse",false): EclipseCorruption.apply(enemy,maxi(1,int(events.get("eclipse_stage",1))))
 	enemy.xp_reward=enemy_xp_reward(enemy)
 	if boss:
 		enemy.boss_id=boss_id;enemy.model="boss_"+str(boss_id);enemy.name=boss_entry.name
@@ -860,7 +885,6 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 		boss_history.append(boss_id);boss_name=boss_entry.name
 		sound.say("boss",0);update.quip("boss")
 		vibrate(.5,.8,.35)
-		hud.tell("☠  " + boss_name,5)
 		Journey.boss_arrived(self,enemy)
 	enemies.append(enemy)
 
@@ -896,7 +920,7 @@ func nearest_enemy(origin: Vector3, distance_value: float, excluded: Array = [])
 	var best_distance = distance_value*distance_value
 	for enemy in enemies:
 		if enemy.dead or excluded.has(enemy.net_id): continue
-		var distance = origin.distance_squared_to(enemy_center(enemy))
+		var distance = origin.distance_squared_to(melee_contact(enemy,origin) if enemy.boss else enemy_center(enemy))
 		if distance < distance_value*distance_value and (result.is_empty() or enemy.boss and not result.boss or enemy.boss==result.boss and distance<best_distance) and target_visible(origin,enemy_center(enemy)): best_distance=distance;result=enemy
 	return result
 
@@ -981,9 +1005,9 @@ func blood_hit(enemy: Dictionary):
 func spawn_network_enemy(actor: Dictionary) -> Dictionary:
 	var node=CharacterBody3D.new();node.collision_layer=4;node.collision_mask=1
 	var collision=CollisionShape3D.new();var capsule=CylinderShape3D.new();capsule.radius=1.05 if actor.boss else .53;capsule.height=3.4 if actor.boss else 1.7;collision.shape=capsule;collision.position.y=capsule.height*.5;node.add_child(collision)
-	var entry=CreatureBook.entry(int(actor.biome),int(actor.species));var height=float(actor.get("height",9.0+realm*2 if actor.boss else entry.height*(1.25 if actor.elite else 1.0)));capsule.height=height;capsule.radius=float(actor.get("radius",2.8 if actor.boss else entry.radius));collision.position.y=height*.5;var rig=world.model("boss_"+str(clampi(int(actor.get("boss_id",0)),0,7)) if actor.boss else entry.model,height);node.add_child(rig);node.set_meta("rig",rig);node.position=CoopSession.vector(actor.position);add_child(node)
+	var entry=CreatureBook.entry(int(actor.biome),int(actor.species));var height=float(actor.get("height",9.0+realm*2 if actor.boss else entry.height*(1.25 if actor.elite else 1.0)));capsule.height=height;capsule.radius=float(actor.get("radius",2.8 if actor.boss else entry.radius));collision.position.y=height*.5;var rig=world.model("boss_"+str(clampi(int(actor.get("boss_id",0)),0,8)) if actor.boss else entry.model,height);node.add_child(rig);node.set_meta("rig",rig);node.position=CoopSession.vector(actor.position);add_child(node)
 	var enemy={"net_id":int(actor.id),"node":node,"hp":float(actor.hp),"maxHp":float(actor.maxHp),"boss":bool(actor.boss),"elite":bool(actor.elite),"biome":int(actor.biome),"dead":false,"speed":0.0,"fire":0.0,"poison":0.0,"status_time":0.0,"freeze":0.0,"blind":0.0,"slow":0.0,"phase":1,"startDamage":health_damage,"contact":0.0,"attack":2.5};enemy.merge(entry);enemy.height=height;enemy.radius=capsule.radius;enemy.flying=entry.flying and not enemy.boss;enemy.xp_reward=float(actor.get("xp_reward",enemy_xp_reward(enemy)))
-	enemy.guardian=bool(actor.get("guardian",false));enemy.title=str(actor.get("title","Guardian"));enemy.boss_id=clampi(int(actor.get("boss_id",0)),0,7)
+	enemy.guardian=bool(actor.get("guardian",false));enemy.title=str(actor.get("title","Guardian"));enemy.boss_id=clampi(int(actor.get("boss_id",0)),0,8)
 	if enemy.boss: enemy.model="boss_"+str(enemy.boss_id);enemy.name=BossBook.entry(enemy.boss_id).name
 	if not enemy.boss: rig.bake_enemy()
 	if enemy.boss:
@@ -991,8 +1015,8 @@ func spawn_network_enemy(actor: Dictionary) -> Dictionary:
 		
 	enemies.append(enemy)
 	# Apply eclipse corruption for newly spawned remote enemies
-	if sound.eclipse_active or realm_time>=600:
-		var stage=1+int((realm_time-600)/30) if realm_time>=600 else 0
+	if events.get("eclipse",false):
+		var stage=maxi(1,int(events.get("eclipse_stage",1)))
 		EclipseCorruption.apply(enemy,stage)
 	return enemy
 
@@ -1294,7 +1318,7 @@ func kill_enemy(enemy: Dictionary, cause: String):
 	coop.died(enemy,cause)
 	enemy.dead = true
 	Hunt.defeated(self,enemy)
-	if enemy.get("elite",false): drop_consumable(enemy.node.position)
+	if enemy.boss or enemy.get("elite",false) or rules.rng.randf()<.03: drop_consumable(enemy.node.position,enemy.boss)
 	kills += 1
 	var enemy_kind="Boss" if enemy.boss else str(enemy.get("name",enemy.get("model","Unknown")))
 	kill_types[enemy_kind]=int(kill_types.get(enemy_kind,0))+1
@@ -1365,17 +1389,20 @@ func take_damage(amount: float, source: Vector3=Vector3.ZERO, voice_type: String
 		if shield_hp == 0: sound.say("shield_down",20)
 	var taken = maxf(0,amount-absorbed)*100/(100+stat("armor")*6)
 	hp -= taken
+	last_damage_taken=taken;damage_feedback_time=.65
+	damage_feedback_strength=clampf((taken+absorbed*.3)/maxf(1,stats.maxHp)*3,.22,1)
+	damage_feedback_source=source
 	update_hero_vitals()
 	condition_times.hurt=elapsed
 	health_damage += taken
 	if stats.hurtGold>0: achievement_event("HURT_PAY");gold += roundi(stats.hurtGold*maxf(1,taken))
 	invulnerable = .55
 	avatar.hurt=.35
-	hit_shake=.25
+	hit_shake=maxf(hit_shake,.18+damage_feedback_strength*.24)
 	if source!=Vector3.ZERO:
 		knock_velocity=(player.position-source).normalized()*8;knock_velocity.y=0
 		player.velocity.y=maxf(player.velocity.y,1.7)
-	sound.effect(voice_type,source)
+	sound.effect("shield-hit" if absorbed>0 and taken<=0 else voice_type,source)
 	sound.hero_hurt(hero.id,player)
 	vibrate(.35,.65,.13)
 	if hp < stats.maxHp*.28 and not low_health_warned:
@@ -1390,6 +1417,7 @@ func take_damage(amount: float, source: Vector3=Vector3.ZERO, voice_type: String
 
 func dash():
 	if dash_cooldown>0: return
+	dash_direction=preload("res://scripts/combat_tactics.gd").dash_vector(Input.get_vector("move_left","move_right","move_forward","move_back",.18),yaw,direction)
 	condition_times.dash=elapsed
 	dash_time = .2
 	dash_cooldown = stats.dashCooldown
@@ -1401,7 +1429,8 @@ func dash():
 		if boss_active(): achievement_event("GHOST_DANGER")
 	if stats.burrow>0: burrow_time=.4;career.bump("burrows")
 	if stats.dashBlast>0: damage_area(player.position,4.5,stats.dashBlast,"explosion")
-	burst(player.position+Vector3.UP*.5,Color("b0d9ea"),7)
+	CombatInk.beam(self,player.position+Vector3.UP*.6,player.position+Vector3.UP*.6-dash_direction*3,Color("43eaff"))
+	burst(player.position+Vector3.UP*.5,Color("43eaff"),7)
 	sound.effect("dash")
 	vibrate(.35,.2,.12)
 
@@ -1516,7 +1545,7 @@ func warn_at(p: Vector3,radius_value: float,delay: float,damage_value: float,sty
 func update_combat(delta: float):
 	update_melee(delta)
 	spawn_clock -= delta
-	if spawn_clock <= 0:
+	if spawn_clock <= 0 and (realm<3 or events.get("eclipse",false)):
 		var swarm = events.get("swarm_until",0.0)>realm_time or update.beacon_state=="defending"
 		var count = 2+realm+(3 if swarm else 0)
 		var budget=int(update.beacon_budget) if update.beacon_state=="defending" else int(events.get("wave_budget",0))
@@ -1596,12 +1625,12 @@ func update_combat(delta: float):
 		var aim=toward.normalized() if enemy.blind<=0 else Vector3(sin(elapsed*1.2+distance),0,cos(elapsed*1.2+distance))
 		if distance<enemy.radius+.65 and absf(target_player.position.y-enemy.node.position.y)<2.0: aim=Vector3.ZERO
 		if not enemy.boss:
+			if distance>5 and distance<28 and enemy.behavior in ["skitter","swoop","stalker"]:
+				aim=aim.rotated(Vector3.UP,(.55 if int(enemy.net_id)%2==0 else -.55))
 			if enemy.behavior=="spit":
 				enemy.attack-=enemy_delta
-				if distance<14 and enemy.attack<=0 and enemy.freeze<=0 and enemy.blind<=0:
-					enemy.attack=8.0;enemy.node.get_meta("rig").attack=.4
-					warn_at(target_player.position,1.6,.9,12*enemy.damage,"toxic")
-					coop.broadcast({"type":"hazard","realm":realm,"position":coop.array(target_player.position),"radius":1.6,"delay":.9,"damage":12*enemy.damage,"style":"toxic"})
+				if distance<23 and enemy.attack<=0 and enemy.freeze<=0 and enemy.blind<=0:
+					preload("res://scripts/combat_tactics.gd").ranged_attack(self,enemy,target_player.position)
 				if distance<7: aim=-aim*.6
 		if distance>90 and not enemy.boss and enemy.node.position.distance_to(update.beacon_position)>30:
 			enemy.dead=true;enemy.node.queue_free();continue
@@ -1652,7 +1681,7 @@ func update_combat(delta: float):
 			body.move_and_slide()
 			enemy.vertical=body.velocity.y/(enemy_delta/delta)
 			if body.position.y<world.height_at(body.position.x,body.position.z)-4: body.position.y=world.height_at(body.position.x,body.position.z)+.3;body.velocity.y=0
-			if aim.length()>.01: body.rotation.y=lerp_angle(body.rotation.y,atan2(-aim.x,-aim.z),enemy_delta*6)
+			if aim.length()>.01: body.rotation.y=lerp_angle(body.rotation.y,atan2(-aim.x,-aim.z),enemy_delta*(.28 if enemy.get("boss_id",-1)==8 else 6))
 		if body.has_meta("rig"):
 			var rig: ActorRig=body.get_meta("rig")
 			rig.set_health(enemy.hp/enemy.maxHp,enemy.boss or enemy.health>=1.8)
@@ -1743,6 +1772,10 @@ func update_combat(delta: float):
 			burst(hazard.node.position+Vector3.UP,Color("f69559"),10)
 			explosion_fx(hazard.node.position,hazard.radius)
 			match hazard.get("style",""):
+				"annihilation","orbital":
+					var titans=enemies.filter(func(e):return not e.dead and e.get("boss_id",-1)==8)
+					var source=hazard.node.position+Vector3.UP*42 if titans.is_empty() else titans[0].node.position+Vector3.UP*27
+					CombatInk.beam(self,source,hazard.node.position,Color("ff423e") if hazard.style=="annihilation" else Color("59baff"),true,4)
 				"storm": beam(hazard.node.position+Vector3.UP*35,hazard.node.position,Color("b2dfec"))
 				"roots":
 					for spike_index in range(5):
@@ -1778,13 +1811,15 @@ func update_combat(delta: float):
 				hurt_enemy(enemy,stats.storm,"lightning")
 		storm_clock=5
 	if nova_clock<=0:
-		if hp>0 and stats.nova>0: damage_area(player.position,7,stats.nova,"explosion")
+		if hp>0 and stats.nova>0:
+			damage_area(player.position,7,stats.nova,"explosion");CombatInk.wave(self,player.position,7,Color("af71ff"));sound.effect("nova")
 		nova_clock=6
 	if xp>=xp_target and mode=="playing" and hp>0: level_up()
 
 func update_events():
-	Hunt.tick(self)
+	if realm<3: Hunt.tick(self)
 	Journey.tick(self)
+	if realm==3: return
 	if coop.active and not coop.hosting: return
 	if events.get("wave_active",false) and realm_time>=events.get("swarm_until",0): events.wave_active=false;hud.tell("WAVE CLEARED",3)
 	for item in [[150,"warn_one","boss"],[180,"boss_one","spawn"],[210,"warn_swarm","swarm"],[240,"swarm_one","rush"],[390,"warn_swarm_two","swarm"],[420,"swarm_two","rush"],[450,"warn_two","boss"],[480,"boss_two","spawn"]]:
@@ -1828,12 +1863,13 @@ func _physics_process(delta: float):
 	var previous = player.position
 	dash_time=maxf(0,dash_time-delta)
 	dash_cooldown=maxf(0,dash_cooldown-delta)
+	slam_cooldown=maxf(0,slam_cooldown-delta)
 	invulnerable=maxf(0,invulnerable-delta)
 	ghost_time=maxf(0,ghost_time-delta)
 	burrow_time=maxf(0,burrow_time-delta)
 	if dash_time>0:
-		eclipse_run_velocity=direction*stat("speed")
-		player.velocity.x=direction.x*stat("speed")*3;player.velocity.z=direction.z*stat("speed")*3
+		eclipse_run_velocity=dash_direction*stat("speed")
+		player.velocity.x=dash_direction.x*stat("speed")*3;player.velocity.z=dash_direction.z*stat("speed")*3
 		# Dash trail particles
 		if randf()<.4:
 			var trail=update.effect_node(orb_mesh,material(Color("b0d9ea")),player.position+Vector3.UP*.6)
@@ -2101,8 +2137,8 @@ func run_smoke():
 	var checks = {"native":true,"initial_enemies":enemies.size(),"weapon_slots":equipped.size(),"chests":chests.size(),"first_price":rules.chest_price(0),"rarities":rules.data.loot.size(),"achievements":career.achievements.size(),"xp_target":xp_target,"realm":realm,"paid_count":paid_chests}
 	checks.main_menu=rebuilt_menu
 	checks.xbox_navigation=navigated;checks.xbox_accept=accepted;checks.pointer_focus_safe=pointer_safe
-	checks.hero_roster=rules.data.heroes.size()==21 and rules.data.heroes.all(func(h):return ResourceLoader.exists("res://assets/style3d/"+("count_duck" if h.model=="rubber_duck_toy" else "hero_"+h.model)+".glb"))
-	checks.enemy_roster=range(6).all(func(b):return range(6).all(func(s):return ResourceLoader.exists("res://assets/style3d/creature_%d_%d.glb" % [b,s])))
+	checks.hero_roster=rules.data.heroes.size()==25 and rules.data.heroes.all(func(h):return ResourceLoader.exists("res://assets/style3d/"+("count_duck" if h.model=="rubber_duck_toy" else "hero_"+h.model)+".glb"))
+	checks.enemy_roster=range(6).all(func(b):return range(7).all(func(s):return ResourceLoader.exists("res://assets/style3d/creature_%d_%d.glb" % [b,s])))
 	checks.painted_terrain=range(6).all(func(i):return ResourceLoader.exists("res://assets/illustrated/terrain-%d.png" % i))
 	checks.painted_weapons=rules.data.weapons.all(func(w):return ResourceLoader.exists("res://assets/illustrated/weapon-icons/"+w.id+".png"))
 	checks.opaque_ui=is_equal_approx(hud.style(Color(0,0,0,.2)).bg_color.a,1.0)
@@ -2333,8 +2369,9 @@ func run_smoke():
 	clear_entities()
 	mode="playing";spawn_enemy(12)
 	var stomp_target=enemies[0];stomp_target.node.position=Vector3.ZERO;stomp_target.hp=10000
+	slam_cooldown=0;slamming=false
 	player.position=Vector3(0,stomp_target.height-.05,0);check_stomp(Vector3(0,stomp_target.height+.7,0),-8)
-	checks.head_stomp=stomp_target.dead and player.velocity.y>0
+	checks.head_stomp=not stomp_target.dead and is_equal_approx(10000-stomp_target.hp,stat("damage")*2*stat("slamPower")) and player.velocity.y>0 and slam_cooldown>0
 	mode="playing";invulnerable=0;stats.dodge=0;stats.armor=0;hp=1000
 	take_damage(10,Vector3(1,1,0),"shell_bump")
 	checks.hit_bump=knock_velocity.x<0 and hit_shake>0 and avatar.hurt>0
@@ -2455,6 +2492,15 @@ func update_garden(delta: float):
 		if flower.life<=0: flower.node.queue_free()
 	flowers=flowers.filter(func(f):return f.life>0)
 
+func slam_recovery() -> float:
+	return 4.5/(1.0+clampf(stat("slamRecovery"),0,5))
+
+func try_slam() -> bool:
+	if player.is_on_floor() or slamming or slam_cooldown>0: return false
+	slamming=true;slam_cooldown=slam_recovery();player.velocity.y=-24
+	sound.effect("dash")
+	return true
+
 func try_jump():
 	if not player.is_on_floor() and air_jumps>=int(stat("airJumps")): return
 	if player.is_on_floor(): air_jumps=0;peak_height=player.position.y;landing_ready=true
@@ -2469,15 +2515,15 @@ func try_jump():
 	if boss_active(): achievement_event("AIRTIME")
 
 func check_stomp(previous: Vector3,falling_speed: float):
-	if falling_speed>-.5: return
+	if falling_speed>-.5 or (slam_cooldown>0 and not slamming): return
 	for enemy in enemies:
 		if enemy.dead: continue
 		var top=enemy.node.position.y+enemy.get("height",1.7)
 		var planar=Vector2(player.position.x-enemy.node.position.x,player.position.z-enemy.node.position.z).length()
 		if planar<enemy.get("radius",.53)+.27 and previous.y>=top-.25 and player.position.y<=top+.16:
-			if enemy.boss: hurt_enemy(enemy,stat("damage")*4,"stomp")
-			elif coop.active and not coop.hosting: coop.stomp(enemy)
-			else: kill_enemy(enemy,"stomp")
+			if coop.active and not coop.hosting: coop.stomp(enemy)
+			else: hurt_enemy(enemy,stat("damage")*2*stat("slamPower"),"stomp")
+			slam_cooldown=slam_recovery();condition_times.slam=elapsed
 			player.position.y=top+.15;player.velocity.y=6.5;air_jumps=0;slamming=false;peak_height=player.position.y;landing_ready=true
 			sound.effect("squish",enemy.node.position);burst(enemy.node.position+Vector3.UP,Color("f1d39c"),9);vibrate(.22,.45,.1)
 			return
@@ -2494,7 +2540,7 @@ func update_boiling_edge():
 	for chest in chests:
 		if not chest.get("destroyed",false) and world.dangerous(chest.node.position): chest.destroyed=true;chest.opened=true;chest.node.visible=false
 	if world.dangerous(player.position):
-		hp=0;health_damage+=stats.maxHp;end_run(false);hud.tell("THE DEADLY SEA CLAIMED YOU",6)
+		hp=0;health_damage+=stats.maxHp;end_run(false);hud.tell("THE VOID CLAIMED YOU" if realm==3 else "THE DEADLY SEA CLAIMED YOU",6)
 
 func run_coop_test():
 	coop.test_mode=true
@@ -2543,11 +2589,13 @@ func run_coop_test():
 	var started=Time.get_ticks_msec();var pause_done=false;var realm_done=false;var moved=false;var shared_enemies=false;var maximum_avatars=0
 	var down_sent=false;var saw_down=false;var saw_rescue=false;var saw_ping=false;var purchase_sent=false;var supply_sent=false;var saw_purchase=false;var saw_supply=false;var gold_before=0
 	var down_sent2=false;var rescued2=false;var pause_done2=false
-	var realm_cycle_done=false;var realm_cycle_done2=false
+	var realm_cycle_done=false;var realm_cycle_done2=false;var final_test_done=false;var final_reset=false;var saw_final=false;var saw_final_eclipse=false
 	var saw_remote_flowers=false;var saw_own_numbers=false;var saw_boss_identity=false;var saw_remote_vitals=false
 	var hunt_sent=false;var hunt_seen=false;var hunt_reward=false;var guardian_sent=false;var guardian_seen=false
 	while Time.get_ticks_msec()-started<(360000 if network_test_role=="host" else 360000):
 		var seconds=(Time.get_ticks_msec()-started)/1000.0
+		saw_final=saw_final or realm==3 and enemies.any(func(e):return e.get("boss_id",-1)==8 and e.maxHp>90000)
+		saw_final_eclipse=saw_final_eclipse or realm==3 and events.get("final_defeated",false) and events.get("eclipse",false)
 		saw_boss_identity=saw_boss_identity or enemies.any(func(e):return e.boss and e.get("boss_id",-1)>=0 and e.node.get_meta("rig").identity=="boss_"+str(e.boss_id))
 		for id in coop.avatars:
 			var member=coop.members.get(id,{})
@@ -2574,7 +2622,7 @@ func run_coop_test():
 			for target in enemies.filter(func(e):return e.net_id in events.hunt_ids and not e.dead): kill_enemy(target,"diagnostic")
 		if network_test_role=="host" and seconds>15 and not guardian_sent:
 			guardian_sent=true;realm_bosses=2;Journey.activate(self)
-		if network_test_role=="host" and seconds>16:
+		if network_test_role=="host" and seconds>16 and seconds<18:
 			for target in enemies.filter(func(e):return e.get("guardian",false) and not e.dead): kill_enemy(target,"diagnostic")
 		# Extended 6-minute test: realm cycling with frame-budgeted chunk building
 		if network_test_role=="host":
@@ -2587,12 +2635,14 @@ func run_coop_test():
 				enter_realm(realm)
 				realm_time=0
 			if seconds>240 and not realm_cycle_done2:
-				realm_cycle_done2=true
-				var old_r=realm
-				realm=(realm+1)%3
-				print("REALM_CYCLE: "+str(old_r)+" -> "+str(realm))
-				enter_realm(realm)
-				realm_time=0
+				realm_cycle_done2=true;realm_bosses=2;Journey.activate(self)
+				for target in enemies.filter(func(e):return e.get("guardian",false) and not e.dead): kill_enemy(target,"diagnostic")
+				Journey.activate(self)
+			if seconds>300 and not final_test_done:
+				final_test_done=true
+				for target in enemies.filter(func(e):return e.get("boss_id",-1)==8 and not e.dead): kill_enemy(target,"diagnostic")
+			if seconds>330 and not final_reset:
+				final_reset=true;enter_realm(0)
 			# Periodic merchant visits
 			if seconds>30 and seconds<300 and update.merchant and mode!="merchant" and Time.get_ticks_msec()%30000<100:
 				player.position=update.merchant.position;gold=1000;update.merchant_menu()
@@ -2634,8 +2684,8 @@ func run_coop_test():
 	var finish_deadline=Time.get_ticks_msec()+8000
 	while coop.test_finished_peers.is_empty() and Time.get_ticks_msec()<finish_deadline:
 		await get_tree().create_timer(.1).timeout
-	var checks={"realm_trace":network_test_realms,"all_realm_transitions":network_test_realms==[0,1,2,0],"finish_handshake":not coop.test_finished_peers.is_empty() and coop.test_finished_peers.values().all(func(r):return r==realm),"boss_identity":saw_boss_identity,"remote_vitals":saw_remote_vitals,"remote_flowers":saw_remote_flowers,"own_damage_numbers":saw_own_numbers,"force_pulses":coop.force_requests_received>0 if network_test_role=="host" else coop.saw_force_pulse,"lobby_blocked":lobby_blocked,"hero_change_clears_ready":hero_reset,"lobby_hero_ready_synced":lobby_synced,"role":network_test_role,"standalone":not Engine.has_singleton("Steam"),"discovery":discovered_party if network_test_role=="client" else true,"connected":coop.active,"avatars":maximum_avatars,"members":coop.members.size(),"same_enemies":shared_enemies,"remote_hits":coop.remote_hits,"kills_received":coop.kills_received,"snapshots":coop.snapshots_received,"moved":moved,"party_pause":coop.saw_pause if network_test_role=="client" else true,"realm":realm,"realm_received":coop.saw_realm,"downed":saw_down,"rescued":saw_rescue,"ping":saw_ping,"merchant":saw_purchase,"supply":saw_supply,"hunt_started":hunt_seen,"hunt_reward":hunt_reward,"guardian_defeated":guardian_seen}
-	var passed=checks.all_realm_transitions and checks.finish_handshake and checks.boss_identity and checks.remote_vitals and checks.remote_flowers and checks.own_damage_numbers and checks.force_pulses and lobby_blocked and hero_reset and lobby_synced and checks.hunt_started and checks.hunt_reward and checks.guardian_defeated and checks.downed and checks.rescued and checks.ping and checks.merchant and checks.supply and checks.standalone and checks.discovery and checks.connected and checks.avatars>0 and shared_enemies and realm==0 and (coop.remote_hits>0 if network_test_role=="host" else coop.snapshots_received>20 and coop.saw_pause and coop.saw_realm and moved)
+	var checks={"final_boss":saw_final,"final_eclipse":saw_final_eclipse,"realm_trace":network_test_realms,"all_realm_transitions":network_test_realms==[0,1,2,3,0],"finish_handshake":not coop.test_finished_peers.is_empty() and coop.test_finished_peers.values().all(func(r):return r==realm),"boss_identity":saw_boss_identity,"remote_vitals":saw_remote_vitals,"remote_flowers":saw_remote_flowers,"own_damage_numbers":saw_own_numbers,"force_pulses":coop.force_requests_received>0 if network_test_role=="host" else coop.saw_force_pulse,"lobby_blocked":lobby_blocked,"hero_change_clears_ready":hero_reset,"lobby_hero_ready_synced":lobby_synced,"role":network_test_role,"standalone":not Engine.has_singleton("Steam"),"discovery":discovered_party if network_test_role=="client" else true,"connected":coop.active,"avatars":maximum_avatars,"members":coop.members.size(),"same_enemies":shared_enemies,"remote_hits":coop.remote_hits,"kills_received":coop.kills_received,"snapshots":coop.snapshots_received,"moved":moved,"party_pause":coop.saw_pause if network_test_role=="client" else true,"realm":realm,"realm_received":coop.saw_realm,"downed":saw_down,"rescued":saw_rescue,"ping":saw_ping,"merchant":saw_purchase,"supply":saw_supply,"hunt_started":hunt_seen,"hunt_reward":hunt_reward,"guardian_defeated":guardian_seen}
+	var passed=checks.final_boss and checks.final_eclipse and checks.all_realm_transitions and checks.finish_handshake and checks.boss_identity and checks.remote_vitals and checks.remote_flowers and checks.own_damage_numbers and checks.force_pulses and lobby_blocked and hero_reset and lobby_synced and checks.hunt_started and checks.hunt_reward and checks.guardian_defeated and checks.downed and checks.rescued and checks.ping and checks.merchant and checks.supply and checks.standalone and checks.discovery and checks.connected and checks.avatars>0 and shared_enemies and realm==0 and (coop.remote_hits>0 if network_test_role=="host" else coop.snapshots_received>20 and coop.saw_pause and coop.saw_realm and moved)
 	print("COOP_TEST "+JSON.stringify(checks));var report=FileAccess.open("user://coop-"+network_test_role+"-results.json",FileAccess.WRITE);report.store_string(JSON.stringify(checks,"  "));report.close()
 	await get_tree().create_timer(.75).timeout
 	coop.leave()
@@ -2755,8 +2805,7 @@ func activate_consumable(kind: String):
 	hud.tell("%d s  ·  %s" % [duration,PotionBook.TYPES[kind].name])
 
 func drop_consumable(p: Vector3, force: bool=false):
-	if not force and not owned.any(func(item): return item.effects.any(func(effect): return effect.key=="luck")): return
-	if not force and rules.rng.randf()>minf(.95,.35+stats.luck*.4+stats.potionChance): return
+	if not force and rules.rng.randf()>minf(.75,.22+maxf(0,stats.luck)*.12+stats.potionChance*.5): return
 	var kinds=PotionBook.TYPES.keys();var kind=kinds[rules.rng.randi_range(0,kinds.size()-1)]
 	var entry=PotionBook.TYPES[kind]
 	var node=Node3D.new();add_child(node)
@@ -2776,10 +2825,8 @@ func stat(key: String) -> float:
 	return HarvestBook.value(self,key,ContentExpansion.value(self,key,PotionBook.value(key,float(stats.get(key,0)),buffs,float(stats.get("potionPower",1.0)))))
 
 func slam_wave():
-	var ring=TorusMesh.new();ring.inner_radius=.85;ring.outer_radius=1
-	var node=ToonArt.part(self,ring,Color("eed39a"),player.position+Vector3.UP*.12)
-	node.scale=Vector3.ONE*.1
-	var tween=create_tween();tween.tween_property(node,"scale",Vector3(4*stats.slamRadius,.2,4*stats.slamRadius),.3);tween.tween_callback(node.queue_free)
+	CombatInk.wave(self,player.position,4*stats.slamRadius,Color("ffbd35"))
+	sound.effect("slam")
 
 
 func run_soak():

@@ -4,25 +4,27 @@
 
 A vivid 3D survival game where a duck, a loaf of bread and an angry granny are perfectly reasonable hero choices. Explore strange places, grab unpredictable upgrades and become outrageously overpowered before the monsters catch you.
 
-**[Download the Windows build](https://github.com/rytiss78/wildforge/releases/tag/build-4)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
+**[Download the Windows build](https://github.com/rytiss78/wildforge/releases/tag/build-12)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
 
-The current release is **0.8.4**: Half XP curve so levels feel like milestones, 5 banishes per realm (not shared in co-op), and vertical camera movement (mouse/stick now tilts up and down). Full changelog in [release notes](https://github.com/rytiss78/wildforge/releases/tag/build-4). Run `build/Wildforge.exe` locally, or unpack the Windows download and run `Wildforge.exe`.
+The current release is **1.1.0 — Build 12**. Four new heroes bring their own weapons: Ninja, Smoker, Alcoholic and White Supra. Directional dashes, stronger enemy ranged attacks and upgrade-driven jump–slam chains give each build more choices.
 
-The local development version is **1.0.0**, with angular characters and scenery, dark engraved menus and icons, quieter ground, vivid combat effects and eight rotating monster bosses. Glass health orbs and the existing third-person camera remain. [Changes, local build and validation](native/docs/release-1.0.0.md). Build 4 remains the published download.
+The third map leads to the Red Moon: a small arena with a 42-metre skeletal boss, extremely slow movement and deadly ranged attacks. Defeat it to begin an endless Eclipse. Denser glowing scenery, six huge biome buildings, celestial skies, compact UI, clearer damage feedback and simpler phonk music complete this checkpoint. [Changes, balance limits and validation](native/docs/release-1.1.0.md).
 
-![Co-op hero selection with the new dark interface](docs/screenshots/forge-1.0.0/release-coop.png)
+Run `build/red-moon-1.1.0-build12/Wildforge.exe` locally, or unpack the Windows download and run `Wildforge.exe`. Keep the accompanying files together. The main menu shows the version and build number.
+
+![Co-op hero selection with the new dark interface](docs/screenshots/red-moon-1.1.0/ui-coop.png)
 
 *Choose your hero and join a party.*
 
 ## Your hero. Your chaos.
 
-Choose from 21 ridiculous heroes, each with their own trick. Count Duck steals life. Sir Loaf dashes with a bang. Florist turns footsteps into a dangerous blooming garden. Admiral Bubbles brings a bathtub to the battlefield.
+Choose from 25 ridiculous heroes, each with their own trick. Count Duck steals life. Sir Loaf dashes with a bang. Florist turns footsteps into a dangerous blooming garden. Admiral Bubbles brings a bathtub to the battlefield.
 
 Carry three weapons at once. When two hands aren't enough, grow a third arm. Mix guns, blades, flowers and turrets with fire, poison, frost, ghosts, thorns and strange money tricks. Every upgrade helps you grow stronger; the next chest might send your run in a completely different direction.
 
-![Hero selection with the new articulated characters](docs/screenshots/forge-1.0.0/release-hero.png)
+![Hero selection with the new articulated characters](docs/screenshots/red-moon-1.1.0/red-moon-white-supra.png)
 
-*Tank Potato skipped every leg day.*
+*White Supra brings speed, a wide turning footprint and backfire weapons.*
 
 ## Find trouble somewhere new
 
@@ -30,7 +32,7 @@ Roam through Clover Woods, Puffcap Marsh, Moon Craters, Cloud City, Candy Hell a
 
 Spend your coins on a chest, choose one of five rewards and keep building your ridiculous little disaster. Chase 108 achievements built around exploration, clever combinations and unusual challenges.
 
-![Detailed skill cards with paid rerolls](docs/screenshots/forge-1.0.0/release-offers.png)
+![Detailed skill cards with paid rerolls](docs/screenshots/red-moon-1.1.0/ui-offers.png)
 
 *One choice. More trouble for the monsters.*
 
@@ -58,11 +60,11 @@ For Windows packaging, place the console editor at `tools/godot/Godot_v4.7.2-sta
 ```powershell
 node scripts/native.mjs
 ./scripts/package-native.ps1
-./scripts/package-release.ps1 -BuildNumber 2
+./scripts/package-release.ps1 -BuildNumber 12 -BuildDirectory build/red-moon-1.1.0-build12 -SourceCommit HEAD
 ./scripts/test-coop.ps1 -Packaged -RenderedClient
 ```
 
-Published downloads use sequential build numbers: `Wildforge 0.8.4 — Build 4`, tag `build-4`, and `Wildforge-0.8.4-Build-4-Windows.zip`. Increment the build number for each new published build; do not use test labels or GitHub's prerelease flag. Packaging includes `build-info.json` and a build-specific checksum. Build 4 is published; 5 is the next number. When packaging an already verified staging directory, pass `-BuildDirectory` and its exact `-SourceCommit`.
+Published downloads use sequential build numbers. This release is `Wildforge 1.1.0 — Build 12`, tag `build-12`, archive `Wildforge-1.1.0-Windows.zip`. Build 13 is next. Releases use the normal GitHub release flag; the game remains a development alpha. Packaging includes `build-info.json` and a version-specific checksum. Pass `-BuildDirectory` and its exact `-SourceCommit` when packaging a verified staging directory. Build 12 also records preserved local overrides in its source manifest; see the release evidence.
 
 WASD / left stick moves; mouse / right stick looks; Space / A jumps; Shift / RT dashes; Ctrl / B slams; E / X interacts; B / Y opens your build; Escape / Menu pauses. Weapons attack automatically. Florist plants while moving.
 

@@ -24,7 +24,7 @@ func setup(weapon_id: String):
 	add_child(base)
 	base.add_child(rank_parts)
 	var definition=ContentExpansion.weapon(id)
-	if definition.has("archetype"):
+	if definition.has("archetype") and not ResourceLoader.exists("res://assets/style3d/weapon_"+id+".glb"):
 		var original=WeaponModel.new();variant_base=original;original.setup(str(definition.archetype));base.add_child(original)
 		muzzle.free();muzzle=original.muzzle
 		var paint=load("res://assets/illustrated/content/textures/"+id+".svg")

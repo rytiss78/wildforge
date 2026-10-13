@@ -41,7 +41,7 @@ test('all six first-discovery announcements have original text and rendered audi
 });
 test('complete 3D roster has articulated heroes, enemy health cores, and baked scenery',()=>{
  const glb=(name)=>{const b=readFileSync(new URL(`native/assets/style3d/${name}.glb`,root));assert.equal(b.toString('ascii',0,4),'glTF');return JSON.parse(b.toString('utf8',20,20+b.readUInt32LE(12)));};
- assert.equal(catalog.heroes.length,21);
+ assert.equal(catalog.heroes.length,25);
  for(const hero of catalog.heroes){
   const doc=glb(hero.model==='rubber_duck_toy'?'count_duck':'hero_'+hero.model);
   assert.ok(doc.nodes.some(n=>n.name?.startsWith('GlassCore')),hero.id+' core');
@@ -56,4 +56,16 @@ test('complete 3D roster has articulated heroes, enemy health cores, and baked s
  for(let b=0;b<6;b++)glb('harvest_'+b);
  for(const w of catalog.weapons)assert.ok(existsSync(new URL(`native/assets/illustrated/weapon-icons/${w.id}.png`,root)),w.id);
  for(const a of catalog.achievements)assert.ok(existsSync(new URL(`native/assets/illustrated/achievements/${a.id}.svg`,root)),a.id);
+});
+
+// The expansion increases the roster to 25 and adds one uncanny creature per biome.
+test('new classes have physical profiles and dedicated modeled weapons',()=>{
+ for(const id of ['ninja','smoker','alcoholic','white-supra']){
+  const h=catalog.heroes.find(h=>h.id===id);assert.ok(h,id);
+  const w=catalog.weapons.find(w=>w.id===h.weapon);assert.ok(w?.archetype,id);
+  assert.ok(existsSync(new URL(`native/assets/style3d/weapon_${w.id}.glb`,root)));
+ }
+ assert.ok(new Set(catalog.heroes.map(h=>h.height)).size>=8);
+ for(const h of catalog.heroes){assert.ok(h.height>h.radius);assert.ok(h.effects.some(e=>e.key==='jumpHeight'));assert.ok(h.effects.some(e=>e.key==='speed'));}
+ for(let b=0;b<6;b++)assert.ok(existsSync(new URL(`native/assets/style3d/creature_${b}_6.glb`,root)));
 });

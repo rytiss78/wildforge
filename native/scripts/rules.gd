@@ -47,7 +47,7 @@ func card_targets_weapon(item: Dictionary, weapon_id: String) -> bool:
 	return false
 
 func rarity(luck: float) -> int:
-	var chance = rng.randf() + minf(luck, 0.75) * 0.18
+	var chance = rng.randf() + clampf(luck,0,0.75) * 0.06
 	return 3 if chance > 0.987 else 2 if chance > 0.91 else 1 if chance > 0.66 else 0
 
 func roll(kind: String, luck: float = 0.0, minimum: int = 0) -> Dictionary:
@@ -60,22 +60,9 @@ func roll(kind: String, luck: float = 0.0, minimum: int = 0) -> Dictionary:
 		result.strength = strength
 		return result
 	# Pick a gameplay mechanic first, then a card. Large families cannot suppress unique powers.
-	# Weight each mechanic inversely to its size so all items get roughly equal representation.
+	# Equal mechanic odds keep adding themed cards from diluting basic upgrades.
 	var mechanics=mechanic_pools[kind].keys()
-	var total_weight=0.0
-	var weights={}
-	for m in mechanics:
-		weights[m]=1.0/float(mechanic_pools[kind][m].size())
-		total_weight+=weights[m]
-	var target=rng.randf()*total_weight
-	var cumulative=0.0
-	var chosen_mech=mechanics[0]
-	for m in mechanics:
-		cumulative+=weights[m]
-		if cumulative>=target:
-			chosen_mech=m
-			break
-	var mechanic=chosen_mech
+	var mechanic=mechanics[rng.randi_range(0,mechanics.size()-1)]
 	var pool: Array=mechanic_pools[kind][mechanic]
 	var result: Dictionary = pool[rng.randi_range(0, pool.size() - 1)].duplicate(true)
 	result.effects=[result.effects[0].duplicate()]
@@ -146,7 +133,7 @@ func apply_effects(stats: Dictionary, effects: Array):
 		if not stats.has(key): continue
 		if effect.get("mode", "add") == "multiply": stats[key] *= 1.0 + effect.amount
 		else: stats[key] += effect.amount
-	var caps = {"airJumps":8,"keyPower":.75,"fallGuard":.95,"jumpHeight":5,"slamRadius":4,"bounceJump":2,"flowerSeeds":2,"flowerRoots":0.7,"rate":18,"speed":18,"maxHp":5000,"damage":3000,"dodge":0.65,"lifesteal":0.4,"crit":0.85,"freeze":0.65,"blind":0.65,"discount":0.6,"multishot":7,"chain":8,"pierce":12,"turretCount":1,"drones":3,"interest":0.08,"ghost":2.0,"pickup":20,"coinRadius":22,"regen":40,"revive":4}
+	var caps = {"slamRecovery":5,"airJumps":8,"keyPower":.75,"fallGuard":.95,"jumpHeight":5,"slamRadius":4,"bounceJump":2,"flowerSeeds":2,"flowerRoots":0.7,"rate":18,"speed":18,"maxHp":5000,"damage":3000,"dodge":0.65,"lifesteal":0.4,"crit":0.85,"freeze":0.65,"blind":0.65,"discount":0.6,"multishot":7,"chain":8,"pierce":12,"turretCount":1,"drones":3,"interest":0.08,"ghost":2.0,"pickup":20,"coinRadius":22,"regen":40,"revive":4}
 	caps.merge({"discBounces":8,"boomerangPierce":12,"harpoonPull":3,"gravitySize":4,"hornStun":3,"bubbleTime":4,"meteorCount":5,"bombSize":4,"airDamage":3,"landingHeal":50,"slamHeal":50,"airControl":.5,"fallThreshold":20,"potionDuration":4,"potionPower":3,"potionChance":.6,"jumpShield":100,"jumpBlast":200,"slamFire":100,"slamPoison":100,"coinHeal":20,"chestHeal":200})
 	# Match the limits already used by combat instead of offering ineffective cards.
 	caps.merge({"enemyPull":8,"enemyPush":8,"size":2.5,"knockback":3,"slow":.7,"banana":.6})
@@ -169,6 +156,7 @@ func describe(effect: Dictionary) -> String:
 	if effect.key in ["harpoonPull","fallThreshold"]: return name+" +%s m" % snappedf(amount,.01)
 	if effect.key=="hornStun": return name+" +%s s" % snappedf(amount,.01)
 	if effect.key in ["airDamage","airControl","potionChance"]: return name+" +%s%%" % snappedf(amount*100,.01)
+	if effect.key=="slamRecovery": return "Slam recharge +%s%% (4.5s base; 0.75s minimum)" % snappedf(amount*100,.01)
 	if effect.key=="dashCooldown": return "Dash cooldown −%s s" % snappedf(absf(amount),.01)
 	if effect.key in ["jumpHeight","airJumps","fallGuard","slamPower","slamRadius","bounceJump"]:
 		name={"jumpHeight":"Jump height","airJumps":"Extra air jumps","fallGuard":"Fall damage reduction","slamPower":"Slam damage","slamRadius":"Slam radius","bounceJump":"Landing jump boost"}[effect.key]

@@ -20,7 +20,7 @@ void fragment() {
 	float blood=(1.0-smoothstep(surface-0.008,surface+0.008,height))*step(0.002,fill);
 	float rim=pow(1.0-clamp(dot(normalize(NORMAL),normalize(VIEW)),0.0,1.0),2.3);
 	vec3 empty_glass=mix(vec3(0.18,0.32,0.29),vec3(0.035,0.09,0.09),rim*0.75);
-	vec3 red=mix(vec3(0.56,0.024,0.038),vec3(0.85,0.072,0.065),height);
+	vec3 red=mix(vec3(0.20,0.006,0.026),vec3(0.98,0.025,0.08),floor(height*5.0)/4.0);
 	vec3 liquid=red;
 	vec3 color=mix(empty_glass,liquid,blood*(1.0-rim*0.3));
 	float meniscus=(1.0-smoothstep(0.008,0.021,abs(height-surface)))*step(0.015,fill)*step(fill,0.985);
@@ -36,7 +36,12 @@ void fragment() {
 	float glass_arc=(1.0-smoothstep(0.04,0.10,abs(n.x+0.47)))*smoothstep(0.05,0.25,n.y)*(1.0-smoothstep(0.55,0.80,n.y));
 	reflection=max(reflection,glass_arc*0.85);
 	color=mix(color,vec3(0.97,0.96,0.82),reflection*0.8);
-	ALBEDO=mix(color,vec3(1.0,0.83,0.58),hit*0.35);
+	// Broken bronze bezel and ink edge frame the liquid without covering its level.
+ float bezel=smoothstep(.55,.73,rim)*(1.0-smoothstep(.9,.99,rim));
+ float engraving=step(.38,fract(UV.x*12.0));
+ color=mix(color,mix(vec3(.26,.16,.05),vec3(.80,.57,.20),engraving),bezel*.9);
+ color=mix(color,vec3(.018,.025,.036),smoothstep(.94,1.0,rim));
+ ALBEDO=mix(color,vec3(1.0,0.83,0.58),hit*0.35);
 	ROUGHNESS=0.85;
 	EMISSION=color*(0.025+fill*0.10)+vec3(0.96,0.77,0.5)*rim*0.16;
 }

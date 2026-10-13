@@ -70,7 +70,7 @@ const heroPerks={
  astronaut:['Moon Boots','Start with a double jump. Deal 25% more weapon damage while airborne.',[['airJumps',1,'add'],['airDamage',.25,'add']]],
  cactus:['Bad Hug','Enemies touching you take 12 thorn damage twice per second.',[['thorns',12,'add']]],
  book:['Chain Letter','Hits chain lightning to two extra enemies.',[['chain',2,'add']]],
- snail:['Slime Trail','Weapon hits poison enemies for 8 damage per second.',[['poison',8,'add']]],
+ snail:['Slime Trail','Weapon hits poison enemies for 8 damage per second. A sturdy shell adds 3 armour.',[['poison',8,'add']]],
  bee:['Honey Money','Walking earns 0.25 coins per metre. Each coin drop heals 0.5 health.',[['walkGold',.25,'add'],['coinHeal',.5,'add']]],
  sushi:['Sharp Slice','20% chance for weapon hits to deal double damage.',[['crit',.2,'add']]],
  mushroom:['Hot Seasoning','Weapon hits burn enemies for 8 damage per second.',[['burn',8,'add']]],
@@ -81,6 +81,28 @@ const heroPerks={
  toaster:['Pop Goes Toast','Defeated enemies explode for 12 damage.',[['explosion',12,'add']]]
 };
 for(const h of heroes){const [perk,description,effects]=heroPerks[h.id];h.perk=perk;h.description=description;h.effects=effects.map(([key,amount,mode])=>({key,amount,mode}));}
+
+// Class weapons reuse proven projectile behavior with their own geometry and modifiers.
+for(const [id,name,archetype,damage,rate,modifiers,description] of [
+ ['ninja-shuriken','Moon Shuriken','disc',.60,.95,{extraShots:1,spread:.12,extraPierce:1},'Twin piercing stars ricochet between enemies.'],
+ ['smoke-censer','Smoke Censer','poison',.38,.9,{extraShots:2,spread:.22,shotScale:1.5},'Three heavy toxic shots spread out and poison enemies.'],
+ ['bottle-barrage','Last Orders','bomb',1.5,.7,{fuse:.8,areaScale:1.3,payload:'fire'},'Explosive bottles burst after a short fuse.'],
+ ['supra-backfire','Turbo Backfire','flame',.42,1.3,{extraShots:1,spread:.18},'Twin exhaust jets burn a broad lane.']
+]) {const base=weapons.find(w=>w.id===archetype);weapons.push({...base,id,name,archetype,damage,rate,modifiers,description,icon:id,art:{shape:weapons.length%20,condition:18}});}
+for(const [id,name,title,weapon,perk,description,effects] of [
+ ['ninja','Ninja','A small shadow with a very large grudge.','ninja-shuriken','Afterimage','Fast feet, high jumps and 12% dodge, with 15% less health.',['dodge',.12,'add']],
+ ['smoker','Smoker','An ash-grey coat and an ill-tempered chimney.','smoke-censer','Secondhand Hex','Poison hits deal 10 extra damage per second.',['poison',10,'add']],
+ ['alcoholic','Alcoholic','Last call. First into trouble.','bottle-barrage','Last Orders','Bottle explosions and 30% more health.',['maxHp',.3,'multiply']],
+ ['white-supra','White Supra','The white coupe has entered the dungeon.','supra-backfire','Turbocharged','Very fast, wide, low-jumping; dashes blast for 24 damage.',['dashBlast',24,'add']]
+]) heroes.push({id,name,title,model:id,weapon,perk,description,effects:[{key:effects[0],amount:effects[1],mode:effects[2]}]});
+// Physical profiles are shared by local collision, remote visuals and selection descriptions.
+const physiques={
+ wrench:[1.7,.43,.96,.95],duck:[1.5,.38,1.02,1.1],broccoli:[2.05,.57,.82,.8],grandma:[1.85,.48,.86,.85],goblin:[1.2,.31,1.17,1.25],loaf:[1.5,.46,1.05,1.05],
+ florist:[1.7,.4,1,1.05],teapot:[1.65,.49,.92,.9],octopus:[1.85,.53,.94,1.15],astronaut:[1.8,.42,.96,1.35],cactus:[1.95,.48,.9,.9],book:[1.35,.36,1.07,1.2],
+ snail:[1.25,.47,.85,.7],bee:[1.2,.3,1.2,1.35],sushi:[1.4,.38,1.12,1.15],mushroom:[1.6,.47,.98,1.1],clock:[1.75,.44,.95,1],icecream:[1.9,.39,1.03,1.2],
+ bathtub:[1.35,.58,.84,.7],peacock:[2,.48,1.08,1.15],toaster:[1.35,.45,.96,.9],ninja:[1.4,.32,1.24,1.45],smoker:[2.1,.43,.92,.9],alcoholic:[1.75,.53,.88,.8],'white-supra':[1.05,.7,1.42,.55]
+};
+for(const h of heroes){const [height,radius,speed,jump]=physiques[h.id];Object.assign(h,{height,radius});if(h.id==='ninja')h.effects.push({key:'maxHp',amount:-.15,mode:'multiply'});if(h.id==='snail')h.effects.push({key:'armor',amount:3,mode:'add'});h.effects.push({key:'speed',amount:speed-1,mode:'multiply'},{key:'jumpHeight',amount:jump-1,mode:'multiply'});h.description+=` Height ${height.toFixed(2)} m · Move ${Math.round(speed*100)}% · Jump ${Math.round(jump*100)}%.`;}
 
 for(const [id,name,key,amount] of [['bloom','Big Bloom','flowerPower',.35],['roots','Roots','flowerRoots',.2],['pollen','Pollen','flowerPollen',5],['nectar','Nectar','flowerHeal',2],['seed','Seeds','flowerSeeds',1]]) for(const kind of ['item','skill']) loot.push({id:id+'-'+kind,name,title:name,family:'Garden',kind,effects:[{key,amount,mode:key==='flowerPower'?'multiply':'add'}]});
 
@@ -98,7 +120,7 @@ const moreCards=[
  ['loud-horn','Loud Horn','hornStun',.3,'add',0],['long-bubble','Long Bubble','bubbleTime',.3,'multiply',1],
  ['meteor-shower','Meteor Shower','meteorCount',1,'add',0],['big-bomb','Big Bomb','bombSize',.25,'multiply',1],
  ['air-power','Air Power','airDamage',.25,'add',0],['soft-heal','Soft Heal','landingHeal',2,'add',0],
- ['slam-heal','Slam Heal','slamHeal',3,'add',0],['air-steer','Air Steer','airControl',.2,'add',0],
+ ['rebound-gear','Rebound Gear','slamRecovery',.30,'add',0],['slam-heal','Slam Heal','slamHeal',3,'add',0],['air-steer','Air Steer','airControl',.2,'add',0],
  ['safe-fall','Safe Fall','fallThreshold',1,'add',0],['long-potion','Long Potion','potionDuration',.2,'multiply',1],
  ['strong-potion','Strong Potion','potionPower',.2,'multiply',1],['potion-luck','Potion Luck','potionChance',.15,'add',0],
  ['jump-shield','Jump Shield','jumpShield',2,'add',0],['jump-blast','Jump Blast','jumpBlast',4,'add',0],

@@ -1,0 +1,92 @@
+[
+  {
+    "asset": "hero_ninja",
+    "triangles": 2700,
+    "mesh_nodes": 14,
+    "bytes": 96304
+  },
+  {
+    "asset": "hero_smoker",
+    "triangles": 3300,
+    "mesh_nodes": 17,
+    "bytes": 118240
+  },
+  {
+    "asset": "hero_alcoholic",
+    "triangles": 2752,
+    "mesh_nodes": 16,
+    "bytes": 99832
+  },
+  {
+    "asset": "hero_white-supra",
+    "triangles": 3704,
+    "mesh_nodes": 21,
+    "bytes": 131620
+  },
+  {
+    "asset": "creature_0_6",
+    "triangles": 2388,
+    "mesh_nodes": 9,
+    "bytes": 82236
+  },
+  {
+    "asset": "creature_1_6",
+    "triangles": 2444,
+    "mesh_nodes": 13,
+    "bytes": 89172
+  },
+  {
+    "asset": "creature_2_6",
+    "triangles": 3104,
+    "mesh_nodes": 8,
+    "bytes": 102412
+  },
+  {
+    "asset": "creature_3_6",
+    "triangles": 2356,
+    "mesh_nodes": 12,
+    "bytes": 83324
+  },
+  {
+    "asset": "creature_4_6",
+    "triangles": 2540,
+    "mesh_nodes": 17,
+    "bytes": 96868
+  },
+  {
+    "asset": "creature_5_6",
+    "triangles": 2708,
+    "mesh_nodes": 20,
+    "bytes": 101944
+  },
+  {
+    "asset": "boss_8",
+    "triangles": 6036,
+    "mesh_nodes": 136,
+    "bytes": 324780
+  },
+  {
+    "asset": "weapon_ninja-shuriken",
+    "triangles": 832,
+    "mesh_nodes": 5,
+    "bytes": 30288
+  },
+  {
+    "asset": "weapon_smoke-censer",
+    "triangles": 392,
+    "mesh_nodes": 6,
+    "bytes": 18508
+  },
+  {
+    "asset": "weapon_bottle-barrage",
+    "triangles": 336,
+    "mesh_nodes": 4,
+    "bytes": 15320
+  },
+  {
+    "asset": "weapon_supra-backfire",
+    "triangles": 196,
+    "mesh_nodes": 7,
+    "bytes": 13020
+  }
+]

@@ -5,7 +5,7 @@ const EXTENT=400.0
 const SPAWN_EXTENT=EXTENT-30.0
 const DANGER_EXTENT=EXTENT-25.0
 const CHUNK=64.0
-const NAMES=["Sunlit Frontier","Wild Highlands","Skyward Reach"]
+const NAMES=["Sunlit Frontier","Wild Highlands","Skyward Reach","The Red Moon"]
 const BIOMES=["Clover Woods","Puffcap Marsh","Moon Craters","Cloud City","Candy Hell","Starfall Space"]
 const CREATURES=["acorn","toad","crab","penguin","lizard","beetle"]
 const COLORS=[Color("326849"),Color("91b3ab"),Color("b4c5df"),Color("d9eaed"),Color("e69479"),Color("ab96c5")]
@@ -15,6 +15,7 @@ var noise=FastNoiseLite.new()
 var height_vertices={}
 var rng=RandomNumberGenerator.new()
 var landmarks=[]
+var building_sites=[]
 var harvest_sites: Array[Vector3]=[]
 var chunks={}
 var pending=[]
@@ -44,6 +45,7 @@ const SKY_TOP=[Color("111a2b"),Color("151b28"),Color("18234d"),Color("254459"),C
 const SKY_HORIZON=[Color("293b48"),Color("405149"),Color("536683"),Color("8aa8a8"),Color("944436"),Color("534577")]
 
 static func coast_radius(angle: float,world_seed: int,world_realm: int) -> float:
+	if world_realm==3: return 72.0
 	var phase=float(world_seed%23)*.03+world_realm*.4
 	return 344+24*sin(3*(angle+phase))+14*sin(5*(angle-phase))+8*cos(7*(angle+phase*.5))
 
@@ -91,6 +93,7 @@ func weather_tick(delta: float,p: Vector3):
 		border_steam[index].position=point;border_patches[index].position=point
 
 func biome_at(p: Vector3) -> int:
+	if realm==3: return 2
 	if Vector2(p.x,p.z).length()<65: return 0
 	return int(floor(fposmod(atan2(p.z,p.x)+float(seed_value%23)*.03+realm*.4,TAU)/(TAU/6)))
 
@@ -116,6 +119,9 @@ func raw_height_at(x: float,z: float) -> float:
 	return value
 
 func compute_height_at(x: float,z: float) -> float:
+	if realm==3:
+		var distance=Vector2(x,z).length()
+		return 1.3+sin(x*.06)*cos(z*.06)*.4-maxf(0,distance-64)*.45
 	var p=Vector3(x,0,z)
 	var biome=biome_at(p)
 	var angle=fposmod(atan2(z,x)+float(seed_value%23)*.03+realm*.4,TAU)/(TAU/6)
@@ -138,6 +144,7 @@ func compute_height_at(x: float,z: float) -> float:
 	return lerpf(inland,shore,smoothstep(coast-32.0,coast-4.0,edge))
 
 func portal_site() -> Vector3:
+	if realm==3: return Vector3(0,1.5,48)
 	var p=landmarks[(realm+1)%landmarks.size()]+Vector3(18,0,16)
 	p.y=height_at(p.x,p.z)+.2
 	return p
@@ -160,10 +167,12 @@ func build(index: int,world_seed: int):
 	noise.seed=world_seed%2147483647;noise.frequency=.014;noise.fractal_octaves=3;noise.fractal_gain=.4
 	for child in get_children():
 		remove_child(child);child.queue_free()
-	chunks.clear();pending.clear();landmarks.clear();harvest_sites.clear();last_cell=Vector2i(999,999);stream_signature=""
+	chunks.clear();pending.clear();landmarks.clear();building_sites.clear();harvest_sites.clear();last_cell=Vector2i(999,999);stream_signature=""
 	clouds.clear();border_steam.clear();border_patches.clear()
 	make_environment();make_material();make_boundaries();make_landmarks()
-	preload("res://scripts/forge_architecture.gd").build(self)
+	if realm<3:
+		preload("res://scripts/forge_architecture.gd").build(self)
+		MassiveArchitecture.build(self)
 	# Frame-budgeted chunk building: schedule 49 chunks, process ~6 per frame
 	build_in_progress=true
 	build_cell_index=0
@@ -176,6 +185,7 @@ func build(index: int,world_seed: int):
 func make_material():
 	var shader=load("res://shaders/terrain.gdshader")
 	terrain_material=ShaderMaterial.new();terrain_material.shader=shader;terrain_material.set_shader_parameter("phase",float(seed_value%23)*.03+realm*.4)
+	terrain_material.set_shader_parameter("red_moon",realm==3)
 	for i in range(6): terrain_material.set_shader_parameter("t"+str(i),load("res://assets/illustrated/forge-basalt-moss.png" if i==0 else "res://assets/illustrated/terrain-moss-v2.png" if i==1 else "res://assets/illustrated/terrain-stone-v2.png"))
 	scenery_material=PaintedBatch.material()
 	scenery_material.set_shader_parameter("fade_near",true)
@@ -200,14 +210,16 @@ func make_chunk(cell: Vector2i):
 	var scenery=[]
 	var scenery_groups={}
 	var local_rng=RandomNumberGenerator.new();local_rng.seed=seed_value+cell.x*73856093+cell.y*19349663
-	for i in range(12):
+	for i in range(26):
 		var p=Vector3(cell.x*CHUNK+local_rng.randf()*CHUNK,0,cell.y*CHUNK+local_rng.randf()*CHUNK)
 		if Vector2(p.x,p.z).length()>shore_radius(p)-25: continue
+		if realm==3 and Vector2(p.x,p.z).length()<38: continue
 		var portal=portal_site()
 		if Vector2(p.x-portal.x,p.z-portal.z).length()<14: continue
 		if Vector2(p.x-60,p.z+35).length()<7: continue
 		if Vector2(p.x,p.z).length()<13 or absf(p.x+sin(p.z*.035)*9)<6: continue
 		if crossing_distance(p)<12 and i%3!=0: continue
+		if MassiveArchitecture.occupied(self,p): continue
 		if harvest_sites.any(func(site):return Vector2(site.x-p.x,site.z-p.z).length()<4): continue
 		p.y=height_at(p.x,p.z)
 		var biome=biome_at(p)
@@ -217,7 +229,7 @@ func make_chunk(cell: Vector2i):
 			for bite in range(4): ToonArt.ball(prop,Color("9b874b"),Vector3(-.7+bite*.4,.7,.3 if bite%2==0 else -.2),Vector3(.22,.12,.22))
 
 		# Keep greenery and terrain landmarks; large structures are sparse and smaller.
-		var variant=local_rng.randi_range(0,3) if i<11 else local_rng.randi_range(4,5)
+		var variant=local_rng.randi_range(0,3) if i%9!=8 else local_rng.randi_range(4,5)
 		var model_path="res://assets/style3d/prop_%d_%d.glb" % [biome,variant]
 		if ResourceLoader.exists(model_path):
 			var baked_path="res://assets/style3d/baked/prop_%d_%d.res" % [biome,variant]
@@ -245,6 +257,7 @@ func make_chunk(cell: Vector2i):
 					var step_shape=CollisionShape3D.new();var step_box=BoxShape3D.new();step_box.size=Vector3(1.6,.3,1.5);step_shape.shape=step_box;step_shape.position=Vector3(-3.0+stair*1.3,.9+stair*.7,0);solid.add_child(step_shape)
 			elif variant in [4,5] and biome in [0,3]:
 				var occlusion=OccluderInstance3D.new();var occluder=BoxOccluder3D.new();occluder.size=Vector3(1.25,7.0,1.15)*scale_value;occlusion.occluder=occluder;occlusion.position.y=4*scale_value;prop.add_child(occlusion)
+			if i%9==8: preload("res://scripts/scenery_lights.gd").add_lamp(prop,biome)
 			PaintedBatch.collect(prop,scenery)
 			continue
 		push_error("Missing required scenery model: "+model_path)
@@ -307,7 +320,7 @@ func ensure_ground(p: Vector3):
 func make_boundaries():
 	var ocean=MeshInstance3D.new();ocean.name="DeadlySea"
 	var sea_plane=PlaneMesh.new();sea_plane.size=Vector2(2800,2800);ocean.mesh=sea_plane
-	var water=ShaderMaterial.new();water.shader=load("res://shaders/deadly_sea.gdshader");water.set_shader_parameter("phase",float(seed_value%23)*.03+realm*.4);ocean.material_override=water;add_child(ocean)
+	var water=ShaderMaterial.new();water.shader=load("res://shaders/deadly_sea.gdshader");water.set_shader_parameter("red_moon",realm==3);water.set_shader_parameter("phase",float(seed_value%23)*.03+realm*.4);ocean.material_override=water;add_child(ocean)
 	for side in [-1,1]:
 		for axis in [0,2]:
 			var mesh=BoxMesh.new();mesh.size=Vector3(16,100,EXTENT*2+24) if axis==0 else Vector3(EXTENT*2+24,100,16)
@@ -342,6 +355,8 @@ func make_environment():
 	moon=MeshInstance3D.new();var sphere=SphereMesh.new();sphere.radius=24;sphere.height=48;moon.mesh=sphere;moon.position=Vector3(220,110,-280);var paint=StandardMaterial3D.new();paint.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED;paint.albedo_texture=load("res://assets/illustrated/terrain-2.png");moon.material_override=paint;add_child(moon)
 
 func make_landmarks():
+	if realm==3:
+		landmarks.append(Vector3.ZERO);return
 	for biome in range(6):
 		var angle=(biome+.5)*TAU/6-float(seed_value%23)*.03-realm*.4
 		var p=Vector3(cos(angle)*175,0,sin(angle)*175)

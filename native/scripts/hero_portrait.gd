@@ -30,6 +30,9 @@ func setup(model_name: String,weapon: String="gun",armour: float=0,shield_capaci
 	var hero=ActorRig.new()
 	preview_actor=hero
 	hero.setup(model_name)
+	var data=JSON.parse_string(FileAccess.get_file_as_string("res://data/catalog.json"))
+	for entry in data.heroes:
+		if entry.model==model_name: hero.scale=Vector3.ONE*float(entry.get("height",1.65))/1.65
 	hero.rotation.y=.28
 	stage.add_child(hero)
 	hero.set_defense(armour,shield_capacity,shield_capacity)

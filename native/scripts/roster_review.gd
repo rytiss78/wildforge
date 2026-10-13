@@ -29,17 +29,19 @@ func run():
 	var sun=DirectionalLight3D.new();sun.rotation_degrees=Vector3(-35,-25,0);sun.light_energy=1.15;stage.add_child(sun)
 	camera=Camera3D.new();camera.projection=Camera3D.PROJECTION_ORTHOGONAL;camera.size=17;stage.add_child(camera);camera.position=Vector3(0,4,-20);camera.look_at(Vector3(0,3,0))
 	var data=JSON.parse_string(FileAccess.get_file_as_string("res://data/catalog.json"))
-	clear_group()
+	clear_group();camera.position=Vector3(0,2,-20);camera.look_at(Vector3(0,1,0))
 	for i in range(data.heroes.size()):
-		var rig=ActorRig.new();rig.setup(data.heroes[i].model);group.add_child(rig);rig.position=Vector3((i%7-3)*2.25,(2-i/7)*2.7,0);rig.set_health(.5);rig.animate(1,Vector3.ZERO,true)
+		var rig=ActorRig.new();rig.setup(data.heroes[i].model);rig.scale=Vector3.ONE*float(data.heroes[i].height)/1.65;group.add_child(rig);rig.position=Vector3((i%7-3)*2.25,(1.5-i/7)*2.4,0);rig.set_health(.5);rig.animate(1,Vector3.ZERO,true)
 		checks.hero_orbs=checks.hero_orbs and rig.solid.core_materials.size()==1 and rig.solid.hand_socket()!=null
 		caption(rig,data.heroes[i].name)
-	await shot("heroes-front");camera.position.z=20;camera.look_at(Vector3(0,3,0));await shot("heroes-back");camera.position.z=-20;camera.look_at(Vector3(0,3,0))
-	for page in range(2):
+	await shot("heroes-front");camera.position.z=20;camera.look_at(Vector3(0,1,0));await shot("heroes-back");camera.position=Vector3(0,4,-20);camera.look_at(Vector3(0,3,0))
+	for page in range(3):
 		clear_group()
 		for i in range(18):
-			var index=page*18+i;var model=StyleModel.new();model.setup("creature_%d_%d" % [index/6,index%6]);group.add_child(model);model.position=Vector3((i%6-2.5)*2.4,(2-i/6)*2.7,0);model.set_health(.5,true)
-			checks.enemy_orbs=checks.enemy_orbs and model.core_materials.size()==1;caption(model,"%s %d" % [RealmWorld.BIOMES[index/6],index%6+1])
+			var index=page*18+i
+			if index>=42: break
+			var model=StyleModel.new();model.setup("creature_%d_%d" % [index/7,index%7]);group.add_child(model);model.position=Vector3((i%6-2.5)*2.4,(2-i/6)*2.7,0);model.set_health(.5,true)
+			checks.enemy_orbs=checks.enemy_orbs and model.core_materials.size()==1;caption(model,"%s %d" % [RealmWorld.BIOMES[index/7],index%7+1])
 		await shot("enemies-"+str(page))
 	for biome in range(6):
 		clear_group()
@@ -61,4 +63,4 @@ func run():
 			var label=Label.new();label.text=entry.get("title",entry.get("name",entry.id));label.position=Vector2(i%10*144+4,i/10*112+90);label.size=Vector2(138,20);label.clip_text=true;label.add_theme_font_size_override("font_size",11);canvas.add_child(label)
 		await shot("icons-"+str(page))
 	canvas.free();stage.free();viewport.queue_free();await process_frame
-	print("ROSTER_REVIEW "+JSON.stringify({"checks":checks,"captures":captures,"heroes":data.heroes.size(),"enemies":36,"props":36,"icons":entries.size()}));quit(0 if not checks.values().has(false) else 1)
+	print("ROSTER_REVIEW "+JSON.stringify({"checks":checks,"captures":captures,"heroes":data.heroes.size(),"enemies":42,"props":36,"icons":entries.size()}));quit(0 if not checks.values().has(false) else 1)

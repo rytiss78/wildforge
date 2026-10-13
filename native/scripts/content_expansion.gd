@@ -26,6 +26,8 @@ static func refresh(game):
 
 static func condition_met(game,condition: String) -> bool:
 	match condition:
+		"eclipse": return game.events.get("eclipse",false)
+		"guardian": return game.enemies.any(func(e):return not e.dead and e.get("guardian",false))
 		"air": return not game.player.is_on_floor()
 		"ground": return game.player.is_on_floor()
 		"moving": return Vector2(game.player.velocity.x,game.player.velocity.z).length()>1

@@ -3,23 +3,18 @@ var game
 func _draw():
 	if game==null or game.mode not in ["playing","level_reveal"]: return
 	var font=ThemeDB.fallback_font
-	var bosses=game.enemies.filter(func(e):return e.boss and not e.dead)
-	if not bosses.is_empty():
-		var boss=bosses[-1];var x=(get_viewport_rect().size.x-520)*.5
-		draw_style_box(game.hud.style(ThemeTokens.INK,ThemeTokens.STAR_GOLD,3),Rect2(x,20,520,58))
-		preload("res://scripts/health_emblem.gd").draw(self,Vector2(x+32,49),21,boss.hp/boss.maxHp)
-		draw_string(font,Vector2(x+68,55),str(boss.get("title",game.boss_name)),HORIZONTAL_ALIGNMENT_LEFT,-1,19,ThemeTokens.PAPER)
 	if game.elapsed<float(game.events.get("announcement_until",-1)):
-		draw_style_box(game.hud.style(Color("17293d"),Color("d6b474"),12),Rect2(32,340,680,85))
-		draw_string(font,Vector2(52,372),str(game.events.get("announcement","")),HORIZONTAL_ALIGNMENT_LEFT,-1,27,Color("ffdf9a"))
-		draw_string(font,Vector2(52,402),str(game.events.get("announcement_detail","")),HORIZONTAL_ALIGNMENT_LEFT,-1,15,Color("fff8de"))
-	if game.realm_time>=600:
-		draw_style_box(game.hud.style(Color("592e47"),Color("e38d6c"),5),Rect2(24,274,254,30))
-		draw_string(font,Vector2(34,296),"ECLIPSE · threat %d" % (1+int((game.realm_time-600)/30)),HORIZONTAL_ALIGNMENT_LEFT,-1,16,Color("ffdf9a"))
+		draw_style_box(game.hud.style(Color("17293d"),Color("d6b474"),12),Rect2(32,380,680,70))
+		draw_string(font,Vector2(48,408),str(game.events.get("announcement","")),HORIZONTAL_ALIGNMENT_LEFT,-1,23,Color("ffdf9a"))
+		draw_string(font,Vector2(48,435),str(game.events.get("announcement_detail","")),HORIZONTAL_ALIGNMENT_LEFT,-1,15,Color("fff8de"))
+	if game.events.get("eclipse",false):
+		draw_style_box(game.hud.style(Color("592e47"),Color("e38d6c"),5),Rect2(32,332,310,30))
+		draw_string(font,Vector2(42,354),"ECLIPSE · threat %d" % (int(game.events.get("eclipse_stage",1))),HORIZONTAL_ALIGNMENT_LEFT,-1,16,Color("ffdf9a"))
 	if game.Hunt.state(game)=="active":
-		draw_style_box(game.hud.style(Color("362742"),Color("c094d9"),5),Rect2(24,222,254,44))
-		draw_string(font,Vector2(34,242),"HUNT  %d / 3    ·    %ds" % [game.events.get("hunt_kills",[]).size(),maxi(0,ceili(float(game.events.get("hunt_deadline",0))-game.realm_time))],HORIZONTAL_ALIGNMENT_LEFT,-1,17,Color("efcaff"))
-		draw_string(font,Vector2(34,258),"Defeat the violet-marked foes",HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color("fff8de"))
+		draw_style_box(game.hud.style(Color("362742"),Color("c094d9"),5),Rect2(32,278,310,44))
+		draw_string(font,Vector2(42,298),"HUNT  %d / 3    ·    %ds" % [game.events.get("hunt_kills",[]).size(),maxi(0,ceili(float(game.events.get("hunt_deadline",0))-game.realm_time))],HORIZONTAL_ALIGNMENT_LEFT,-1,17,Color("efcaff"))
+		draw_string(font,Vector2(42,314),"Defeat the violet-marked foes",HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color("fff8de"))
+	if game.realm==3: return
 	var offset=game.gate_position-game.player.position;var distance=offset.length()
 	if distance<8: return
 	var relative=offset.rotated(Vector3.UP,-game.yaw)

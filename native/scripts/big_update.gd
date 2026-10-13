@@ -45,6 +45,7 @@ func realm_started():
 	merchant=null;beacon=null;stock.clear();purchased.clear();beacon_claimed.clear()
 	banish_charges=5;pending_purchase=-1;downed=false;downed_ids.clear();rescue_progress.clear()
 	beacon_state="idle";beacon_seconds=0;beacon_absent=0;mimic.clear();pings.clear()
+	if game.realm==3: return
 	var rng=RandomNumberGenerator.new();rng.seed=game.seed_value+game.realm*839
 	var angle=rng.randf()*TAU
 	merchant_position=Vector3(cos(angle)*230,0,sin(angle)*230)
