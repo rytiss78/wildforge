@@ -1,6 +1,6 @@
 # Wildforge — Active plan
 
-Updated October 13, 2026. Source integration status: **Batches 1–2 merged to `main`** ([PR #1](https://github.com/rytiss78/wildforge/pull/1); commit `7ab82d7`). **These changes have not passed the required Godot validation or a new Windows export.** Published: **1.1.0 · Build 12** ([download](https://github.com/rytiss78/wildforge/releases/tag/build-12)). Local development: **1.1.1 · Build 13** (not yet published).
+Updated October 13, 2026. Source integration status: **Batches 1–3 merged as source candidates; Build 13 remains untested and unpublished.** **These changes have not passed the required Godot validation or a new Windows export.** Published: **1.1.0 · Build 12** ([download](https://github.com/rytiss78/wildforge/releases/tag/build-12)). Local development: **1.1.1 · Build 13** (not yet published).
 
 Work directly, one agent. Do easy, useful fixes first; group validation and exports. Preserve incoming edits, saves, artwork, logs and old builds. Follow [AGENTS.md](AGENTS.md) and the [Godot workflow](native/docs/godot-workflow.md).
 
@@ -25,16 +25,25 @@ These items have candidate implementations in merged Batches 1–2, but are **no
 - **beem to dead players corpse in coop** its hard to find a body now.
 - **minimap rework** bigger, no borders, Hades art style. player at the center, minimap spins.
 
-## Not started
+## Batch 3 source candidates — unverified
 
-1. **boss music**
-2. ** new bigger portal desing** more pompastic teleport.
-3. **lag fixes** Lag in coop.
-4. **lava rivers in one biom** 
-5. **rain and other efects in Hades style**
-6. **over heal perks** these is mising tank build with lots off hp. One hit deadths should be rare
-7. **old visal style assest in new Hades style** Game still uses many old  visual styles. It should finis conversion to Hades inspired style. (ride guildines for new style in project documentation)
-8. **remove reduntant text from menus** clean up ui information.. Its repeted and some time not nesasary.
+- **Boss music:** Original synthesized minor-key motif layered with the existing drums; assess audio quality, mix, loops and Eclipse muting.
+- **Portal redesign:** Larger arch, trim, decorative nodes, vortex and beacon; review at multiple resolutions.
+- **Co-op lag:** Snapshot and pose cadence reduced from approximately 13.3 Hz to 10 Hz; measure lag and monitor realm-transition stalls.
+- **Lava rivers:** Three glowing Candy Hell channels with periodic grounded damage; check geometry, collision, co-op authority and frame time.
+- **Biome weather:** More visible and varied rain, motes and sparks; stylistic review remains.
+- **Tank builds:** Shield-based overheal and a one-hit protection guard; balance and network testing outstanding.
+- **Menus:** Removed a repeated hero-selection footer; broader cleanup not done.
+
+**Validation:** The patch applied cleanly to the merged script baseline; no Godot runtime, multiplayer simulation or Windows export was available. These source changes are not evidence that the features work in game.
+
+## Still open
+
+1. Complete the Hades-inspired visual style conversion of older assets.
+2. Finish wider menu/UI copy cleanup.
+3. Benchmark and resolve remaining co-op lag, including realm-transition stalls.
+4. Finish enemy encounter variety and real build/final-boss balancing.
+5. Validate all Batches 1–3 in Godot with the project workflow and export a tested Windows build.
 
 ## Follow-up checks
 
