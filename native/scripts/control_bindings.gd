@@ -1,10 +1,10 @@
 extends RefCounted
 class_name ControlBindings
 
-const KEYS={"move_left":KEY_A,"move_right":KEY_D,"move_forward":KEY_W,"move_back":KEY_S,"dash":KEY_SHIFT,"jump":KEY_SPACE,"slam":KEY_CTRL,"interact":KEY_E,"build":KEY_B,"pause_game":KEY_ESCAPE,"deploy":KEY_T,"next_turret":KEY_G,"camera_left":KEY_Q,"camera_right":KEY_R,"ping":KEY_F,"look_left":0,"look_right":0,"look_up":0,"look_down":0}
+const KEYS={"move_left":KEY_A,"move_right":KEY_D,"move_forward":KEY_W,"move_back":KEY_S,"dash":KEY_SHIFT,"jump":KEY_SPACE,"slam":KEY_CTRL,"interact":KEY_E,"build":KEY_B,"pause_game":KEY_ESCAPE,"deploy":KEY_T,"next_turret":KEY_G,"camera_left":KEY_Q,"camera_right":KEY_R,"ping":KEY_F,"party":KEY_P,"look_left":0,"look_right":0,"look_up":0,"look_down":0}
 const BUTTONS={"jump":JOY_BUTTON_A,"slam":JOY_BUTTON_B,"interact":JOY_BUTTON_X,"build":JOY_BUTTON_Y,"pause_game":JOY_BUTTON_START,"deploy":JOY_BUTTON_LEFT_SHOULDER,"ping":JOY_BUTTON_RIGHT_STICK,"next_turret":JOY_BUTTON_RIGHT_SHOULDER}
 const AXES={"move_left":[JOY_AXIS_LEFT_X,-1],"move_right":[JOY_AXIS_LEFT_X,1],"move_forward":[JOY_AXIS_LEFT_Y,-1],"move_back":[JOY_AXIS_LEFT_Y,1],"look_left":[JOY_AXIS_RIGHT_X,-1],"look_right":[JOY_AXIS_RIGHT_X,1],"look_up":[JOY_AXIS_RIGHT_Y,-1],"look_down":[JOY_AXIS_RIGHT_Y,1],"dash":[JOY_AXIS_TRIGGER_RIGHT,1]}
-const LABELS={"move_left":"Move left","move_right":"Move right","move_forward":"Move forward","move_back":"Move back","dash":"Dash","jump":"Jump","slam":"Ground slam","interact":"Interact","build":"Hero stats / equipment","pause_game":"Pause","deploy":"Place turret","next_turret":"Next turret","camera_left":"Rotate camera left","camera_right":"Rotate camera right","ping":"Party ping","look_left":"Look left","look_right":"Look right","look_up":"Look up","look_down":"Look down"}
+const LABELS={"move_left":"Move left","move_right":"Move right","move_forward":"Move forward","move_back":"Move back","dash":"Dash","jump":"Jump","slam":"Ground slam","interact":"Interact","build":"Hero stats / equipment","pause_game":"Pause","deploy":"Place turret","next_turret":"Next turret","camera_left":"Rotate camera left","camera_right":"Rotate camera right","ping":"Party ping","party":"Party rewards","look_left":"Look left","look_right":"Look right","look_up":"Look up","look_down":"Look down"}
 
 static func default_spec(action: String,device: String) -> Dictionary:
 	if device=="keyboard": return {"type":"key","code":KEYS[action]} if KEYS[action]!=0 else {"type":"none"}
