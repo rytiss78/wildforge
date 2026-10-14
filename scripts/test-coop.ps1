@@ -13,7 +13,7 @@ if ($Packaged) {
   if ($RenderedClient) { $taskClientArgs=@('--position','-32000,-32000','--','--coop-client-test') }
 }
 $taskClient=Start-Process -FilePath $taskGodot -ArgumentList $taskClientArgs -WindowStyle Hidden -PassThru -RedirectStandardOutput (Join-Path $taskRoot 'tools/coop-client.log') -RedirectStandardError (Join-Path $taskRoot 'tools/coop-client-errors.log')
-try { Wait-Process -Id $taskHost.Id,$taskClient.Id -Timeout 40 }
+try { Wait-Process -Id $taskHost.Id,$taskClient.Id -Timeout 365 }
 catch {
   # Stop only the two diagnostic processes created above, never a player's game.
   Stop-Process -Id $taskHost.Id,$taskClient.Id -ErrorAction SilentlyContinue

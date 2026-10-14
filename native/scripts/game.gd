@@ -2705,7 +2705,7 @@ func run_coop_test():
 	if network_test_role=="host": stats.damage=2
 	var started=Time.get_ticks_msec();var pause_done=false;var realm_done=false;var moved=false;var shared_enemies=false;var maximum_avatars=0
 	var down_sent=false;var saw_down=false;var saw_rescue=false;var saw_ping=false;var purchase_sent=false;var supply_sent=false;var saw_purchase=false;var saw_supply=false;var gold_before=0
-	var down_sent2=false;var rescued2=false;var pause_done2=false
+	var down_sent2=false;var rescued2=false;var pause_done2=false;var down_done=false
 	var realm_cycle_done=false;var realm_cycle_done2=false;var final_test_done=false;var final_reset=false;var saw_final=false;var saw_final_eclipse=false
 	var saw_remote_flowers=false;var saw_own_numbers=false;var saw_boss_identity=false;var saw_remote_vitals=false
 	var hunt_sent=false;var hunt_seen=false;var hunt_reward=false;var guardian_sent=false;var guardian_seen=false
@@ -2774,8 +2774,13 @@ func run_coop_test():
 		if network_test_role=="host":
 			if seconds>2 and not down_sent and not coop.members.is_empty():
 				down_sent=true;player.position=Vector3(2,.1,0);invulnerable=1000
-				coop.send_to(coop.members.keys()[0],{"type":"damage","amount":100000,"position":[0,0,0],"sound":"hit"})
-			if seconds>2.2 and seconds<6.3: Input.action_press("interact")
+				# First hit: one-hit protection caps at 85% maxHP; second hit will be lethal after .55s invuln
+				coop.send_to(coop.members.keys()[0],{"type":"damage","amount":100000,"position":[2,.1,0],"sound":"hit"})
+			if seconds>2.6 and not down_done and not coop.members.is_empty():
+				# Second hit: invulnerability expired; client is at ~15% HP, so this is lethal
+				down_done=true;player.position=Vector3(2,.1,0)
+				coop.send_to(coop.members.keys()[0],{"type":"damage","amount":100000,"position":[2,.1,0],"sound":"hit"})
+			if seconds>2.6 and seconds<6.7 and down_sent: Input.action_press("interact")
 			else: Input.action_release("interact")
 			if seconds>9 and not supply_sent:
 				supply_sent=true;player.position=update.beacon_position;update.activate_beacon();update.beacon_seconds=24.8

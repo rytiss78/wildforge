@@ -108,7 +108,8 @@ func join_lan(address: String):
 	if address.is_empty() or address.length()>253 or address.contains(" ") or address.contains("/"):
 		status="Enter the host's IP address or hostname.";return
 	leave();peer=ENetMultiplayerPeer.new()
-	if peer.create_client(address,PORT)!=OK: status="Could not connect to that address.";peer=null;return
+	var err=peer.create_client(address,PORT)
+	if err!=OK: status="Could not connect to that address.";peer=null;return
 	transport="lan";hosting=false;active=true;owner_id=1;status="Connecting…"
 	connection_clock=0;welcomed=false;game.career.data.settings.coopAddress=address;game.career.dirty=true
 	peer.peer_disconnected.connect(func(id):
@@ -177,9 +178,11 @@ func can_start() -> bool:
 	return true
 
 func start_party(shared_seed: int=-1) -> bool:
-	if not can_start(): return false
+	if not can_start(): 
+		return false
 	game.start_run(shared_seed)
-	if shared_seed>=0: run_started()
+	if shared_seed>=0:
+		run_started()
 	return game.run_active
 
 func run_started():
@@ -401,7 +404,9 @@ func receive(sender: int,message):
 		if kind=="reject": leave();status=str(message.reason);game.hud.tell(status,8)
 		elif kind=="welcome": welcomed=true;status="Joined. Choose your hero and mark Ready.";publish_lobby_choice()
 		elif kind=="lobby_state" and not game.run_active: lobby_roster=message.get("players",[])
-		elif kind=="start": game.start_run(int(message.seed));game.hud.close()
+		elif kind=="start":
+			game.start_run(int(message.seed))
+			game.hud.close()
 		elif kind=="realm": game.enter_realm(int(message.realm));saw_realm=true
 		elif kind=="force_pulse_fx" and int(message.get("realm",-1))==game.realm: ForcePulse.visual(game,vector(message.position),str(message.key));saw_force_pulse=true
 		elif kind=="world": apply_world(message)
