@@ -409,14 +409,14 @@ func receive(sender: int,message):
 		elif kind=="shot": show_shot(message)
 		elif kind=="hazard" and int(message.get("realm",-1))==game.realm:
 			game.warn_at(vector(message.position),float(message.radius),float(message.delay),float(message.damage),str(message.style),true)
+		elif kind=="damage":
+			game.take_damage(float(message.amount),vector(message.position),str(message.sound))
+			if message.get("status","")=="poison" and not game.buffs.has("poison"): game.player_poison=3
 		elif kind=="kill":
 			kills_received+=1
 			for enemy in game.enemies:
 				if enemy.net_id==int(message.id) and not enemy.dead: game.kill_enemy(enemy,str(message.cause));return
 			if message.has("actor"): game.kill_enemy(game.spawn_network_enemy(message.actor),str(message.cause))
-		elif kind=="damage":
-			game.take_damage(float(message.amount),vector(message.position),str(message.sound))
-			if message.get("status","")=="poison" and not game.buffs.has("poison"): game.player_poison=3
 		elif kind=="reward_chosen":
 			var who=str(message.get("name","Friend")).left(40)
 			var raw_items=message.get("items",[])

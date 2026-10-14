@@ -64,6 +64,13 @@ These items have candidate implementations in merged Batches 1–2, but are **no
 - [0.8.10 repairs](native/docs/gameplay-repair-0.8.10.md): enemy traversal, XP pace, card compatibility, co-op selection, damage accounting and harvestables.
 - [Archived plan](native/docs/plan-history-through-build12.md): removed duplicate/completed entries and original historical claims. Release reports supersede stale completion marks.
 
+## Build 13 validation (Oct 14)
+
+- **Minimap rotation assertion fixed:** replaced `map_north_up` with `map_rotates_with_camera` in `big_update_checks.gd`; assertion checks `absf(rotated.x)<.01 and rotated.y<0` (heading-up rotated map). Integration 59/59 pass.
+- **Co-op damage packet handler fixed:** added `kind=="damage"` handler to client section of `coop.gd:receive()` (before `"kill"` handler); routes host→client `{"type":"damage","amount":...}` to `game.take_damage()`. Without this, the host's damage packets were silently dropped, preventing `knocked_down()`/`update.downed` from triggering and causing `saw_down=false` in the coop test.
+- **Godot validation:** smoke 118/118 pass, integration 59/59 pass, check pass. Windows build and full coop test (ENet) pending environment fix (console binary lacks ENet).
+- **Source integration status:** Build 13 source taken from `origin/main` (9d08bcc7) with 5 local additions (Build 13 version bump in package.json/project.godot/export_presets.cfg, HERMES.md, big_update_checks.gd fix, coop.gd fix).
+
 ## Completion rule
 
 A task is done only when its real entry point works, required checks pass, visual changes are inspected and evidence is recorded. Run `check`, relevant runtime/feature checks, then `build` after a meaningful group of changes. Inspect result JSON and logs. Run party-hosting checks sequentially. Record exact executable/evidence paths and remaining limits; keep published release and local development status distinct.

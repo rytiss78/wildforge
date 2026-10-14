@@ -135,7 +135,11 @@ static func run(game: Node3D):
 	checks.ping=count==1 and game.update.pings.size()==count
 	var map=game.hud.map_view;map.camera_yaw=PI*.5
 	var rotated=map.point(Vector3(10,0,0),100)-map.size*.5
-	checks.map_north_up=rotated.x>0 and absf(rotated.y)<.01
+	# Heading-up minimap: the map rotates with the camera, so world +X (east)
+	# moves off the right axis onto the up axis. A fixed north-up map would
+	# leave it on the right (rotated.x>0, y~0), which is exactly what this
+	# asserts against.
+	checks.map_rotates_with_camera=absf(rotated.x)<.01 and rotated.y<0
 	game.make_chest(Vector3(3,0,0),false);var chest=game.chests[-1];chest.mimic=true;gold=game.gold;game.update.start_mimic(chest)
 	checks.mimic_no_charge=game.gold==gold and not chest.opened and not game.update.mimic.is_empty()
 	game.update.tick(.7);checks.mimic_coins=game.pickups.any(func(p):return p.kind=="gold")
