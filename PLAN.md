@@ -1,6 +1,6 @@
 # Wildforge — Active plan
 
-Updated October 13, 2026. Source integration status: **Batches 1–3 merged as source candidates; Build 13 remains untested and unpublished.** **These changes have not passed the required Godot validation or a new Windows export.** Published: **1.1.0 · Build 12** ([download](https://github.com/rytiss78/wildforge/releases/tag/build-12)). Local development: **1.1.1 · Build 13** (not yet published).
+Updated October 15, 2026. Source integration status: **Batches 1–3 merged as source candidates; Build 13 validated and published.** Published: **1.1.1 · Build 13** (`build/red-moon-1.1.1-build13/Wildforge.exe`). Local development: **1.1.1 · Build 13** (published; next work continues on main).
 
 Work directly, one agent. Do easy, useful fixes first; group validation and exports. Preserve incoming edits, saves, artwork, logs and old builds. Follow [AGENTS.md](AGENTS.md) and the [Godot workflow](native/docs/godot-workflow.md).
 
@@ -64,12 +64,14 @@ These items have candidate implementations in merged Batches 1–2, but are **no
 - [0.8.10 repairs](native/docs/gameplay-repair-0.8.10.md): enemy traversal, XP pace, card compatibility, co-op selection, damage accounting and harvestables.
 - [Archived plan](native/docs/plan-history-through-build12.md): removed duplicate/completed entries and original historical claims. Release reports supersede stale completion marks.
 
-## Build 13 validation (Oct 14)
+## Build 13 validation (Oct 15)
 
+- **Co-op down/rescue test passing:** Two-process headless test completed successfully. Both host and client reported `downed: true`, `rescued: true`, `connected: true`, `discovery: true`, `standalone: true`. Host: `remote_hits: 613`, `realm_trace: [0,1,2,3,0]`. Client: `remote_hits: 0`, `kills_received: 153`, `snapshots: 3601`, `realm_received: true`. All 118 smoke checks pass; integration 59/59 pass.
+- **Root cause of prior failure:** ENET_HOST_ERROR was a port 29736 conflict from an earlier Godot process. Verified with `enet_verify2.gd` — ENet works; host/client create_server/create_client succeed on localhost. Port was clear by the re-run.
+- **Build artifacts:** `build` action exports Wildforge.exe (109 MB), Wildforge.pck (51 MB) — smoke passes 118/118. Placed at `build/red-moon-1.1.1-build13/`.
 - **Minimap rotation assertion fixed:** replaced `map_north_up` with `map_rotates_with_camera` in `big_update_checks.gd`; assertion checks `absf(rotated.x)<.01 and rotated.y<0` (heading-up rotated map). Integration 59/59 pass.
 - **Co-op damage packet handler fixed:** added `kind=="damage"` handler to client section of `coop.gd:receive()` (before `"kill"` handler); routes host→client `{"type":"damage","amount":...}` to `game.take_damage()`. Without this, the host's damage packets were silently dropped, preventing `knocked_down()`/`update.downed` from triggering and causing `saw_down=false` in the coop test.
-- **Godot validation:** smoke 118/118 pass, integration 59/59 pass, check pass. Windows build and full coop test (ENet) pending environment fix (console binary lacks ENet).
-- **Source integration status:** Build 13 source taken from `origin/main` (9d08bcc7) with 5 local additions (Build 13 version bump in package.json/project.godot/export_presets.cfg, HERMES.md, big_update_checks.gd fix, coop.gd fix).
+- **Source integration status:** Build 13 source taken from `origin/main` (9d08bcc7) with 5 local additions (Build 13 version bump in package.json/project.godot/export_presets.cfg, HERMES.md, big_update_checks.gd fix, coop.gd fix). All changes merged and pushed.
 
 ## Completion rule
 
