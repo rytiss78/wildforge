@@ -63,6 +63,17 @@ static func run(g,host: bool):
 		send(g,"magnet")
 		checks.remote_magnet=await wait_for(g,func():return g.update.magnet_active)
 		checks.magnet_mirrored=await wait_for(g,func():return g.coop.test_messages.has("magnet_done"))
+		# Exercise the actual contact entry point and snapshot on two processes.
+		g.equipped.clear();g.spawn_enemy(8);var attacker=g.enemies[-1]
+		var client_id=g.coop.members.keys()[0]
+		attacker.node.position=CoopSession.vector(g.coop.members[client_id].position)+Vector3.FORWARD
+		attacker.speed=0;attacker.behavior="chase";attacker.contact=0;attacker.freeze=0;attacker.blind=0
+		g.update_combat(.04);send(g,"contact",{"id":attacker.net_id})
+		checks.remote_warning=await wait_for(g,func():return g.coop.test_messages.has("contact_seen"))
+		checks.remote_warning_visible=g.coop.test_messages.get("contact_seen",{}).get("visible",false)
+		g.enter_realm(3)
+		checks.remote_baron=await wait_for(g,func():return g.coop.test_messages.has("baron_seen"))
+		checks.remote_baron_model=g.coop.test_messages.get("baron_seen",{}).get("model",false)
 		send(g,"finish",checks)
 		await wait_for(g,func():return g.coop.test_messages.has("finished"))
 	else:
@@ -96,6 +107,17 @@ static func run(g,host: bool):
 		g.player.position=g.update.magnet_position;g.interact()
 		checks.activated=await wait_for(g,func():return g.update.magnet_active)
 		send(g,"magnet_done")
+		checks.contact_instruction=await wait_for(g,func():return g.coop.test_messages.has("contact"))
+		var attack_id=int(g.coop.test_messages.get("contact",{}).get("id",-1))
+		checks.warning_received=await wait_for(g,func():return g.enemies.any(func(e):return e.net_id==attack_id and e.get("contact_windup",0)>0))
+		g.equipped.clear();g.update_combat(.04)
+		var attackers=g.enemies.filter(func(e):return e.net_id==attack_id)
+		checks.warning_visible=not attackers.is_empty() and attackers[0].has("contact_ring") and attackers[0].contact_ring.visible
+		send(g,"contact_seen",{"visible":checks.warning_visible})
+		checks.final_realm=await wait_for(g,func():return g.realm==3 and g.enemies.any(func(e):return e.get("boss_id",-1)==8))
+		var bosses=g.enemies.filter(func(e):return e.get("boss_id",-1)==8)
+		checks.baron_model=not bosses.is_empty() and bosses[0].node.get_meta("rig").solid.identity=="boss_8_baron" and bosses[0].node.get_meta("rig").find_children("BaronSteam*","GPUParticles3D",true,false).size()==4
+		send(g,"baron_seen",{"model":checks.baron_model})
 		checks.host_finished=await wait_for(g,func():return g.coop.test_messages.has("finish"))
 		checks.host_checks=g.coop.test_messages.get("finish",{}).values().all(func(v):return v)
 		send(g,"finished");await g.get_tree().create_timer(.3).timeout
