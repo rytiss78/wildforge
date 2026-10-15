@@ -4,13 +4,13 @@
 
 A vivid 3D survival game where a duck, a loaf of bread and an angry granny are perfectly reasonable hero choices. Explore strange places, grab unpredictable upgrades and become outrageously overpowered before the monsters catch you.
 
-**[Download the Windows build](https://github.com/rytiss78/wildforge/releases/tag/build-13)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
+**[Download the Windows build](https://github.com/rytiss78/wildforge/releases/tag/build-14)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
 
-The current release is **1.1.1 — Build 13**. Co-op down/rescue now works: clients enter the downed state on lethal damage and can be revived by teammates.
+The current release is **1.1.1 — Build 14**. New: magnet building, boss HP ×4, blood rain, boss music, HUD rework, building removal, hunt distances, boss TTS, minimap rework.
 
 The third map leads to the Red Moon: a small arena with a 42-metre skeletal boss, extremely slow movement and deadly ranged attacks. Defeat it to begin an endless Eclipse. Denser glowing scenery, six huge biome buildings, celestial skies, compact UI, clearer damage feedback and simpler phonk music complete this checkpoint. [Changes, balance limits and validation](native/docs/release-1.1.0.md).
 
-Run `build/red-moon-1.1.1-build13/Wildforge.exe` locally, or unpack the Windows download and run `Wildforge.exe`. Keep the accompanying files together. The main menu shows the version and build number.
+Run `build/red-moon-1.1.1-build14/Wildforge.exe` locally, or unpack the Windows download and run `Wildforge.exe`. Keep the accompanying files together. The main menu shows the version and build number.
 
 ![Co-op hero selection with the new dark interface](docs/screenshots/red-moon-1.1.0/ui-coop.png)
 
@@ -60,7 +60,7 @@ For Windows packaging, place the console editor at `tools/godot/Godot_v4.7.2-sta
 ```powershell
 node scripts/native.mjs
 ./scripts/package-native.ps1
-./scripts/package-release.ps1 -BuildNumber 13 -BuildDirectory build/red-moon-1.1.1-build13 -SourceCommit HEAD
+./scripts/package-release.ps1 -BuildNumber 14 -BuildDirectory build/red-moon-1.1.1-build14 -SourceCommit HEAD
 ./scripts/test-coop.ps1 -Packaged -RenderedClient
 ```
 
