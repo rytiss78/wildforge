@@ -10,7 +10,7 @@ var dirty = false
 func _init(catalog: Dictionary, smoke: bool = false):
 	achievements = catalog.achievements
 	if smoke: file = "user://smoke-career.json"
-	data = {"version":4,"feedback":[],"total":{},"best":{},"unlocked":{},"scores":[],"settings":{"sfx":0.65,"music":0.45,"voice":0.8,"rumble":true,"genre":"metal","name":"Local hero","lookSensitivity":1.0,"invertLook":false}}
+	data = {"version":5,"feedback":[],"total":{},"best":{},"unlocked":{},"scores":[],"lastRun":{},"settings":{"sfx":0.65,"music":0.45,"voice":0.8,"rumble":true,"genre":"metal","name":"Local hero","lookSensitivity":1.0,"invertLook":false}}
 	if FileAccess.file_exists(file):
 		var saved = JSON.parse_string(FileAccess.get_file_as_string(file))
 		if saved is Dictionary:
@@ -28,7 +28,10 @@ func _init(catalog: Dictionary, smoke: bool = false):
 	for id in data.unlocked.keys():
 		if not valid_ids.has(id): data.unlocked.erase(id)
 	data.settings.merge({"sfx":0.65,"music":0.45,"voice":0.8,"rumble":true,"genre":"metal","name":"Local hero","lookSensitivity":1.0,"invertLook":false},false)
-	data.version=4
+	if data.lastRun.is_empty():
+		for entry in data.scores:
+			if str(entry.get("date","")) > str(data.lastRun.get("date","")): data.lastRun=entry.duplicate(true)
+	data.version=5
 	# Existing local achievements, scores and settings survive the standalone migration.
 	dirty=not smoke
 
@@ -60,10 +63,11 @@ func save():
 	if DirAccess.rename_absolute(temp,file) == OK: dirty = false
 
 func score(run: Dictionary):
-	if data.scores.any(func(s): return s.id == run.id): return
+	if data.lastRun.get("id","") == run.id or data.scores.any(func(s): return s.id == run.id): return
 	run.score = int(run.kills * 20 + int(run.get("gold",0)) + run.seconds * 2 + run.level * 100 + run.bosses * 750 + run.chests * 150 + (10000 if run.win else 0))
 	run.date = Time.get_datetime_string_from_system()
 	run.player = data.settings.name
+	data.lastRun=run.duplicate(true)
 	data.scores.append(run)
 	data.scores.sort_custom(func(a,b): return a.score > b.score)
 	if data.scores.size() > 100: data.scores.resize(100)

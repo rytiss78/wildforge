@@ -794,6 +794,7 @@ func record_run(win: bool, abandoned: bool = false):
 	# Best run time and max level
 	career.best("best_seconds",elapsed)
 	career.best("max_level",level)
+	career.save()
 
 func end_run(win: bool):
 	if coop.active and coop.hosting and win: coop.broadcast({"type":"finish","win":true})

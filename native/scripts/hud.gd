@@ -630,6 +630,7 @@ func start_menu(focus_hero: bool=false):
 	nav.add_child(menu_start)
 	nav.add_child(button("Achievements",func(): career_menu(false)))
 	nav.add_child(button("Local scores",func(): career_menu(true)))
+	if not game.career.data.lastRun.is_empty(): nav.add_child(button("Last run",last_run_menu))
 	nav.add_child(button("Play with friends",coop_menu))
 	nav.add_child(button("Sound & controls",settings_menu))
 	nav.add_child(button("About Wildforge",about_menu))
@@ -773,10 +774,9 @@ func update_party_list():
 
 func pause_menu(ended: bool = false, win: bool = false):
 	game.mode = "ended" if ended else "paused"
-	var extra=""
+	var extra=" · Deaths %d" % game.death_count
 	var score=game.career.data.scores.filter(func(entry):return entry.id==game.run_id)
 	if not score.is_empty():
-		extra+=" · Died %d" % score[0].get("deaths",0)
 		extra+=" · Best run %02d:%02d" % [int(game.career.data.best.get("best_seconds",0))/60,int(game.career.data.best.get("best_seconds",0))%60]
 		extra+=" · Level %d" % game.career.data.best.get("max_level",0)
 		extra+=" · %d kills" % game.career.data.total.get("kills",0)
@@ -1005,10 +1005,9 @@ func build_menu(return_to_pause: bool=false,detailed: bool=false):
 func run_report_menu():
 	game.mode="build"
 	var score=game.career.data.scores.filter(func(entry):return entry.id==game.run_id)
-	var summary="%d:%02d played · %d kills · %d gold" % [int(game.elapsed)/60,int(game.elapsed)%60,game.kills,game.gold]
+	var summary="%d:%02d played · %d kills · %d gold · Deaths %d" % [int(game.elapsed)/60,int(game.elapsed)%60,game.kills,game.gold,game.death_count]
 	if not score.is_empty():
 		summary+=" · Score %d · Local rank #%d" % [score[0].score,game.career.data.scores.find(score[0])+1]
-		summary+=" · Died %d times" % score[0].get("deaths",0)
 	var box=open("RUN REPORT",summary);var rows=report_scroll(box)
 	rows.add_child(label("YOUR DAMAGE BY WEAPON / EFFECT",18))
 	for entry in RunReport.ranked_damage(game):
@@ -1028,6 +1027,25 @@ func run_report_menu():
 	for key in game.kill_types: rows.add_child(label("%s · %d" % [key,game.kill_types[key]],16))
 	rows.add_child(label("Score: 20×kills + gold + 2×seconds + level/boss/chest/victory bonuses.",14))
 	var back=button("BACK",func():pause_menu(game.run_recorded,not score.is_empty() and score[0].win),true);box.add_child(back);back.grab_focus()
+
+func last_run_menu():
+	game.mode="build"
+	var run=game.career.data.lastRun
+	if run.is_empty(): start_menu();return
+	var heroes=game.rules.data.heroes.filter(func(h):return h.id==run.hero)
+	var hero_name=heroes[0].name if not heroes.is_empty() else str(run.hero).capitalize()
+	var outcome="VICTORY" if run.get("win",false) else "LEFT RUN" if run.get("abandoned",false) else "DEFEATED"
+	var summary="%s · %s · %d:%02d · Level %d · Deaths %d" % [hero_name,outcome,int(run.seconds)/60,int(run.seconds)%60,run.level,run.get("deaths",0)]
+	var box=open("LAST RUN",summary);var rows=report_scroll(box)
+	rows.add_child(label("%s · %d kills · %d coins · Score %d" % [run.get("date",""),run.kills,run.get("gold",0),run.score],18))
+	rows.add_child(label("YOUR DAMAGE BY WEAPON / EFFECT",18))
+	var sources=run.get("damageSources",{});var keys=sources.keys()
+	keys.sort_custom(func(a,b):return sources[a]>sources[b])
+	for key in keys: rows.add_child(label("%s · %d damage" % [RunReport.source_name(game,key),sources[key]],16))
+	if sources.is_empty(): rows.add_child(label("No damage recorded.",16))
+	rows.add_child(label("ENEMY TYPES DEFEATED · party kills in co-op",18))
+	for key in run.get("killTypes",{}): rows.add_child(label("%s · %d" % [key,run.killTypes[key]],16))
+	var back=button("BACK",start_menu,true);box.add_child(back);back.grab_focus()
 
 func settings_menu():
 	game.mode = "settings"
