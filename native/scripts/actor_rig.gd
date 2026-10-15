@@ -35,6 +35,7 @@ var thumb_glove: Node3D
 
 func setup_solid(model_name: String) -> bool:
 	var asset=model_name if model_name.begins_with("creature_") or model_name.begins_with("boss_") else "count_duck" if model_name=="rubber_duck_toy" else "hero_"+model_name
+	if model_name=="boss_8": asset="boss_8_baron"
 	if not ResourceLoader.exists("res://assets/style3d/"+asset+".glb"): return false
 	solid=StyleModel.new();solid.setup(asset);add_child(solid)
 	head.free();body.free()
@@ -51,6 +52,7 @@ func setup_solid(model_name: String) -> bool:
 		var flame=ToonArt.ball(body,Color("ffad61"),Vector3((i-1)*.23,.6+i*.13,-.34),Vector3(.18,.4,.17));flame.visible=false;fire_nodes.append(flame)
 		var droplet=ToonArt.ball(body,Color("9cdc73"),Vector3((i-1)*.27,.8,0),Vector3(.12,.14,.12));droplet.visible=false;poison_nodes.append(droplet)
 		var crystal=ToonArt.tube(body,Color("b2e6ee"),Vector3((i-1)*.22,.08,.1),0,.12,.4);crystal.visible=false;ice_nodes.append(crystal)
+	if model_name=="boss_8": preload("res://scripts/baron_steam.gd").attach(self)
 	blind_node=block(body,Color("746382"),Vector3(0,1.6,0),Vector3(.36,.045,.045));blind_node.visible=false
 	return true
 

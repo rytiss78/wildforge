@@ -50,7 +50,7 @@ static func attack(g,enemy):
 static func defeated(g):
 	g.events.final_defeated=true;g.events.eclipse=true;g.events.eclipse_started=g.realm_time;g.events.eclipse_stage=0
 	g.spawn_clock=0
-	g.Journey.announce(g,"ENDLESS ECLIPSE","The observatory is silent. Survive until the last light falls.")
+	g.Journey.announce(g,"ENDLESS ECLIPSE","The Baron has fallen. Survive until the last light falls.")
 
 static func tick(g):
 	if g.coop.active and not g.coop.hosting: return

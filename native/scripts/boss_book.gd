@@ -14,7 +14,7 @@ const ROSTER=[
 ]
 
 static func entry(id: int) -> Dictionary:
-	if id==8: return {"name":"The Red Observatory","height":42.0,"radius":9.0,"speed":.22,"cooldown":4.8,"style":"meteor","role":"Execution volleys, annihilation rings and cathedral lances"}
+	if id==8: return {"name":"Baron Vladimir Harkonnen","height":42.0,"radius":9.0,"speed":.22,"cooldown":4.8,"style":"meteor","role":"Suspended tyrant · execution volleys and annihilation rings"}
 	return ROSTER[clampi(id,0,ROSTER.size()-1)]
 
 static func choose(seed_value: int,realm: int,biome: int,history: Array) -> int:
@@ -79,7 +79,7 @@ static func animate(rig,clock: float,speed: float,warning: float):
 	if rig.identity=="boss_8":
 		for i in range(rig.legs.size()):rig.legs[i].rotation.x=sin(clock*.55+i*PI/3)*.018*clampf(speed,0,1)
 		for i in range(rig.arms.size()):rig.arms[i].rotation.x=-.13*warning+sin(clock*.31+i)*.025
-		rig.body.rotation=Vector3(0,0,sin(clock*.18)*.008);rig.body.position.y=0
+		rig.body.rotation=Vector3(0,0,sin(clock*.18)*.008);rig.body.position.y=.08+sin(clock*.35)*.025
 		if rig.head!=null:rig.head.rotation.y=sin(clock*.21)*.022
 		return
 	var stride=clampf(speed/3,0,1)

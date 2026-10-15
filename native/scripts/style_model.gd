@@ -89,6 +89,10 @@ func prepare_meshes(node: Node):
 					var prepared=original.duplicate() as StandardMaterial3D
 					prepared.diffuse_mode=BaseMaterial3D.DIFFUSE_TOON
 					prepared.metallic_specular=.14;prepared.roughness=.75;prepared.next_pass=outline
+					# Closely overlapping facial folds need soft shading, not ink seams.
+					if identity=="boss_8_baron":
+						prepared.diffuse_mode=BaseMaterial3D.DIFFUSE_BURLEY
+						prepared.next_pass=null;prepared.roughness=.88
 					prepared_materials[key]=preload("res://scripts/hero_surfaces.gd").material(original,surface_kind,outline) if surface_kind>0 else prepared
 				var material=prepared_materials[key]
 				node.set_surface_override_material(surface,material)
