@@ -45,3 +45,10 @@ Documentation-only edits need link/command checks, not a fresh game build. Run m
 - Update version metadata together when bumping a version: `package.json`, `native/project.godot`, `native/export_presets.cfg`, and applicable docs. Distinguish local development builds from the published release.
 
 Report the result as: what changed, what was tested, where the executable/evidence is, and what remains unfinished.
+
+## Build integrity rules — NEVER skip
+
+1. **Code → commit → build.** Every code change must be committed to the repository before building. The `build` action automatically rejects dirty working trees containing uncommitted source files. Only docs, plan, and readme updates may be staged separately.
+2. **One logical commit per feature set.** All changes for a single task or feature group go into one commit. This makes the commit history a reliable map of what each build contains.
+3. **Verify the commit matches the build.** Before pushing or publishing, confirm the HEAD commit hash matches what the build ran against. If you built from a dirty tree, the build is invalid and must be rebuilt after committing.
+4. **Never publish a build from uncommitted code.** An executable built from a dirty working tree is a lie — it cannot be reproduced, debugged, or trusted. If the agent-workflow build guard rejects you, commit the changes and rebuild.

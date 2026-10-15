@@ -216,8 +216,35 @@ async function main(action) {
       report.capture=assessPng(join(root,'native/docs/golden-scene.png'),started);
     }
     if (action === 'build') {
-      const exe=join(runDir,'Wildforge.exe');
-      await step('export',godot,['--headless','--path',join(root,'native'),'--export-release','Windows Native',exe],240000);
+        // SAFEGUARD: refuse to build from dirty working tree.
+        // A build must always reproduce a committed state; never ship uncommitted code.
+        const gitStatus=git('status','--porcelain');
+        const lines=gitStatus.split(/\r?\n/).filter(l=>l.trim().length>0);
+        const codeFiles=lines.filter(l=>{
+          // Track only game source files. Ignore docs, build cache, tool configs, and documentation.
+          const path=l.trim().split(/\s+/).slice(1).join(' ');
+          // Excluded directories/files
+          const excluded=[
+            'native/docs/', 'native/.godot/', 'native/data/',   // non-source
+            'scripts/', 'tests/', 'tools/', '.build-staging/',   // tooling
+            'native/project.godot', 'native/export_presets.cfg',  // build config
+            'package.json',                                        // npm config
+          ];
+          if (excluded.some(e=>path===e||path.startsWith(e))) return false;
+          // Excluded file extensions
+          const skipExt=['.json','.txt','.cfg','.md','.html','.css','.svg','.png','.jpg','.wav','.ico','.xml'];
+          if (skipExt.some(ext=>path.toLowerCase().endsWith(ext))) return false;
+          // Track everything else (game scripts, shaders, etc.)
+          return true;
+        });
+        if (codeFiles.length > 0) {
+          throw new Error(
+            'Build rejected: uncommitted code changes exist. Commit all code changes before building.\n'+
+            'Uncommitted files: '+codeFiles.join(', ')
+          );
+        }
+        const exe=join(runDir,'Wildforge.exe');
+        await step('export',godot,['--headless','--path',join(root,'native'),'--export-release','Windows Native',exe],240000);
       for (const artifact of [exe,join(runDir,'Wildforge.pck')]) if (!existsSync(artifact) || statSync(artifact).size < 1024) throw new Error('Missing or empty build artifact: '+artifact);
       report.exportedSmoke=assessSmoke(await step('exported-smoke',exe,['--headless','--','--smoke'],90000));
       report.build=exe;
