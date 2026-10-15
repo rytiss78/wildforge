@@ -1,5 +1,6 @@
 # Build 16 — Hermes audit and repairs
 
+Current status: this historical checkpoint is included in [Build 16](release-build16.md). The unreleased/hold statements below describe the earlier audit, not the current delivery.
 October 15, 2026 · Wildforge 1.1.2 / Build 16 — unreleased development.
 
 ## Was the supplied executable old?

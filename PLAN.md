@@ -1,12 +1,12 @@
 # Wildforge — active plan
 
-October 15, 2026 · **1.1.2 / Build 16 development — unreleased** · main branch.
+October 15, 2026 · **1.1.2 / Build 16 checkpoint** · main branch.
 
 Use [AGENTS.md](AGENTS.md) and the [Godot workflow](native/docs/godot-workflow.md). Work directly, one agent. A checked item requires exercised behavior and evidence; historical completion marks are not verification.
 
 ## Hermes audit and eleven requested improvements
 
-Source validation is recorded in [the repair report](native/docs/repair-1.1.2.md). The user has authorized continuing the remaining work. New art requests below remain open; publication status must reflect the actual exported checkpoint. A local candidate from commit `ddee6e7` exists at `.build-staging/agent-workflow/2026-10-15T09-51-35-157Z-build/Wildforge.exe`; it does not contain subsequent development. No Build 16 release or delivery folder has been published.
+Source validation is recorded in [the repair report](native/docs/repair-1.1.2.md). Build 16 packages the repaired co-op, natural scenery and current continuation. [Release details](native/docs/release-build16.md). The older `09-51-35` candidate is superseded; it lacks these changes. **This checkpoint does not finish the remaining plan or the new art requests.**
 
 - [x] Shared co-op XP/levels: one host-owned set of drops, collectible near any living player; mirrored progress, independent choices, duplicate client credits ignored.
 - [x] Shared chests: host validates the request, charges the opener once, distributes choices and hides the chest for everyone. Both real processes resume after choosing.
@@ -32,9 +32,9 @@ The latest direction replaces the older request for massive buildings: **no deco
 - [x] Enemies go around natural props while retaining terrain climbing; real collision movement and wall/ceiling/ledge/slope reviews pass.
 - [x] Verified distinct ranged firing distances, retreat and committed charges that can be dodged.
 - [x] Inspected the single boss marker and updated colour pass in rendered gameplay.
-- [ ] Export/publish Build 16 only after this additional work; current source has no new executable yet.
+- [x] Clean-source Build 16 candidate exported and checked at 720p/1080p, with exported two-process co-op tests. Delivery: `build/repair-1.1.2-build16/Wildforge.exe`; release manifest identifies the final source commit.
 
-Evidence and limits: [natural-world continuation](native/docs/natural-world-build16.md). Source only; no new executable for this pass.
+Evidence and limits: [natural-world continuation](native/docs/natural-world-build16.md). Now included in the Build 16 checkpoint.
 
 ## Remaining work — do not mark complete from this checkpoint
 

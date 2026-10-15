@@ -1,5 +1,6 @@
 # Natural-world continuation — Build 16 remains unreleased
 
+Current status: this historical checkpoint is included in [Build 16](release-build16.md). The unreleased/hold statements below describe the earlier audit, not the current delivery.
 October 15, 2026. Supersedes the older request for massive decorative buildings.
 
 ## Changes

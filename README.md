@@ -4,13 +4,17 @@
 
 A vivid 3D survival game where a duck, a loaf of bread and an angry granny are perfectly reasonable hero choices. Explore strange places, grab unpredictable upgrades and become outrageously overpowered before the monsters catch you.
 
-**[Download the Windows build](https://github.com/rytiss78/wildforge/releases/tag/build-15)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
+**[Download the Windows build](https://github.com/rytiss78/wildforge/releases/tag/build-16)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
 
-**1.1.2 — Build 16 is in development and has not been published.** The public download remains Build 15. Shared co-op XP/levels and chest rewards, working magnet defenses, distant hunt targets with arrows, bottom-edge XP UI, Eclipse weather and separate boss music are covered by focused gameplay and two-process checks. [Repair findings and limitations](native/docs/repair-1.1.2.md).
+**1.1.2 — Build 16 checkpoint.** Shared co-op XP/levels and chest choices, combat-targetable magnet defenses, distant hunt targets, corrected HUD/weather/audio, natural groves and a first ground-cover pass. Last-run reports now survive high-score trimming. [Release details and unfinished work](native/docs/release-build16.md).
 
-The third map leads to the Red Moon: a small arena with a 42-metre skeletal boss, extremely slow movement and deadly ranged attacks. Defeat it to begin an endless Eclipse. The latest requested boss-health increase also applies here; battle duration still needs real build playtesting. The upcoming scenery pass replaces decorative buildings with glowing natural groves.
+The third map leads to the Red Moon: a small arena with a 42-metre skeletal boss, extremely slow movement and deadly ranged attacks. Defeat it to begin an endless Eclipse. The latest requested boss-health increase also applies here; battle duration still needs real build playtesting. Glowing natural groves replace decorative buildings. The requested Baron Harkonnen boss replacement, low mist and further Hades-inspired art polish remain planned.
 
-For the public download, unpack all files together and run `Wildforge.exe`. Source development uses `node scripts/native.mjs`. The upcoming Build 16 changes the shared-drop protocol, so all co-op players will need the same version. Its local export manifest records the committed source and executable/pack hashes.
+For the public download, unpack all files together and run `Wildforge.exe`. Source development uses `node scripts/native.mjs`. Build 16 changes the shared-drop protocol, so all co-op players need the same version. Its local export manifest records the committed source and executable/pack hashes.
+
+![First natural ground-cover pass](docs/screenshots/build16/woods.png)
+
+*Natural groves and short grass; further ground and colour polish remains planned.*
 
 ![Co-op hero selection with the new dark interface](docs/screenshots/red-moon-1.1.0/ui-coop.png)
 
@@ -38,7 +42,7 @@ Spend your coins on a chest, choose one of five rewards and keep building your r
 
 ## Bring friends
 
-Survive solo or team up with up to three friends. Share the fight, keep your own loot and discover what happens when four questionable heroes meet the same boss.
+Survive solo or team up with up to three friends. Share XP, levels and chest opportunities, choose your own upgrades and discover what happens when four questionable heroes meet the same boss.
 
 On the same Wi-Fi, host a party and let friends join from the nearby-party list. Remote friends can join by address using a shared VPN or port forwarding. [Co-op setup](native/docs/coop.md)
 
