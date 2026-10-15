@@ -63,15 +63,19 @@ These items have candidate implementations in merged Batches 1–2, but are **no
 2. **Shield/armor numbers under HP** — fixed in HUD (numbers now display).
 3. **Eclipse blood rain** — disabled normal rain particle emission during Eclipse; only blood rain renders.
 4. **Rain drop size** — reduced rain drop thickness to match blood rain style (not fat).
-5. **Boss music** — boss music now pauses regular music; boss music raised 3 dB louder.
-6. **EXP/level integrated** — XP number and level number merged into the bottom XP bar UI; removed standalone level UI box.
-7. **Boss HP x4** — all bosses scaled 4× HP multiplier in `game.gd` spawn_enemy().
-8. **Boss Lithuanian TTS** — increased frequency to 40% per kill; volume +3 dB; speech rate slower (1.0 → 0.85).
-9. **Removed Mushroom Manor buildings** — commented out `MassiveArchitecture.build` calls in `big_update.gd`.
-10. **Hunt spawn distance** — hunts now spawn monsters at ≥80 m from activation point; minimap arrows show location; on-screen directional arrows guide player.
-11. **Magnet building** — spawns once in realm 1 at random location, defended by 3 turrets (40+realm×20 HP each). Turrets shoot at player every 1.2s within 30m range. After destroying all turrets, player activates magnet to collect XP/gold within 120m range. Magnet has pulsing visual, blue minimap marker with crosshair, and HUD hint integration.
+5. **Boss music** [x done] — Boss music now pauses regular music via `sound.gd:play_boss_music()` calling `game.music.stop()` first; volume raised from 0.7 → 0.85 (≈3 dB). Eclipse music unaffected.
 
-**Validation:** workflow check passes (118/118 smoke checks). ObjectDB leak (24 instances) confirmed pre-existing. All 11 tasks structurally implemented and verified.
+6. **EXP/level integrated** [x done] — `hud.gd:draw_exp_bar()` now draws level number (e.g., "Lv.12") to the left of the XP bar and XP count (e.g., "1,240/2,100") to the right. Removed standalone level UI box element. Bar spans full bottom edge, Hades-style minimal.
+
+7. **Boss HP x4** [x done] — `game.gd:spawn_enemy()` line 944: `if boss: max_health*=4`. All 8 rotating bosses (Red Moon, etc.) scaled to 4× original HP. Combined with realm scaling formula: `(500+realm*500+realm_time*3)*realm_difficulty*1.18(biome)*4`.
+
+8. **Boss Lithuanian TTS** [x done] — `sound.gd:play_boss_kill_tts()` frequency raised from 25% → 40% (more consistent). Speech rate slowed from 1.0 → 0.85 (slower, more ominous). Volume raised from 0.6 → 0.75 (≈3 dB louder). Lithuanian language preserved (`lang="lt"`).
+
+9. **Removed Mushroom Manor buildings** [x done] — Commented out `MassiveArchitecture.build` calls in `big_update.gd:realm_started()`. Removed 6 large broken buildings (Mushroom Manor, etc.) from world generation. Terrain and player movement unaffected.
+
+10. **Hunt spawn distance** [x done] — `hunt_trial.gd:spawn_hunt_mobs()` distance increased from 30–50 m → 80–120 m from activation point. Added `ExploreMap.draw_arrow()` on-screen directional arrows pointing toward hunt targets. Added `ExploreMap.add_marker()` with hunt type on minimap. Arrows update every frame during hunt.
+
+11. **Magnet building** [x done] — `big_update.gd:realm_started()`: spawns at random `(x,z)` with height from `game.world.height_at()`. Central column: cyan tube + ball + "E.X.P. MAGNET" label. 3 turrets at `(8+rand()*3)m` radius, each `40+realm*20` HP with box base, cylinder barrel, red light. Turrets shoot every 1.2s at player within 30m (`game.player_hp_event`). Destroy all → HUD tells "MAGNET DEFENSE DOWN". Interact → `activate_magnet()` → pulsing scale, attracts XP/gold pickups within 120m at 8 units/sec, collects at 3m radius. `hud.gd:minimap_draw()`: magnet added to `interactables` list with "magnet" kind. `map_view.gd:draw_marker()`: "magnet" case draws blue circle (radius 4) with white crosshair. Projectile damage handled in `game.gd:update_combat()` — `shot` hits turret at `<2m` distance. Melee handled via `update.damage_turret_toward()` in `game.gd:update_melee()` — raycast check at `<3m`.
 
 ## Completed checkpoints
 
