@@ -6,7 +6,7 @@ Use [AGENTS.md](AGENTS.md) and the [Godot workflow](native/docs/godot-workflow.m
 
 ## Hermes audit and eleven requested improvements
 
-Source validation is recorded in [the repair report](native/docs/repair-1.1.2.md). Publication is on hold at the user’s request while more gameplay work is completed. A local candidate from commit `ddee6e7` exists at `.build-staging/agent-workflow/2026-10-15T09-51-35-157Z-build/Wildforge.exe`; it does not contain subsequent development. No Build 16 release or delivery folder has been published.
+Source validation is recorded in [the repair report](native/docs/repair-1.1.2.md). The user has authorized continuing the remaining work. New art requests below remain open; publication status must reflect the actual exported checkpoint. A local candidate from commit `ddee6e7` exists at `.build-staging/agent-workflow/2026-10-15T09-51-35-157Z-build/Wildforge.exe`; it does not contain subsequent development. No Build 16 release or delivery folder has been published.
 
 - [x] Shared co-op XP/levels: one host-owned set of drops, collectible near any living player; mirrored progress, independent choices, duplicate client credits ignored.
 - [x] Shared chests: host validates the request, charges the opener once, distributes choices and hides the chest for everyone. Both real processes resume after choosing.
@@ -38,11 +38,30 @@ Evidence and limits: [natural-world continuation](native/docs/natural-world-buil
 
 ## Remaining work — do not mark complete from this checkpoint
 
+[Latest continuation evidence](native/docs/build16-continuation.md): last-run history fixed, crowd steering optimized, and controlled DPS measurements added. Full-fight balance and visual acceptance remain open.
+
 1. **Real build balance:** measure weak/typical/strong weapon, turret, status, slam and flower builds against the final boss in solo and parties. The latest HP increase changes the DPS required for a five-minute fight. Automated contact/attack checks do not establish enjoyable duration or equal win rates.
 2. **Enemy and art polish:** finish distinct biome encounter behavior/spacing, original creepypasta-inspired references and remaining older visual assets. Preserve readable silhouettes, quiet ground and vivid attacks.
 3. **Performance:** measure dense scenery and late Eclipse crowds under comparable conditions. LAN correctness and a lower snapshot rate do not prove lower Internet latency or faster frame times.
 4. **Human feel/audio checks:** physical gamepad dash/deploy/menu feel; audition music transitions and Lithuanian speech during a full battle. Preserve the accurate PARANOIA-derived Eclipse provenance.
 5. **Broader UI/stat history:** finish copy cleanup and reconcile last-run/death statistics. Keep semantic skill icons under visual review; different hashes are not proof of useful artwork.
+
+## New request — Baron final boss
+
+- [ ] Replace the final boss with Baron Vladimir Harkonnen from the Dune films (the enormous bald floating character). Seek a photorealistic model if a suitable, licensed game-ready asset is available; record its source and reuse terms. Do not label a stylized fallback photorealistic.
+- [ ] Make him immense: the ordinary camera must require looking upward to see his whole silhouette. Retain very slow movement and deadly, clearly telegraphed ranged attacks.
+- [ ] Add visible steam venting from his body, with bounded particle cost and readable attack warnings.
+- [ ] Verify silhouette, targeting, collision, co-op appearance and steam performance in the exported game before marking complete.
+
+## New request — finished ground and stronger colour
+
+- [ ] Ground still looks unfinished and the current colour pass does not meet the user's Hades reference. Reopen visual acceptance: screenshots passing technical checks are not art approval.
+- [x] First ground-cover implementation: clustered short grass with biome colours, wind and occasional pink tips; no collisions; paths, lava, portal approaches and steep slopes excluded. Further ferns/moss, composition and colour acceptance remain open. See continuation evidence.
+- [ ] Trial sparse low mist in marsh/cloud pockets only; compare against grass-only. Do not wash out saturated foliage, hide feet/loot or cover hazard circles. Use ember flecks and mineral/crystal fragments where grass would not fit.
+- [ ] Use chunked instancing and simple wind animation, distance limits and no foliage collision. Measure the same camera/seed before and after in normal combat and late Eclipse.
+- [ ] Review every biome from the gameplay camera at 720p/1080p: rich coloured midtones, separated shadows, hot highlights and vivid attacks. Record before/after frames; leave open if it still looks dull.
+
+Research and implementation choices: [ground-art research](native/docs/ground-art-research.md).
 
 ## Deferred
 

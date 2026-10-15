@@ -250,15 +250,7 @@ func make_chunk(cell: Vector2i):
 		var instances=MultiMesh.new();instances.transform_format=MultiMesh.TRANSFORM_3D;instances.mesh=prop_meshes[path];instances.instance_count=scenery_groups[path].size()
 		for index in range(instances.instance_count): instances.set_instance_transform(index,scenery_groups[path][index])
 		var combined=MultiMeshInstance3D.new();combined.multimesh=instances;combined.material_override=scenery_material;combined.visibility_range_end=105;combined.visibility_range_end_margin=15;root.add_child(combined)
-	# Low batched ground details never conceal an ordinary enemy.
-	var multimesh=MultiMesh.new();multimesh.transform_format=MultiMesh.TRANSFORM_3D;multimesh.use_colors=true
-	var blade=PrismMesh.new();blade.size=Vector3(.08,.18,.07);multimesh.mesh=blade;multimesh.instance_count=80
-	for i in range(80):
-		var p=Vector3(cell.x*CHUNK+local_rng.randf()*CHUNK,0,cell.y*CHUNK+local_rng.randf()*CHUNK);p.y=height_at(p.x,p.z)+.08
-		multimesh.set_instance_transform(i,Transform3D(Basis.IDENTITY,p-root.position));multimesh.set_instance_color(i,COLORS[biome_at(p)].darkened(.17))
-	var grass=MultiMeshInstance3D.new();grass.multimesh=multimesh
-	grass.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	var material=ShaderMaterial.new();material.shader=preload("res://shaders/flora.gdshader");grass.material_override=material;root.add_child(grass)
+	GroundCover.build(self,root,cell,local_rng)
 
 # Candy Hell (biome 4): three deterministic winding lava streams.
 # Render into terrain chunks so distant geometry is discarded with the chunk.
