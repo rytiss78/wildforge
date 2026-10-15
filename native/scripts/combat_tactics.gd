@@ -5,9 +5,40 @@ static func dash_vector(stick: Vector2,yaw: float,last_direction: Vector3) -> Ve
 	var fallback=Vector3(last_direction.x,0,last_direction.z)
 	return fallback.normalized() if fallback.length()>.01 else Vector3.FORWARD.rotated(Vector3.UP,yaw)
 
+static func ranged_movement(enemy: Dictionary,toward: Vector3,distance: float,visible: bool) -> Vector3:
+	# Different firing rings leave room for melee enemies to pass through.
+	# Walk closer when terrain blocks the shot; never kite forever beyond range.
+	var forward=toward.normalized()
+	if not visible or distance>21: return forward
+	var preferred=[12.0,10.0,17.0,14.0,11.0,16.0][enemy.biome]+float(enemy.net_id%3)-1.0
+	if distance<preferred-2: return -forward*.75
+	if distance>preferred+2: return forward*.8
+	if enemy.get("ranged_recovery",0)>0: return Vector3.ZERO
+	var side=forward.cross(Vector3.UP)*(1 if int(enemy.net_id)%2==0 else -1)
+	return side*[.2,.45,.08,.5,.3,.6][enemy.biome]
+
+static func charge_movement(g,enemy: Dictionary,aim: Vector3,distance: float,delta: float) -> Vector3:
+	# A rush commits when the warning starts. Dodging sideways then matters.
+	if enemy.freeze>0 or enemy.blind>0:
+		enemy.windup=0.0;enemy.charge=0.0
+		return aim
+	if enemy.get("windup",0)>0:
+		enemy.windup=maxf(0,enemy.windup-delta);g.update.eyebrows(enemy)
+		if enemy.windup<=0: enemy.charge=.65
+		return Vector3.ZERO
+	if enemy.get("charge",0)>0:
+		enemy.charge=maxf(0,enemy.charge-delta)
+		return enemy.get("charge_direction",aim)
+	if enemy.attack<=0 and distance>2 and distance<13:
+		enemy.windup=.8;enemy.attack=5.0;enemy.charge_direction=aim.normalized()
+		enemy.node.get_meta("rig").attack=.8;g.update.eyebrows(enemy)
+		return Vector3.ZERO
+	return aim
+
 static func ranged_attack(g,enemy: Dictionary,target: Vector3):
 	if g.coop.active and not g.coop.hosting: return
 	enemy.attack=4.2+float(enemy.net_id%3)*.35
+	enemy.ranged_recovery=.65
 	enemy.node.get_meta("rig").attack=.8
 	var forward=(target-enemy.node.position).normalized();forward.y=0
 	var side=forward.cross(Vector3.UP).normalized()

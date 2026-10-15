@@ -175,6 +175,7 @@ static func run(game: Node3D):
 	game.world.stream(Vector3(-280,0,0),[Vector3(280,0,0)])
 	var coverage=game.world.pending+game.world.chunks.keys()
 	checks.separated_party_chunks=coverage.any(func(cell):return cell.x>3) and coverage.any(func(cell):return cell.x< -3)
+	checks.merge(await preload("res://scripts/encounter_checks.gd").run(game))
 	var result={"checks":checks,"route_max_slope":worst_slope,"passed":checks.values().all(func(v):return bool(v))}
 	var file=FileAccess.open("user://big-update-results.json",FileAccess.WRITE);file.store_string(JSON.stringify(result,"  "));file.close()
 	game.set_process(false);game.sound.shutdown()

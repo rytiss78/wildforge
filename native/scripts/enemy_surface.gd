@@ -10,6 +10,8 @@ static func ray(game, enemy: Dictionary, origin: Vector3, end: Vector3) -> Dicti
 	query.from = origin
 	query.to = end
 	var result = game.get_world_3d().direct_space_state.intersect_ray(query)
+	# Decorative growths are navigation obstacles, not climbable walls.
+	if not result.is_empty() and result.collider.has_meta("natural_obstacle"): return {}
 	return result
 
 static func orient(body: Node3D, normal: Vector3, forward: Vector3):

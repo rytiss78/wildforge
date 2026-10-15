@@ -1,10 +1,10 @@
-WILDFORGE 1.1.2 — BUILD 16
+WILDFORGE — Build 16 development (unreleased)
 
-Run Play-Wildforge.cmd, or build\repair-1.1.2-build16\Wildforge.exe.
-Download: https://github.com/rytiss78/wildforge/releases/tag/build-16
-Keep Wildforge.exe, Wildforge.pck and build-info.json together.
-The menu must show v1.1.2 / BUILD 16. Every co-op player needs this version.
+Public Windows download: https://github.com/rytiss78/wildforge/releases/tag/build-15
+Extract the whole download, then run Wildforge.exe.
+Play current source: node scripts/native.mjs
+Build 16 publication is on hold while development continues.
 
-Current work and remaining tasks: PLAN.md
+Current work: PLAN.md
 Repair findings and evidence: native/docs/repair-1.1.2.md
 Older build/test history is preserved at C:\Users\rytis\Wildforge-Archive.

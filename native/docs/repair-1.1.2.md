@@ -1,6 +1,6 @@
 # Build 16 — Hermes audit and repairs
 
-October 15, 2026 · Wildforge 1.1.2 / Build 16.
+October 15, 2026 · Wildforge 1.1.2 / Build 16 — unreleased development.
 
 ## Was the supplied executable old?
 
@@ -30,13 +30,13 @@ Baseline evidence: `.build-staging/hermes-audit/baseline-1792055890337/`, `.buil
 
 ## Validation
 
-[Source evidence](evidence-build16.json) records exact runs and diagnostics. The final source checks pass: JS/import/parse, 118 smoke checks, gameplay integration, new rendered feature review, real two-process shared-progression review, menu/button navigation and Red Moon combat review. Source screenshots were visually inspected for map/HUD layout, magnet silhouette, hunt arrows, blood rain and version label.
+[Source evidence](evidence-build16.json) records exact runs and diagnostics. The repair-checkpoint source checks passed: JS/import/parse, 118 smoke checks, gameplay integration, new rendered feature review, real two-process shared-progression review, menu/button navigation and Red Moon combat review. Source screenshots were visually inspected for map/HUD layout, magnet silhouette, hunt arrows, blood rain and version label.
 
 The six-minute co-op route completed **0 → 1 → 2 → 3 → 0** on both peers, including down/rescue, health, flowers, damage numbers, merchant, supply, hunt, guardian, final boss and permanent Eclipse. Later critical-hit and unrelated-poison fixes are covered by the focused two-process review. The first focused-test teardown leaked audio resources; explicit shutdown/drain repaired the harness, and its final logs are clean. Integration initially exposed a test fixture selecting new world sentries as its two reaction targets; isolated fixtures now retain the original wet-chain assertion.
 
 The eleven-point rendered review exercises actual interaction, projectile hits, area damage, defense locking, attraction and realm reset. The shared review exercises duplicate chest requests, one payment, matching XP/pools, real reward-card buttons, remote sentry damage and activation. The final executable must repeat these reviews plus 720p/1080p menus before publication; exported evidence is retained under `.build-staging/agent-workflow/` and attached to the release.
 
-Local delivery: `build/repair-1.1.2-build16/Wildforge.exe` via `Play-Wildforge.cmd`. Release: [Build 16](https://github.com/rytiss78/wildforge/releases/tag/build-16). Keep the executable, pack and `build-info.json` together. Both peers require Build 16's updated protocol.
+Publication is on hold at the user’s request. A local candidate at `.build-staging/agent-workflow/2026-10-15T09-51-35-157Z-build/Wildforge.exe` was exported from clean commit `ddee6e7` and passed exported smoke. It has not received the final exported feature/UI reviews and does not include later development. No Build 16 release or delivery folder exists yet. The public download remains Build 15.
 
 ## Folder cleanup
 
@@ -45,3 +45,7 @@ The earlier cleanup preserved 5,189,399,996 bytes under `C:\Users\rytis\Wildforg
 ## Limits still open
 
 The requested fourfold final-boss HP means five minutes requires approximately 1,200 applied solo DPS; no representative-build balance claim is made. Broad art/biome polish, Internet latency and dense-scene performance need further work. Controller feel and full-combat audio audition remain human checks. Eclipse music is still a PARANOIA-derived arrangement; this release does not claim it is original. These remain explicit in [PLAN.md](../../PLAN.md).
+
+## Further development before publication
+
+The user requested more work before Build 16, then replaced the earlier building direction with colourful glowing nature and reported enemies getting stuck climbing props. This continuation changes the source beyond the local candidate listed above. Its evidence is recorded separately in [the natural-world continuation](natural-world-build16.md).

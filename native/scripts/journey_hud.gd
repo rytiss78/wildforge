@@ -17,8 +17,7 @@ func _draw():
 	if game.Hunt.state(game)=="active":
 		for enemy in game.enemies:
 			if not enemy.dead and enemy.net_id in game.events.get("hunt_ids",[]): pointer(enemy.node.position,"HUNT",Color("e5a1ff"))
-	for enemy in game.enemies:
-		if not enemy.dead and enemy.boss: pointer(enemy.node.position,"BOSS",Color("ff8263"))
+	# PlayerLocator owns the single camera-projected boss marker.
 	if game.realm==3: return
 	pointer(game.gate_position,"PORTAL",Color("ffd767"))
 

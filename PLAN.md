@@ -1,12 +1,12 @@
 # Wildforge — active plan
 
-October 15, 2026 · **1.1.2 / Build 16 repair checkpoint** · main branch.
+October 15, 2026 · **1.1.2 / Build 16 development — unreleased** · main branch.
 
 Use [AGENTS.md](AGENTS.md) and the [Godot workflow](native/docs/godot-workflow.md). Work directly, one agent. A checked item requires exercised behavior and evidence; historical completion marks are not verification.
 
 ## Hermes audit and eleven requested improvements
 
-Source validation is recorded in [the repair report](native/docs/repair-1.1.2.md). The current executable belongs at `build/repair-1.1.2-build16/Wildforge.exe`; `build-info.json` identifies its exact committed source and hashes. Exported checks and the release are recorded with the [Build 16 download](https://github.com/rytiss78/wildforge/releases/tag/build-16).
+Source validation is recorded in [the repair report](native/docs/repair-1.1.2.md). Publication is on hold at the user’s request while more gameplay work is completed. A local candidate from commit `ddee6e7` exists at `.build-staging/agent-workflow/2026-10-15T09-51-35-157Z-build/Wildforge.exe`; it does not contain subsequent development. No Build 16 release or delivery folder has been published.
 
 - [x] Shared co-op XP/levels: one host-owned set of drops, collectible near any living player; mirrored progress, independent choices, duplicate client credits ignored.
 - [x] Shared chests: host validates the request, charges the opener once, distributes choices and hides the chest for everyone. Both real processes resume after choosing.
@@ -23,6 +23,18 @@ Source validation is recorded in [the repair report](native/docs/repair-1.1.2.md
 - [x] 11. Magnet with three combat-targetable sentries, health orbs, readable ranged attacks, host-approved activation and 120 m loot attraction. Clears between realms; absent safely in final arena.
 - [x] Correct co-op critical damage types and prevent unrelated equipped weapons adding poison/fire to a gun hit.
 - [x] Consistent version/build labels, launcher path and committed-build integrity checks; remove obsolete source ZIP from the export.
+
+## Current continuation — natural scenery and encounters
+
+The latest direction replaces the older request for massive buildings: **no decorative houses, castles, door/window facades or boxy platforms**. Use living, colourful nature with strong silhouettes and isolated glow; keep the ground subdued.
+
+- [x] Validated six natural biome sets: emerald fairy trees and pink flowers, luminous mushrooms, pointed moon crystals, flowering willows, ember roots and astral coral. Tall, medium and low growths replace old scattered architectural meshes; large groves replace building landmarks.
+- [x] Enemies go around natural props while retaining terrain climbing; real collision movement and wall/ceiling/ledge/slope reviews pass.
+- [x] Verified distinct ranged firing distances, retreat and committed charges that can be dodged.
+- [x] Inspected the single boss marker and updated colour pass in rendered gameplay.
+- [ ] Export/publish Build 16 only after this additional work; current source has no new executable yet.
+
+Evidence and limits: [natural-world continuation](native/docs/natural-world-build16.md). Source only; no new executable for this pass.
 
 ## Remaining work — do not mark complete from this checkpoint
 

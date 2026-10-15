@@ -4,13 +4,13 @@
 
 A vivid 3D survival game where a duck, a loaf of bread and an angry granny are perfectly reasonable hero choices. Explore strange places, grab unpredictable upgrades and become outrageously overpowered before the monsters catch you.
 
-**[Download the Windows build](https://github.com/rytiss78/wildforge/releases/tag/build-16)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
+**[Download the Windows build](https://github.com/rytiss78/wildforge/releases/tag/build-15)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
 
-The current repair release is **1.1.2 — Build 16**. Shared co-op XP/levels and chest rewards, working magnet defenses, distant hunt targets with arrows, bottom-edge XP UI, Eclipse weather and separate boss music are covered by focused gameplay and two-process checks. [Repair findings and limitations](native/docs/repair-1.1.2.md).
+**1.1.2 — Build 16 is in development and has not been published.** The public download remains Build 15. Shared co-op XP/levels and chest rewards, working magnet defenses, distant hunt targets with arrows, bottom-edge XP UI, Eclipse weather and separate boss music are covered by focused gameplay and two-process checks. [Repair findings and limitations](native/docs/repair-1.1.2.md).
 
-The third map leads to the Red Moon: a small arena with a 42-metre skeletal boss, extremely slow movement and deadly ranged attacks. Defeat it to begin an endless Eclipse. The latest requested boss-health increase also applies here; battle duration still needs real build playtesting. Broken large decorative halls have been retired.
+The third map leads to the Red Moon: a small arena with a 42-metre skeletal boss, extremely slow movement and deadly ranged attacks. Defeat it to begin an endless Eclipse. The latest requested boss-health increase also applies here; battle duration still needs real build playtesting. The upcoming scenery pass replaces decorative buildings with glowing natural groves.
 
-Run **Play-Wildforge.cmd** locally, or `build/repair-1.1.2-build16/Wildforge.exe`. For the download, unpack all files together and run `Wildforge.exe`. The main menu must say **v1.1.2 · BUILD 16**. All co-op players need this build because the shared-drop protocol changed. `build-info.json` records the committed source and executable/pack hashes.
+For the public download, unpack all files together and run `Wildforge.exe`. Source development uses `node scripts/native.mjs`. The upcoming Build 16 changes the shared-drop protocol, so all co-op players will need the same version. Its local export manifest records the committed source and executable/pack hashes.
 
 ![Co-op hero selection with the new dark interface](docs/screenshots/red-moon-1.1.0/ui-coop.png)
 
@@ -28,7 +28,7 @@ Carry three weapons at once. When two hands aren't enough, grow a third arm. Mix
 
 ## Find trouble somewhere new
 
-Roam through Clover Woods, Puffcap Marsh, Moon Craters, Cloud City, Candy Hell and Starfall Space. Hunt for treasure, jump over trouble, squash enemies underfoot and face huge bosses as the clock ticks down.
+Roam through Clover Woods, Puffcap Marsh, Moon Craters, Cloudwilds, Candy Hell and Starfall Space. Hunt for treasure, jump over trouble, squash enemies underfoot and face huge bosses as the clock ticks down.
 
 Spend your coins on a chest, choose one of five rewards and keep building your ridiculous little disaster. Chase 108 achievements built around exploration, clever combinations and unusual challenges.
 

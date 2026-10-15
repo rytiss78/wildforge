@@ -6,7 +6,7 @@ const SPAWN_EXTENT=EXTENT-30.0
 const DANGER_EXTENT=EXTENT-25.0
 const CHUNK=64.0
 const NAMES=["Sunlit Frontier","Wild Highlands","Skyward Reach","The Red Moon"]
-const BIOMES=["Clover Woods","Puffcap Marsh","Moon Craters","Cloud City","Candy Hell","Starfall Space"]
+const BIOMES=["Clover Woods","Puffcap Marsh","Moon Craters","Cloudwilds","Candy Hell","Starfall Space"]
 const CREATURES=["acorn","toad","crab","penguin","lizard","beetle"]
 const COLORS=[Color("326849"),Color("91b3ab"),Color("b4c5df"),Color("d9eaed"),Color("e69479"),Color("ab96c5")]
 var realm=0
@@ -174,7 +174,7 @@ func build(index: int,world_seed: int):
 	chunks.clear();pending.clear();landmarks.clear();building_sites.clear();harvest_sites.clear();last_cell=Vector2i(999,999);stream_signature=""
 	clouds.clear();border_steam.clear();border_patches.clear()
 	make_environment();make_material();make_boundaries();make_landmarks()
-	# Large decorative halls are retired; landmarks and smaller scenery remain.
+	# Natural landmarks and organic scenery replace decorative architecture.
 	# Frame-budgeted chunk building: schedule 49 chunks, process ~6 per frame
 	build_in_progress=true
 	build_cell_index=0
@@ -218,7 +218,6 @@ func make_chunk(cell: Vector2i):
 	var terrain=MeshInstance3D.new();terrain.mesh=surface.commit();terrain.material_override=terrain_material;root.add_child(terrain)
 	terrain.create_trimesh_collision()
 	make_lava_chunk(root,cell)
-	var scenery=[]
 	var scenery_groups={}
 	var local_rng=RandomNumberGenerator.new();local_rng.seed=seed_value+cell.x*73856093+cell.y*19349663
 	for i in range(26):
@@ -236,51 +235,21 @@ func make_chunk(cell: Vector2i):
 		p.y=height_at(p.x,p.z)
 		var biome=biome_at(p)
 		var prop=Node3D.new();prop.position=p-root.position;root.add_child(prop)
-		if biome==2 and i%3==0:
-			ToonArt.ball(prop,Color("e5cb70"),Vector3(0,.4,0),Vector3(2.2,.8,1.6))
-			for bite in range(4): ToonArt.ball(prop,Color("9b874b"),Vector3(-.7+bite*.4,.7,.3 if bite%2==0 else -.2),Vector3(.22,.12,.22))
-
-		# Keep greenery and terrain landmarks; large structures are sparse and smaller.
-		var variant=local_rng.randi_range(0,3) if i%9!=8 else local_rng.randi_range(4,5)
-		var model_path="res://assets/style3d/prop_%d_%d.glb" % [biome,variant]
-		if ResourceLoader.exists(model_path):
-			var baked_path="res://assets/style3d/baked/prop_%d_%d.res" % [biome,variant]
-			var baked=ResourceLoader.exists(baked_path)
-			var asset=Node3D.new() if baked else load(model_path).instantiate();prop.add_child(asset)
-			var scale_value=local_rng.randf_range(.7,1.15) if variant<4 else local_rng.randf_range(1.05,1.4)
-			if biome==3 and variant==0: scale_value=1.0
-			asset.scale=Vector3.ONE*scale_value;prop.rotation.y=local_rng.randf()*TAU
-			if baked:
-				if not prop_meshes.has(baked_path): prop_meshes[baked_path]=load(baked_path)
-				if not scenery_groups.has(baked_path): scenery_groups[baked_path]=[]
-				scenery_groups[baked_path].append(prop.transform*asset.transform)
-			var solid=StaticBody3D.new();prop.add_child(solid);solid.collision_layer=1
-			var obstacle=CollisionShape3D.new();var capsule=CapsuleShape3D.new();capsule.radius=(.35 if biome==0 and variant<2 else 1.05)*scale_value;capsule.height=maxf(capsule.radius*2,8.0*scale_value);obstacle.shape=capsule;obstacle.position.y=capsule.height*.5;solid.add_child(obstacle)
-			var arch=(biome==2 and variant==1) or (biome==3 and variant==1) or (biome==4 and variant==1) or (biome==5 and variant in [0,4,5])
-			if arch:
-				obstacle.queue_free()
-				for side in [-1,1]:
-					var support=CollisionShape3D.new();var column=CapsuleShape3D.new();column.radius=.4*scale_value;column.height=5*scale_value;support.shape=column;support.position=Vector3(side*2.5*scale_value,2.5*scale_value,0);solid.add_child(support)
-			elif biome==3 and variant==0:
-				var platform=BoxShape3D.new();platform.size=Vector3(3.8,.5,2.8);obstacle.shape=platform;obstacle.position.y=2.25
-				for stair in range(2):
-					var step_asset=Node3D.new() if baked else load(model_path).instantiate();prop.add_child(step_asset);step_asset.scale=Vector3.ONE*(.35+stair*.3);step_asset.position=Vector3(-3.0+stair*1.3,.1,0)
-					if baked: scenery_groups[baked_path].append(prop.transform*step_asset.transform)
-					var step_shape=CollisionShape3D.new();var step_box=BoxShape3D.new();step_box.size=Vector3(1.6,.3,1.5);step_shape.shape=step_box;step_shape.position=Vector3(-3.0+stair*1.3,.9+stair*.7,0);solid.add_child(step_shape)
-			elif variant in [4,5] and biome in [0,3]:
-				var occlusion=OccluderInstance3D.new();var occluder=BoxOccluder3D.new();occluder.size=Vector3(1.25,7.0,1.15)*scale_value;occlusion.occluder=occluder;occlusion.position.y=4*scale_value;prop.add_child(occlusion)
-			if i%9==8: preload("res://scripts/scenery_lights.gd").add_lamp(prop,biome)
-			PaintedBatch.collect(prop,scenery)
-			continue
-		push_error("Missing required scenery model: "+model_path)
+		# Cached organic meshes replace every old architectural prop variant.
+		var variant=local_rng.randi_range(0,2)
+		var key=Vector2i(biome,variant)
+		if not prop_meshes.has(key): prop_meshes[key]=NatureScenery.mesh(self,biome,variant)
+		if not scenery_groups.has(key): scenery_groups[key]=[]
+		var scale_value=local_rng.randf_range(.65,1.15)
+		prop.rotation.y=local_rng.randf()*TAU
+		scenery_groups[key].append(prop.transform.scaled_local(Vector3.ONE*scale_value))
+		NatureScenery.collision(prop,biome,variant,scale_value)
+		# Emissive sap is batched on all plants; only sparse plants cast local light.
+		if i%9==8: NatureScenery.light(prop,biome)
 	for path in scenery_groups:
 		var instances=MultiMesh.new();instances.transform_format=MultiMesh.TRANSFORM_3D;instances.mesh=prop_meshes[path];instances.instance_count=scenery_groups[path].size()
 		for index in range(instances.instance_count): instances.set_instance_transform(index,scenery_groups[path][index])
 		var combined=MultiMeshInstance3D.new();combined.multimesh=instances;combined.material_override=scenery_material;combined.visibility_range_end=105;combined.visibility_range_end_margin=15;root.add_child(combined)
-	if not scenery.is_empty():
-		var mesh=PaintedBatch.merge(root,scenery)
-		for source in scenery: source.queue_free()
-		var combined=MeshInstance3D.new();combined.mesh=mesh;combined.material_override=scenery_material;combined.visibility_range_end=105;combined.visibility_range_end_margin=15;root.add_child(combined)
 	# Low batched ground details never conceal an ordinary enemy.
 	var multimesh=MultiMesh.new();multimesh.transform_format=MultiMesh.TRANSFORM_3D;multimesh.use_colors=true
 	var blade=PrismMesh.new();blade.size=Vector3(.08,.18,.07);multimesh.mesh=blade;multimesh.instance_count=80
@@ -391,7 +360,7 @@ func make_environment():
 	var env=Environment.new();env.background_mode=Environment.BG_SKY
 	var sky=Sky.new();var gradient=ShaderMaterial.new();gradient.shader=load("res://shaders/biome_sky.gdshader");gradient.set_shader_parameter("paint",load("res://assets/illustrated/terrain-2.png"));sky.sky_material=gradient;sky.process_mode=Sky.PROCESS_MODE_REALTIME;env.sky=sky
 	env.ambient_light_source=Environment.AMBIENT_SOURCE_COLOR;env.ambient_light_color=Color("e6efff");env.ambient_light_energy=.36
-	env.adjustment_enabled=true;env.adjustment_saturation=1.04;env.adjustment_contrast=1.03
+	env.adjustment_enabled=true;env.adjustment_saturation=1.12;env.adjustment_contrast=1.03
 	# Keep the playable foreground crisp; distant scenery still fades out.
 	env.fog_enabled=true;env.fog_mode=Environment.FOG_MODE_DEPTH;env.fog_light_color=sky_horizon;env.fog_density=1.0;env.fog_depth_begin=35;env.fog_depth_end=155;env.fog_sky_affect=0
 	var world_env=WorldEnvironment.new();world_env.environment=env;add_child(world_env)

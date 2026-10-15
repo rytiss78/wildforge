@@ -1015,10 +1015,22 @@ func make_spawn_room() -> bool:
 	return true
 
 func steer_enemy(enemy: Dictionary,aim: Vector3,delta: float=1.0/30.0) -> Vector3:
-	# Let EnemySurface handle all climbing/ceiling/ledge traversal.
-	# Just return straight aim for non-flying enemies; surface tick moves them up/over obstacles.
 	if enemy.flying or aim.length_squared()<.01: return aim
-	return aim
+	var body: CharacterBody3D=enemy.node
+	var collision=KinematicCollision3D.new()
+	var lookahead=maxf(1.5,enemy.radius+1.0)
+	if not body.test_move(body.global_transform,aim.normalized()*lookahead,collision):
+		enemy.avoid_time=maxf(0,float(enemy.get("avoid_time",0))-delta)
+		return aim
+	var obstacle=collision.get_collider()
+	if not is_instance_valid(obstacle) or not obstacle.has_meta("natural_obstacle"): return aim
+	# Keep one passing side while blocked so enemies do not oscillate at a trunk.
+	if enemy.get("avoid_time",0)<=0: enemy.avoid_side=1 if int(enemy.net_id)%2==0 else -1
+	enemy.avoid_time=1.2
+	for angle in [.65,1.1,1.55,2.0]:
+		var detour=aim.rotated(Vector3.UP,angle*enemy.avoid_side)
+		if not body.test_move(body.global_transform,detour.normalized()*lookahead): return detour
+	return -aim*.4
 
 func nearest_enemy(origin: Vector3, distance_value: float, excluded: Array = []) -> Dictionary:
 	var result = {}
@@ -1768,9 +1780,11 @@ func update_combat(delta: float):
 				aim=aim.rotated(Vector3.UP,(.55 if int(enemy.net_id)%2==0 else -.55))
 			if enemy.behavior=="spit":
 				enemy.attack-=enemy_delta
-				if distance<23 and enemy.attack<=0 and enemy.freeze<=0 and enemy.blind<=0:
+				enemy.ranged_recovery=maxf(0,float(enemy.get("ranged_recovery",0))-enemy_delta)
+				var visible=target_visible(enemy_center(enemy),target_player.position+Vector3.UP)
+				if distance<23 and visible and enemy.attack<=0 and enemy.freeze<=0 and enemy.blind<=0:
 					preload("res://scripts/combat_tactics.gd").ranged_attack(self,enemy,target_player.position)
-				if distance<7: aim=-aim*.6
+				if enemy.blind<=0: aim=preload("res://scripts/combat_tactics.gd").ranged_movement(enemy,toward,distance,visible)
 		if enemy.get("magnet_guard",false):
 			enemy.attack-=enemy_delta
 			if distance<32 and enemy.attack<=0 and enemy.freeze<=0 and enemy.blind<=0:
@@ -1797,12 +1811,7 @@ func update_combat(delta: float):
 						separation+=apart*(spacing-away.length())*3
 		if not enemy.boss and enemy.behavior=="charge":
 			enemy.attack-=enemy_delta
-			if enemy.attack<0 and distance<9 and enemy.freeze<=0 and enemy.blind<=0: enemy.windup=.65;enemy.attack=5;enemy.node.get_meta("rig").attack=.65
-			if enemy.get("windup",0)>0:
-				enemy.windup-=enemy_delta;aim=Vector3.ZERO
-				if enemy.windup<=0: enemy.charge=.55
-				update.eyebrows(enemy)
-			enemy.charge=maxf(0,enemy.get("charge",0)-enemy_delta)
+			aim=preload("res://scripts/combat_tactics.gd").charge_movement(self,enemy,aim,distance,enemy_delta)
 		if enemy.boss:
 			var cycle=fmod(realm_time+enemy.net_id,8.0)
 			if cycle>5: aim=aim.rotated(Vector3.UP,1.1)*.5
@@ -1810,7 +1819,12 @@ func update_combat(delta: float):
 		var is_stunned=enemy.freeze>0
 		var velocity=(aim*enemy.speed*(2 if enemy.get("charge",0)>0 else 1)*(1-minf(.7,enemy.slow))+separation.limit_length(enemy.speed*.45)) if not is_stunned else Vector3.ZERO
 		var body: CharacterBody3D=enemy.node
-		var surface_moved=EnemySurface.tick(self,enemy,target_player.position,enemy_delta)
+		# Ground probes follow actual tactics rather than climbing toward a hero
+		# while a ranged enemy is retreating or a charge is committed elsewhere.
+		var surface_target=target_player.position
+		if not enemy.get("surface_attached",false):
+			surface_target=body.position+aim*10;surface_target.y=target_player.position.y
+		var surface_moved=EnemySurface.tick(self,enemy,surface_target,enemy_delta)
 		if not surface_moved:
 			body.velocity.x=velocity.x*(enemy_delta/delta);body.velocity.z=velocity.z*(enemy_delta/delta)
 			var vertical=enemy.get("vertical",0.0)
