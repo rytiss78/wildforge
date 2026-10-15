@@ -952,8 +952,8 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 	if not valid_spawn: return
 	world.ensure_ground(p)
 	var node=CharacterBody3D.new()
-	# Crowd separation handles neighbours; physics still blocks terrain and heroes.
-	node.collision_layer=4;node.collision_mask=3;node.floor_snap_length=1.2;node.floor_max_angle=deg_to_rad(55);node.max_slides=6;node.floor_constant_speed=true
+	# Keep physical crowd blocking as well as anticipatory separation.
+	node.collision_layer=4;node.collision_mask=7;node.floor_snap_length=1.2;node.floor_max_angle=deg_to_rad(55);node.max_slides=6;node.floor_constant_speed=true
 	var collider=CollisionShape3D.new();var capsule=CylinderShape3D.new()
 	capsule.radius=radius_value;capsule.height=maxf(height,radius_value*2)
 	collider.shape=capsule;collider.position.y=capsule.height*.5;node.add_child(collider)
