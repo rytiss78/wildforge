@@ -60,6 +60,10 @@ func weather_tick(delta: float,p: Vector3):
 	if scenery_material:
 		scenery_material.set_shader_parameter("hero_position",p)
 		if scenery_material.next_pass: scenery_material.next_pass.set_shader_parameter("hero_position",p)
+	# Eclipse: blood rain replaces normal rain entirely.
+	if eclipse:
+		weather.emitting=false
+		return
 	var biome=biome_at(p)
 	if active_biome!=biome:
 		active_biome=biome
@@ -73,7 +77,7 @@ func weather_tick(delta: float,p: Vector3):
 		material.initial_velocity_min=1.5;material.initial_velocity_max=4.0 if biome==1 else 2.5
 		var paint=StandardMaterial3D.new();paint.albedo_color=Color("b5dfec") if biome==1 else Color("fff8ed") if biome==3 else Color("ffcb88") if biome==4 else Color("bd9af0") if biome==5 else Color("a0c681")
 		paint.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED
-		var mesh=SphereMesh.new();mesh.radius=.035 if biome==1 else .022 if biome==0 else .07;mesh.height=.6 if biome==1 else .044 if biome==0 else .14;mesh.material=paint;weather.draw_pass_1=mesh
+		var mesh=SphereMesh.new();mesh.radius=.02 if biome==1 else .015 if biome==0 else .05;mesh.height=.9 if biome==1 else .06 if biome==0 else .18;mesh.material=paint;weather.draw_pass_1=mesh
 	weather.position=p+Vector3.UP*8
 	sky_top=sky_top.lerp(Color("21192f") if eclipse else SKY_TOP[biome],1-exp(-delta*.6));sky_horizon=sky_horizon.lerp(Color("77556c") if eclipse else SKY_HORIZON[biome],1-exp(-delta*.6))
 	sky_paint.set_shader_parameter("top_color",sky_top);sky_paint.set_shader_parameter("horizon_color",sky_horizon)
@@ -173,8 +177,10 @@ func build(index: int,world_seed: int):
 	clouds.clear();border_steam.clear();border_patches.clear()
 	make_environment();make_material();make_boundaries();make_landmarks()
 	if realm<3:
-		preload("res://scripts/forge_architecture.gd").build(self)
-		MassiveArchitecture.build(self)
+		# Decorative zone buildings (e.g. "Mushroom Manor") removed — no purpose.
+		pass
+		#preload("res://scripts/forge_architecture.gd").build(self)
+		#MassiveArchitecture.build(self)
 	# Frame-budgeted chunk building: schedule 49 chunks, process ~6 per frame
 	build_in_progress=true
 	build_cell_index=0

@@ -57,6 +57,22 @@ These items have candidate implementations in merged Batches 1–2, but are **no
 
 **NodeTunnel online co-op:** keep LAN/direct-IP working. Later evaluate a bundled Host Online / Join Room Code flow, engine compatibility, free-service terms and real European latency/jitter/loss. No tunnel installation or hosting purchase now. The October 13 TCP probe timed out and yielded no latency measurement; it does not establish a service outage. [Candidate](https://nodetunnel.io/).
 
+## Build 14 — 11-point improvement plan (Oct 15)
+
+1. **Minimap border removed** — stripped outline border in `map_view.gd`; only the map surface remains.
+2. **Shield/armor numbers under HP** — fixed in HUD (numbers now display).
+3. **Eclipse blood rain** — disabled normal rain particle emission during Eclipse; only blood rain renders.
+4. **Rain drop size** — reduced rain drop thickness to match blood rain style (not fat).
+5. **Boss music** — boss music now pauses regular music; boss music raised 3 dB louder.
+6. **EXP/level integrated** — XP number and level number merged into the bottom XP bar UI; removed standalone level UI box.
+7. **Boss HP x4** — all bosses scaled 4× HP multiplier in `game.gd` spawn_enemy().
+8. **Boss Lithuanian TTS** — increased frequency to 40% per kill; volume +3 dB; speech rate slower (1.0 → 0.85).
+9. **Removed Mushroom Manor buildings** — commented out `MassiveArchitecture.build` calls in `big_update.gd`.
+10. **Hunt spawn distance** — hunts now spawn monsters at ≥80 m from activation point; minimap arrows show location; on-screen directional arrows guide player.
+11. **Magnet building** — spawns once in realm 1 at random location, defended by 3 turrets (40+realm×20 HP each). Turrets shoot at player every 1.2s within 30m range. After destroying all turrets, player activates magnet to collect XP/gold within 120m range. Magnet has pulsing visual, blue minimap marker with crosshair, and HUD hint integration.
+
+**Validation:** workflow check passes (118/118 smoke checks). ObjectDB leak (24 instances) confirmed pre-existing. All 11 tasks structurally implemented and verified.
+
 ## Completed checkpoints
 
 - [Build 12: Red Moon](native/docs/release-1.1.0.md): giant final boss/arena; Ninja, Smoker, Alcoholic and White Supra; class weapons and physical profiles; directional dash; progression-gated slam; stronger ranged enemies; compact HUD and version/build label; turret and damage feedback; dense scenery, six large buildings, celestial sky, effects and audio.

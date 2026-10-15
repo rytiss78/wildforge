@@ -487,8 +487,8 @@ func update(delta: float):
 	clock.queue_redraw()
 	xp.max_value = game.xp_target
 	xp.value = game.xp
-	status.text = "LEVEL %d   ·   %s" % [game.level,game.hero.name]
-	xp_text.text="XP  %d / %d to next level" % [floori(game.xp),game.xp_target]
+	status.text = "LEVEL %d · %s · XP %d / %d" % [game.level,game.hero.name,floori(game.xp),game.xp_target]
+	xp_text.text="XP %d to next · %d saved" % [maxi(0,game.xp_target-game.xp),floori(game.xp)]
 	if game.xp>=game.xp_target and game.level_choice_cooldown>0:
 		xp_text.text="Level ready in %ds · %d XP saved" % [ceili(game.level_choice_cooldown),floori(game.xp)]
 	# The host is the source of truth for rescue progress; party snapshots
@@ -534,6 +534,7 @@ func update(delta: float):
 	if hunt_shrine and game.Hunt.state(game) in ["idle","active"]: map_view.interactables.append({"position":hunt_shrine.position,"kind":"hunt"})
 	if is_instance_valid(game.update.merchant): map_view.interactables.append({"position":game.update.merchant.position,"kind":"merchant"})
 	if is_instance_valid(game.update.beacon) and game.update.beacon_state in ["idle","defending"]: map_view.interactables.append({"position":game.update.beacon_position,"kind":"supply"})
+	if is_instance_valid(game.update.magnet_node) and not game.update.magnet_active: map_view.interactables.append({"position":game.update.magnet_node.position,"kind":"magnet"})
 	if game.Hunt.state(game)=="active":
 		for enemy in game.enemies:
 			if not enemy.dead and enemy.net_id in game.events.get("hunt_ids",[]): map_view.interactables.append({"position":enemy.node.position,"kind":"hunt_target"})

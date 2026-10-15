@@ -36,7 +36,13 @@ static func activate(g,position: Vector3) -> bool:
 	if node==null or state(g)!="idle" or g.realm_time<60 or position.distance_to(node.position)>4 or g.mode!="playing": return false
 	var ids=[]
 	for i in range(3):
-		var before=g.enemies.size();g.spawn_enemy(12+i*3,false,node.position)
+		# Spawn marked enemies far from the shrine (30–45 units) so players have time to rush.
+		var rng=RandomNumberGenerator.new();rng.seed=g.seed_value+int(g.realm_time)+i*313
+		var angle=rng.randf()*TAU
+		var dist=30+rng.randf()*15
+		var spawn_pos=node.position+Vector3(cos(angle)*dist,0,sin(angle)*dist)
+		spawn_pos.y=g.world.height_at(spawn_pos.x,spawn_pos.z)
+		var before=g.enemies.size();g.spawn_enemy(12+i*3,false,spawn_pos)
 		if g.enemies.size()>before:
 			var enemy=g.enemies[-1];enemy.maxHp*=2.2;enemy.hp=enemy.maxHp;enemy.damage*=1.2;enemy.contact=2.0;enemy.freeze=1.5;ids.append(enemy.net_id)
 	if ids.size()!=3:

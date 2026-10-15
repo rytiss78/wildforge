@@ -60,6 +60,10 @@ func _draw():
 			"landmark": draw_line(p+Vector2(0,4),p+Vector2(0,-4),Color("6b4d87"),2);draw_rect(Rect2(p+Vector2(0,-4),Vector2(5,3)),Color("a65ed4"))
 			"pot": draw_circle(p,2,Color("a2693f"))
 			"potion": draw_rect(Rect2(p-Vector2(2,3),Vector2(4,6)),Color("f04aa5"))
+			"magnet":
+				draw_circle(p,6,Color("4060e0"));draw_circle(p,3,Color("a0c0ff"))
+				draw_line(p+Vector2(-3,0),p+Vector2(3,0),Color("a0c0ff"),2)
+				draw_line(p+Vector2(0,-3),p+Vector2(0,3),Color("a0c0ff"),2)
 	for chest in known_chests:
 		var p = point(chest,radius)
 		draw_rect(Rect2(p-Vector2(6,5),Vector2(12,10)),Color("574536"))

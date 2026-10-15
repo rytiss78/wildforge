@@ -127,7 +127,7 @@ func play_phrase():
 	for player in [drums,rhythm,lead,synth]: player.play()
 	# Distinct, original minor-key boss motif layered over the existing drums.
 	# Reset on phrase boundaries to avoid drift, and silence it during Eclipse.
-	boss_melody.volume_db=linear_to_db(maxf(.0001,volume))-17
+	boss_melody.volume_db=linear_to_db(maxf(.0001,volume))-12
 	if boss and not eclipse_active: boss_melody.play()
 	else: boss_melody.stop()
 
@@ -402,14 +402,14 @@ func hero_quip(id: String,context: String,source: Node3D):
 
 func boss_curse(position: Vector3,index: int=-1) -> int:
 	var now=Time.get_ticks_msec()/1000.0
-	if now-boss_voice_last<7.0: return -1
+	if now-boss_voice_last<4.0: return -1
 	boss_voice_last=now;boss_voice_count+=1
-	var selected=rng.randi_range(0,9) if index<0 else clampi(index,0,9)
+	var selected=rng.randi_range(0,3) if index<0 else clampi(index,0,3)
 	if float(settings.voice)>0:
 		boss_voice.global_position=position;boss_voice.stream=load("res://assets/voices/boss_lt_%d.wav" % selected)
-		# Fixed: boss voice at -10dB relative to voice setting (was -80dB)
-		boss_voice.volume_db=linear_to_db(maxf(.0001,float(settings.voice)))-10
-		boss_voice.pitch_scale=.88;boss_voice.play()
+		# Louder (-5dB), slower (.75 pitch), more frequent (4s cooldown)
+		boss_voice.volume_db=linear_to_db(maxf(.0001,float(settings.voice)))-5
+		boss_voice.pitch_scale=.75;boss_voice.play()
 	return selected
 
 func shutdown():
