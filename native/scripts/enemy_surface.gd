@@ -39,7 +39,11 @@ static func step_up(enemy: Dictionary, travel: Vector3) -> bool:
 	var body: CharacterBody3D=enemy.node
 	if enemy.flying or enemy.freeze>0 or enemy.get("bubble",0)>0 or enemy.get("surface_attached",false): return false
 	if travel.length_squared()<.00001 or not body.is_on_floor(): return false
-	var obstruction=KinematicCollision3D.new()
+	# Free movement needs no second sweep. A blocked slide triggers stepping on
+	# the following simulation tick, preserving full-body clearance checks.
+	if not body.is_on_wall(): return false
+	if not enemy.has("step_obstruction"): enemy.step_obstruction=KinematicCollision3D.new()
+	var obstruction: KinematicCollision3D=enemy.step_obstruction
 	if not body.test_move(body.global_transform,travel,obstruction): return false
 	if obstruction.get_normal().y>cos(body.floor_max_angle): return false
 	# Sweep the whole body up, forward and down: never warp through a wall/ceiling.
@@ -49,7 +53,8 @@ static func step_up(enemy: Dictionary, travel: Vector3) -> bool:
 	var ahead=travel.normalized()*maxf(travel.length(),.22)
 	if body.test_move(raised,ahead): return false
 	raised.origin+=ahead
-	var landing=KinematicCollision3D.new()
+	if not enemy.has("step_landing"): enemy.step_landing=KinematicCollision3D.new()
+	var landing: KinematicCollision3D=enemy.step_landing
 	if not body.test_move(raised,Vector3.DOWN*.72,landing): return false
 	if landing.get_normal().y<cos(body.floor_max_angle): return false
 	var destination=raised.origin+landing.get_travel()

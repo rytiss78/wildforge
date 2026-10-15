@@ -31,10 +31,13 @@ static func run(game):
 		if Time.get_ticks_msec()-start>4000:
 			frames.append((now-previous)/1000.0)
 			physics.append(Performance.get_monitor(Performance.TIME_PHYSICS_PROCESS)*1000)
-		else: game.combat_profile.clear()
+		else: game.combat_profile.clear();game.crowd_sections.clear()
 		previous=now
 	frames.sort();physics.sort();game.combat_profile.sort()
 	await RenderingServer.frame_post_draw
 	var saved=game.get_viewport().get_texture().get_image().save_png("user://crowd-review.png")==OK
 	var result={"seed":81173,"eclipse":eclipse,"surface_stress":surface_stress,"max_climbers":max_climbers,"spawned":count,"remaining":game.enemies.size(),"samples":frames.size(),"frame_p50_ms":frames[frames.size()/2],"frame_p95_ms":frames[int(frames.size()*.95)],"physics_p95_ms":physics[int(physics.size()*.95)],"combat_p95_ms":game.combat_profile[int(game.combat_profile.size()*.95)],"capture_saved":saved}
+	result.sections={}
+	for key in game.crowd_sections:
+		var values=game.crowd_sections[key];values.sort();result.sections[key]=values[int(values.size()*.95)]
 	print("CROWD_REVIEW "+JSON.stringify(result));game.get_tree().quit(0 if saved and count>=120 else 1)

@@ -14,3 +14,9 @@ Enemies previously set an unused `attack_windup` metadata value and damaged imme
 ## Performance baseline
 
 Before further crowd optimizations, seed 81173, 125 corrupted enemies, 1440x810: `2026-10-15T11-14-59-697Z-crowd-eclipse/result.json`: frame median 66.70 ms, p95 150.85 ms; combat p95 18.40 ms, physics p95 76.19 ms. This short wall-time benchmark is noisy and does not include global Eclipse weather; use repeated comparable measurements before claiming an improvement.
+
+Crowd movement now uses the existing spatial separation for enemy neighbours while retaining physical terrain/hero collisions. Step-up clearance sweeps run only after a blocked slide and reuse collision objects. Staggered simulation velocity is converted back before feeding animation, avoiding exaggerated walk animation at lower AI frequencies. Diagnostic timing now separates steering, movement and visuals.
+
+Repeated collision A/B: baseline median 66.70 / 67.77 ms; neighbour-collision removal 31.25 / 31.67 ms. With conditional step-up: median 19.93 ms, p95 128.81 ms (`2026-10-15T11-22-19-765Z-crowd-eclipse`). The median improves, but severe p95 hitches remain; this is not a stable-60-FPS claim. Full global Eclipse weather and longer runs still need measurement.
+
+Validation: `2026-10-15T11-20-04-515Z-check`, `2026-10-15T11-20-27-697Z-integration`, `2026-10-15T11-20-55-110Z-surface-review` (wall/ceiling/ledge/slope and small-step fixtures). Crowd and ledge captures inspected. No general warnings or script errors in these logs.

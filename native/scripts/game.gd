@@ -156,6 +156,7 @@ var force_clocks={}
 var damage_sources={}
 var kill_types={}
 var combat_profile=[]
+var crowd_sections={}
 var blood_rain: GPUParticles3D = null
 var profile_crowd=false
 var menu_repeat=0.0
@@ -951,7 +952,8 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 	if not valid_spawn: return
 	world.ensure_ground(p)
 	var node=CharacterBody3D.new()
-	node.collision_layer=4;node.collision_mask=7;node.floor_snap_length=1.2;node.floor_max_angle=deg_to_rad(55);node.max_slides=6;node.floor_constant_speed=true
+	# Crowd separation handles neighbours; physics still blocks terrain and heroes.
+	node.collision_layer=4;node.collision_mask=3;node.floor_snap_length=1.2;node.floor_max_angle=deg_to_rad(55);node.max_slides=6;node.floor_constant_speed=true
 	var collider=CollisionShape3D.new();var capsule=CylinderShape3D.new()
 	capsule.radius=radius_value;capsule.height=maxf(height,radius_value*2)
 	collider.shape=capsule;collider.position.y=capsule.height*.5;node.add_child(collider)
@@ -1706,6 +1708,7 @@ func warn_at(p: Vector3,radius_value: float,delay: float,damage_value: float,sty
 	hazards.append({"node":node,"life":delay,"radius":radius_value,"damage":damage_value,"style":style_name,"duration":delay,"visual_only":visual_only})
 
 func update_combat(delta: float):
+	var section_times={"movement":0.0,"visuals":0.0,"steering":0.0} if profile_crowd else {}
 	update_melee(delta)
 	spawn_clock -= delta
 	if spawn_clock <= 0 and (realm<3 or events.get("eclipse",false)):
@@ -1809,6 +1812,7 @@ func update_combat(delta: float):
 		if distance>90 and not enemy.boss and enemy.net_id not in events.get("hunt_ids",[]) and enemy.node.position.distance_to(update.beacon_position)>30:
 			enemy.dead=true;enemy.node.queue_free();continue
 		if distance>55 and not enemy.boss: continue
+		var section_start=Time.get_ticks_usec() if profile_crowd else 0
 		if enemy.freeze<=0 and not enemy.get("surface_attached",false): aim=steer_enemy(enemy,aim,enemy_delta)
 		var cell=Vector2i(floori(enemy.node.position.x/3),floori(enemy.node.position.z/3))
 		var separation=Vector3.ZERO
@@ -1838,6 +1842,8 @@ func update_combat(delta: float):
 		var surface_target=target_player.position
 		if not enemy.get("surface_attached",false):
 			surface_target=body.position+aim*10;surface_target.y=target_player.position.y
+		if profile_crowd:
+			section_times.steering+=(Time.get_ticks_usec()-section_start)/1000.0;section_start=Time.get_ticks_usec()
 		var surface_moved=EnemySurface.tick(self,enemy,surface_target,enemy_delta)
 		if not surface_moved:
 			body.velocity.x=velocity.x*(enemy_delta/delta);body.velocity.z=velocity.z*(enemy_delta/delta)
@@ -1857,11 +1863,14 @@ func update_combat(delta: float):
 			enemy.vertical=body.velocity.y/(enemy_delta/delta)
 			if body.position.y<world.height_at(body.position.x,body.position.z)-4: body.position.y=world.height_at(body.position.x,body.position.z)+.3;body.velocity.y=0
 			if aim.length()>.01: body.rotation.y=lerp_angle(body.rotation.y,atan2(-aim.x,-aim.z),enemy_delta*(.28 if enemy.get("boss_id",-1)==8 else 6))
+		if profile_crowd:
+			section_times.movement+=(Time.get_ticks_usec()-section_start)/1000.0;section_start=Time.get_ticks_usec()
 		if body.has_meta("rig"):
 			var rig: ActorRig=body.get_meta("rig")
 			rig.set_health(enemy.hp/enemy.maxHp,enemy.boss or enemy.health>=1.8)
-			rig.animate(enemy_delta,body.velocity,body.is_on_floor() or enemy.get("surface_attached",false))
+			rig.animate(enemy_delta,body.velocity if surface_moved else body.velocity/(enemy_delta/delta),body.is_on_floor() or enemy.get("surface_attached",false))
 			rig.statuses(enemy.fire>0,enemy.poison>0,enemy.freeze>0,enemy.blind>0)
+		if profile_crowd: section_times.visuals+=(Time.get_ticks_usec()-section_start)/1000.0
 		if enemy.get("slip_until",0)>realm_time: body.get_meta("rig").rotation.z=sin((enemy.slip_until-realm_time)*9)*.4
 		else: body.get_meta("rig").rotation.z=float(enemy.get("corruption_lean",0))
 		var touching=enemy_touching(enemy,target_player.position)
@@ -1884,6 +1893,10 @@ func update_combat(delta: float):
 				BossBook.attack(self,enemy)
 		if hp>0 and stats.auraDamage>0 and player.position.distance_to(melee_contact(enemy,player.position))<4: hurt_enemy(enemy,stats.auraDamage*enemy_delta,"aura")
 
+	if profile_crowd:
+		for key in section_times:
+			if not crowd_sections.has(key): crowd_sections[key]=[]
+			crowd_sections[key].append(section_times[key])
 	update_aura_visual()
 	for shot in projectiles:
 		shot.life -= delta
