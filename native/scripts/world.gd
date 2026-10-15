@@ -39,6 +39,7 @@ var stars: MultiMeshInstance3D
 var moon: MeshInstance3D
 var border_steam=[]
 var border_patches=[]
+var low_mist=[]
 var edge_near=false
 var eclipse=false
 static var prop_meshes={}
@@ -77,6 +78,12 @@ func weather_tick(delta: float,p: Vector3):
 		var mesh=SphereMesh.new();mesh.radius=.02 if biome==1 else .015 if biome==0 else .05;mesh.height=.9 if biome==1 else .06 if biome==0 else .18;mesh.material=paint;weather.draw_pass_1=mesh
 	weather.emitting=not eclipse and biome in [0,1,3,4,5]
 	weather.position=p+Vector3.UP*8
+	for i in range(low_mist.size()):
+		var mist=low_mist[i];mist.visible=biome in [1,3] and not eclipse
+		mist.emitting=mist.visible
+		# Keep the immediate combat/loot area clear; wisps stay out in scenery.
+		var site=p+Vector3(-14 if i==0 else 14,0,-12)
+		mist.position=Vector3(site.x,height_at(site.x,site.z)+.18,site.z)
 	sky_top=sky_top.lerp(Color("21192f") if eclipse else SKY_TOP[biome],1-exp(-delta*.6));sky_horizon=sky_horizon.lerp(Color("77556c") if eclipse else SKY_HORIZON[biome],1-exp(-delta*.6))
 	sky_paint.set_shader_parameter("top_color",sky_top);sky_paint.set_shader_parameter("horizon_color",sky_horizon)
 	for pair in [["moon_strength",biome==2],["space_strength",biome==5],["fire_strength",biome==4]]:
@@ -172,7 +179,7 @@ func build(index: int,world_seed: int):
 	for child in get_children():
 		remove_child(child);child.queue_free()
 	chunks.clear();pending.clear();landmarks.clear();building_sites.clear();harvest_sites.clear();last_cell=Vector2i(999,999);stream_signature=""
-	clouds.clear();border_steam.clear();border_patches.clear()
+	clouds.clear();border_steam.clear();border_patches.clear();low_mist.clear()
 	make_environment();make_material();make_boundaries();make_landmarks()
 	# Natural landmarks and organic scenery replace decorative architecture.
 	# Frame-budgeted chunk building: schedule 49 chunks, process ~6 per frame
@@ -359,6 +366,7 @@ func make_environment():
 	sky_paint=gradient;environment=env;active_biome=-1
 	weather=GPUParticles3D.new();weather.amount=180;weather.lifetime=4;weather.visibility_aabb=AABB(Vector3(-40,-55,-40),Vector3(80,85,80));add_child(weather)
 	var particles=ParticleProcessMaterial.new();particles.emission_shape=ParticleProcessMaterial.EMISSION_SHAPE_BOX;particles.emission_box_extents=Vector3(14,4,14);particles.direction=Vector3.DOWN;particles.spread=35;weather.process_material=particles
+	make_low_mist()
 	var sun=DirectionalLight3D.new();sun.rotation_degrees=Vector3(-42,-35,0);sun.light_energy=1.05;sun.light_color=Color("ffe4b5");sun.shadow_enabled=true;sun.directional_shadow_max_distance=38;add_child(sun)
 	for i in range(16):
 		var cloud=Node3D.new();cloud.position=Vector3(cos(i*TAU/16)*370,60+sin(i)*15,sin(i*TAU/16)*370);add_child(cloud);clouds.append(cloud)
@@ -377,3 +385,18 @@ func make_landmarks():
 		p.y=height_at(p.x,p.z)
 		landmarks.append(p)
 		preload("res://scripts/biome_landmarks.gd").build(self,biome,p)
+
+func make_low_mist():
+	var puff=SphereMesh.new();puff.radius=.6;puff.height=.10;puff.radial_segments=12;puff.rings=4
+	var paint=StandardMaterial3D.new();paint.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED
+	paint.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA;paint.albedo_color=Color(.39,.72,.68,.09);puff.material=paint
+	for i in range(2):
+		var mist=GPUParticles3D.new();mist.name="LowMist_"+str(i);mist.amount=12;mist.lifetime=3
+		mist.emitting=false;mist.visibility_aabb=AABB(Vector3(-7,-1,-7),Vector3(14,3,14));mist.draw_pass_1=puff
+		mist.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		var material=ParticleProcessMaterial.new();material.emission_shape=ParticleProcessMaterial.EMISSION_SHAPE_BOX
+		material.emission_box_extents=Vector3(3,.03,3);material.direction=Vector3.RIGHT;material.spread=10
+		material.gravity=Vector3.ZERO;material.initial_velocity_min=.15;material.initial_velocity_max=.35;material.scale_min=1.5;material.scale_max=3
+		var gradient=Gradient.new();gradient.set_color(0,Color(1,1,1,0));gradient.set_color(1,Color(1,1,1,0));gradient.add_point(.3,Color.WHITE)
+		var ramp=GradientTexture1D.new();ramp.gradient=gradient;material.color_ramp=ramp
+		mist.process_material=material;add_child(mist);low_mist.append(mist)

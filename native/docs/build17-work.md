@@ -26,3 +26,13 @@ Validation: `2026-10-15T11-20-04-515Z-check`, `2026-10-15T11-20-27-697Z-integrat
 Separate authored GLB, heavy suspended robe, bald face, 42 m reference height, very slow movement and four steam vents (64 particles total). Original Observatory asset retained. [Source/provenance and unresolved photorealism](baron-model.md).
 
 Passing source checks: `2026-10-15T11-26-26-512Z-check`, `2026-10-15T11-27-07-564Z-red-moon-review` (portal, immense silhouette, four deadly patterns, real damage/dodge, weapon targeting, local network reconstruction, steam budget and permanent Eclipse). Silhouette and attack capture inspected; no script errors or warnings. Exported appearance and two-process review remain pending.
+
+## Ground and biome pass
+
+Woods now blend smaller slate detail with irregular moss patches aligned with grass islands. Wet biomes use broad low fronds; moon/ember/space use opaque mineral fragments with wind disabled. All remain chunk-instanced, shadow-free and non-colliding. Marsh/cloud alone get two distant low-mist pockets, 24 particles total; immediate player space stays clear, and Eclipse disables them.
+
+Validation: `2026-10-15T11-30-26-270Z-biome-review` renders six normal and six effect views plus marsh/cloud mist-off comparisons. The six-biome contact sheet `.build-staging/build17-biomes.png` was inspected. Terrain, foliage and warning colours remain distinct; subjective Hades-style acceptance is not inferred from a passing check. Check/import/JS `2026-10-15T11-33-27-022Z-check`, gameplay `2026-10-15T11-34-13-410Z-integration` pass. Exported 720p/1080p and final performance measurements remain pending.
+
+## Two-process warning and boss coverage
+
+`2026-10-15T11-31-43-542Z-shared-review` passes real host/client contact-warning replication and final-realm Baron/steam reconstruction, alongside shared XP/chests and guard checks. This narrow test does **not** reproduce or resolve the newly reported early-game co-op desync. That investigation is explicitly scheduled last in PLAN.md.

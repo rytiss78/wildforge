@@ -18,12 +18,17 @@ vec3 biome_paint(float b,vec2 uv) {
  else if(b>1.5){paint=texture(t2,uv).rgb;base=vec3(.075,.10,.16);}
  else if(b>.5){paint=texture(t1,uv).rgb;base=vec3(.045,.08,.065);}
  else {
-   vec3 stone=texture(t0,p.xz*.07).rgb;
+   vec3 stone=texture(t0,p.xz*.15).rgb;
    // Quiet slate values leave the bright range to actors, lights and combat.
    // Remap the painted facets; gold chips and moss must not glow across the floor.
    float value=dot(stone,vec3(.2126,.7152,.0722));
    float facet=smoothstep(.012,.28,value);
-   return mix(vec3(.018,.025,.038),vec3(.058,.082,.090),facet);
+   vec3 slate=mix(vec3(.018,.028,.034),vec3(.05,.073,.077),facet);
+   float islands=sin(p.x*.14+sin(p.z*.09)*2.0)+cos(p.z*.18+p.x*.03);
+   float moss=smoothstep(-.3,1.3,islands);
+   float detail=texture(t1,p.xz*.38).g;
+   vec3 green=mix(vec3(.018,.055,.038),vec3(.035,.115,.063),detail);
+   return mix(slate,green,moss*.80);
  }
  float wash=sin(uv.x*.57+sin(uv.y*.8))*.025+cos(uv.y*.66)*.02;
  float grain=dot(paint,vec3(.299,.587,.114));

@@ -15,9 +15,15 @@ static func run(g: Node3D):
 		checks.biomes=checks.biomes and g.world.biome_at(p)==biome
 		checks.streaming=checks.streaming and g.world.chunks.size()>0
 		checks["natural_scattering_"+str(biome)]=g.world.find_children("*","MultiMeshInstance3D",true,false).any(func(n):return n.multimesh!=null and NatureScenery.meshes.values().has(n.multimesh.mesh))
+		checks["mist_"+str(biome)]=g.world.low_mist.all(func(n):return n.emitting==(biome in [1,3]) and n.amount==12)
 		g.current_biome=biome;g.hud.update(0)
 		await RenderingServer.frame_post_draw
 		checks.captures=g.get_viewport().get_texture().get_image().save_png("user://biome-"+str(biome)+".png")==OK and checks.captures
+		if biome in [1,3]:
+			for mist in g.world.low_mist: mist.visible=false
+			await g.get_tree().process_frame;await g.get_tree().process_frame;await RenderingServer.frame_post_draw
+			checks.captures=g.get_viewport().get_texture().get_image().save_png("user://biome-no-mist-"+str(biome)+".png")==OK and checks.captures
+			for mist in g.world.low_mist: mist.visible=true
 		g.damage_area(p+Vector3(2,0,-5),3,5,"explosion");g._process(.04)
 		await RenderingServer.frame_post_draw
 		checks.captures=g.get_viewport().get_texture().get_image().save_png("user://biome-fx-"+str(biome)+".png")==OK and checks.captures
