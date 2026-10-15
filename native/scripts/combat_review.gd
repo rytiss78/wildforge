@@ -61,4 +61,15 @@ static func run(game):
 		heights.append({"species":index,"asset_height":mesh.get_aabb().size.y,"requested_height":CreatureBook.HEIGHTS[index]})
 	var result={"bottom_band_clear":band_clear,"damage_rises":rises,"damage_fades":fades,"damage_hidden_in_menu":modal_clear,"static_memory_bytes":Performance.get_monitor(Performance.MEMORY_STATIC),"damage_aggregated":aggregated,"damage_bounded":bounded,"damage_cleared":cleared,"damage_labels_reused":reused,"p50_ms":frames[frames.size()/2],"p95_ms":frames[int(frames.size()*.95)],"frames":frames.size(),"nodes":nodes,"enemies":game.enemies.size(),"kills":game.kills,"draw_calls":Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME),"mesh_heights":heights,"renderer":RenderingServer.get_video_adapter_name()}
 	var file=FileAccess.open("user://combat-review.json",FileAccess.WRITE);file.store_string(JSON.stringify(result,"  "));file.close()
-	print("COMBAT_REVIEW "+JSON.stringify(result));game.get_tree().quit()
+	# Capture the actual contact entry point with simulation paused mid-warning.
+	game.set_process(false);game.set_physics_process(false);game.clear_entities();game.equipped.clear()
+	game.spawn_enemy(2);var attacker=game.enemies[-1]
+	attacker.node.position=game.player.position+Vector3.FORWARD;attacker.behavior="chase";attacker.speed=0
+	attacker.freeze=0;attacker.blind=0;attacker.contact=0
+	game.update_combat(.04)
+	game.camera.position=game.player.position+Vector3(5,5,7);game.camera.look_at(game.player.position+Vector3.UP*.6)
+	await game.get_tree().process_frame
+	await game.get_tree().process_frame
+	await RenderingServer.frame_post_draw
+	result.contact_warning_saved=game.get_viewport().get_texture().get_image().save_png("user://contact-warning.png")==OK and attacker.get("contact_windup",0)>0
+	print("COMBAT_REVIEW "+JSON.stringify(result));game.get_tree().quit(0 if result.contact_warning_saved else 1)

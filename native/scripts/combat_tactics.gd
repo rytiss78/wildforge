@@ -52,3 +52,42 @@ static func ranged_attack(g,enemy: Dictionary,target: Vector3):
 		var delay=1.05+i*.2
 		g.warn_at(p,1.7,delay,damage,style)
 		if g.coop.active: g.coop.broadcast({"type":"hazard","realm":g.realm,"position":CoopSession.array(p),"radius":1.7,"delay":delay,"damage":damage,"style":style})
+
+# Host-owned contact attacks commit to one target and can miss or be interrupted.
+static func contact_tick(g,enemy: Dictionary,target: Dictionary,touching: bool,delta: float) -> bool:
+	enemy.contact=maxf(0,float(enemy.get("contact",0))-delta)
+	var remaining=float(enemy.get("contact_windup",0))
+	if enemy.freeze>0 or enemy.blind>0:
+		enemy.contact_windup=0.0
+		contact_warning(enemy)
+		return false
+	if remaining>0:
+		enemy.contact_windup=maxf(0,remaining-delta)
+		contact_warning(enemy)
+		if enemy.contact_windup<=0:
+			enemy.contact=.7
+			return touching and int(enemy.get("contact_target",-1))==int(target.id)
+	elif touching and enemy.contact<=0:
+		enemy.contact_windup=.45;enemy.contact_target=target.id
+		enemy.node.get_meta("rig").attack=.45
+		contact_warning(enemy)
+	return false
+
+static var contact_mesh: TorusMesh
+static var contact_paint: StandardMaterial3D
+
+static func contact_warning(enemy: Dictionary):
+	var remaining=float(enemy.get("contact_windup",0))
+	if remaining>0 and not enemy.has("contact_ring"):
+		if contact_mesh==null:
+			contact_mesh=TorusMesh.new();contact_mesh.inner_radius=.90;contact_mesh.outer_radius=1.0
+			contact_mesh.rings=24;contact_mesh.ring_segments=6
+			contact_paint=StandardMaterial3D.new();contact_paint.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED
+			contact_paint.albedo_color=Color("ff674a")
+		var ring=MeshInstance3D.new();ring.mesh=contact_mesh;ring.material_override=contact_paint
+		ring.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		enemy.node.add_child(ring);enemy.contact_ring=ring
+	if enemy.has("contact_ring"):
+		var ring=enemy.contact_ring;ring.visible=remaining>0
+		var radius=(enemy.radius+.85)*lerpf(.75,1.0,1-clampf(remaining/.45,0,1))
+		ring.position.y=.12;ring.scale=Vector3(radius,.3,radius)

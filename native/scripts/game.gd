@@ -1764,6 +1764,7 @@ func update_combat(delta: float):
 			if hp>0 and stats.thorns>0 and enemy.thorn_clock<=0 and enemy_touching(enemy,player.position):
 				enemy.thorn_clock=.5;hurt_enemy(enemy,stats.thorns,"thorn")
 			if enemy.get("windup",0)>0: update.eyebrows(enemy)
+			preload("res://scripts/combat_tactics.gd").contact_warning(enemy)
 			if enemy.get("slip_until",0)>realm_time:
 				var slip_rig=enemy.node.get_meta("rig")
 				slip_rig.rotation.z=sin((enemy.slip_until-realm_time)*9)*.4
@@ -1828,6 +1829,7 @@ func update_combat(delta: float):
 			var cycle=fmod(realm_time+enemy.net_id,8.0)
 			if cycle>5: aim=aim.rotated(Vector3.UP,1.1)*.5
 			if enemy.get("recovery",0)>realm_time: aim=Vector3.ZERO
+		if enemy.get("contact_windup",0)>0: aim=Vector3.ZERO
 		var is_stunned=enemy.freeze>0
 		var velocity=(aim*enemy.speed*(2 if enemy.get("charge",0)>0 else 1)*(1-minf(.7,enemy.slow))+separation.limit_length(enemy.speed*.45)) if not is_stunned else Vector3.ZERO
 		var body: CharacterBody3D=enemy.node
@@ -1860,7 +1862,6 @@ func update_combat(delta: float):
 			rig.set_health(enemy.hp/enemy.maxHp,enemy.boss or enemy.health>=1.8)
 			rig.animate(enemy_delta,body.velocity,body.is_on_floor() or enemy.get("surface_attached",false))
 			rig.statuses(enemy.fire>0,enemy.poison>0,enemy.freeze>0,enemy.blind>0)
-		enemy.contact=maxf(0,enemy.get("contact",0)-enemy_delta)
 		if enemy.get("slip_until",0)>realm_time: body.get_meta("rig").rotation.z=sin((enemy.slip_until-realm_time)*9)*.4
 		else: body.get_meta("rig").rotation.z=float(enemy.get("corruption_lean",0))
 		var touching=enemy_touching(enemy,target_player.position)
@@ -1868,12 +1869,8 @@ func update_combat(delta: float):
 		if touching and target_player.id==coop.local_id and stats.thorns>0 and enemy.thorn_clock<=0:
 			enemy.thorn_clock=.5;hurt_enemy(enemy,stats.thorns,"thorn")
 			if enemy.dead: continue
-		if touching and enemy.contact<=0 and enemy.freeze<=0 and enemy.blind<=0:
-			enemy.contact=.7
+		if preload("res://scripts/combat_tactics.gd").contact_tick(self,enemy,target_player,touching,enemy_delta):
 			enemy.node.get_meta("rig").attack=.25
-			# Attack windup telegraph: enemy glows red before attacking
-			if body.has_meta("rig"):
-				body.set_meta("attack_windup",0.5)
 			coop.damage_player(target_player.id,(18+realm*5 if enemy.boss else 11+realm*4)*enemy.damage*(1+enemy.get("biome",0)*.12)*(2.5 if events.get("eclipse",false) else 1.0),enemy.node.position,enemy.sound)
 			if target_player.id==coop.local_id:
 				if enemy.get("biome",0)==1 and not buffs.has("poison"): player_poison=3

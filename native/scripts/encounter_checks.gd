@@ -45,5 +45,21 @@ static func run(g) -> Dictionary:
 	checks.tree_does_not_trigger_climb=not climbed
 	checks.enemy_passes_tree=enemy.node.position.distance_to(g.player.position)<4 and sideways>1.5
 	tree.queue_free()
+	# A real contact attack must give time to leave its range before damage.
+	enemy.node.position=Vector3(0,50,1);enemy.node.velocity=Vector3.ZERO
+	enemy.contact=0;enemy.speed=0;enemy.damage=1;enemy.biome=0;enemy.blind=0;enemy.freeze=0
+	g.player.position=Vector3(0,50,0);g.hp=100;g.invulnerable=0;g.stats.dodge=0;g.stats.armor=0;g.stats.shield=0;g.stats.thorns=0
+	g.update_combat(.04)
+	checks.contact_warns_before_damage=g.hp==100 and enemy.get("contact_windup",0)>0
+	g.player.position=Vector3(8,50,0)
+	for i in range(20): g.update_combat(.04);await g.get_tree().physics_frame
+	checks.contact_can_be_dodged=g.hp==100
+	g.player.position=Vector3(0,50,0);enemy.contact=0;g.invulnerable=0
+	for i in range(16): g.update_combat(.04);await g.get_tree().physics_frame
+	checks.contact_hits_after_warning=g.hp<100
+	g.hp=100;g.invulnerable=0;enemy.contact=0;enemy.contact_windup=0
+	g.update_combat(.04);enemy.freeze=1
+	for i in range(16): g.update_combat(.04);await g.get_tree().physics_frame
+	checks.freeze_cancels_contact=g.hp==100 and enemy.get("contact_windup",0)==0
 	g.clear_entities();floor_body.queue_free()
 	return checks
