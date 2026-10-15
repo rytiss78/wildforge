@@ -84,7 +84,7 @@ export function assertCommittedBuild(cwd) {
 }
 
 async function main(action) {
-  if (!['shared-review', 'hermes-review', 'playfeel-review', 'red-moon-review', 'fresh-import', 'biome-review', 'release-review', 'roster-review', 'bake-roster', 'style-review', 'boss-review', 'forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
+  if (!['balance-review', 'shared-review', 'hermes-review', 'playfeel-review', 'red-moon-review', 'fresh-import', 'biome-review', 'release-review', 'roster-review', 'bake-roster', 'style-review', 'boss-review', 'forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
     console.error('Usage: node scripts/agent-workflow.mjs check|smoke|capture|capture-ui|combat-review|pace-review|soak|integration|build|status'); return 2;
   }
   const git = (...args) => spawnSync('git', ['-C', root, ...args], {encoding:'utf8', windowsHide:true}).stdout?.trim() ?? '';
@@ -138,7 +138,7 @@ async function main(action) {
       const line=output.split(/\r?\n/).findLast(x=>x.startsWith('PLAYFEEL_REVIEW '));
       if(!line)throw new Error('Missing playfeel review');report.playfeel=JSON.parse(line.slice(15));
       if(Object.values(report.playfeel.checks).includes(false))throw new Error('Playfeel assertions failed');
-      report.capture=['slam','turrets','damage',...Array.from({length:6},(_,i)=>'building-'+i)].map(n=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','playfeel-'+n+'.png'),started));
+      report.capture=['slam','turrets','damage',...Array.from({length:6},(_,i)=>'grove-'+i)].map(n=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','playfeel-'+n+'.png'),started));
     }
     if (action === 'red-moon-review') {
       const output=await step('red-moon-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--red-moon-review'],180000);
@@ -264,13 +264,20 @@ async function main(action) {
       report.eclipse=JSON.parse(line.slice('ECLIPSE_REVIEW '.length));
       if(Object.values(report.eclipse).some(v=>v===false)) throw new Error('Eclipse checks failed');
     }
+    if (action === 'balance-review') {
+      const output=await step('balance-review',godot,['--verbose','--headless','--path',join(root,'native'),'--','--balance-review'],240000);
+      const line=output.split(/\r?\n/).findLast(x=>x.startsWith('BALANCE_REVIEW '));
+      if(!line) throw new Error('Missing balance measurements');
+      report.balance=JSON.parse(line.slice('BALANCE_REVIEW '.length));
+      if(Object.values(report.balance.checks).includes(false)) throw new Error('A build could not damage the boss');
+    }
     if (action === 'feedback-review') {
       const output=await step('feedback-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--feedback-review'],180000);
       const line=output.split(/\r?\n/).findLast(x=>x.startsWith('FEEDBACK_REVIEW '));
       if(!line) throw new Error('Missing feedback checks');
       report.feedback=JSON.parse(line.slice('FEEDBACK_REVIEW '.length));
       if(Object.values(report.feedback).some(v=>v===false)) throw new Error('Feedback checks failed');
-      report.capture=['pickups-before','pickups-after','hud-ping','simple','report','cards'].map(name=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','feedback-'+name+'.png'),started));
+      report.capture=['pickups-before','pickups-after','hud-ping','simple','report','cards','last-run'].map(name=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','feedback-'+name+'.png'),started));
     }
     if (action === 'controls-review') {
       const output=await step('controls-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--controls-review'],180000);

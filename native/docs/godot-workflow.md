@@ -66,10 +66,11 @@ Prefix every action below with `node scripts/agent-workflow.mjs`.
 | `bake-roster` | Rebuild all baked enemy/prop resources | After Forge generators |
 | `style-review` | Short lighting and combat-art iteration | Eight rendered captures; actual explosion damage, effect expiry and unchanged camera checks. Full regression/export testing remains separate. |
 | `red-moon-review` | Four new hero buttons, third portal, giant final boss, real damage/dodges/weapon hits and permanent Eclipse | Rendered; inspect silhouette, four patterns and impact. Health duration is a reference calculation, not a representative build playtest. |
-| `playfeel-review` | Slam progression, turret bindings, damage feedback, music, drops and massive buildings | Rendered; actual building walkthroughs and shared co-op stomp recovery. |
+| `playfeel-review` | Slam progression, turret bindings, damage feedback, music, drops and natural groves | Rendered; actual grove walkthroughs and shared co-op stomp recovery. |
 | `boss-review` | Eight bosses, seeded rotations, warnings and network identities | Rendered; inspect each silhouette and attack capture; includes real portal/guardian path |
 | `bake-forge` | Rebuild only Clover Woods baked meshes | Run after `python scripts/build-forge-slice.py`; preserves other biome cores |
 | `forge-weapon-icon` | Render the rebuilt pistol thumbnail | Rendered; only writes gun.png |
+| `balance-review` | Controlled final-boss DPS for five build archetypes at three budgets | Ideal estimates, not survival duration or representative win rates. |
 | `combat-review` | Combat, damage numbers and frame measurements | Rendered; metrics alone do not prove improvement |
 | `surface-review` | Wall, ceiling, ledge and slope traversal | Rendered; captures several positions |
 | `feedback-review`, `progression-review` | Feedback, reports and progression UI | Rendered; inspect feature captures |

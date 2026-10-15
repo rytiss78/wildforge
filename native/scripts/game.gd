@@ -273,6 +273,7 @@ func _ready():
 		if not connected and id == controller_id and mode == "playing": hud.pause_menu(); hud.tell("Controller disconnected")
 	)
 	if OS.get_cmdline_user_args().has("--shared-review-host") or OS.get_cmdline_user_args().has("--shared-review-client"): preload("res://scripts/shared_review.gd").run.call_deferred(self,OS.get_cmdline_user_args().has("--shared-review-host"))
+	elif OS.get_cmdline_user_args().has("--balance-review"): preload("res://scripts/balance_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--hermes-review"): preload("res://scripts/hermes_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--big-update-check"): preload("res://scripts/big_update_checks.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--presentation-check"): preload("res://scripts/presentation_checks.gd").run.call_deferred(self)
@@ -1018,7 +1019,14 @@ func make_spawn_room() -> bool:
 func steer_enemy(enemy: Dictionary,aim: Vector3,delta: float=1.0/30.0) -> Vector3:
 	if enemy.flying or aim.length_squared()<.01: return aim
 	var body: CharacterBody3D=enemy.node
-	var collision=KinematicCollision3D.new()
+	# Reuse the collision result; only repeat the full sweep after moving or turning.
+	var forward=aim.normalized()
+	enemy.avoid_probe=maxf(0,float(enemy.get("avoid_probe",0))-delta)
+	if enemy.get("avoid_probe",0)>0 and forward.dot(enemy.get("avoid_forward",Vector3.ZERO))>.98:
+		return aim.rotated(Vector3.UP,float(enemy.get("avoid_angle",0)))*float(enemy.get("avoid_scale",1))
+	enemy.avoid_probe=.10;enemy.avoid_forward=forward;enemy.avoid_angle=0.0;enemy.avoid_scale=1.0
+	if not enemy.has("avoid_collision"): enemy.avoid_collision=KinematicCollision3D.new()
+	var collision: KinematicCollision3D=enemy.avoid_collision
 	var lookahead=maxf(1.5,enemy.radius+1.0)
 	if not body.test_move(body.global_transform,aim.normalized()*lookahead,collision):
 		enemy.avoid_time=maxf(0,float(enemy.get("avoid_time",0))-delta)
@@ -1030,7 +1038,10 @@ func steer_enemy(enemy: Dictionary,aim: Vector3,delta: float=1.0/30.0) -> Vector
 	enemy.avoid_time=1.2
 	for angle in [.65,1.1,1.55,2.0]:
 		var detour=aim.rotated(Vector3.UP,angle*enemy.avoid_side)
-		if not body.test_move(body.global_transform,detour.normalized()*lookahead): return detour
+		if not body.test_move(body.global_transform,detour.normalized()*lookahead):
+			enemy.avoid_angle=angle*enemy.avoid_side
+			return detour
+	enemy.avoid_scale=-.4
 	return -aim*.4
 
 func nearest_enemy(origin: Vector3, distance_value: float, excluded: Array = []) -> Dictionary:

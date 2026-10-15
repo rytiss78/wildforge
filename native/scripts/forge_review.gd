@@ -16,9 +16,11 @@ static func run(g):
 	g.set_physics_process(false)
 	checks.camera_defaults=g.camera.fov==70 and g.camera_distance==12 and is_equal_approx(g.pitch,.3) and not g.camera_locked
 	var camera_state={"fov":g.camera.fov,"distance":g.camera_distance,"pitch":g.pitch,"yaw":g.yaw}
-	var pillar=Vector3(9,g.world.height_at(9,-8)+4,-8)
-	var collision=g.world.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(pillar+Vector3.LEFT*2,pillar+Vector3.RIGHT*2,1))
-	checks.pillar_collision=not collision.is_empty() and collision.collider.get_parent().name=="ForgeClearing"
+	var grove=g.world.get_node("Landmark_0")
+	var trunk=grove.get_child(1)
+	var center=trunk.global_position+Vector3.UP*2
+	var collision=g.world.get_world_3d().direct_space_state.intersect_ray(PhysicsRayQueryParameters3D.create(center+Vector3.LEFT*4,center+Vector3.RIGHT*4,1))
+	checks.natural_trunk_collision=not collision.is_empty() and collision.collider.get_meta("natural_obstacle",false)
 	# Controlled actors use the real spawner and runtime assets, not preview-only meshes.
 	for enemy in g.enemies: enemy.node.queue_free()
 	g.enemies.clear()

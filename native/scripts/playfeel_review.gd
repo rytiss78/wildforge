@@ -97,26 +97,27 @@ static func run(g):
 		if g.rules.rarity(.75)==3:lucky+=1
 	metrics.legendary_base=float(ordinary)/30000;metrics.legendary_max_luck=float(lucky)/30000
 	checks.drop_rates=metrics.legendary_base>.009 and metrics.legendary_base<.017 and metrics.legendary_max_luck>.05 and metrics.legendary_max_luck<.065
-	checks.building_count=g.world.building_sites.size()==6
+	checks.natural_landmark_count=g.world.landmarks.size()==6 and g.world.building_sites.is_empty()
 	g.equipped.clear()
 	for biome in range(6):
-		var root=g.world.building_sites[biome]
-		checks["building_biome_"+str(biome)]=g.world.biome_at(root.position)==biome
+		var root=g.world.get_node("Landmark_"+str(biome))
+		checks["grove_biome_"+str(biome)]=g.world.biome_at(root.position)==biome
 		g.player.position=root.to_global(Vector3(0,0,-62));g.player.position.y=g.world.height_at(g.player.position.x,g.player.position.z)
 		g.yaw=root.rotation.y+PI;g.pitch=.15;g.player.velocity=Vector3.ZERO;g.player.reset_physics_interpolation()
 		for i in range(100):g._process(.016);await g.get_tree().process_frame
 		await g.get_tree().physics_frame
 		var space=g.get_world_3d().direct_space_state
-		var through=PhysicsRayQueryParameters3D.create(root.to_global(Vector3(0,2,23)),root.to_global(Vector3(0,2,-23)),1,[g.player.get_rid()])
-		var wall=PhysicsRayQueryParameters3D.create(root.to_global(Vector3(20,2,23)),root.to_global(Vector3(20,2,0)),1,[g.player.get_rid()])
-		checks["building_open_"+str(biome)]=space.intersect_ray(through).is_empty()
-		checks["building_solid_"+str(biome)]=not space.intersect_ray(wall).is_empty()
-		g.current_biome=biome;g.hud.update(0);checks["building_capture_"+str(biome)]=await capture(g,"building-"+str(biome))
-		g.player.position=root.to_global(Vector3(0,0,23));g.player.position.y=g.world.height_at(g.player.position.x,g.player.position.z)+.1;g.yaw=root.rotation.y
+		var through=PhysicsRayQueryParameters3D.create(root.to_global(Vector3(5,10,12)),root.to_global(Vector3(5,10,-12)),1,[g.player.get_rid()])
+		var trunk=root.get_child(1).global_position+Vector3.UP*2
+		var wall=PhysicsRayQueryParameters3D.create(trunk+Vector3.LEFT*4,trunk+Vector3.RIGHT*4,1,[g.player.get_rid()])
+		checks["grove_open_"+str(biome)]=space.intersect_ray(through).is_empty()
+		checks["grove_solid_"+str(biome)]=not space.intersect_ray(wall).is_empty()
+		g.current_biome=biome;g.hud.update(0);checks["grove_capture_"+str(biome)]=await capture(g,"grove-"+str(biome))
+		g.player.position=root.to_global(Vector3(5,0,12));g.player.position.y=g.world.height_at(g.player.position.x,g.player.position.z)+.1;g.yaw=root.rotation.y
 		Input.action_press("move_forward")
-		for frame in range(400):
+		for frame in range(240):
 			await g.get_tree().physics_frame;g._physics_process(1.0/60);g._process(1.0/60)
 		Input.action_release("move_forward")
-		checks["building_walk_"+str(biome)]=root.to_local(g.player.position).z< -20
+		checks["grove_walk_"+str(biome)]=root.to_local(g.player.position).z< -8
 	print("PLAYFEEL_REVIEW "+JSON.stringify({"checks":checks,"metrics":metrics}))
 	g.get_tree().quit(1 if checks.values().has(false) else 0)
