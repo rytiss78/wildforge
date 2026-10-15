@@ -43,3 +43,18 @@ test('source fingerprint includes a binary diff beyond the default capture limit
   const complete=git('diff','--binary','HEAD');assert.ok(complete.length>1024*1024);
   assert.equal(await diffFingerprint(dir),createHash('sha256').update(complete).digest('hex'));
 });
+
+test('build guard rejects staged, unstaged, untracked and renamed build inputs but permits docs', async () => {
+  const {assertCommittedBuild}=await import('../scripts/agent-workflow.mjs');
+  const dir=mkdtempSync(join(tmpdir(),'workflow-guard-'));
+  const git=(...args)=>{const r=spawnSync('git',['-C',dir,...args],{windowsHide:true});assert.equal(r.status,0);};
+  git('init');writeFileSync(join(dir,'package.json'),'{}');git('add','.');
+  git('-c','user.name=Workflow fixture','-c','user.email=fixture@example.invalid','commit','-m','Fixture');
+  assert.doesNotThrow(()=>assertCommittedBuild(dir));
+  writeFileSync(join(dir,'PLAN.md'),'Evidence');assert.doesNotThrow(()=>assertCommittedBuild(dir));
+  writeFileSync(join(dir,'package.json'),'{"version":"2"}');assert.throws(()=>assertCommittedBuild(dir),/package.json/);
+  git('add','package.json');assert.throws(()=>assertCommittedBuild(dir),/package.json/);
+  git('-c','user.name=Workflow fixture','-c','user.email=fixture@example.invalid','commit','-m','Metadata');
+  git('mv','package.json','README.md');assert.throws(()=>assertCommittedBuild(dir),/package.json/);
+  writeFileSync(join(dir,'new art.svg'),'<svg/>');assert.throws(()=>assertCommittedBuild(dir),/new art.svg/);
+});

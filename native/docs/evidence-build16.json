@@ -1,0 +1,158 @@
+{
+  "note": "Source checks before the repair commit. Published executable provenance is in build-info.json; exported verification accompanies the GitHub release.",
+  "runs": [
+    {
+      "action": "check",
+      "started": "2026-10-15T09:50:24.580Z",
+      "sourceHeadBeforeRepairCommit": "f4a52aac81bab910035aaba72cc0f261659ad58f",
+      "workingDiffSha256": "1b395df9b3575e2fc6d72ea00ceca1d724523b12974881a476087c5bfd76114b",
+      "success": true,
+      "report": "G:\\game\\.build-staging\\agent-workflow\\2026-10-15T09-50-24-579Z-check\\result.json",
+      "diagnostics": [],
+      "checks": {}
+    },
+    {
+      "action": "smoke",
+      "started": "2026-10-15T09:46:11.426Z",
+      "sourceHeadBeforeRepairCommit": "f4a52aac81bab910035aaba72cc0f261659ad58f",
+      "workingDiffSha256": "6c0f47d1681f9e399e9fa5fe7e51433d6b089c7c80dadcd6c0f214e6a89799d2",
+      "success": true,
+      "report": "G:\\game\\.build-staging\\agent-workflow\\2026-10-15T09-46-11-425Z-smoke\\result.json",
+      "diagnostics": [],
+      "checks": {
+        "checksPassed": 118,
+        "metadataFields": 9
+      }
+    },
+    {
+      "action": "integration",
+      "started": "2026-10-15T09:46:19.662Z",
+      "sourceHeadBeforeRepairCommit": "f4a52aac81bab910035aaba72cc0f261659ad58f",
+      "workingDiffSha256": "6c0f47d1681f9e399e9fa5fe7e51433d6b089c7c80dadcd6c0f214e6a89799d2",
+      "success": true,
+      "report": "G:\\game\\.build-staging\\agent-workflow\\2026-10-15T09-46-19-661Z-integration\\result.json",
+      "diagnostics": [],
+      "checks": {}
+    },
+    {
+      "action": "shared-review",
+      "started": "2026-10-15T09:48:42.051Z",
+      "sourceHeadBeforeRepairCommit": "f4a52aac81bab910035aaba72cc0f261659ad58f",
+      "workingDiffSha256": "1b395df9b3575e2fc6d72ea00ceca1d724523b12974881a476087c5bfd76114b",
+      "success": true,
+      "report": "G:\\game\\.build-staging\\agent-workflow\\2026-10-15T09-48-42-050Z-shared-review\\result.json",
+      "diagnostics": [],
+      "checks": [
+        {
+          "checks": {
+            "client_chest": true,
+            "client_level": true,
+            "client_progress": true,
+            "client_ready": true,
+            "connected": true,
+            "critical_cause": true,
+            "magnet_mirrored": true,
+            "no_double_xp": true,
+            "no_phantom_poison": true,
+            "one_payment": true,
+            "opened": true,
+            "remote_guard_hit": true,
+            "remote_magnet": true,
+            "resumed": true,
+            "same_pool": true,
+            "shared_chest_pool": true,
+            "shared_level": true
+          },
+          "role": "host"
+        },
+        {
+          "checks": {
+            "activated": true,
+            "chest_instruction": true,
+            "chest_offer": true,
+            "confirmed_critical": true,
+            "connected": true,
+            "defenses_replicated": true,
+            "guard_instruction": true,
+            "host_checks": true,
+            "host_finished": true,
+            "level_offer": true,
+            "magnet_instruction": true,
+            "no_private_xp": true,
+            "started": true
+          },
+          "role": "client"
+        }
+      ]
+    },
+    {
+      "action": "hermes-review",
+      "started": "2026-10-15T09:46:38.716Z",
+      "sourceHeadBeforeRepairCommit": "f4a52aac81bab910035aaba72cc0f261659ad58f",
+      "workingDiffSha256": "6c0f47d1681f9e399e9fa5fe7e51433d6b089c7c80dadcd6c0f214e6a89799d2",
+      "success": true,
+      "report": "G:\\game\\.build-staging\\agent-workflow\\2026-10-15T09-46-38-714Z-hermes-review\\result.json",
+      "diagnostics": [],
+      "checks": {
+        "area_hits_guard": true,
+        "blood_only": true,
+        "boss_music_solo": true,
+        "captures": true,
+        "defense_hint": true,
+        "defense_numbers": true,
+        "defenses_destroyed": true,
+        "defenses_lock_activation": true,
+        "eclipse_audio": true,
+        "edge_bar": true,
+        "edge_level": true,
+        "final_cleanup": true,
+        "final_health": true,
+        "guards_grounded": true,
+        "hunt_distance": true,
+        "hunt_entry": true,
+        "hunt_not_despawned": true,
+        "interact_activates": true,
+        "lithuanian_voice": true,
+        "magnet_collects": true,
+        "map_center": true,
+        "map_transparent": true,
+        "no_broken_buildings": true,
+        "normal_music_resumes": true,
+        "projectile_hits_guard": true,
+        "realm_cleanup": true,
+        "three_targetable_guards": true,
+        "weather_resumes": true
+      }
+    },
+    {
+      "action": "capture-ui",
+      "started": "2026-10-15T09:43:07.588Z",
+      "sourceHeadBeforeRepairCommit": "f4a52aac81bab910035aaba72cc0f261659ad58f",
+      "workingDiffSha256": "8b6e3155f066ba09af7934c94eab9d93625e35cabc13923bfe65ac2a126bfc05",
+      "success": true,
+      "report": "G:\\game\\.build-staging\\agent-workflow\\2026-10-15T09-43-07-587Z-capture-ui\\result.json",
+      "diagnostics": [],
+      "checks": {}
+    },
+    {
+      "action": "red-moon-review",
+      "started": "2026-10-15T09:43:17.751Z",
+      "sourceHeadBeforeRepairCommit": "f4a52aac81bab910035aaba72cc0f261659ad58f",
+      "workingDiffSha256": "8b6e3155f066ba09af7934c94eab9d93625e35cabc13923bfe65ac2a126bfc05",
+      "success": true,
+      "report": "G:\\game\\.build-staging\\agent-workflow\\2026-10-15T09-43-17-750Z-red-moon-review\\result.json",
+      "diagnostics": [],
+      "checks": {}
+    },
+    {
+      "action": "coop",
+      "started": "2026-10-15T09:35:02.872Z",
+      "sourceHeadBeforeRepairCommit": "f4a52aac81bab910035aaba72cc0f261659ad58f",
+      "workingDiffSha256": "1b37987a535c43f6dd9d7d9f556991cd5814340f8038189b8a36a62fd4619b14",
+      "success": true,
+      "report": "G:\\game\\.build-staging\\agent-workflow\\2026-10-15T09-35-02-871Z-coop\\result.json",
+      "diagnostics": [],
+      "checks": {}
+    }
+  ]
+}

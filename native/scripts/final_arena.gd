@@ -2,6 +2,7 @@ extends RefCounted
 
 const TARGET_SECONDS=300.0
 const REFERENCE_DPS=300.0
+const HEALTH_MULTIPLIER=4.0 # Latest requested boss-health increase; duration needs real build playtests.
 
 static func setup(g):
 	g.events.final_arena=true;g.events.final_defeated=false
@@ -12,7 +13,7 @@ static func setup(g):
 	if g.enemies.is_empty(): push_error("Final arena boss could not spawn");return
 	var enemy=g.enemies[-1]
 	var party_size=maxi(1,g.coop.members.size()+1) if g.coop.active else 1
-	enemy.maxHp=TARGET_SECONDS*REFERENCE_DPS*(1+.65*(party_size-1));enemy.hp=enemy.maxHp
+	enemy.maxHp=TARGET_SECONDS*REFERENCE_DPS*HEALTH_MULTIPLIER*(1+.65*(party_size-1));enemy.hp=enemy.maxHp
 	enemy.node.rotation.y=PI
 	enemy.guardian=true;enemy.attack=4;enemy.attack_cycle=0;enemy.freeze=3;enemy.contact=3
 	g.events.final_boss_hp=enemy.maxHp

@@ -14,15 +14,25 @@ func _draw():
 		draw_style_box(game.hud.style(Color("362742"),Color("c094d9"),5),Rect2(32,278,310,44))
 		draw_string(font,Vector2(42,298),"HUNT  %d / 3    ·    %ds" % [game.events.get("hunt_kills",[]).size(),maxi(0,ceili(float(game.events.get("hunt_deadline",0))-game.realm_time))],HORIZONTAL_ALIGNMENT_LEFT,-1,17,Color("efcaff"))
 		draw_string(font,Vector2(42,314),"Defeat the violet-marked foes",HORIZONTAL_ALIGNMENT_LEFT,-1,12,Color("fff8de"))
+	if game.Hunt.state(game)=="active":
+		for enemy in game.enemies:
+			if not enemy.dead and enemy.net_id in game.events.get("hunt_ids",[]): pointer(enemy.node.position,"HUNT",Color("e5a1ff"))
+	for enemy in game.enemies:
+		if not enemy.dead and enemy.boss: pointer(enemy.node.position,"BOSS",Color("ff8263"))
 	if game.realm==3: return
-	var offset=game.gate_position-game.player.position;var distance=offset.length()
+	pointer(game.gate_position,"PORTAL",Color("ffd767"))
+
+func pointer(target: Vector3,title: String,color: Color):
+	var offset=target-game.player.position;var distance=offset.length()
 	if distance<8: return
 	var relative=offset.rotated(Vector3.UP,-game.yaw)
 	var direction=Vector2(relative.x,relative.z).normalized()
-	var marker=Vector2(720,420)+direction*Vector2(365,208)
+	var viewport_size=game.get_viewport().get_visible_rect().size
+	var marker=viewport_size*.5+direction*viewport_size*(Vector2(.20,.16) if title=="PORTAL" else Vector2(.32,.29))
 	var angle=atan2(direction.x,-direction.y)
 	var points=PackedVector2Array()
 	for p in [Vector2(0,-12),Vector2(-8,7),Vector2(8,7)]: points.append(marker+p.rotated(angle))
-	draw_colored_polygon(points,Color("ffd767"));draw_polyline(PackedVector2Array([points[0],points[1],points[2],points[0]]),Color("17293d"),2,true)
-	draw_string_outline(font,marker+Vector2(-44,29),"PORTAL %dm" % distance,HORIZONTAL_ALIGNMENT_LEFT,-1,14,3,Color("17293d"))
-	draw_string(font,marker+Vector2(-44,29),"PORTAL %dm" % distance,HORIZONTAL_ALIGNMENT_LEFT,-1,14,Color("ffdf9a"))
+	draw_colored_polygon(points,color);draw_polyline(PackedVector2Array([points[0],points[1],points[2],points[0]]),Color("17293d"),2,true)
+	var text="%s %dm" % [title,distance];var font=ThemeDB.fallback_font
+	draw_string_outline(font,marker+Vector2(-44,29),text,HORIZONTAL_ALIGNMENT_LEFT,-1,14,3,Color("17293d"))
+	draw_string(font,marker+Vector2(-44,29),text,HORIZONTAL_ALIGNMENT_LEFT,-1,14,color)

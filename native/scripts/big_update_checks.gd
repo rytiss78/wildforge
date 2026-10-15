@@ -117,6 +117,8 @@ static func run(game: Node3D):
 		await RenderingServer.frame_post_draw
 		game.get_viewport().get_texture().get_image().save_png("user://big-update-cards.png")
 	game.hud.close();game.equipped.clear();game.clear_entities();game.update.realm_started()
+	# Keep reaction fixtures independent of the three world defense enemies.
+	game.clear_entities()
 	game.spawn_enemy(12);ordinary=game.enemies[0];ordinary.hp=10000;ordinary.maxHp=10000
 	ordinary.fire=8;ordinary.poison=8;game.update_reaction(ordinary,"gun",20)
 	var pools=game.pools.size();game.update_reaction(ordinary,"gun",20)

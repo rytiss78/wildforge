@@ -202,7 +202,7 @@ func setup(owner_game):
 	health_panel.add_theme_stylebox_override("panel",style(paper,Color("8eac93"),10));root.add_child(health_panel)
 	var health_row=HBoxContainer.new();health_panel.add_child(health_row)
 	health_orb=preload("res://scripts/hud_vessel.gd").new();health_orb.custom_minimum_size=Vector2(60,60);health_row.add_child(health_orb)
-	var health_column=VBoxContainer.new();health_column.size_flags_horizontal=Control.SIZE_EXPAND_FILL;health_row.add_child(health_column)
+	var health_column=VBoxContainer.new();health_column.add_theme_constant_override("separation",0);health_column.size_flags_horizontal=Control.SIZE_EXPAND_FILL;health_row.add_child(health_column)
 	health_text=label("",18);health_column.add_child(health_text)
 	shield_text=label("",13,Color("70c9df"));health_column.add_child(shield_text)
 	armor_text=label("",12,ink);health_column.add_child(armor_text)
@@ -212,16 +212,11 @@ func setup(owner_game):
 	map_view.size=Vector2(296,296)
 	map_view.clip_contents=true
 	root.add_child(map_view)
-	var info = PanelContainer.new()
-	info.add_theme_stylebox_override("panel",style())
-	info.position = Vector2(32,940)
-	info.custom_minimum_size = Vector2(353,65)
-	root.add_child(info)
-	var info_box = VBoxContainer.new()
-	info.add_child(info_box)
-	status = label("",14)
-	info_box.add_child(status)
-	xp_text=label("XP  0 / 41 to next level",12);info_box.add_child(xp_text)
+	status=label("",16,ThemeTokens.STAR_GOLD);root.add_child(status)
+	status.name="EdgeLevel";status.set_anchors_preset(Control.PRESET_BOTTOM_LEFT);status.offset_left=32;status.offset_top=-30;status.offset_bottom=-10
+	xp_text=label("",14);root.add_child(xp_text)
+	xp_text.name="EdgeXP";xp_text.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT);xp_text.offset_left=-380;xp_text.offset_right=-32;xp_text.offset_top=-30;xp_text.offset_bottom=-10
+	xp_text.horizontal_alignment=HORIZONTAL_ALIGNMENT_RIGHT
 	# Bottom-edge full-viewport XP meter, independent of the compact stat panel.
 	xp = ProgressBar.new()
 	xp.show_percentage = false
@@ -268,7 +263,7 @@ func setup(owner_game):
 	slam_status=label("",14,ThemeTokens.STAR_GOLD);slam_status.position=Vector2(825,940);root.add_child(slam_status)
 	damage_feedback=preload("res://scripts/damage_feedback.gd").new();damage_feedback.game=game;damage_feedback.mouse_filter=Control.MOUSE_FILTER_IGNORE;root.add_child(damage_feedback)
 	prompt = label("",18,ThemeTokens.BIOME_ACCENTS.verdant.petal)
-	prompt.position = Vector2(540,682);prompt.size=Vector2(840,110)
+	prompt.position = Vector2(540,682);prompt.size=Vector2(840,42)
 	prompt.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;prompt.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 	prompt.add_theme_stylebox_override("normal",style())
 	root.add_child(prompt)
@@ -475,20 +470,17 @@ func update(delta: float):
 	health_orb.fill=clampf(game.hp/maxf(1,game.stats.maxHp),0,1)
 	health_orb.shield_fill=clampf(game.shield_hp/maxf(1,game.stats.shield),0,1);health_orb.queue_redraw()
 	shield_text.text="SHIELD  %d / %d" % [ceili(game.shield_hp),ceili(game.stats.shield)]
-	shield_text.visible=game.stats.shield>0
-	if game.stats.armor>0:
-		armor_text.text="ARMOR  %d" % ceili(game.stats.armor)
-		armor_text.visible=true
-	else:
-		armor_text.visible=false
+	shield_text.visible=true
+	armor_text.text="ARMOR  %d" % ceili(game.stats.armor)
+	armor_text.visible=true
 	clock.seconds = game.realm_time if game.realm==3 else maxf(0,600.0-game.realm_time)
 	clock.realm = game.realm
 	clock.bosses = game.realm_bosses
 	clock.queue_redraw()
 	xp.max_value = game.xp_target
 	xp.value = game.xp
-	status.text = "LEVEL %d · %s · XP %d / %d" % [game.level,game.hero.name,floori(game.xp),game.xp_target]
-	xp_text.text="XP %d to next · %d saved" % [maxi(0,game.xp_target-game.xp),floori(game.xp)]
+	status.text = "LV. %d" % game.level
+	xp_text.text="%d / %d XP" % [floori(game.xp),game.xp_target]
 	if game.xp>=game.xp_target and game.level_choice_cooldown>0:
 		xp_text.text="Level ready in %ds · %d XP saved" % [ceili(game.level_choice_cooldown),floori(game.xp)]
 	# The host is the source of truth for rescue progress; party snapshots

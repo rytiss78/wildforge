@@ -25,7 +25,7 @@ func configure(seed_value: int,realm: int):
 			var p=Vector2((x+.5)/256.0*map_extent*2-map_extent,(y+.5)/256.0*map_extent*2-map_extent)
 			var biome=2 if realm==3 else 0 if p.length()<65 else int(floor(fposmod(atan2(p.y,p.x)+phase,TAU)/(TAU/6)))
 			var coast=RealmWorld.coast_radius(atan2(p.y,p.x),seed_value,realm)
-			var color=Color("0e1826") if p.length()>=coast else Color("806f53") if p.length()>coast-14 else [Color("294b42"),Color("37443f"),Color("3b465d"),Color("657179"),Color("63403c"),Color("443653")][biome]
+			var color=Color.TRANSPARENT if p.length()>=coast else Color("806f53") if p.length()>coast-14 else [Color("294b42"),Color("37443f"),Color("3b465d"),Color("657179"),Color("63403c"),Color("443653")][biome]
 			image.set_pixel(x,y,color)
 	terrain=ImageTexture.create_from_image(image)
 
@@ -37,7 +37,6 @@ func point(p: Vector3,radius: float) -> Vector2:
 func _draw():
 	var center = size*.5
 	var radius = minf(size.x,size.y)*.46
-	draw_rect(Rect2(Vector2.ZERO,size),Color("102027"))
 	if terrain!=null:
 		# Translate and rotate the already-cached world texture with the same
 		# transform applied to landmarks, so the hero stays at the map center.

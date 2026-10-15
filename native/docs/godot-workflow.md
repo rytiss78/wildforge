@@ -51,6 +51,8 @@ Prefix every action below with `node scripts/agent-workflow.mjs`.
 
 | Action | Use for | Notes |
 | --- | --- | --- |
+| `hermes-review` | Magnet combat/cleanup, hunt distance/arrows, HUD, weather and boss audio | Rendered; inspect the three screenshots. |
+| `shared-review` | Two real processes: shared XP/level, duplicate credit, paid chest, critical hits and magnet | Run sequentially with other party-hosting checks. |
 | `check` | Syntax, import and Node tests | Run first after code edits |
 | `smoke` | Startup, menus, basic runtime and repair regressions | Headless; inspects boolean checks, not just process exit |
 | `integration` | Gameplay, rewards, content and traversal | Headless; detailed assertions in its log |
@@ -177,3 +179,11 @@ Build: <actual exported executable path; or no build needed for docs-only work>
 Remaining: <known failures/unfinished requirements; do not omit them>
 Plan: <item status and evidence link updated>
 ```
+
+## Build 16 integrity and targeted executable checks
+
+Commit source, data, assets, version files and workflow code before `build`. Only documentation may remain dirty. The wrapper checks before and after export, verifies the executable-reported version, and writes `build-info.json` containing HEAD and SHA-256 hashes. Packaging verifies these values rather than accepting an arbitrary source label.
+
+To repeat the new feature checks against the exported executable, set `$env:WILDFORGE_TEST_EXE` to its absolute path, then run `hermes-review` and `shared-review` sequentially. Clear this variable afterward with `Remove-Item Env:WILDFORGE_TEST_EXE`. `capture-ui` uses source; `release-review` uses the latest build at 720p/1080p.
+
+The integration reaction fixture now clears world sentries before creating its two test enemies. Its wet-chain assertion is unchanged. The Red Moon expected HP changed from 90,000 to 360,000 because the later eleven-point request explicitly quadrupled boss health; the runtime arena check independently verifies that value. Five-minute duration remains unproved.

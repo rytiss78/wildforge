@@ -4,13 +4,13 @@
 
 A vivid 3D survival game where a duck, a loaf of bread and an angry granny are perfectly reasonable hero choices. Explore strange places, grab unpredictable upgrades and become outrageously overpowered before the monsters catch you.
 
-**[Download the Windows build](https://github.com/rytiss78/wildforge/releases/tag/build-15)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
+**[Download the Windows build](https://github.com/rytiss78/wildforge/releases/tag/build-16)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
 
-The current release is **1.1.1 — Build 15**. New: magnet building, boss HP ×4, blood rain, boss music, HUD rework, building removal, hunt distances, boss TTS, minimap rework.
+The current repair release is **1.1.2 — Build 16**. Shared co-op XP/levels and chest rewards, working magnet defenses, distant hunt targets with arrows, bottom-edge XP UI, Eclipse weather and separate boss music are covered by focused gameplay and two-process checks. [Repair findings and limitations](native/docs/repair-1.1.2.md).
 
-The third map leads to the Red Moon: a small arena with a 42-metre skeletal boss, extremely slow movement and deadly ranged attacks. Defeat it to begin an endless Eclipse. Denser glowing scenery, six huge biome buildings, celestial skies, compact UI, clearer damage feedback and simpler phonk music complete this checkpoint. [Changes, balance limits and validation](native/docs/release-1.1.0.md).
+The third map leads to the Red Moon: a small arena with a 42-metre skeletal boss, extremely slow movement and deadly ranged attacks. Defeat it to begin an endless Eclipse. The latest requested boss-health increase also applies here; battle duration still needs real build playtesting. Broken large decorative halls have been retired.
 
-Run `build/red-moon-1.1.1-build14/Wildforge.exe` locally, or unpack the Windows download and run `Wildforge.exe`. Keep the accompanying files together. The main menu shows the version and build number.
+Run **Play-Wildforge.cmd** locally, or `build/repair-1.1.2-build16/Wildforge.exe`. For the download, unpack all files together and run `Wildforge.exe`. The main menu must say **v1.1.2 · BUILD 16**. All co-op players need this build because the shared-drop protocol changed. `build-info.json` records the committed source and executable/pack hashes.
 
 ![Co-op hero selection with the new dark interface](docs/screenshots/red-moon-1.1.0/ui-coop.png)
 

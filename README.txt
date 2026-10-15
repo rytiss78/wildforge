@@ -1,20 +1,10 @@
-Wildforge ENet diagnostic (read-only to the game)
+WILDFORGE 1.1.2 — BUILD 16
 
-Copy native/scripts/enet_probe.gd into G:\game\native\scripts\
-Run ONE command in PowerShell, from G:\game:
+Run Play-Wildforge.cmd, or build\repair-1.1.2-build16\Wildforge.exe.
+Download: https://github.com/rytiss78/wildforge/releases/tag/build-16
+Keep Wildforge.exe, Wildforge.pck and build-info.json together.
+The menu must show v1.1.2 / BUILD 16. Every co-op player needs this version.
 
-& '.\tools\godot\Godot_v4.7.2-stable_win64_console.exe' --headless --path native --script res://scripts/enet_probe.gd
-
-Expected: ENET_PROBE PASS: local ENet handshake and reliable packets work
-
-If it passes, the bundled Godot engine and localhost ENet work independently of Wildforge.
-Investigate the game's host/client startup sequence, 14-second connect/start deadline,
-resource contention under two processes, port conflicts, and failing COOP_TEST assertions.
-
-If host_create is nonzero, UDP port 29736 cannot be opened. Check any existing Wildforge
-or Godot instance that owns the port; do not kill unrelated processes.
-
-If client creation succeeds but the connection times out, capture the entire terminal output.
-
-This script does not modify the game; it opens local UDP port 29736 briefly and closes it
-when it exits. It does not test two independent Godot processes or the six-minute game run.
+Current work and remaining tasks: PLAN.md
+Repair findings and evidence: native/docs/repair-1.1.2.md
+Older build/test history is preserved at C:\Users\rytis\Wildforge-Archive.

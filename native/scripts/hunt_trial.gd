@@ -35,16 +35,19 @@ static func activate(g,position: Vector3) -> bool:
 	var node=shrine(g)
 	if node==null or state(g)!="idle" or g.realm_time<60 or position.distance_to(node.position)>4 or g.mode!="playing": return false
 	var ids=[]
+	var rng=RandomNumberGenerator.new();rng.seed=g.seed_value+int(g.realm_time)
 	for i in range(3):
-		# Spawn marked enemies far from the shrine (30–45 units) so players have time to rush.
-		var rng=RandomNumberGenerator.new();rng.seed=g.seed_value+int(g.realm_time)+i*313
-		var angle=rng.randf()*TAU
-		var dist=30+rng.randf()*15
-		var spawn_pos=node.position+Vector3(cos(angle)*dist,0,sin(angle)*dist)
-		spawn_pos.y=g.world.height_at(spawn_pos.x,spawn_pos.z)
-		var before=g.enemies.size();g.spawn_enemy(12+i*3,false,spawn_pos)
-		if g.enemies.size()>before:
-			var enemy=g.enemies[-1];enemy.maxHp*=2.2;enemy.hp=enemy.maxHp;enemy.damage*=1.2;enemy.contact=2.0;enemy.freeze=1.5;ids.append(enemy.net_id)
+		for attempt in range(12):
+			var angle=TAU*float(i)/3.0+rng.randf_range(-.35,.35)
+			var dist=rng.randf_range(85,115)
+			var spawn_pos=node.position+Vector3(cos(angle)*dist,0,sin(angle)*dist)
+			spawn_pos.y=g.world.height_at(spawn_pos.x,spawn_pos.z)
+			var before=g.enemies.size();g.spawn_enemy(0,false,spawn_pos)
+			if g.enemies.size()<=before: continue
+			var enemy=g.enemies[-1];var actual=Vector2(enemy.node.position.x-node.position.x,enemy.node.position.z-node.position.z).length()
+			if actual<80 or actual>120:
+				enemy.node.queue_free();g.enemies.erase(enemy);continue
+			enemy.maxHp*=2.2;enemy.hp=enemy.maxHp;enemy.damage*=1.2;enemy.contact=2.0;enemy.freeze=1.5;ids.append(enemy.net_id);break
 	if ids.size()!=3:
 		for enemy in g.enemies:
 			if enemy.net_id in ids: enemy.dead=true;enemy.node.queue_free()

@@ -124,10 +124,13 @@ func play_phrase():
 	synth.volume_db-=24
 	var section=(phrase/4)%8
 	if not boss and section in [0,4]: drums.volume_db-=4;lead.volume_db-=4
-	for player in [drums,rhythm,lead,synth]: player.play()
+	drums.play()
+	for player in [rhythm,lead,synth]:
+		if boss or eclipse_active: player.stop()
+		else: player.play()
 	# Distinct, original minor-key boss motif layered over the existing drums.
 	# Reset on phrase boundaries to avoid drift, and silence it during Eclipse.
-	boss_melody.volume_db=linear_to_db(maxf(.0001,volume))-12
+	boss_melody.volume_db=linear_to_db(maxf(.0001,volume))-9
 	if boss and not eclipse_active: boss_melody.play()
 	else: boss_melody.stop()
 
@@ -184,7 +187,7 @@ func tick(delta: float, playing: bool, has_boss: bool):
 		var theme=stream("phonk_air_"+str(realm_index)).duplicate() as AudioStreamWAV
 		theme.loop_mode=AudioStreamWAV.LOOP_FORWARD;theme.loop_begin=0;theme.loop_end=roundi(theme.get_length()*theme.mix_rate)
 		atmosphere.stream=theme;atmosphere.play();atmosphere.stream_paused=not playing
-	atmosphere.volume_db=-80 if eclipse_active else linear_to_db(maxf(.0001,float(settings.music)))-(24 if boss else 18)
+	atmosphere.volume_db=-80 if eclipse_active or boss else linear_to_db(maxf(.0001,float(settings.music)))-(24 if boss else 18)
 	voice.volume_db = linear_to_db(maxf(.0001, float(settings.voice)))
 	if not playing or not active: return
 	if genre != settings.get("genre", "metal"):
@@ -404,7 +407,7 @@ func boss_curse(position: Vector3,index: int=-1) -> int:
 	var now=Time.get_ticks_msec()/1000.0
 	if now-boss_voice_last<4.0: return -1
 	boss_voice_last=now;boss_voice_count+=1
-	var selected=rng.randi_range(0,3) if index<0 else clampi(index,0,3)
+	var selected=rng.randi_range(0,9) if index<0 else clampi(index,0,9)
 	if float(settings.voice)>0:
 		boss_voice.global_position=position;boss_voice.stream=load("res://assets/voices/boss_lt_%d.wav" % selected)
 		# Louder (-5dB), slower (.75 pitch), more frequent (4s cooldown)

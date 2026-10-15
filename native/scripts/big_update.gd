@@ -38,7 +38,7 @@ func new_run():
 	game.rules.banished.clear();downed=false;downed_ids.clear();rescue_progress.clear()
 	run_damage=0;party_damage=0;run_xp=0;run_coins=0;memories.clear();quip_times.clear();quip_clock=0
 	if is_instance_valid(magnet_node): magnet_node.queue_free();magnet_node=null
-	magnet_turrets=[];magnet_active=false;capture_queued=false
+	magnet_turrets=[];magnet_active=false
 
 func realm_started():
 	if downed: game.hp=game.stats.maxHp*.4;game.invulnerable=3
@@ -46,7 +46,7 @@ func realm_started():
 		if is_instance_valid(node): node.queue_free()
 	merchant=null;beacon=null;stock.clear();purchased.clear();beacon_claimed.clear()
 	if is_instance_valid(magnet_node): magnet_node.queue_free();magnet_node=null
-	magnet_turrets=[];magnet_active=false;capture_queued=false
+	magnet_turrets=[];magnet_active=false
 	banish_charges=5;pending_purchase=-1;downed=false;downed_ids.clear();rescue_progress.clear()
 	beacon_state="idle";beacon_seconds=0;beacon_absent=0;mimic.clear();pings.clear()
 	if game.realm==3: return
@@ -81,50 +81,35 @@ func realm_started():
 	magnet_position=Vector3(rng.randf_range(-150,150),0,rng.randf_range(-150,150))
 	magnet_position.y=game.world.height_at(magnet_position.x,magnet_position.z)
 	magnet_node=Node3D.new();magnet_node.position=magnet_position;add_child(magnet_node)
-	# Central magnet column
-	ToonArt.tube(magnet_node,Color("6070d0"),Vector3(0,1.0,0),.35,.5,2.0)
-	ToonArt.ball(magnet_node,Color("a8b8ff"),Vector3(0,2.6,0),Vector3(.6,.5,.5))
-	caption(magnet_node,"E.X.P. MAGNET",3.0)
+	# Split iron jaws frame the bright core; the silhouette reads at combat distance.
+	ToonArt.tube(magnet_node,Color("263849"),Vector3(0,.25,0),1.7,2.0,.5)
+	ToonArt.tube(magnet_node,Color("d2aa62"),Vector3(0,.54,0),1.45,1.6,.12)
+	for side in [-1,1]:
+		var jaw=BoxMesh.new();jaw.size=Vector3(.65,3.1,.8)
+		var pillar=ToonArt.part(magnet_node,jaw,Color("394a68"),Vector3(side*.95,2,0));pillar.rotation.z=-side*.14
+		var tip=BoxMesh.new();tip.size=Vector3(.68,.6,.86)
+		var cap=ToonArt.part(magnet_node,tip,Color("43eaff"),Vector3(side*.75,3.45,0))
+		var glow=game.material(Color("43eaff"),2.5);cap.material_override=glow
+	var core=ToonArt.ball(magnet_node,Color("70eaff"),Vector3(0,2.3,0),Vector3(.8,1.05,.8));core.material_override=game.material(Color("43eaff"),3.0)
+	var halo=TorusMesh.new();halo.inner_radius=1.3;halo.outer_radius=1.42
+	var ring=ToonArt.part(magnet_node,halo,Color("4ddcf0"),Vector3(0,2.3,0));ring.rotation.x=PI/2;ring.material_override=game.material(Color("43eaff"),2.0)
+	var light=OmniLight3D.new();light.light_color=Color("43cfff");light.light_energy=2;light.omni_range=9;light.position.y=2;magnet_node.add_child(light)
+	caption(magnet_node,"E.X.P. MAGNET",4.4)
 	magnet_turrets=[]
 	magnet_turret_count=3
 	magnet_active=false
-	var turret_rng=RandomNumberGenerator.new();turret_rng.seed=rng.randi_range(0,99999)
+	if game.coop.active and not game.coop.hosting: return
 	for t in range(3):
-		var ta=turret_rng.randf()*TAU
-		var td=8.0+turret_rng.randf()*3.0
-		var tp=magnet_position+Vector3(cos(ta)*td,0,sin(ta)*td)
-		tp.y=game.world.height_at(tp.x,tp.z)
-		var turret=spawn_turret(tp)
-		turret.dead_turret=false
-		magnet_turrets.append(turret)
+		var ta=TAU*float(t)/3.0
+		var tp=magnet_position+Vector3(cos(ta)*10,0,sin(ta)*10)
+		var before=game.enemies.size()
+		game.spawn_enemy(0,false,tp,false,true)
+		if game.enemies.size()>before: magnet_turrets.append(game.enemies[-1])
+	magnet_turret_count=magnet_turrets.size()
 
 func caption(node: Node3D,text: String,height: float):
 	var label=Label3D.new();label.text=text;label.font_size=24;label.position.y=height
 	label.billboard=BaseMaterial3D.BILLBOARD_ENABLED;label.no_depth_test=false;node.add_child(label)
-
-# Spawn a turret at position with its own 3D model. Returns the enemy dictionary.
-func spawn_turret(position: Vector3) -> Dictionary:
-	var node=Node3D.new();node.position=position;node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;game.add_child(node)
-	var hp=40+game.realm*20
-	var turret={
-		"node":node,"dead":false,"hp":hp,"maxHp":hp,"timer":0.0,"fire_rate":1.2,"radius":.5,
-		"height":1.5,"behavior":"turret","speed":0,"flying":false,"dead_turret":false,"radius_value":.5
-	}
-	# Turret base + barrel + light
-	var base=MeshInstance3D.new();base.position.y=.3;base.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	base.mesh=BoxMesh.new();base.mesh.size=Vector3(.9,.6,.9)
-	var mat=StandardMaterial3D.new();mat.albedo_color=Color("705050");mat.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED
-	base.material_override=mat;node.add_child(base)
-	var barrel=MeshInstance3D.new();barrel.position.y=1.0;barrel.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-	barrel.mesh=CylinderMesh.new();barrel.mesh.radius=.15;barrel.mesh.height=.8
-	barrel.material_override=mat.duplicate();node.add_child(barrel)
-	var light=OmniLight3D.new();light.light_color=Color("ff3333");light.position.y=1.6;light.omni_range=6
-	node.add_child(light)
-	var title=Label3D.new();title.text="TURRET";title.font_size=22;title.position.y=2.2
-	title.billboard=BaseMaterial3D.BILLBOARD_ENABLED;title.no_depth_test=true;node.add_child(title)
-	# Give the turret a reference to the game for shooting
-	turret.game_ref=game
-	return turret
 
 func note(key: String):
 	memories[key]=int(memories.get(key,0))+1;game.achievement_event(key)
@@ -166,31 +151,17 @@ func interact() -> bool:
 	# Magnet interaction: activate when turrets are destroyed.
 	if is_instance_valid(magnet_node) and game.player.position.distance_to(magnet_position)<5:
 		if not magnet_active and magnet_turret_count<=0:
-			activate_magnet();return true
+			if game.coop.active and not game.coop.hosting:
+				game.coop.send_to(game.coop.owner_id,game.coop.pose())
+				game.coop.send_to(game.coop.owner_id,{"type":"big_action","action":"magnet","realm":game.realm})
+			else: activate_magnet()
+			return true
 	return false
 
 func activate_magnet():
-	if magnet_active: return
+	if magnet_active or magnet_turret_count>0 or not is_instance_valid(magnet_node): return
 	magnet_active=true
 	game.hud.tell("E.X.P. MAGNET ACTIVATED · Sucking up XP & gold!",4)
-	capture_queued=true
-
-# Apply player damage to a magnet turret. Returns true if the turret was hit.
-func damage_turret_toward(target: Vector3, damage: float) -> bool:
-	if not magnet_active and is_instance_valid(magnet_node):
-		for t in magnet_turrets:
-			if t.get("dead_turret",false) or t.get("dead",false) or t.hp<=0: continue
-			var to_turret=target-t.node.position
-			var dist=to_turret.length()
-			if dist<3.0:
-				t.hp-=damage
-				var rig=t.node.get_node_or_null("HurtIndicator")
-				if not rig:
-					rig=MeshInstance3D.new();rig.name="HurtIndicator";t.node.add_child(rig)
-				# Hit flash indicator (stored on node for visual flash)
-				t.node.set_meta("hurt_timer",0.15)
-				return true
-	return false
 
 func merchant_menu():
 	quip("discovery")
@@ -358,10 +329,11 @@ func host_tick(delta: float):
 				else: game.coop.send_to(int(id),{"type":"big_beacon_reward","realm":game.realm})
 
 func world_state() -> Dictionary:
-	return {"downed":downed_ids.keys(),"rescue":rescue_progress,"beacon":beacon_state,"seconds":beacon_seconds,"party_damage":party_damage}
+	return {"downed":downed_ids.keys(),"rescue":rescue_progress,"beacon":beacon_state,"seconds":beacon_seconds,"party_damage":party_damage,"magnet_active":magnet_active,"magnet_guards":magnet_turret_count}
 
 func apply_state(state: Dictionary):
 	party_damage=float(state.get("party_damage",0))
+	magnet_active=bool(state.get("magnet_active",false));magnet_turret_count=int(state.get("magnet_guards",3))
 	downed_ids.clear()
 	for id in state.get("downed",[]): downed_ids[int(id)]=true
 	rescue_progress=state.get("rescue",{});beacon_state=state.get("beacon","idle");beacon_seconds=float(state.get("seconds",0))
@@ -380,6 +352,7 @@ func receive(sender: int,message: Dictionary) -> bool:
 			var action=message.get("action","")
 			if action=="down": downed_ids[sender]=true;member.hp=0
 			elif action=="beacon" and p.distance_to(beacon_position)<4 and float(member.get("hp",0))>0: activate_beacon()
+			elif action=="magnet" and p.distance_to(magnet_position)<5 and float(member.get("hp",0))>0: activate_magnet()
 			elif action=="purchase":
 				var i=int(message.get("index",-1));var key=str(sender)+":"+str(i)
 				if is_instance_valid(merchant) and p.distance_to(merchant.position)<4 and i>=0 and i<stock.size() and not purchased.has(key) and int(member.get("gold",0))>=merchant_price(i):
@@ -422,58 +395,13 @@ func tick(delta: float):
 		mimic.node.rotation.z=sin(game.elapsed*18)*.15
 		if mimic.drop<=0: game.spawn_pickup(mimic.node.position+Vector3.UP,"gold",2);mimic.drop=.6
 		if mimic.life<=0: mimic.node.queue_free();mimic.clear()
-	# Magnet building: turret shooting + HP check + collection.
-	if not magnet_active and is_instance_valid(magnet_node):
-		for i in range(magnet_turrets.size()):
-			var t=magnet_turrets[i]
-			if t.get("dead_turret",false) or t.get("dead",false): continue
-			var hp=float(t.get("hp",1))
-			if hp<=0:
-				t.dead_turret=true
-				magnet_turret_count-=1
-				if magnet_turret_count<=0: game.hud.tell("MAGNET DEFENSE DOWN · INTERACT TO ACTIVATE!",4)
-				# Kill the turret node.
-				t.node.queue_free()
-				t.dead=true
-				magnet_turrets[i]=t
-				continue
-			# Turret shooting: aim at player every fire_rate seconds.
-			t.timer=(t.timer or 0.0)+delta
-			if t.timer>=t.fire_rate:
-				t.timer=0.0
-				var shooter=t.node.position
-				var target=game.player.position
-				var dir=(target-shooter).normalized()
-				var dmg=float(game.stats.maxHp)*.04
-				var dist=shooter.distance_to(target)
-				if dist<30:
-					game.player_hp_event(game.coop.local_id,dmg,Vector3.ZERO,game.coop.host_id,false,Vector3.ZERO)
-	# Magnet collection: when active, attract pickups toward magnet and collect them.
-	if magnet_active and is_instance_valid(magnet_node):
-		for pickup in game.pickups:
-			if pickup.age<0: continue
-			if pickup.kind not in ["xp","gold"]: continue
-			var dist=magnet_position.distance_to(pickup.node.position)
-			if dist<magnet_range:
-				pickup.attracted=true
-				pickup.node.position=pickup.node.position.move_toward(magnet_position+Vector3.UP*.5,delta*8)
-				if dist<3.0:
-					pickup.age=-1
-					pickup.node.queue_free()
-					if pickup.kind=="gold":
-						run_coins+=pickup.value;game.gold+=roundi(pickup.value);game.heal(game.stats.coinHeal)
-						game.sound.effect("coin")
-					else:
-						var gained=roundi(pickup.value)
-						if not game.coop.active or game.coop.hosting:
-							run_xp+=gained;game.xp+=gained
-							if game.xp>=game.xp_target: game.level_up()
-						else:
-							var pid="xp_"+str(game.pickup_seq);game.pickup_seq+=1
-							game.coop.send_to(game.coop.owner_id,{"type":"credit","pickup_id":pid,"xp":gained})
-	# Pulse effect on magnet node
-	var pulse=sin(game.realm_time*4)*.15
-	magnet_node.scale=Vector3.ONE+pulse*Vector3(1,.3,1)
+	if is_instance_valid(magnet_node):
+		if not game.coop.active or game.coop.hosting:
+			var remaining=magnet_turrets.filter(func(t):return not t.dead).size()
+			if remaining==0 and magnet_turret_count>0: game.hud.tell("MAGNET DEFENSE DOWN · INTERACT TO ACTIVATE",4)
+			magnet_turret_count=remaining
+		var pulse=sin(game.realm_time*4)*(.12 if magnet_active else .025)
+		magnet_node.scale=Vector3.ONE+pulse*Vector3(1,.3,1)
 
 func quip(context: String):
 	if quip_clock>0 or float(quip_times.get(context,-100))+90>game.elapsed: return
@@ -494,7 +422,6 @@ var magnet_turrets: Array = []
 var magnet_turret_count: int
 var magnet_active: bool = false
 var magnet_range: float = 120.0
-var capture_queued: bool = false
 
 func effect_node(mesh: Mesh,paint: Material,p: Vector3) -> MeshInstance3D:
 	var node=effect_pool.pop_back() if not effect_pool.is_empty() else MeshInstance3D.new()

@@ -68,8 +68,23 @@ export function assessPng(path, started, minimum=320) {
   return {path, width, height, bytes: info.size, sha256: createHash('sha256').update(data).digest('hex'), visualReview: 'required'};
 }
 
+// Only documentation may differ from the committed build inputs.
+export function assertCommittedBuild(cwd) {
+  const result=spawnSync('git',['-C',cwd,'status','--porcelain=v1','-z','--untracked-files=all'],{encoding:'utf8',windowsHide:true});
+  if(result.status!==0) throw new Error('Cannot inspect build inputs');
+  const entries=result.stdout.split('\0');const dirty=[];
+  const documentation=p=>/^(PLAN\.md|README(?:\.md|\.txt)?|AGENTS\.md|HERMES\.md)$/.test(p)||p.startsWith('native/docs/')||p.startsWith('docs/');
+  for(let i=0;i<entries.length;i++) {
+    if(!entries[i])continue;
+    const state=entries[i].slice(0,2),path=entries[i].slice(3);
+    if(!documentation(path))dirty.push(path);
+    if(/[RC]/.test(state)) {const original=entries[++i];if(original && !documentation(original))dirty.push(original);}
+  }
+  if(dirty.length)throw new Error('Build rejected: commit all source, data, assets, configuration and tooling first. Uncommitted: '+dirty.join(', '));
+}
+
 async function main(action) {
-  if (!['playfeel-review', 'red-moon-review', 'fresh-import', 'biome-review', 'release-review', 'roster-review', 'bake-roster', 'style-review', 'boss-review', 'forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
+  if (!['shared-review', 'hermes-review', 'playfeel-review', 'red-moon-review', 'fresh-import', 'biome-review', 'release-review', 'roster-review', 'bake-roster', 'style-review', 'boss-review', 'forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
     console.error('Usage: node scripts/agent-workflow.mjs check|smoke|capture|capture-ui|combat-review|pace-review|soak|integration|build|status'); return 2;
   }
   const git = (...args) => spawnSync('git', ['-C', root, ...args], {encoding:'utf8', windowsHide:true}).stdout?.trim() ?? '';
@@ -216,37 +231,22 @@ async function main(action) {
       report.capture=assessPng(join(root,'native/docs/golden-scene.png'),started);
     }
     if (action === 'build') {
-        // SAFEGUARD: refuse to build from dirty working tree.
-        // A build must always reproduce a committed state; never ship uncommitted code.
-        const gitStatus=git('status','--porcelain');
-        const lines=gitStatus.split(/\r?\n/).filter(l=>l.trim().length>0);
-        const codeFiles=lines.filter(l=>{
-          // Track only game source files. Ignore docs, build cache, tool configs, and documentation.
-          const path=l.trim().split(/\s+/).slice(1).join(' ');
-          // Excluded directories/files
-          const excluded=[
-            'native/docs/', 'native/.godot/', 'native/data/',   // non-source
-            'scripts/', 'tests/', 'tools/', '.build-staging/',   // tooling
-            'native/project.godot', 'native/export_presets.cfg',  // build config
-            'package.json',                                        // npm config
-          ];
-          if (excluded.some(e=>path===e||path.startsWith(e))) return false;
-          // Excluded file extensions
-          const skipExt=['.json','.txt','.cfg','.md','.html','.css','.svg','.png','.jpg','.wav','.ico','.xml'];
-          if (skipExt.some(ext=>path.toLowerCase().endsWith(ext))) return false;
-          // Track everything else (game scripts, shaders, etc.)
-          return true;
-        });
-        if (codeFiles.length > 0) {
-          throw new Error(
-            'Build rejected: uncommitted code changes exist. Commit all code changes before building.\n'+
-            'Uncommitted files: '+codeFiles.join(', ')
-          );
-        }
+      assertCommittedBuild(root);
         const exe=join(runDir,'Wildforge.exe');
         await step('export',godot,['--headless','--path',join(root,'native'),'--export-release','Windows Native',exe],240000);
       for (const artifact of [exe,join(runDir,'Wildforge.pck')]) if (!existsSync(artifact) || statSync(artifact).size < 1024) throw new Error('Missing or empty build artifact: '+artifact);
       report.exportedSmoke=assessSmoke(await step('exported-smoke',exe,['--headless','--','--smoke'],90000));
+      assertCommittedBuild(root);
+      if(git('rev-parse','HEAD')!==report.head)throw new Error('HEAD changed during export');
+      const metadata=JSON.parse(readFileSync(join(root,'package.json'),'utf8'));
+      const smokeLog=readFileSync(join(runDir,'exported-smoke.log'),'utf8');
+      const identity=smokeLog.split(/\r?\n/).find(x=>x.startsWith('BUILD_IDENTITY '));
+      if(!identity)throw new Error('Executable did not report its version');
+      const actual=JSON.parse(identity.slice('BUILD_IDENTITY '.length));
+      if(actual.version!==metadata.version || actual.build!==metadata.buildNumber)throw new Error('Executable version does not match committed metadata');
+      report.identity=actual;
+      report.artifacts=Object.fromEntries(['Wildforge.exe','Wildforge.pck'].map(name=>[name,createHash('sha256').update(readFileSync(join(runDir,name))).digest('hex')]));
+      writeFileSync(join(runDir,'build-info.json'),JSON.stringify({version:actual.version,build:actual.build,source:report.head,artifacts:report.artifacts,builtUtc:new Date().toISOString()},null,2));
       report.build=exe;
     }
     if (action === 'coop-feedback') {
@@ -287,6 +287,29 @@ async function main(action) {
       report.surface=JSON.parse(line.slice('SURFACE_REVIEW '.length));
       if(Object.values(report.surface).some(v=>v===false)) throw new Error('Surface checks failed');
       report.capture=['before','wall','ceiling','ledge','slope'].map(name=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','surface-'+name+'.png'),started));
+    }
+    if (action === 'shared-review') {
+      const runs=['host','client'].map(async(role)=>{
+        if(role==='client') await new Promise(r=>setTimeout(r,1200));
+        const profile=join(runDir,role);mkdirSync(profile,{recursive:true});
+        const result=await runStep(process.env.WILDFORGE_TEST_EXE||godot,['--headless',...(process.env.WILDFORGE_TEST_EXE?[]:['--path',join(root,'native')]),'--','--shared-review-'+role],{cwd:root,env:{...env,APPDATA:profile},timeoutMs:120000,logPath:join(runDir,role+'.log')});
+        const {output,...record}=result;report.steps.push(record);
+        const line=output.split(/\r?\n/).findLast(x=>x.startsWith('SHARED_REVIEW '));
+        if(result.exitCode!==0 || fatal.test(output) || /ERROR:|ObjectDB instances were leaked/.test(output) || !line) throw new Error(role+' shared review failed: '+output.slice(-3000));
+        const parsed=JSON.parse(line.slice('SHARED_REVIEW '.length));
+        if(Object.values(parsed.checks).some(v=>v===false))throw new Error(role+' assertions failed');
+        return parsed;
+      });
+      const results=await Promise.allSettled(runs);report.shared=results.filter(r=>r.status==='fulfilled').map(r=>r.value);
+      const failed=results.filter(r=>r.status==='rejected');if(failed.length)throw new Error(failed.map(r=>r.reason.message).join('\n'));
+    }
+    if (action === 'hermes-review') {
+      const output=await step('hermes-review',process.env.WILDFORGE_TEST_EXE||godot,[...(process.env.WILDFORGE_TEST_EXE?[]:['--path',join(root,'native')]),'--resolution','1440x810','--','--hermes-review'],120000);
+      const line=output.split(/\r?\n/).findLast(x=>x.startsWith('HERMES_REVIEW '));
+      if(!line) throw new Error('Missing feature review');
+      report.features=JSON.parse(line.slice('HERMES_REVIEW '.length));
+      if(Object.values(report.features).some(v=>v===false)) throw new Error('Feature assertions failed');
+      report.capture=['magnet','hunt','eclipse'].map(name=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','hermes-'+name+'.png'),started));
     }
     if (action === 'capture-ui') {
       const output=await step('ui-capture',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--ui-review'],90000);

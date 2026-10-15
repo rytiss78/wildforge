@@ -62,7 +62,7 @@ static func run(g):
 	g.interact();checks.hidden_portal_no_travel=g.realm==3
 	g.player.position=arena_spawn
 	var boss=g.enemies[0]
-	checks.final_identity=boss.boss_id==8 and boss.height==42 and boss.speed<=.22 and boss.maxHp==90000
+	checks.final_identity=boss.boss_id==8 and boss.height==42 and boss.speed<=.22 and boss.maxHp==360000
 	g.invulnerable=1000;g.equipped.clear();g.spawn_clock=99999
 	for i in range(180):
 		g._process(.016);await g.get_tree().process_frame
@@ -126,5 +126,5 @@ static func run(g):
 	g.Journey.activate(g);checks.no_exit=g.realm==3 and g.mode=="playing"
 	for i in range(90):g._process(.016)
 	g.hud.update(0);checks.eclipse=await capture(g,"eclipse")
-	print("RED_MOON_REVIEW "+JSON.stringify({"checks":checks,"attack_counts":counts,"authored_size":CoopSession.array(maximum-minimum),"reference_seconds":90000.0/300.0,"timing_note":"300 seconds at 300 applied DPS; actual builds vary."}))
+	print("RED_MOON_REVIEW "+JSON.stringify({"checks":checks,"attack_counts":counts,"authored_size":CoopSession.array(maximum-minimum),"reference_seconds":360000.0/1200.0,"timing_note":"Requested fourfold boss HP: five minutes requires 1200 applied DPS; representative builds still need playtesting."}))
 	g.get_tree().quit(0 if not checks.values().has(false) else 1)

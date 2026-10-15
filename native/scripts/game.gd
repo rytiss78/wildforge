@@ -113,8 +113,8 @@ var party_shown_source = ""
 var party_offers = []
 var party_source = ""
 var party_seen = {}          # player name -> {"name":..., "items":[...]} (companion panel)
-var pickup_seq = 0           # unique pickup id source (prevents duplicate shared-XP credit)
-var awarded_pickups = {}    # pickup id -> true; host-side dedupe for shared credits
+var pickup_seq = 0           # host-owned pickup identity for shared world replication
+var pending_chest=false
 var projectile_mesh = SphereMesh.new()
 var brass_mesh: Mesh
 var painted_shot: ShaderMaterial
@@ -164,6 +164,7 @@ var network_test_role=""
 
 
 func _ready():
+	print("BUILD_IDENTITY "+JSON.stringify({"version":ProjectSettings.get_setting("application/config/version"),"build":ProjectSettings.get_setting("application/config/build_number")}))
 	if OS.get_cmdline_user_args().has("--style-check") or OS.get_cmdline_user_args().has("--style-inspect"):
 		set_physics_process(false);set_process(false);set_process_input(false)
 		get_tree().change_scene_to_file.call_deferred("res://style_lab.tscn")
@@ -271,7 +272,9 @@ func _ready():
 	Input.joy_connection_changed.connect(func(id,connected):
 		if not connected and id == controller_id and mode == "playing": hud.pause_menu(); hud.tell("Controller disconnected")
 	)
-	if OS.get_cmdline_user_args().has("--big-update-check"): preload("res://scripts/big_update_checks.gd").run.call_deferred(self)
+	if OS.get_cmdline_user_args().has("--shared-review-host") or OS.get_cmdline_user_args().has("--shared-review-client"): preload("res://scripts/shared_review.gd").run.call_deferred(self,OS.get_cmdline_user_args().has("--shared-review-host"))
+	elif OS.get_cmdline_user_args().has("--hermes-review"): preload("res://scripts/hermes_review.gd").run.call_deferred(self)
+	elif OS.get_cmdline_user_args().has("--big-update-check"): preload("res://scripts/big_update_checks.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--presentation-check"): preload("res://scripts/presentation_checks.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--hero-check"): preload("res://scripts/hero_checks.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--visual-update-check"): preload("res://scripts/visual_update_checks.gd").run.call_deferred(self)
@@ -389,6 +392,7 @@ func start_run(shared_seed: int=-1):
 	record_run(false,true)
 	clear_entities()
 	conditional_bonuses.clear();condition_times.clear();condition_clock=0
+	pending_chest=false
 	update.new_run()
 	force_clocks.clear();damage_sources.clear();kill_types.clear()
 	seed_value = randi() if shared_seed<0 else shared_seed
@@ -401,7 +405,6 @@ func start_run(shared_seed: int=-1):
 	level = 1
 	xp = 0
 	pickup_seq = 0
-	awarded_pickups.clear()
 	party_seen.clear()
 	coop.last_remote_reward_level = 1
 	hud.party_panel_open = false
@@ -444,6 +447,7 @@ var kills = 0
 var realm_difficulty = 1.0
 
 func enter_realm(index: int,broadcast_transition: bool=true):
+	pending_chest=false
 	if network_test_role!="": network_test_realms.append(index)
 	clear_entities()
 	realm = index
@@ -568,21 +572,41 @@ func nearest_chest() -> Dictionary:
 	return nearest
 
 
-func buy_chest(chest: Dictionary):
+func buy_chest(chest: Dictionary,payer: int=-1):
+	if mode!="playing" or chest.opened: return
+	if coop.active and not coop.hosting:
+		if pending_chest: return
+		pending_chest=true
+		coop.send_to(coop.owner_id,coop.pose())
+		coop.send_to(coop.owner_id,{"type":"chest_request","realm":realm,"position":CoopSession.array(chest.node.position)})
+		return
+	if payer<0: payer=coop.local_id
+	var local_payer=payer==coop.local_id
+	var payer_stats=stats if local_payer else coop.members[payer].get("stats",stats)
+	var funds=gold if local_payer else int(coop.members[payer].get("gold",0))
+	var paid=paid_chests if local_payer else int(coop.members[payer].get("paid_chests",0))
 	if update.start_mimic(chest): return
 	if chest.opened: return
 	# Key outcome is rolled once per chest, preventing repeated-interaction rerolls.
 	if not chest.rolled_free:
 		chest.rolled_free = true
-		chest.free = chest.free or rules.rng.randf() < rules.free_chance(stats.keyPower)
-	var price = 0 if chest.free else rules.chest_price(paid_chests,stats.discount)
-	if gold < price: hud.tell("● %d / %d" % [gold,price]);return
+		chest.free = chest.free or rules.rng.randf() < rules.free_chance(float(payer_stats.get("keyPower",0)))
+	var price = 0 if chest.free else rules.chest_price(paid,float(payer_stats.get("discount",0)))
+	if funds < price:
+		if local_payer: hud.tell("● %d / %d" % [funds,price])
+		else: coop.send_to(payer,{"type":"chest_rejected","realm":realm})
+		return
 	if price > 0 and gold == price: achievement_event("LAST_COIN")
 	if price > 0 and stats.discount > 0: achievement_event("SALE")
 	if chest.free: achievement_event("BOSS_GIFT" if chest.elite else "FREE_KEY")
 	if chest.node.position.y > world.height_at(chest.node.position.x,chest.node.position.z)+1: achievement_event("HIGH_CHEST")
-	gold -= price
-	if price > 0: paid_chests += 1
+	if local_payer:
+		gold-=price
+		if price>0: paid_chests+=1
+	else:
+		coop.members[payer].gold=funds-price
+		coop.members[payer].paid_chests=paid+(1 if price>0 else 0)
+		coop.send_to(payer,{"type":"chest_paid","realm":realm,"price":price})
 	chest.opened = true
 	# A tiny, collectible sneeze bonus; the box is still paid for exactly once.
 	sound.ui_effect("chest_latch")
@@ -593,9 +617,9 @@ func buy_chest(chest: Dictionary):
 	run_chests += 1
 	career.bump("chests")
 	career.best("chestRewards",3)
-	offers = rules.offers("item",stats.luck+stats.chestBonus*.2,chest.elite,stats,equipped)
+	offers = rules.offers("item",float(payer_stats.get("luck",0))+float(payer_stats.get("chestBonus",0))*.2,chest.elite,stats,equipped)
 	offer_kind="item";offer_elite=chest.elite;offer_rerolls=0
-	heal(stats.chestHeal)
+	if local_payer: heal(stats.chestHeal)
 	offer_source = "chest"
 	reveal_tier = offers.map(func(item):return item.tier).max()
 	if reveal_tier == 3: achievement_event("LEGENDARY")
@@ -603,8 +627,8 @@ func buy_chest(chest: Dictionary):
 	# never shared); broadcast the rolled pool so every member opens the same chest
 	# and each filters it to their own loadout, and hide the chest from every map.
 	if coop.active:
-		coop.broadcast({"type":"chest_open","offers":offers,"kind":"item","elite":bool(chest.elite)})
-		coop.broadcast({"type":"chest_hide","pos":[int(chest.node.position.x),int(chest.node.position.y),int(chest.node.position.z)]})
+		coop.broadcast({"type":"chest_open","offers":offers,"kind":"item","elite":bool(chest.elite),"realm":realm})
+		coop.broadcast({"type":"chest_hide","realm":realm,"pos":[int(chest.node.position.x),int(chest.node.position.y),int(chest.node.position.z)]})
 	reveal_duration = [2.6,2.9,3.3,3.8][reveal_tier]
 	sound.chest_open(reveal_tier,reveal_duration)
 	reveal_clock = 0
@@ -618,7 +642,7 @@ func buy_chest(chest: Dictionary):
 
 func level_up():
 	if coop.active and not coop.hosting: return  # Host owns shared levels.
-	if mode != "playing" or hp<=0 or level_choice_cooldown>0: return
+	if mode != "playing" or (hp<=0 and not (coop.active and coop.hosting and coop.members.values().any(func(m):return float(m.get("hp",0))>0))) or level_choice_cooldown>0: return
 	xp -= xp_target
 	level_choice_cooldown=LEVEL_CHOICE_GAP
 	level += 1
@@ -641,7 +665,7 @@ func level_up():
 	# rolled pool AND the resulting level/xp/xp_target so every member mirrors the host
 	# and opens the same choice — members never level up on their own.
 	if coop.active and coop.hosting:
-		coop.broadcast({"type":"level_up","offers":offers,"kind":kind,"level":level,"xp":xp,"xp_target":xp_target})
+		coop.broadcast({"type":"level_up","offers":offers,"kind":kind,"level":level,"xp":xp,"xp_target":xp_target,"realm":realm})
 
 func choose_offer(index: int):
 	if mode != "offer" or index < 0 or index >= offers.size(): return
@@ -869,6 +893,7 @@ func open_shared_offer(pool: Array, kind: String, elite: bool, source: String):
 	mode = "offer"  # Network-delivered rewards must allow choose_offer().
 	party_offers = pool
 	party_source = source
+	offer_source = source
 	var shown := []
 	for item in pool:
 		if item.kind == "weapon" and not rules.can_weapon(equipped,item.id): continue
@@ -898,7 +923,7 @@ func random_spawn(radius: float,anchor: Vector3=Vector3.INF) -> Vector3:
 	p.y = world.height_at(p.x,p.z)
 	return p
 
-func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector3.INF,guardian: bool=false):
+func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector3.INF,guardian: bool=false,structure: bool=false):
 	if coop.active and not coop.hosting: return
 	if not boss and not make_spawn_room(): return
 	var p=random_spawn(radius,anchor)
@@ -910,7 +935,7 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 	world.ensure_ground(p)
 	var biome=world.biome_at(p)
 	var species=CreatureBook.pick(biome,rules.rng)
-	var elite=not boss and rules.rng.randf()<.08
+	var elite=not boss and not structure and rules.rng.randf()<.08
 	var boss_id=(8 if realm==3 else BossBook.choose(seed_value,realm,biome,boss_history)) if boss else -1
 	var boss_entry=BossBook.entry(boss_id) if boss else {}
 	var body_scale=rules.rng.randf_range(.90,1.12) if not boss else 1.0
@@ -928,7 +953,9 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 	var collider=CollisionShape3D.new();var capsule=CylinderShape3D.new()
 	capsule.radius=radius_value;capsule.height=maxf(height,radius_value*2)
 	collider.shape=capsule;collider.position.y=capsule.height*.5;node.add_child(collider)
-	var rig=world.model("boss_"+str(boss_id) if boss else species.model,height)
+	if structure: height=2.2;radius_value=1.0;capsule.radius=radius_value;capsule.height=height;collider.position.y=height*.5
+	var rig=preload("res://scripts/magnet_guard_rig.gd").new() if structure else world.model("boss_"+str(boss_id) if boss else species.model,height)
+	if structure: rig.setup("magnet_guard")
 	node.add_child(rig);node.set_meta("rig",rig)
 	node.position=p+Vector3.UP*.15
 	add_child(node)
@@ -946,7 +973,7 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 	var enemy = {"biome":biome,"elite":elite,"node":node,"hp":max_health,"maxHp":max_health,"speed":2.9+realm*.35+randf()*0.6,"boss":boss,"fire":0.0,"poison":0.0,"status_time":0.0,"freeze":0.0,"blind":0.0,"slow":0.0,"attack":2.5*realm_difficulty,"telegraph":0.0,"dead":false,"contact":0.0,"phase":1,"startDamage":health_damage}
 	enemy.guardian=guardian
 	enemy.merge(species);enemy.speed*=species.speed/pow(body_scale,.6)*(.9 if elite else 1.0)
-	enemy.height=height;enemy.radius=radius_value;enemy.flying=species.flying and not boss
+	enemy.height=height;enemy.radius=radius_value;enemy.flying=species.flying and not boss and not structure
 	if biome==1 and enemy.species==1 and not boss: enemy.behavior="charge"
 	rig.set_health(1,boss or species.health>=1.8)
 	if enemy.flying: node.floor_snap_length=0;node.position.y+=species.altitude
@@ -955,6 +982,8 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 		var threat=maxi(1,int(events.get("eclipse_stage",1)));enemy.speed*=1+minf(.75,threat*.08);enemy.damage*=realm_difficulty*(1+minf(3,threat*.15))
 	if events.get("eclipse",false): EclipseCorruption.apply(enemy,maxi(1,int(events.get("eclipse_stage",1))))
 	enemy.xp_reward=enemy_xp_reward(enemy)
+	enemy.magnet_guard=structure
+	if structure: enemy.hp=80+realm*40;enemy.maxHp=enemy.hp;enemy.speed=0;enemy.flying=false;enemy.height=height;enemy.radius=radius_value;enemy.damage=1.2;enemy.attack=1.5;enemy.behavior="turret";enemy.name="Magnet sentry"
 	if boss:
 		enemy.boss_id=boss_id;enemy.model="boss_"+str(boss_id);enemy.name=boss_entry.name
 		enemy.damage=1.0;enemy.sound="roar_bump";enemy.speed=boss_entry.speed
@@ -976,7 +1005,7 @@ func make_spawn_room() -> bool:
 	if enemies.size()<125: return true
 	var farthest={};var far_distance=55.0
 	for enemy in enemies:
-		if enemy.boss: continue
+		if enemy.boss or enemy.get("magnet_guard",false) or enemy.net_id in events.get("hunt_ids",[]): continue
 		# Nearest living party member protects enemies near co-op players too.
 		var distance=enemy.node.position.distance_to(coop.target(enemy.node.position).position)
 		if distance>far_distance: farthest=enemy;far_distance=distance
@@ -1041,13 +1070,12 @@ func update_melee(delta: float):
 			var critical=rules.rng.randf()<stat("crit")
 			if critical: career.bump("crits")
 			hit_enemy(enemy,{"kind":"saw","weapon_id":swing.get("weapon_id","saw"),"payload":swing.get("payload",""),"critical":critical,"damage":swing.damage*(stat("critPower") if critical else 1.0)},"melee");hits+=1
-		# Also check for magnet turrets in melee range
-		update.damage_turret_toward(swing.target,swing.damage)
+
 		if hits>0:
 			sound.effect("melee_hit",swing.target);vibrate(.12,.22,.08)
 			hit_shake=maxf(hit_shake,.08)
 			hit_stop=maxf(hit_stop,.025)
-			melee_attacks=melee_attacks.filter(func(swing):return swing.delay>0)
+	melee_attacks=melee_attacks.filter(func(swing):return swing.delay>0)
 
 func slash_fx(origin: Vector3,target: Vector3):
 	if effects.size()>220: return
@@ -1085,8 +1113,11 @@ func blood_hit(enemy: Dictionary):
 func spawn_network_enemy(actor: Dictionary) -> Dictionary:
 	var node=CharacterBody3D.new();node.collision_layer=4;node.collision_mask=1
 	var collision=CollisionShape3D.new();var capsule=CylinderShape3D.new();capsule.radius=1.05 if actor.boss else .53;capsule.height=3.4 if actor.boss else 1.7;collision.shape=capsule;collision.position.y=capsule.height*.5;node.add_child(collision)
-	var entry=CreatureBook.entry(int(actor.biome),int(actor.species));var height=float(actor.get("height",9.0+realm*2 if actor.boss else entry.height*(1.25 if actor.elite else 1.0)));capsule.height=height;capsule.radius=float(actor.get("radius",2.8 if actor.boss else entry.radius));collision.position.y=height*.5;var rig=world.model("boss_"+str(clampi(int(actor.get("boss_id",0)),0,8)) if actor.boss else entry.model,height);node.add_child(rig);node.set_meta("rig",rig);node.position=CoopSession.vector(actor.position);add_child(node)
+	var entry=CreatureBook.entry(int(actor.biome),int(actor.species));var height=float(actor.get("height",9.0+realm*2 if actor.boss else entry.height*(1.25 if actor.elite else 1.0)));capsule.height=height;capsule.radius=float(actor.get("radius",2.8 if actor.boss else entry.radius));collision.position.y=height*.5;var rig=preload("res://scripts/magnet_guard_rig.gd").new() if actor.get("magnet_guard",false) else world.model("boss_"+str(clampi(int(actor.get("boss_id",0)),0,8)) if actor.boss else entry.model,height);node.add_child(rig);node.set_meta("rig",rig);node.position=CoopSession.vector(actor.position);add_child(node)
 	var enemy={"net_id":int(actor.id),"node":node,"hp":float(actor.hp),"maxHp":float(actor.maxHp),"boss":bool(actor.boss),"elite":bool(actor.elite),"biome":int(actor.biome),"dead":false,"speed":0.0,"fire":0.0,"poison":0.0,"status_time":0.0,"freeze":0.0,"blind":0.0,"slow":0.0,"phase":1,"startDamage":health_damage,"contact":0.0,"attack":2.5};enemy.merge(entry);enemy.height=height;enemy.radius=capsule.radius;enemy.flying=entry.flying and not enemy.boss;enemy.xp_reward=float(actor.get("xp_reward",enemy_xp_reward(enemy)))
+	if actor.get("magnet_guard",false): rig.setup("magnet_guard")
+	enemy.magnet_guard=bool(actor.get("magnet_guard",false))
+	if enemy.magnet_guard: enemy.flying=false;enemy.behavior="turret"
 	enemy.guardian=bool(actor.get("guardian",false));enemy.title=str(actor.get("title","Guardian"));enemy.boss_id=clampi(int(actor.get("boss_id",0)),0,8)
 	if enemy.boss: enemy.model="boss_"+str(enemy.boss_id);enemy.name=BossBook.entry(enemy.boss_id).name
 	if not enemy.boss: rig.bake_enemy()
@@ -1375,7 +1406,7 @@ func hurt_enemy(enemy: Dictionary, damage: float, cause: String,mechanic: String
 	elif cause=="fire" and enemy.fire<=0: enemy.fire=3;enemy.status_time=4;sound.effect("fire",enemy.node.position)
 	elif cause=="ice" and enemy.freeze<=0: enemy.freeze=3;enemy.status_time=4;sound.effect("freeze",enemy.node.position)
 	if coop.active and not coop.hosting:
-		coop.hit(enemy,damage,mechanic if not mechanic.is_empty() else cause,mechanic_origin);enemy.node.get_meta("rig").hurt=.18;return
+		coop.hit(enemy,damage,mechanic if not mechanic.is_empty() else cause,mechanic_origin,cause);enemy.node.get_meta("rig").hurt=.18;return
 	if enemy.boss and cause not in ["poison","fire"]:
 		var curse=sound.boss_curse(enemy.node.position)
 		if curse>=0 and coop.active: coop.broadcast({"type":"big_boss_voice","realm":realm,"index":curse,"position":CoopSession.array(enemy.node.position)})
@@ -1407,7 +1438,7 @@ func kill_enemy(enemy: Dictionary, cause: String):
 	career.bump("kills")
 	if cause != "hit" and cause != "melee": career.bump(cause+"Kills")
 	var p = enemy.node.position
-	spawn_pickup(p+Vector3.UP*.35,"xp",float(enemy.get("xp_reward",enemy_xp_reward(enemy)))*stat("xpGain"))
+	spawn_pickup(p+Vector3.UP*.35,"xp",float(enemy.get("xp_reward",enemy_xp_reward(enemy))))
 	spawn_pickup(p+Vector3.UP*.4,"gold",roundi((1+enemy.get("biome",0)*.2)*(40 if enemy.boss else (2+realm)*(3 if enemy.get("elite",false) else 1))*stat("goldGain")))
 	# Kill feedback: elite/boss get big explosion, regular get dust puff
 	# Multi-kill tracking
@@ -1527,7 +1558,8 @@ func dash():
 	sound.effect("dash")
 	vibrate(.35,.2,.12)
 
-func spawn_pickup(p: Vector3, kind: String, value: float):
+func spawn_pickup(p: Vector3, kind: String, value: float, replicated: bool=false):
+	if kind=="xp" and coop.active and not coop.hosting and not replicated: return
 	var node = MeshInstance3D.new()
 	node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	node.mesh = coin_mesh if kind == "gold" else orb_mesh
@@ -1544,6 +1576,7 @@ func spawn_pickup(p: Vector3, kind: String, value: float):
 		node.rotation.z=PI/2
 	add_child(node)
 	var pickup={"node":node,"kind":kind,"value":value,"age":0.0,"base_y":p.y,"velocity":velocity,"settled":false,"bounced":false,"attracted":false,"merge_pulse":0.0,"units":1}
+	pickup.net_id=pickup_seq;pickup_seq+=1
 	resize_xp(pickup,true);pickups.append(pickup)
 func resize_xp(pickup: Dictionary,instant: bool=false):
 	pickup.radius=clampf(.12*pow(maxf(1,pickup.value/1.5),1.0/3.0),.12,.6) if pickup.kind=="xp" else .27
@@ -1553,7 +1586,7 @@ func merge_xp_orbs():
 	# Grounded, compatible and same elevation; ownership stays on this client.
 	var buckets={}
 	for pickup in pickups:
-		if not pickup.settled or pickup.attracted or pickup.age<0: continue
+		if not pickup.settled or pickup.attracted or pickup.age<0 or (coop.active and not coop.hosting and pickup.kind=="xp"): continue
 		var p: Vector3=pickup.node.position
 		var cell=Vector3i(floori(p.x/6),floori(p.y/6),floori(p.z/6))
 		var survivor={}
@@ -1581,18 +1614,26 @@ func update_pickups(delta: float):
 		merge_xp_orbs();pickup_merge_clock=.25
 	for pickup in pickups:
 		if pickup.age<0: continue
+		if pickup.kind=="xp" and coop.active and not coop.hosting:
+			pickup.node.position=pickup.node.position.lerp(pickup.get("target_position",pickup.node.position),1-exp(-delta*20))
+			continue
 		pickup.age+=delta
 		if pickup.kind=="xp":
 			pickup.merge_pulse=maxf(0,pickup.merge_pulse-delta)
 			var size_value=pickup.radius/.12*(1+sin(pickup.merge_pulse/.22*PI)*.12)
 			pickup.node.scale=pickup.node.scale.lerp(Vector3.ONE*size_value,minf(1,delta*18))
 			if pickup.settled and not pickup.attracted: pickup.node.position.y=pickup.base_y+pickup.radius+.01
-		var distance=player.position.distance_to(pickup.node.position)
-		var radius=stats.coinRadius if pickup.kind=="gold" else stat("pickup")
-		if hp<=0: pickup.attracted=false
-		elif distance<radius: pickup.attracted=true
+		var target={"id":coop.local_id,"position":player.position}
+		if pickup.kind=="xp" and coop.active: target=coop.target(pickup.node.position)
+		var collector_alive=hp>0 if target.id==coop.local_id else float(coop.members.get(target.id,{}).get("hp",0))>0
+		var radius=stats.coinRadius if pickup.kind=="gold" else stat("pickup") if target.id==coop.local_id else float(coop.members[target.id].get("stats",{}).get("pickup",4))
+		var destination=target.position+Vector3.UP*.4
+		var collecting_at_magnet=update.magnet_active and is_instance_valid(update.magnet_node) and pickup.node.position.distance_to(update.magnet_position)<update.magnet_range
+		if collecting_at_magnet: destination=update.magnet_position+Vector3.UP*.5
+		if not collector_alive and not collecting_at_magnet: pickup.attracted=false
+		elif collecting_at_magnet or target.position.distance_to(pickup.node.position)<radius: pickup.attracted=true
 		if pickup.attracted:
-			pickup.node.position=pickup.node.position.move_toward(player.position+Vector3.UP*.4,delta*14)
+			pickup.node.position=pickup.node.position.move_toward(destination,delta*14)
 		else:
 			if not pickup.settled:
 				pickup.velocity.y-=24*delta
@@ -1606,23 +1647,14 @@ func update_pickups(delta: float):
 						pickup.velocity.y=absf(pickup.velocity.y)*.22;pickup.velocity.x*=.35;pickup.velocity.z*=.35;pickup.bounced=true
 					else: pickup.velocity=Vector3.ZERO;pickup.settled=true
 		pickup.node.rotation.y+=delta*2
-		if hp>0 and player.position.distance_to(pickup.node.position)<1.05+float(pickup.get("radius",.12))-.12:
+		if (collector_alive or collecting_at_magnet) and destination.distance_to(pickup.node.position)<1.05+float(pickup.get("radius",.12))-.12:
 			if pickup.kind=="gold":
-				# Gold is per-player, never shared: apply locally only, no broadcast.
-				update.run_coins+=pickup.value;gold+=roundi(pickup.value*stat("goldGain")/stat("goldGain"));heal(stats.coinHeal*pickup.get("units",1));sound.effect("coin")
+				update.run_coins+=pickup.value;gold+=roundi(pickup.value);heal(stats.coinHeal*pickup.get("units",1));sound.effect("coin")
 			else:
-				# XP is a single shared pool owned by the host. pickup.value already
-				# carries the xpGain buff (applied at spawn), so collect it raw.
-				var gained = roundi(pickup.value)
-				# Offline runs award XP locally; in co-op, only the host owns XP.
-				if not coop.active or coop.hosting:
-					update.run_xp+=gained;xp+=gained
-					if xp>=xp_target: level_up()
-				elif coop.active:
-					# Client sends its pickup credit to the host; client XP and
-					# level are mirrored from authoritative host snapshots.
-					var pickup_id = "xp_"+str(pickup_seq);pickup_seq+=1
-					coop.send_to(coop.owner_id,{"type":"credit","pickup_id":pickup_id,"xp":gained})
+				var gain=stat("xpGain") if target.id==coop.local_id else float(coop.members[target.id].get("stats",{}).get("xpGain",1))
+				var gained=roundi(pickup.value*gain)
+				update.run_xp+=gained;xp+=gained
+				if xp>=xp_target: level_up()
 			pickup.node.queue_free();pickup.age=-1
 	pickups=pickups.filter(func(pickup):return pickup.age>=0)
 
@@ -1739,7 +1771,15 @@ func update_combat(delta: float):
 				if distance<23 and enemy.attack<=0 and enemy.freeze<=0 and enemy.blind<=0:
 					preload("res://scripts/combat_tactics.gd").ranged_attack(self,enemy,target_player.position)
 				if distance<7: aim=-aim*.6
-		if distance>90 and not enemy.boss and enemy.node.position.distance_to(update.beacon_position)>30:
+		if enemy.get("magnet_guard",false):
+			enemy.attack-=enemy_delta
+			if distance<32 and enemy.attack<=0 and enemy.freeze<=0 and enemy.blind<=0:
+				preload("res://scripts/combat_tactics.gd").ranged_attack(self,enemy,target_player.position)
+				enemy.attack=2.4
+			enemy.node.rotation.y=atan2(-toward.x,-toward.z)
+			enemy.node.get_meta("rig").animate(enemy_delta,Vector3.ZERO,true)
+			continue
+		if distance>90 and not enemy.boss and enemy.net_id not in events.get("hunt_ids",[]) and enemy.node.position.distance_to(update.beacon_position)>30:
 			enemy.dead=true;enemy.node.queue_free();continue
 		if distance>55 and not enemy.boss: continue
 		if enemy.freeze<=0 and not enemy.get("surface_attached",false): aim=steer_enemy(enemy,aim,enemy_delta)
@@ -1902,12 +1942,7 @@ func update_combat(delta: float):
 	enemies = enemies.filter(func(enemy):return not enemy.dead)
 	for shot in projectiles:
 		if shot.life<=0: shot.node.queue_free()
-		# Check if projectile hits magnet turret
-		if shot.life>0 and not update.magnet_active and is_instance_valid(update.magnet_node):
-			for t in update.magnet_turrets:
-				if t.get("dead_turret",false) or t.hp<=0: continue
-				if shot.node.position.distance_to(t.node.position)<2.0:
-					t.hp-=shot.damage;shot.life=0;shot.node.queue_free();break
+
 	projectiles=projectiles.filter(func(shot):return shot.life>0)
 	pickups=pickups.filter(func(pickup):return pickup.age>=0)
 	for pool in pools:
@@ -1927,7 +1962,7 @@ func update_combat(delta: float):
 		if hp>0 and stats.nova>0:
 			damage_area(player.position,7,stats.nova,"explosion");CombatInk.wave(self,player.position,7,Color("af71ff"));sound.effect("nova")
 		nova_clock=6
-	if (not coop.active or coop.hosting) and xp>=xp_target and mode=="playing" and hp>0: level_up()
+	if (not coop.active or coop.hosting) and xp>=xp_target and mode=="playing": level_up()
 
 func update_events():
 	if realm<3: Hunt.tick(self)

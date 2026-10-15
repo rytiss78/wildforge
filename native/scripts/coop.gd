@@ -7,7 +7,7 @@ var party_seen={}
 
 # Transport-independent authoritative world. Important events are reliable;
 # poses/snapshots use unreliable ordered delivery. Never deserialize objects.
-const PROTOCOL="wildforge-forge-boss-7"
+const PROTOCOL="wildforge-shared-world-8"
 const PORT=29736
 const DISCOVERY_PORT=29737
 var discovery: PacketPeerUDP
@@ -38,6 +38,7 @@ var force_requests_received=0
 var saw_force_pulse=false
 var last_snapshot=0.0
 var test_mode=false
+var test_messages={}
 var test_finished_peers={}
 var joined=false
 var saw_pause=false
@@ -187,7 +188,7 @@ func start_party(shared_seed: int=-1) -> bool:
 
 func run_started():
 	if not active or not hosting: return
-	for member in members.values(): member.mode="loading";member.last_seen=Time.get_ticks_msec()/1000.0
+	for member in members.values(): member.mode="loading";member.paid_chests=0;member.last_seen=Time.get_ticks_msec()/1000.0
 	broadcast({"type":"start","seed":game.seed_value,"realm":0})
 
 func realm_changed():
@@ -262,13 +263,13 @@ func pose() -> Dictionary:
 func snapshot() -> Dictionary:
 	var actors=[]
 	for enemy in game.enemies:
-		if not enemy.dead: actors.append({"id":enemy.net_id,"position":array(enemy.node.position),"biome":enemy.biome,"species":enemy.species,"height":enemy.height,"radius":enemy.radius,"hp":enemy.hp,"maxHp":enemy.maxHp,"xp_reward":enemy.xp_reward,"boss":enemy.boss,"boss_id":enemy.get("boss_id",-1),"guardian":enemy.get("guardian",false),"title":enemy.get("title",""),"elite":enemy.elite,"corruption":enemy.get("corruption",0),"surface_up":array(enemy.node.basis.y),"surface_forward":array(-enemy.node.basis.z),"fire":enemy.fire,"poison":enemy.poison,"freeze":enemy.freeze,"blind":enemy.blind,"slip_until":enemy.get("slip_until",0),"windup":enemy.get("windup",0)})
+		if not enemy.dead: actors.append({"id":enemy.net_id,"position":array(enemy.node.position),"biome":enemy.biome,"species":enemy.species,"height":enemy.height,"radius":enemy.radius,"hp":enemy.hp,"maxHp":enemy.maxHp,"xp_reward":enemy.xp_reward,"boss":enemy.boss,"boss_id":enemy.get("boss_id",-1),"guardian":enemy.get("guardian",false),"magnet_guard":enemy.get("magnet_guard",false),"title":enemy.get("title",""),"elite":enemy.elite,"corruption":enemy.get("corruption",0),"surface_up":array(enemy.node.basis.y),"surface_forward":array(-enemy.node.basis.z),"fire":enemy.fire,"poison":enemy.poison,"freeze":enemy.freeze,"blind":enemy.blind,"slip_until":enemy.get("slip_until",0),"windup":enemy.get("windup",0)})
 	var poses=members.duplicate(true);poses[local_id]=pose()
 	for member in poses.values():
 		var stats=member.get("stats",{})
 		member.vitals={"max_hp":stats.get("maxHp",100),"armor":stats.get("armor",0),"shield_capacity":float(stats.get("shield",0))+float(stats.get("jumpShield",0))}
 		member.erase("stats");member.erase("last_seen")
-	return {"type":"world","actors":actors,"players":poses,"seconds":game.realm_time,"elapsed":game.elapsed,"realm":game.realm,"journey":game.events,"wardens":game.realm_bosses,"level":game.level,"xp":game.xp,"xp_target":game.xp_target,"run_xp":game.update.run_xp,"pause":frozen() or game.mode not in ["playing","ended"],"big_update":game.update.world_state()}
+	return {"type":"world","actors":actors,"players":poses,"seconds":game.realm_time,"elapsed":game.elapsed,"realm":game.realm,"journey":game.events,"wardens":game.realm_bosses,"level":game.level,"xp":game.xp,"xp_target":game.xp_target,"run_xp":game.update.run_xp,"pause":frozen() or game.mode not in ["playing","ended"],"big_update":game.update.world_state(),"xp_drops":game.pickups.filter(func(p):return p.kind=="xp" and p.age>=0).map(func(p):return {"id":p.net_id,"position":array(p.node.position),"value":p.value})}
 
 static func array(v: Vector3) -> Array: return [v.x,v.y,v.z]
 static func vector(v) -> Vector3:
@@ -279,6 +280,9 @@ func receive(sender: int,message):
 	if not message is Dictionary or not message.get("type","") is String: return
 	if game.update.receive(sender,message): return
 	var kind=message.type
+	if kind=="test_shared":
+		if test_mode and (members.has(sender) if hosting else sender==owner_id): test_messages[str(message.get("phase",""))]=message.get("data",{})
+		return
 	if kind=="test_done":
 		if test_mode and (members.has(sender) if hosting else sender==owner_id): test_finished_peers[sender]=int(message.get("realm",-1))
 		return
@@ -314,19 +318,6 @@ func receive(sender: int,message):
 			var weapon=str(message.get("weapon",""))
 			if members[sender].get("weapons",[]).any(func(w):return w.get("id","")==weapon):
 				message.actor=sender;show_shot(message);broadcast(message,false)
-		elif kind=="credit" and game.run_active:
-			# XP is host-authoritative. Each client pickup is credited once, with no
-			# second division. Gold stays local to the player who collected it.
-			var pickup_id=str(message.get("pickup_id",""))
-			if pickup_id.is_empty() or pickup_id.length()>64: return
-			var key=str(sender)+":"+pickup_id
-			if game.awarded_pickups.has(key): return
-			game.awarded_pickups[key]=true
-			var gained=clampi(int(message.get("xp",0)),0,10000)
-			if gained>0:
-				game.update.run_xp+=gained
-				game.xp+=gained
-				if game.xp>=game.xp_target: game.level_up()
 		elif kind=="reward_chosen" and game.run_active:
 			var who=str(members[sender].get("name",message.get("name","Friend"))).left(40)
 			var raw_items=message.get("items",[])
@@ -337,15 +328,14 @@ func receive(sender: int,message):
 			if game.mode=="offer": game.hud.show_party_panel(game.party_seen)
 			# The host is the relay: broadcast sends only to remote peers.
 			broadcast({"type":"reward_chosen","name":who,"items":items})
-		elif kind=="chest_open" and game.run_active:
-			game.open_shared_offer(message.get("offers",[]),str(message.get("kind","item")),bool(message.get("elite",false)),"chest")
-			# Forward the opener's pool to the other clients, not back to opener.
-			for id in members:
-				if id!=sender: send_to(id,message)
-		elif kind=="chest_hide" and game.run_active:
-			apply_chest_hide(message.get("pos",[]))
-			for id in members:
-				if id!=sender: send_to(id,message)
+		elif kind=="chest_request" and game.run_active:
+			var accepted=false
+			if int(message.get("realm",-1))==game.realm and game.mode=="playing" and not frozen() and float(members[sender].get("hp",0))>0:
+				var requested=vector(message.get("position",[]));var p=vector(members[sender].get("position",[]))
+				for chest in game.chests:
+					if not chest.opened and chest.node.position.distance_to(requested)<.1 and p.distance_to(chest.node.position)<4:
+						game.buy_chest(chest,sender);accepted=chest.opened;break
+			if not accepted: send_to(sender,{"type":"chest_rejected","realm":game.realm})
 
 		elif kind=="hunt_start" and int(message.get("realm",-1))==game.realm and not frozen() and float(members[sender].get("hp",0))>0:
 			game.Hunt.activate(game,vector(members[sender].get("position",[])))
@@ -375,11 +365,12 @@ func receive(sender: int,message):
 				var damage=clampf(float(message.get("damage",0)),0,limit)
 				if not is_finite(damage): return
 				enemy.hit_owner=sender
-				game.hurt_enemy(enemy,damage,"coop",str(message.get("mechanic","")));remote_hits+=1
+				var cause=str(message.get("cause","hit"))
+				if cause not in ["hit","crit","melee","slam","explosion","fire","poison","ice","sonic","thorn","aura","lightning","meteor","burrow","stomp","burn"]: cause="hit"
+				game.hurt_enemy(enemy,damage,cause,str(message.get("mechanic","")));remote_hits+=1
 				enemy.erase("hit_owner");enemy.status_owner=sender
 				if not enemy.dead:
 					var owned_ids=state.get("weapons",[]).map(func(w):return str(w.id))
-					var ids=owned_ids.map(func(id):return ContentExpansion.kind(id))
 					var mechanic=str(message.get("mechanic",""))
 					if owned_ids.has(mechanic):
 						ContentExpansion.payload(enemy,str(ContentExpansion.weapon(mechanic).get("modifiers",{}).get("payload","")))
@@ -390,7 +381,7 @@ func receive(sender: int,message):
 							var pull=p if mechanic=="harpoon" else vector(message.get("origin",[]))
 							if pull.is_finite() and pull.distance_to(p)<65:
 								enemy.node.move_and_collide((pull-enemy.node.position).normalized()*minf(3,.05 if mechanic=="gravity" else .15+float(stats.get("harpoonPull",0))))
-					enemy.status_time=4;game.set_damage_status(enemy,"fire",float(stats.get("burn",0))+(10 if ids.any(func(id):return id.contains("flame") or id.contains("fire")) else 0),sender);game.set_damage_status(enemy,"poison",float(stats.get("poison",0))+(9 if ids.any(func(id):return id.contains("poison")) else 0),sender);enemy.slow=maxf(enemy.slow,float(stats.get("slow",0)) + (.35 if ids.any(func(id):return id.contains("ice")) else 0))
+					enemy.status_time=4;game.set_damage_status(enemy,"fire",float(stats.get("burn",0))+(10 if (mechanic=="flame" or mechanic.contains("fire")) else 0),sender);game.set_damage_status(enemy,"poison",float(stats.get("poison",0))+(9 if mechanic.contains("poison") else 0),sender);enemy.slow=maxf(enemy.slow,float(stats.get("slow",0)) + (.35 if mechanic.contains("ice") else 0))
 					if game.rules.rng.randf()<float(stats.get("freeze",0)): enemy.freeze=1.6
 					if game.rules.rng.randf()<float(stats.get("blind",0)): enemy.blind=3
 					game.update_reaction(enemy,mechanic,damage)
@@ -430,9 +421,9 @@ func receive(sender: int,message):
 			for item in raw_items.slice(0,5): items.append(str(item).left(100))
 			game.party_seen[who]={"name":who,"items":items}
 			if game.mode=="offer": game.hud.show_party_panel(game.party_seen)
-		elif kind=="level_up":
+		elif kind=="level_up" and int(message.get("realm",-1))==game.realm:
 			var shared_level=int(message.get("level",game.level))
-			if shared_level<game.level: return
+			if shared_level<game.level or shared_level<=last_remote_reward_level: return
 			if shared_level>last_remote_reward_level:
 				last_remote_reward_level=shared_level
 				game.heal(game.stats.maxHp*.15)
@@ -441,9 +432,14 @@ func receive(sender: int,message):
 			game.xp=int(message.get("xp",game.xp))
 			game.xp_target=int(message.get("xp_target",game.xp_target))
 			game.open_shared_offer(message.get("offers",[]),str(message.get("kind","skill")),bool(message.get("elite",false)),"level")
-		elif kind=="chest_open":
+		elif kind=="chest_paid" and int(message.get("realm",-1))==game.realm:
+			game.pending_chest=false;var price=int(message.get("price",0));game.gold=maxi(0,game.gold-price)
+			if price>0: game.paid_chests+=1
+			game.run_chests+=1;game.career.bump("chests");game.heal(game.stats.chestHeal)
+		elif kind=="chest_rejected": game.pending_chest=false;game.hud.tell("Chest unavailable or not enough coins")
+		elif kind=="chest_open" and int(message.get("realm",-1))==game.realm:
 			game.open_shared_offer(message.get("offers",[]),str(message.get("kind","item")),bool(message.get("elite",false)),"chest")
-		elif kind=="chest_hide":
+		elif kind=="chest_hide" and int(message.get("realm",-1))==game.realm:
 			apply_chest_hide(message.get("pos",[]))
 
 		elif kind=="finish": game.end_run(bool(message.win))
@@ -504,6 +500,19 @@ func apply_world(message: Dictionary):
 	game.xp=int(message.get("xp",game.xp))
 	game.xp_target=int(message.get("xp_target",game.xp_target))
 	game.update.run_xp=int(message.get("run_xp",game.update.run_xp))
+	var drop_ids={}
+	for drop in message.get("xp_drops",[]):
+		var drop_id=int(drop.id);drop_ids[drop_id]=true
+		var matches=game.pickups.filter(func(p):return p.kind=="xp" and p.net_id==drop_id)
+		var pickup={}
+		if matches.is_empty():
+			game.spawn_pickup(vector(drop.position),"xp",float(drop.value),true)
+			pickup=game.pickups[-1];pickup.net_id=drop_id
+		else: pickup=matches[0]
+		pickup.value=float(drop.value);pickup.target_position=vector(drop.position);game.resize_xp(pickup,true)
+	for pickup in game.pickups:
+		if pickup.kind=="xp" and not drop_ids.has(pickup.net_id): pickup.age=-1;pickup.node.queue_free()
+	game.pickups=game.pickups.filter(func(p):return p.age>=0)
 	game.update.apply_state(message.get("big_update",{}))
 	game.events=message.get("journey",game.events).duplicate(true);game.realm_bosses=int(message.get("wardens",game.realm_bosses))
 	snapshots_received+=1;paused=bool(message.pause);saw_pause=saw_pause or paused
@@ -535,14 +544,14 @@ func apply_world(message: Dictionary):
 	for enemy in game.enemies:
 		if not ids.has(enemy.net_id) and not enemy.dead: enemy.dead=true;enemy.node.queue_free()
 
-func hit(enemy: Dictionary,damage: float,mechanic: String="",origin: Vector3=Vector3.ZERO):
-	if active and not hosting: send_to(owner_id,{"type":"hit","id":enemy.net_id,"damage":damage,"mechanic":mechanic,"origin":array(origin)})
+func hit(enemy: Dictionary,damage: float,mechanic: String="",origin: Vector3=Vector3.ZERO,cause: String="hit"):
+	if active and not hosting: send_to(owner_id,{"type":"hit","id":enemy.net_id,"damage":damage,"mechanic":mechanic,"origin":array(origin),"cause":cause})
 
 func stomp(enemy: Dictionary):
 	if active and not hosting: send_to(owner_id,{"type":"stomp","id":enemy.net_id})
 
 func died(enemy: Dictionary,cause: String):
-	if active and hosting: broadcast({"type":"kill","id":enemy.net_id,"position":array(enemy.node.position),"cause":cause,"actor":{"id":enemy.net_id,"position":array(enemy.node.position),"biome":enemy.biome,"species":enemy.species,"height":enemy.height,"radius":enemy.radius,"hp":enemy.hp,"maxHp":enemy.maxHp,"xp_reward":enemy.xp_reward,"boss":enemy.boss,"boss_id":enemy.get("boss_id",-1),"guardian":enemy.get("guardian",false),"title":enemy.get("title",""),"elite":enemy.elite}})
+	if active and hosting: broadcast({"type":"kill","id":enemy.net_id,"position":array(enemy.node.position),"cause":cause,"actor":{"id":enemy.net_id,"position":array(enemy.node.position),"biome":enemy.biome,"species":enemy.species,"height":enemy.height,"radius":enemy.radius,"hp":enemy.hp,"maxHp":enemy.maxHp,"xp_reward":enemy.xp_reward,"boss":enemy.boss,"boss_id":enemy.get("boss_id",-1),"guardian":enemy.get("guardian",false),"magnet_guard":enemy.get("magnet_guard",false),"title":enemy.get("title",""),"elite":enemy.elite}})
 
 func target(origin: Vector3) -> Dictionary:
 	var result={"id":local_id,"position":game.player.position};var distance=origin.distance_squared_to(game.player.position) if game.hp>0 else INF
