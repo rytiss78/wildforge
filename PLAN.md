@@ -4,7 +4,7 @@ October 16, 2026 · **1.1.3 / Build 17 development checkpoint** · main branch.
 
 Use [AGENTS.md](AGENTS.md) and the [Godot workflow](native/docs/godot-workflow.md). Work directly, one agent. A checked item requires exercised behavior and evidence; historical completion marks are not verification.
 
-Build 17 is a local development checkpoint, not a public release. Keep Build 16 as the public download until every active plan item is verified. [Current changes and evidence](native/docs/build17-work.md), [draft release notes](native/docs/release-build17.md). Balance, encounter/art polish, performance, the final Baron asset/acceptance and the final early co-op desync investigation remain open. The Baron is a stylized fallback, not photorealistic.
+Build 17 is a local development checkpoint, not a public release. Keep Build 16 as the public download until every active plan item is verified. [Current changes and evidence](native/docs/build17-work.md), [draft release notes](native/docs/release-build17.md). Balance, encounter/art polish, performance and the final early co-op desync investigation remain open. The accepted Baron is a stylized fallback, not photorealistic.
 
 ## Hermes audit and eleven requested improvements
 
@@ -50,10 +50,10 @@ Evidence and limits: [natural-world continuation](native/docs/natural-world-buil
 
 ## New request — Baron final boss
 
-- [ ] Replace the final boss with Baron Vladimir Harkonnen from the Dune films (the enormous bald floating character). The user directed a realistic asset search, then a bare-model fallback if no suitable model is found. Current authored model is bare and stylized; no free photoreal Baron asset with verified reuse terms was found. Record the source and reuse terms of any replacement in [the asset report](native/docs/baron-model.md). Do not label the current model photorealistic.
-- [ ] Make him immense: the ordinary camera must require looking upward to see his whole silhouette. Retain very slow movement and deadly, clearly telegraphed ranged attacks.
-- [ ] Add visible steam venting from his body, with bounded particle cost and readable attack warnings.
-- [ ] Verify silhouette, targeting, collision, co-op appearance and steam performance in the exported game before marking complete.
+- [x] Replace the final boss with the bare stylized Baron fallback accepted by the user October 16. Asset searches and licensing limits are in [the asset report](native/docs/baron-model.md). No free photoreal Baron asset with verified reuse terms was found; do not label the accepted model photorealistic.
+- [x] Make him immense: the ordinary camera looks upward to see his full silhouette. Retain very slow movement and deadly, clearly telegraphed ranged attacks. Source and exported Red Moon reviews pass.
+- [x] Add visible steam venting from his body, with four emitting vents / 64 GPU particles total and readable attack warnings.
+- [x] Verify silhouette, targeting, collision, co-op reconstruction and steam budget in the clean-commit staging export: `2026-10-16T18-56-41-946Z-build` and `2026-10-16T18-57-16-264Z-release-review`. User accepted the exported bare model on October 16.
 
 ## New request — finished ground and stronger colour
 

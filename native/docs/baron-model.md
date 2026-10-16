@@ -12,7 +12,7 @@ This is **not a photorealistic model**. The authored fallback uses no downloaded
 - [Ravi on itch.io](https://oudarya.itch.io/ravi): tagged photorealistic and CC0, but costs at least USD 5 to download, is fully clothed and does not match this character. No purchase was made.
 - [Realistic Chubby Balding Male on Fab](https://www.fab.com/listings/00062ece-c8d6-4fd4-99a3-67ea43dc5997): the listing describes a realistic, heavy, balding, fully rigged male with PBR materials in FBX/Blender. It requires selecting and purchasing a license; price and fit for Godot were not verified. [Fab's Standard License summary](https://www.fab.com/eula?lang=en) allows adaptation and commercial distribution inside a project, but this listing is a generic civilian, not Baron art. No purchase was authorized or made.
 
-No verified free, photoreal Baron asset met the request. A paid generic Fab character is a possible separate route if the user wants to fund and approve that purchase; the work here follows the requested authored fallback. The result remains stylized and must not be described as photorealistic. User acceptance of the newly rendered bare model and its visibility in the exported game are still pending.
+No verified free, photoreal Baron asset met the request. A paid generic Fab character is a possible separate route if the user wants to fund and approve that purchase; the work here follows the requested authored fallback. The result remains stylized and must not be described as photorealistic. The user accepted the exported bare model on October 16.
 
 ## Bare model implementation and checks
 
@@ -22,7 +22,9 @@ No verified free, photoreal Baron asset met the request. A paid generic Fab char
 - Final source boss review `2026-10-16T18-51-56-820Z-boss-review` passes model, scale, collider, co-op reconstruction, vent count and warning checks. Its `boss-baron.png` was inspected.
 - Final source Red Moon review `2026-10-16T18-54-21-506Z-red-moon-review` passes silhouette, huge-body targeting, weapon hit, slow movement, four attack patterns, warning marks and the bare-model regression.
 - `2026-10-16T18-52-32-758Z-check`, `2026-10-16T18-52-54-693Z-smoke` (118 checks) and `2026-10-16T18-53-11-418Z-integration` (71 checks) pass. A failed source review caused by an outdated test expecting the removed robe is preserved at `2026-10-16T18-53-48-029Z-red-moon-review`; the assertion was corrected to check `BareTorso` and the robe's absence.
-- This is source-render evidence only. No export was made from this revision; the project still requires the final exported-game view and user acceptance before the Baron item can close.
+- Clean-commit staging export `2026-10-16T18-56-41-946Z-build` was built from commit `8ec987f1e959519a7f5a83d32694819fe4a5d71f`; packaged startup smoke passes all 118 checks. Its binary/pck hashes are recorded in that `result.json`.
+- Exported `2026-10-16T18-57-16-264Z-release-review` passes both 1280×720 and 1920×1080 UI, plus exported forge, style, eight-boss and six-biome reviews. The exported `boss-baron.png` was inspected with the normal 12 m camera tilted upward. Exported boss checks include Baron silhouette, collider, network reconstruction, targeting, attacks, warnings and the 64-particle vent cap. The user accepted this exported model on October 16.
+- The photoreal likeness was not achieved; the user accepted the stylized bare fallback. This local staging export is not the final public Build 17 while other plan items remain open.
 
 ## Validation
 
