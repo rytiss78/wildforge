@@ -42,18 +42,18 @@ static func build(world,root: Node3D,cell: Vector2i,rng: RandomNumberGenerator):
 	var groups={}
 	if world.realm==3: return
 	var portal=world.portal_site()
-	for i in range(900):
+	for i in range(1100):
 		var p=Vector3(cell.x*world.CHUNK+rng.randf()*world.CHUNK,0,cell.y*world.CHUNK+rng.randf()*world.CHUNK)
 		if Vector2(p.x,p.z).length()>world.shore_radius(p)-20 or world.lava_at(p): continue
 		if absf(p.x+sin(p.z*.035)*9)<3.5 or Vector2(p.x-portal.x,p.z-portal.z).length()<10: continue
 		# Broken islands, not a uniform carpet. The low growth never conceals enemies.
 		var patch=sin(p.x*.14+sin(p.z*.09)*2)+cos(p.z*.18+p.x*.03)
-		if patch<.05 or world.crossing_distance(p)<5: continue
+		if patch<-.25 or world.crossing_distance(p)<5: continue
 		p.y=world.height_at(p.x,p.z)
 		if absf(world.height_at(p.x+.6,p.z)-p.y)>.55 or absf(world.height_at(p.x,p.z+.6)-p.y)>.55: continue
 		var biome=world.biome_at(p)
 		if biome in [2,4,5] and i%3!=0: continue
-		var scale_value=rng.randf_range(.65,1.2)
+		var scale_value=rng.randf_range(.78,1.28)
 		var basis=Basis(Vector3.UP,rng.randf()*TAU).scaled(Vector3.ONE*scale_value)
 		var kind=2 if biome in [2,4,5] else 1 if biome in [1,3] else 0
 		if not groups.has(kind): groups[kind]={"transforms":[],"colors":[]}

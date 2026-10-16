@@ -69,3 +69,18 @@ Minimap rotation used the wrong 2D sign for Godot's 3D camera convention. A regr
 - `2026-10-16T17-41-02-559Z-progression-review` and `2026-10-16T17-41-15-807Z-feedback-review`: all stat-total, damage attribution, persistence, death-count, last-run trimming, card reachability, mobility-icon and recap checks pass. Reviewed the rendered captures. The run screens now label enemy totals clearly and show an empty state when there were no kills.
 - The boss review now explicitly covers the final Baron, because the previous eight-boss loop skipped him. `2026-10-16T17-40-06-651Z-boss-review` passes 42 m height, 9 m radius, cylinder collision, four emitting vents, network reconstruction and matching remote collision. Inspected `boss-baron.png` in that run: the whole stylized silhouette fits at 69 m using the normal 12 m third-person camera tilted slightly upward. Steam still does not read clearly in the capture, so visible-steam/art acceptance and exported-game review remain open. Photoreal/licensed asset research is still unresolved.
 - Early co-op desync remains deliberately untouched until it is the sole active plan item. Nothing from these shared-review tests proves it fixed.
+
+## Local Build 17 export from this continuation
+
+- Source commit: `d64857f05f925503064c3d8b9cb1749aeef0c896`; clean tree at export.
+- Export: `.build-staging/agent-workflow/2026-10-16T17-46-02-132Z-build/Wildforge.exe` with companion `Wildforge.console.exe` and `Wildforge.pck`. The manifest records executable SHA-256 `ac8086889c3f385fc8152cf543b84eb1e931ab6b8096379a155a133c3503436f` and pack SHA-256 `e763873885cdfe6ac2ac8757a118bf876f1b3022a08f1c509e37676e3661247e`.
+- Exported startup: 118 smoke checks pass. `2026-10-16T17-46-58-554Z-release-review` passes exported UI at 1280×720 and 1920×1080, plus forge, style, eight-roster-boss and six-biome checks. Inspected exported menu, HUD, and offer captures at both resolutions; no clipping in those views.
+- Packaged host/client: `2026-10-16T17-48-38-211Z-shared-review` passes all 42 checks against this exact export. This remains focused shared-feature coverage, not the deferred early-game desync reproduction.
+- Exported smoke, boss, biome, host and client logs contain no `ERROR`, `WARNING` or script-error entries. This is a local development build only; no release or upload was created.
+
+## Follow-up before the next local export
+
+- Baron vent locations were moved from behind the robe to its front. `2026-10-16T17-51-22-336Z-boss-review` passes the source checks and the inspected `boss-baron.png` now shows four visible puffs; retain the 64-particle budget. The committed local export above predates this placement correction; rerun its exported review after committing.
+- Ground cover increased from 900 to 1100 candidates per chunk, relaxed the patch rejection threshold and slightly increased tuft size. `2026-10-16T17-52-23-166Z-biome-review` passes; Woods and marsh show fuller clumps, but open lanes remain bare, Cloudwilds still crowds the view, and Candy Hell has sparse ground detail.
+- After the foliage change, repeated seed 81173 / 125-enemy Eclipse runs `2026-10-16T17-52-58-660Z-crowd-eclipse` and `2026-10-16T17-53-29-794Z-crowd-eclipse` measured frame p50/p95 14.90/48.40 ms and 14.88/54.58 ms; physics p95 122.58/135.67 ms. No reliable improvement is established; performance stays open.
+- These follow-up source changes are awaiting a clean commit and local export. Build 16 remains the latest public download; no new build is being published.
