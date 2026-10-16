@@ -78,7 +78,8 @@ static func run(g):
 			var point=mesh.global_transform*bounds.get_endpoint(corner)
 			minimum=minimum.min(point);maximum=maximum.max(point)
 	checks.authored_giant=maximum.y-minimum.y>40 and maximum.x-minimum.x>25
-	checks.baron_model=boss.node.get_meta("rig").solid.model.find_child("BaldHead",true,false)!=null and boss.node.get_meta("rig").solid.model.find_child("SuspendedRobe",true,false)!=null
+	var baron_model=boss.node.get_meta("rig").solid.model
+	checks.baron_model=baron_model.find_child("BaldHead",true,false)!=null and baron_model.find_child("BareTorso",true,false)!=null and baron_model.find_child("SuspendedRobe",true,false)==null and baron_model.find_child("Arm-1",true,false)!=null and baron_model.find_child("Leg-1",true,false)!=null
 	var vents=boss.node.get_meta("rig").find_children("BaronSteam*","GPUParticles3D",true,false)
 	checks.steam_budget=vents.size()==4 and vents.all(func(v):return v.emitting and v.amount==16 and v.draw_pass_1!=null)
 	g.player.position=Vector3(0,g.world.height_at(0,28),28);g.pitch=.3

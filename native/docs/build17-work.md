@@ -114,3 +114,9 @@ Minimap rotation used the wrong 2D sign for Godot's 3D camera convention. A regr
 
 - On committed source `5bec4ba240f2cb64f331db1e786f0a3af8a28488`, ran the same 125-enemy seed (81173), 1440×810 camera and 12-second measurement window twice in normal combat and once in Eclipse. Normal runs: `18-39-35-997Z-crowd-review` frame p50/p95 15.39/66.63 ms, physics p95 132.39 ms; `18-40-34-893Z-crowd-review` 15.83/68.68 ms and 128.83 ms. Eclipse: `18-40-08-861Z-crowd-eclipse` 15.18/62.88 ms and 124.73 ms. All runs retain 125 enemies and completed capture assertions.
 - Inspected the normal and Eclipse captures. The packed enemies and player remain visible; this is a deliberate stress scene, not a representative ordinary fight. Timings show poor p95 frame/physics tails despite mid-teen medians. These measurements establish the current issue but do not establish a performance fix or an acceptable target; performance remains open.
+
+## October 16 bare Baron revision
+
+- In response to the user's request, searched for a realistic licensed model and rebuilt the authored fallback without the robe. It now has one continuous bare torso with exposed arms and legs. No model was downloaded or purchased; candidate assets and their limits are documented in [baron-model.md](baron-model.md).
+- `2026-10-16T18-51-56-820Z-boss-review` passes Baron size, camera, collider, network reconstruction, four vents/64 particles and attack warnings. `2026-10-16T18-54-21-506Z-red-moon-review` passes the updated bare-model regression and combat behavior. Inspected `boss-baron.png` at normal 12 m camera settings tilted upward.
+- Source checks: `2026-10-16T18-52-32-758Z-check`, `2026-10-16T18-52-54-693Z-smoke` (118), `2026-10-16T18-53-11-418Z-integration` (71). The exported appearance and user acceptance are still pending. This is not a photoreal model.

@@ -50,7 +50,7 @@ Evidence and limits: [natural-world continuation](native/docs/natural-world-buil
 
 ## New request — Baron final boss
 
-- [ ] Replace the final boss with Baron Vladimir Harkonnen from the Dune films (the enormous bald floating character). Seek a photorealistic model if a suitable, licensed game-ready asset is available; record its source and reuse terms. Do not label a stylized fallback photorealistic.
+- [ ] Replace the final boss with Baron Vladimir Harkonnen from the Dune films (the enormous bald floating character). The user directed a realistic asset search, then a bare-model fallback if no suitable model is found. Current authored model is bare and stylized; no free photoreal Baron asset with verified reuse terms was found. Record the source and reuse terms of any replacement in [the asset report](native/docs/baron-model.md). Do not label the current model photorealistic.
 - [ ] Make him immense: the ordinary camera must require looking upward to see his whole silhouette. Retain very slow movement and deadly, clearly telegraphed ranged attacks.
 - [ ] Add visible steam venting from his body, with bounded particle cost and readable attack warnings.
 - [ ] Verify silhouette, targeting, collision, co-op appearance and steam performance in the exported game before marking complete.
