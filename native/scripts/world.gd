@@ -241,13 +241,14 @@ func make_chunk(cell: Vector2i):
 		if harvest_sites.any(func(site):return Vector2(site.x-p.x,site.z-p.z).length()<4): continue
 		p.y=height_at(p.x,p.z)
 		var biome=biome_at(p)
+		if biome==3 and i%2!=0: continue
 		var prop=Node3D.new();prop.position=p-root.position;root.add_child(prop)
 		# Cached organic meshes replace every old architectural prop variant.
 		var variant=local_rng.randi_range(0,2)
 		# Keep the Cloudwilds' large silhouettes in the distance rather than
 		# filling the ordinary camera with overlapping trunks and roots.
 		if biome==3 and variant==0 and i%6!=0: variant=local_rng.randi_range(1,2)
-		if biome==3 and variant==0 and landmarks.any(func(site):return Vector2(site.x-p.x,site.z-p.z).length()<30):
+		if biome==3 and variant==0 and landmarks.any(func(site):return Vector2(site.x-p.x,site.z-p.z).length()<55):
 			variant=local_rng.randi_range(1,2)
 		var key=Vector2i(biome,variant)
 		if not prop_meshes.has(key): prop_meshes[key]=NatureScenery.mesh(self,biome,variant)

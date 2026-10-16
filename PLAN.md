@@ -4,7 +4,7 @@ October 16, 2026 · **1.1.3 / Build 17 development checkpoint** · main branch.
 
 Use [AGENTS.md](AGENTS.md) and the [Godot workflow](native/docs/godot-workflow.md). Work directly, one agent. A checked item requires exercised behavior and evidence; historical completion marks are not verification.
 
-Build 17 is a local development checkpoint, not a public release. Keep Build 16 as the public download until every active plan item is verified. [Current changes and evidence](native/docs/build17-work.md), [draft release notes](native/docs/release-build17.md). Balance, visual acceptance, performance, human checks and the final early co-op desync investigation remain open. The Baron is a stylized fallback, not photorealistic.
+Build 17 is a local development checkpoint, not a public release. Keep Build 16 as the public download until every active plan item is verified. [Current changes and evidence](native/docs/build17-work.md), [draft release notes](native/docs/release-build17.md). Balance, encounter/art polish, performance, the final Baron asset/acceptance and the final early co-op desync investigation remain open. The Baron is a stylized fallback, not photorealistic.
 
 ## Hermes audit and eleven requested improvements
 
@@ -45,7 +45,7 @@ Evidence and limits: [natural-world continuation](native/docs/natural-world-buil
 1. **Real build balance:** measure weak/typical/strong weapon, turret, status, slam and flower builds against the final boss in solo and parties. The latest HP increase changes the DPS required for a five-minute fight. Automated contact/attack checks do not establish enjoyable duration or equal win rates.
 2. **Enemy and art polish:** finish distinct biome encounter behavior/spacing, original creepypasta-inspired references and remaining older visual assets. Preserve readable silhouettes, quiet ground and vivid attacks.
 3. **Performance:** measure dense scenery and late Eclipse crowds under comparable conditions. LAN correctness and a lower snapshot rate do not prove lower Internet latency or faster frame times.
-4. **Human feel/audio checks:** physical gamepad dash/deploy/menu feel; audition music transitions and Lithuanian speech during a full battle. Preserve the accurate PARANOIA-derived Eclipse provenance.
+4. [x] **Human feel/audio checks:** user accepted physical gamepad dash/deploy/menu feel and music/Lithuanian speech during a full battle on October 16. See [Build 17 work log](native/docs/build17-work.md). Preserve the accurate PARANOIA-derived Eclipse provenance.
 - [x] **Broader UI/stat history:** cleaned up enemy-kill summary copy and empty state; reran persisted last-run/death, trimming, damage-source and stat-total checks. Reviewed the 1440×810 last-run, stat, recap and mobility-icon captures. Evidence: `2026-10-16T17-41-02-559Z-progression-review` and `2026-10-16T17-41-15-807Z-feedback-review` in [the work log](native/docs/build17-work.md).
 
 ## New request — Baron final boss
@@ -57,11 +57,10 @@ Evidence and limits: [natural-world continuation](native/docs/natural-world-buil
 
 ## New request — finished ground and stronger colour
 
-- [ ] Ground still looks unfinished and the current colour pass does not meet the user's Hades reference. Reopen visual acceptance: screenshots passing technical checks are not art approval.
-- [x] First ground-cover implementation: clustered short grass with biome colours, wind and occasional pink tips; no collisions; paths, lava, portal approaches and steep slopes excluded. Further ferns/moss, composition and colour acceptance remain open. See continuation evidence.
-- [ ] Trial sparse low mist in marsh/cloud pockets only; compare against grass-only. Do not wash out saturated foliage, hide feet/loot or cover hazard circles. Use ember flecks and mineral/crystal fragments where grass would not fit.
-- [ ] Use chunked instancing and simple wind animation, distance limits and no foliage collision. Measure the same camera/seed before and after in normal combat and late Eclipse.
-- [ ] Review every biome from the gameplay camera at 720p/1080p: rich coloured midtones, separated shadows, hot highlights and vivid attacks. Record before/after frames; leave open if it still looks dull.
+- [x] Ground-cover/art acceptance: clustered short grass, moss, biome-coloured low growth, wind where appropriate and mineral/ember fragments; no collisions; paths, lava, portal approaches and steep slopes excluded. User accepted the matched 720p/1080p six-biome pass. See [ground-art research](native/docs/ground-art-research.md).
+- [x] Trial sparse low mist in marsh/cloud pockets only; compare against grass-only. Do not wash out saturated foliage, hide feet/loot or cover hazard circles. Use ember flecks and mineral/crystal fragments where grass would not fit.
+- [x] Use chunked instancing and simple wind animation, distance limits and no foliage collision. Measure the same camera/seed before and after in normal combat and late Eclipse; the noisy p95/physics tails remain tracked under Performance and no improvement is claimed.
+- [x] Review every biome from the gameplay camera at 720p/1080p: rich coloured midtones, separated shadows, hot highlights and vivid attacks. Record before/after frames. User accepted the refreshed views on October 16; see [matched-resolution evidence](native/docs/ground-art-research.md#october-16-matched-resolution-review).
 
 Research and implementation choices: [ground-art research](native/docs/ground-art-research.md).
 

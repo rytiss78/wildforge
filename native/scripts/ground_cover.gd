@@ -55,9 +55,9 @@ static func build(world,root: Node3D,cell: Vector2i,rng: RandomNumberGenerator):
 		if absf(world.height_at(p.x+.6,p.z)-p.y)>.55 or absf(world.height_at(p.x,p.z+.6)-p.y)>.55: continue
 		if biome==2 and i%2!=0: continue
 		if biome==5 and i%2!=0: continue
-		var scale_value=rng.randf_range(.78,1.28)
-		var basis=Basis(Vector3.UP,rng.randf()*TAU).scaled(Vector3.ONE*scale_value)
 		var kind=2 if biome in [2,4,5] else 1 if biome in [1,3] else 0
+		var scale_value=rng.randf_range(1.15,1.75) if kind==2 else rng.randf_range(.78,1.28)
+		var basis=Basis(Vector3.UP,rng.randf()*TAU).scaled(Vector3.ONE*scale_value)
 		if not groups.has(kind): groups[kind]={"transforms":[],"colors":[]}
 		groups[kind].transforms.append(Transform3D(basis,p-root.position))
 		var color=COLORS[biome].lightened(rng.randf_range(0,.15))
