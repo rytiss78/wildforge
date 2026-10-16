@@ -4,7 +4,7 @@ October 16, 2026 · **1.1.3 / Build 17 development checkpoint** · main branch.
 
 Use [AGENTS.md](AGENTS.md) and the [Godot workflow](native/docs/godot-workflow.md). Work directly, one agent. A checked item requires exercised behavior and evidence; historical completion marks are not verification.
 
-Build 17 is a local development checkpoint, not a public release. Keep Build 16 as the public download until every active plan item is verified. [Current changes and evidence](native/docs/build17-work.md), [draft release notes](native/docs/release-build17.md). Balance, encounter/art polish, performance and the final early co-op desync investigation remain open. The accepted Baron is a stylized fallback, not photorealistic.
+Build 17 is a local development checkpoint, not a public release. Keep Build 16 as the public download until every active plan item is verified. [Current changes and evidence](native/docs/build17-work.md), [draft release notes](native/docs/release-build17.md). Real-fight balance and the final early co-op desync investigation remain open. Comparable performance measurements are complete but show a high physics tail; see the work log. The accepted Baron is a stylized fallback, not photorealistic.
 
 ## Hermes audit and eleven requested improvements
 
@@ -43,8 +43,8 @@ Evidence and limits: [natural-world continuation](native/docs/natural-world-buil
 [Latest continuation evidence](native/docs/build16-continuation.md): last-run history fixed, crowd steering optimized, and controlled DPS measurements added. Full-fight balance and visual acceptance remain open.
 
 1. **Real build balance:** measure weak/typical/strong weapon, turret, status, slam and flower builds against the final boss in solo and parties. The latest HP increase changes the DPS required for a five-minute fight. Automated contact/attack checks do not establish enjoyable duration or equal win rates.
-2. **Enemy and art polish:** finish distinct biome encounter behavior/spacing, original creepypasta-inspired references and remaining older visual assets. Preserve readable silhouettes, quiet ground and vivid attacks.
-3. **Performance:** measure dense scenery and late Eclipse crowds under comparable conditions. LAN correctness and a lower snapshot rate do not prove lower Internet latency or faster frame times.
+2. [x] **Enemy and art polish:** reviewed original horror references, distinct silhouettes, legacy-asset replacement and all six biome encounter patterns. Added per-biome movement/telegraph regressions. Full-run pacing remains part of the open real-fight balance item. Evidence: [enemy and encounter review](native/docs/enemy-encounter-review.md).
+3. [x] **Performance measurement:** comparable normal and late-Eclipse 125-enemy runs at the same seed/camera are recorded below. Frame and physics p95 tails remain high; this closes the measurement request, not a performance improvement claim. LAN correctness and a lower snapshot rate do not prove lower Internet latency or faster frame times.
 4. [x] **Human feel/audio checks:** user accepted physical gamepad dash/deploy/menu feel and music/Lithuanian speech during a full battle on October 16. See [Build 17 work log](native/docs/build17-work.md). Preserve the accurate PARANOIA-derived Eclipse provenance.
 - [x] **Broader UI/stat history:** cleaned up enemy-kill summary copy and empty state; reran persisted last-run/death, trimming, damage-source and stat-total checks. Reviewed the 1440×810 last-run, stat, recap and mobility-icon captures. Evidence: `2026-10-16T17-41-02-559Z-progression-review` and `2026-10-16T17-41-15-807Z-feedback-review` in [the work log](native/docs/build17-work.md).
 

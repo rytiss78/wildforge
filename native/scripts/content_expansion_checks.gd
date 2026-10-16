@@ -55,6 +55,27 @@ static func run(game) -> Dictionary:
 		await game.get_tree().process_frame
 	checks.weapon_branches=exercised==44
 	game.equipped=originals;game.avatar.finish_melee();game.avatar.sync_equipment(game.equipped)
+	# Keep ranged encounter rings and telegraph shapes distinct by biome.
+	var tactics=preload("res://scripts/combat_tactics.gd")
+	var preferred=[12.0,10.0,17.0,14.0,11.0,16.0]
+	var flank=[.2,.45,.08,.5,.3,.6]
+	var approach=true;var retreats=true;var rings=true;var patterns=true
+	for biome in range(6):
+		var mover={"biome":biome,"net_id":biome+1}
+		var forward=Vector3.FORWARD
+		var closing=tactics.ranged_movement(mover,forward,preferred[biome]+4,true)
+		var backing=tactics.ranged_movement(mover,forward,preferred[biome]-4,true)
+		var circling=tactics.ranged_movement(mover,forward,preferred[biome],true)
+		approach=approach and closing.dot(forward)>.7
+		retreats=retreats and backing.dot(forward)<-.7
+		rings=rings and absf(circling.dot(forward))<.001 and is_equal_approx(circling.length(),flank[biome])
+		game.clear_entities();game.spawn_enemy(4);var ranged=game.enemies[-1];ranged.biome=biome;ranged.attack=0
+		game.hazards.clear();tactics.ranged_attack(game,ranged,game.player.position)
+		var expected_marks=3 if biome in [0,3] else 2 if biome in [2,5] else 1
+		var expected_style=["roots","toxic","meteor","storm","lava","void"][biome]
+		patterns=patterns and game.hazards.size()==expected_marks and game.hazards.all(func(h):return h.style==expected_style and h.damage>0 and h.life>=1.05)
+		game.clear_entities()
+	checks.biome_ranged_approach=approach;checks.biome_ranged_retreat=retreats;checks.biome_distinct_firing_rings=rings;checks.distinct_biome_telegraphs=patterns
 	# A sheet reviews both conditional object/glyph combinations and behavioral weapon badges.
 	if DisplayServer.get_name()!="headless":
 		var panel=PanelContainer.new();panel.position=Vector2(80,35);panel.size=Vector2(1260,730);game.hud.add_child(panel)
