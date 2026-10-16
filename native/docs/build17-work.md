@@ -1,6 +1,6 @@
 # Build 17 work and evidence
 
-Not built or published yet. Build 16 remains the release.
+Build 17 is exported from commit `ef416c16e8f0173327cf2708d66f6d4ac08a8fcc`. GitHub publication and the final downloadable package are pending.
 
 ## Contact attack repair
 
@@ -9,7 +9,7 @@ Enemies previously set an unused `attack_windup` metadata value and damaged imme
 - Reproduced: `.build-staging/agent-workflow/2026-10-15T11-12-16-927Z-integration/result.json` (warning, dodge and freeze regressions fail).
 - Passing: `2026-10-15T11-13-48-351Z-integration/result.json`; parse/import/JS `2026-10-15T11-13-24-363Z-check/result.json`.
 - Rendered: `2026-10-15T11-15-41-990Z-combat-review/`, including inspected `contact-warning.png` under its isolated profile. Initial capture needed two rendered frames after creating the fixture; retained original.
-- Export and real two-process warning validation still pending.
+- Export and real two-process warning validation are recorded below.
 
 ## Performance baseline
 
@@ -25,7 +25,7 @@ Validation: `2026-10-15T11-20-04-515Z-check`, `2026-10-15T11-20-27-697Z-integrat
 
 Separate authored GLB, heavy suspended robe, bald face, 42 m reference height, very slow movement and four steam vents (64 particles total). Original Observatory asset retained. [Source/provenance and unresolved photorealism](baron-model.md).
 
-Passing source checks: `2026-10-15T11-26-26-512Z-check`, `2026-10-15T11-27-07-564Z-red-moon-review` (portal, immense silhouette, four deadly patterns, real damage/dodge, weapon targeting, local network reconstruction, steam budget and permanent Eclipse). Silhouette and attack capture inspected; no script errors or warnings. Exported appearance and two-process review remain pending.
+Passing source checks: `2026-10-15T11-26-26-512Z-check`, `2026-10-15T11-27-07-564Z-red-moon-review` (portal, immense silhouette, four deadly patterns, real damage/dodge, weapon targeting, local network reconstruction, steam budget and permanent Eclipse). Silhouette and attack capture inspected; no script errors or warnings. Exported appearance was reviewed below. The Build 17 shared-session review failed; see the final checkpoint notes.
 
 ## Ground and biome pass
 
@@ -47,9 +47,13 @@ Minimap rotation used the wrong 2D sign for Godot's 3D camera convention. A regr
 
 - `2026-10-16T16-53-11-738Z-check`: JavaScript tests, Godot import and game-script parse pass. The Windows timeout test had stalled because `taskkill` could not terminate its child in this session. `scripts/agent-workflow.mjs` now falls back to killing the direct child handle when process-tree termination fails; the targeted timeout test and complete `check` both pass.
 - `2026-10-16T17-00-43-714Z-smoke`: 118 startup assertions pass. `2026-10-16T17-00-57-822Z-integration`: 71 gameplay assertions pass.
-- `2026-10-16T16-53-28-692Z-red-moon-review`: all Baron, attack, warning, damage/dodge, targeting, steam-budget and Eclipse assertions pass. Inspected the 1440×810 silhouette, attack and impact captures. This remains source evidence: exported appearance and the required two-process exported review are not verified. The initial same-day attempt (`2026-10-16T16-45-00-049Z-red-moon-review`) emitted only the startup banner; its cause was not established, and the later full review completed successfully.
+- `2026-10-16T16-53-28-692Z-red-moon-review`: all Baron, attack, warning, damage/dodge, targeting, steam-budget and Eclipse assertions pass. Inspected the 1440×810 silhouette, attack and impact captures. The initial same-day attempt (`2026-10-16T16-45-00-049Z-red-moon-review`) emitted only the startup banner; its cause was not established, and the later full review completed successfully.
 - `2026-10-16T16-54-10-283Z-biome-review`: all biome, streaming, scattering and mist assertions pass; inspected woods, marsh and cloudwilds with effects. The open areas still look dark and sparse, so this does not close the user's ground-art/color acceptance request.
 - `2026-10-16T17-02-01-075Z-combat-review`: contact warning and minimap camera alignment pass; inspected four camera headings and the warning capture. Render benchmark: 11.55 ms p50, 16.52 ms p95 at 1440×810 with 71 enemies on an AMD Radeon RX 9060 XT; this fixture is not a late-Eclipse performance claim.
 - `2026-10-16T17-02-42-511Z-balance-review`: 15 controlled DPS estimates pass. The 24-offensive-card solo projections range from 4.7 minutes for weapons to 20.2 minutes for slam-only; stationary-target uptime assumptions exclude dodging, movement, deaths and realistic upgrade availability. Full-fight balance remains open.
 - Repeated seed 81173, 125-enemy Eclipse captures: `2026-10-16T17-03-25-900Z-crowd-eclipse` and `2026-10-16T17-03-59-022Z-crowd-eclipse`. Frame p50/p95 were 15.33/49.50 ms and 14.90/49.59 ms; physics p95 was 117.44/118.95 ms. Frame timing repeated closely, while physics still has large tail stalls. This does not close performance work.
-- No script errors, parse errors, compile errors or general warnings appeared in the review logs. No new executable has been exported yet; the clean committed build is the next step.
+- `2026-10-16T17-06-29-142Z-build`: clean committed Build 17 export from `ef416c16e8f0173327cf2708d66f6d4ac08a8fcc`; exported startup smoke passes 118 checks. Executable, pack and build manifest hashes are in that report.
+- `2026-10-16T17-07-06-311Z-release-review`: exported UI at 1280×720 and 1920×1080, forge/style checks, all eight bosses and six biomes pass. Inspected menu, HUD, reward cards and Baron capture; no clipping observed in those views.
+- `2026-10-16T17-09-22-042Z-hermes-review`: exported Baron/attack, hunt and Eclipse feature assertions pass; this single-process review does not substitute for shared-session co-op.
+- Shared-session review remains **unverified** for this checkpoint. Packaged headless host/client instances each timed out without emitting a review result (`2026-10-16T17-09-33-275Z-shared-review`). The source review (`2026-10-16T17-12-04-091Z-shared-review`) exposed empty host-member/chest fixture arrays and failed. This is left open for the later co-op investigation; do not treat it as an early-game desync reproduction or resolution. Prior Build 16 and October 15 source evidence does not verify the new exported Build 17 package.
+- Human gamepad/audio checks, art acceptance, full-fight balance and late-Eclipse performance remain open.

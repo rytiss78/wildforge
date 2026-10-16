@@ -21,7 +21,7 @@ Unzip `Wildforge-1.1.3-Windows.zip` and keep the executable, pack and build mani
 - Contact warning and camera-relative minimap: `.build-staging/agent-workflow/2026-10-16T17-02-01-075Z-combat-review`; inspected four camera headings and the warning capture.
 - Controlled balance estimates: `.build-staging/agent-workflow/2026-10-16T17-02-42-511Z-balance-review`. These use stationary targets and perfect attack uptime; real fight duration remains open.
 - Repeated late-Eclipse measurement (seed 81173, 125 enemies): `.build-staging/agent-workflow/2026-10-16T17-03-25-900Z-crowd-eclipse` and `.build-staging/agent-workflow/2026-10-16T17-03-59-022Z-crowd-eclipse`. Frame p50/p95 repeated at 15.33/49.50 and 14.90/49.59 ms; physics p95 stayed high at 117.44/118.95 ms.
-- The clean exported build's smoke, rendered release review, packaged co-op and checksums accompany the downloadable archive and its `build-info.json` manifest.
+- The clean exported build's smoke and rendered release review accompany the downloadable archive and its `build-info.json` manifest. The packaged shared-session co-op review timed out, and the source shared review failed on empty host-member/chest fixture arrays; these checks remain open in [Build 17 work and evidence](build17-work.md). This is not a reproduction or resolution of the early-game desynchronization.
 
 ## Still open in PLAN.md
 
