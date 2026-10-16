@@ -24,10 +24,12 @@ vec3 biome_paint(float b,vec2 uv) {
    float facet=smoothstep(.012,.28,value);
    vec3 slate=mix(vec3(.035,.052,.065),vec3(.12,.16,.18),facet);
    float islands=sin(p.x*.14+sin(p.z*.09)*2.0)+cos(p.z*.18+p.x*.03);
-   float moss=smoothstep(-.3,1.3,islands);
+   // Give the starting woods a readable green floor between the grass clumps.
+   // The broad bands keep footpaths and the procedural stone facets visible.
+   float moss=smoothstep(-.6,.75,islands);
    float detail=texture(t1,p.xz*.38).g;
-   vec3 green=mix(vec3(.045,.12,.075),vec3(.10,.25,.14),detail);
-   return mix(slate,green,moss*.84);
+   vec3 green=mix(vec3(.055,.15,.08),vec3(.12,.30,.16),detail);
+   return mix(slate,green,moss*.90);
  }
  float wash=sin(uv.x*.57+sin(uv.y*.8))*.025+cos(uv.y*.66)*.02;
  float grain=dot(paint,vec3(.299,.587,.114));

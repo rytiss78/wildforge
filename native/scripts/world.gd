@@ -244,10 +244,15 @@ func make_chunk(cell: Vector2i):
 		var prop=Node3D.new();prop.position=p-root.position;root.add_child(prop)
 		# Cached organic meshes replace every old architectural prop variant.
 		var variant=local_rng.randi_range(0,2)
+		# Keep the Cloudwilds' large silhouettes in the distance rather than
+		# filling the ordinary camera with overlapping trunks and roots.
+		if biome==3 and variant==0 and i%6!=0: variant=local_rng.randi_range(1,2)
+		if biome==3 and variant==0 and landmarks.any(func(site):return Vector2(site.x-p.x,site.z-p.z).length()<30):
+			variant=local_rng.randi_range(1,2)
 		var key=Vector2i(biome,variant)
 		if not prop_meshes.has(key): prop_meshes[key]=NatureScenery.mesh(self,biome,variant)
 		if not scenery_groups.has(key): scenery_groups[key]=[]
-		var scale_value=local_rng.randf_range(.65,1.15)
+		var scale_value=local_rng.randf_range(.65,1.15) if biome!=3 else local_rng.randf_range(.55,.8)
 		prop.rotation.y=local_rng.randf()*TAU
 		scenery_groups[key].append(prop.transform.scaled_local(Vector3.ONE*scale_value))
 		NatureScenery.collision(prop,biome,variant,scale_value)

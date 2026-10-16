@@ -32,9 +32,11 @@ static func build(world: Node3D,biome: int,p: Vector3):
 		var growth=Node3D.new();root.add_child(growth)
 		var offset=Vector3((i-1)*11,0,-18-abs(i-1)*5)
 		offset.y=world.height_at(p.x+offset.x,p.z+offset.z)-p.y;growth.position=offset
-		var scale_value=2.25 if i==1 else 1.1
+		# Cloudwilds' willow canopy framed the whole view from normal play distance.
+		var scale_value=(.95 if biome==3 else 2.25) if i==1 else 1.1
+		var growth_variant=(1 if biome==3 and i==0 else 0 if i==1 else i)
 		var plant=MeshInstance3D.new();plant.name="AncientGrowth"
-		plant.mesh=NatureScenery.mesh(world,biome,0 if i==1 else i)
+		plant.mesh=NatureScenery.mesh(world,biome,growth_variant)
 		plant.material_override=world.scenery_material;plant.scale=Vector3.ONE*scale_value;plant.rotation.y=i*1.7;growth.add_child(plant)
-		NatureScenery.collision(growth,biome,0 if i==1 else i,scale_value)
+		NatureScenery.collision(growth,biome,growth_variant,scale_value)
 		NatureScenery.light(growth,biome,3.0,true)
