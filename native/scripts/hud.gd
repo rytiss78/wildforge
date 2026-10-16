@@ -535,7 +535,7 @@ func update(delta: float):
 		if is_instance_valid(pot.node): map_view.interactables.append({"position":pot.node.position,"kind":"pot"})
 	for drop in game.consumables:
 		if is_instance_valid(drop.node): map_view.interactables.append({"position":drop.node.position,"kind":"potion"})
-	map_view.camera_yaw=game.yaw
+	map_view.camera_yaw=atan2(game.camera.global_basis.z.x,game.camera.global_basis.z.z)
 	map_view.party=game.coop.members.values().filter(func(m):return m.has("position")).map(func(m):return CoopSession.vector(m.position))
 	map_view.pings=game.update.pings.map(func(p):return p.position)
 	map_view.hero_position = game.player.position

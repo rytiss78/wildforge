@@ -1,8 +1,10 @@
 # Wildforge — active plan
 
-October 15, 2026 · **1.1.2 / Build 16 checkpoint** · main branch.
+October 16, 2026 · **1.1.3 / Build 17 release checkpoint** · main branch.
 
 Use [AGENTS.md](AGENTS.md) and the [Godot workflow](native/docs/godot-workflow.md). Work directly, one agent. A checked item requires exercised behavior and evidence; historical completion marks are not verification.
+
+Build 17 is the current release checkpoint. [Current changes and evidence](native/docs/build17-work.md), [release notes](native/docs/release-build17.md). Remaining balance, art acceptance, performance and early co-op desync work stays open. The Baron is a stylized fallback, not photorealistic.
 
 ## Hermes audit and eleven requested improvements
 

@@ -4,13 +4,13 @@
 
 A vivid 3D survival game where a duck, a loaf of bread and an angry granny are perfectly reasonable hero choices. Explore strange places, grab unpredictable upgrades and become outrageously overpowered before the monsters catch you.
 
-**[Download the Windows build](https://github.com/rytiss78/wildforge/releases/tag/build-16)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
+**[Download the Windows build](https://github.com/rytiss78/wildforge/releases/tag/build-17)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
 
-**1.1.2 — Build 16 checkpoint.** Shared co-op XP/levels and chest choices, combat-targetable magnet defenses, distant hunt targets, corrected HUD/weather/audio, natural groves and a first ground-cover pass. Last-run reports now survive high-score trimming. [Release details and unfinished work](native/docs/release-build16.md).
+**1.1.3 — Build 17 checkpoint.** Corrected camera-relative minimap rotation, immense stylized Baron with steam, biome foliage/moss and low mist, and dodgeable enemy contact warnings. [Release details and unfinished work](native/docs/release-build17.md).
 
-The third map leads to the Red Moon: a small arena with a 42-metre skeletal boss, extremely slow movement and deadly ranged attacks. Defeat it to begin an endless Eclipse. The latest requested boss-health increase also applies here; battle duration still needs real build playtesting. Glowing natural groves replace decorative buildings. The requested Baron Harkonnen boss replacement, low mist and further Hades-inspired art polish remain planned.
+The third map leads to the Red Moon, where an immense, slow Baron waits with four visible steam vents and deadly, telegraphed attacks. He is a stylized original fallback, not a photorealistic or officially licensed film model. Defeat him to begin an endless Eclipse. The latest boss-health increase needs full-fight balance testing. Natural groves replace decorative buildings; further ground/color acceptance, controller feel, full-battle audio review and late-Eclipse performance work remain open.
 
-For the public download, unpack all files together and run `Wildforge.exe`. Source development uses `node scripts/native.mjs`. Build 16 changes the shared-drop protocol, so all co-op players need the same version. Its local export manifest records the committed source and executable/pack hashes.
+For the public download, unpack all files together and run `Wildforge.exe`. Source development uses `node scripts/native.mjs`. Build 17 changes co-op contact-warning replication, so all co-op players need the same version. Its export manifest records the committed source and executable/pack hashes.
 
 ![First natural ground-cover pass](docs/screenshots/build16/woods.png)
 
@@ -64,11 +64,11 @@ For Windows packaging, place the console editor at `tools/godot/Godot_v4.7.2-sta
 ```powershell
 node scripts/native.mjs
 ./scripts/package-native.ps1
-./scripts/package-release.ps1 -BuildNumber 14 -BuildDirectory build/red-moon-1.1.1-build14 -SourceCommit HEAD
+./scripts/package-release.ps1 -BuildNumber 17 -BuildDirectory build/baron-1.1.3-build17 -SourceCommit HEAD
 ./scripts/test-coop.ps1 -Packaged -RenderedClient
 ```
 
-Published downloads use sequential build numbers. This release is `Wildforge 1.1.1 — Build 13`, tag `build-13`, archive `Wildforge-1.1.1-Windows.zip`. Releases use the normal GitHub release flag; the game remains a development alpha. Packaging includes `build-info.json` and a version-specific checksum. Pass `-BuildDirectory` and its exact `-SourceCommit` when packaging a verified staging directory.
+Published downloads use sequential build numbers. This release is `Wildforge 1.1.3 — Build 17`, tag `build-17`, archive `Wildforge-1.1.3-Windows.zip`. The game remains a development alpha. Packaging includes `build-info.json` and a version-specific SHA-256 checksum. Pass `-BuildDirectory` and its exact `-SourceCommit` when packaging a verified staging directory.
 
 WASD / left stick moves; mouse / right stick looks; Space / A jumps; Shift / RT dashes; Ctrl / B slams; E / X interacts; B / Y opens your build; Escape / Menu pauses. Weapons attack automatically. Florist plants while moving.
 

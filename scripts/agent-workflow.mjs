@@ -35,7 +35,10 @@ export async function runStep(exe, args, {cwd, env, timeoutMs, logPath}) {
     timedOut = true;
     // Only the process tree created by this invocation is eligible for termination.
     if (child.pid && process.platform === 'win32') {
-      spawnSync(join(process.env.SystemRoot || 'C:/Windows', 'System32/taskkill.exe'), ['/PID', String(child.pid), '/T', '/F'], {windowsHide: true, timeout: 10000});
+      const killedTree=spawnSync(join(process.env.SystemRoot || 'C:/Windows', 'System32/taskkill.exe'), ['/PID', String(child.pid), '/T', '/F'], {windowsHide: true, timeout: 10000});
+      // Sandboxed Windows sessions can deny taskkill access. Fall back to the
+      // child handle so a timed-out direct child cannot keep runStep waiting.
+      if (killedTree.error || killedTree.status !== 0) child.kill();
     } else child.kill('SIGKILL');
   }, timeoutMs);
   const code = await new Promise(resolveExit => {

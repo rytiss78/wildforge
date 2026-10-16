@@ -72,4 +72,18 @@ static func run(game):
 	await game.get_tree().process_frame
 	await RenderingServer.frame_post_draw
 	result.contact_warning_saved=game.get_viewport().get_texture().get_image().save_png("user://contact-warning.png")==OK and attacker.get("contact_windup",0)>0
-	print("COMBAT_REVIEW "+JSON.stringify(result));game.get_tree().quit(0 if result.contact_warning_saved else 1)
+	result.minimap_camera_alignment=true
+	for degrees in [0,90,180,270]:
+		var heading=deg_to_rad(degrees)
+		game.yaw=heading+.3 # The target orbit differs while the camera catches up.
+		game.camera.position=game.player.position+Vector3(0,8,12).rotated(Vector3.UP,heading)
+		game.camera.look_at(game.player.position+Vector3.UP)
+		game.hud.update(0)
+		var map=game.hud.map_view
+		var ahead=map.point(game.player.position-game.camera.global_basis.z*30,100)-map.size*.5
+		var right=map.point(game.player.position+game.camera.global_basis.x*30,100)-map.size*.5
+		result.minimap_camera_alignment=result.minimap_camera_alignment and absf(ahead.x)<.01 and ahead.y<0 and right.x>0 and absf(right.y)<.01
+		await game.get_tree().process_frame
+		await RenderingServer.frame_post_draw
+		result.minimap_camera_alignment=result.minimap_camera_alignment and game.get_viewport().get_texture().get_image().save_png("user://minimap-%d.png" % degrees)==OK
+	print("COMBAT_REVIEW "+JSON.stringify(result));game.get_tree().quit(0 if result.contact_warning_saved and result.minimap_camera_alignment else 1)

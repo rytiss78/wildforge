@@ -32,7 +32,7 @@ func configure(seed_value: int,realm: int):
 func point(p: Vector3,radius: float) -> Vector2:
 	# Rotate the world around the player so their symbol always stays centered.
 	var offset=Vector2(p.x-hero_position.x,p.z-hero_position.z)
-	return size*.5+offset.rotated(-camera_yaw)*radius/map_extent
+	return size*.5+offset.rotated(camera_yaw)*radius/map_extent
 
 func _draw():
 	var center = size*.5
@@ -41,7 +41,7 @@ func _draw():
 		# Translate and rotate the already-cached world texture with the same
 		# transform applied to landmarks, so the hero stays at the map center.
 		var player_offset=Vector2(hero_position.x,hero_position.z)*radius/map_extent
-		draw_set_transform(center-player_offset.rotated(-camera_yaw),-camera_yaw,Vector2.ONE)
+		draw_set_transform(center-player_offset.rotated(camera_yaw),camera_yaw,Vector2.ONE)
 		draw_texture_rect(terrain,Rect2(-Vector2.ONE*radius,Vector2.ONE*radius*2),false)
 		draw_set_transform(Vector2.ZERO,0.0,Vector2.ONE)
 	for entry in interactables:
@@ -70,7 +70,7 @@ func _draw():
 		draw_line(p+Vector2(-4,-1),p+Vector2(4,-1),Color("574536"),1)
 		draw_rect(Rect2(p-Vector2(1,1),Vector2(2,4)),Color("fff5da"))
 	var hp = point(hero_position,radius)
-	# Up now means the hero's current facing direction, not geographic north.
+	# Up now means the camera's current viewing direction, not geographic north.
 	draw_colored_polygon(PackedVector2Array([hp+Vector2(0,-7),hp+Vector2(-5,5),hp+Vector2(5,5)]),Color("fff0b5"))
 	for member in party: draw_circle(point(member,radius),3,Color("398ace"))
 	for ping in pings: draw_arc(point(ping,radius),5,0,TAU,12,Color("d55746"),2,true)
