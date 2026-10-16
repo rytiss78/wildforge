@@ -185,6 +185,6 @@ Plan: <item status and evidence link updated>
 
 Commit source, data, assets, version files and workflow code before `build`. Only documentation may remain dirty. The wrapper checks before and after export, verifies the executable-reported version, and writes `build-info.json` containing HEAD and SHA-256 hashes. Packaging verifies these values rather than accepting an arbitrary source label.
 
-To repeat the new feature checks against the exported executable, set `$env:WILDFORGE_TEST_EXE` to its absolute path, then run `hermes-review` and `shared-review` sequentially. Clear this variable afterward with `Remove-Item Env:WILDFORGE_TEST_EXE`. `capture-ui` uses source; `release-review` uses the latest build at 720p/1080p.
+To repeat the new feature checks against the exported game, set `$env:WILDFORGE_TEST_EXE` to the absolute path of its companion `Wildforge.console.exe`, then run `hermes-review` and `shared-review` sequentially. The console executable is needed for headless two-process checks; keep it beside the release `.exe` and `.pck`. Clear this variable afterward with `Remove-Item Env:WILDFORGE_TEST_EXE`. `capture-ui` uses source; `release-review` uses the latest build at 720p/1080p.
 
 The integration reaction fixture now clears world sentries before creating its two test enemies. Its wet-chain assertion is unchanged. The Red Moon expected HP changed from 90,000 to 360,000 because the later eleven-point request explicitly quadrupled boss health; the runtime arena check independently verifies that value. Five-minute duration remains unproved.

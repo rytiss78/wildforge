@@ -4,13 +4,13 @@
 
 A vivid 3D survival game where a duck, a loaf of bread and an angry granny are perfectly reasonable hero choices. Explore strange places, grab unpredictable upgrades and become outrageously overpowered before the monsters catch you.
 
-**[Download the Windows build](https://github.com/rytiss78/wildforge/releases/tag/build-17)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
+**[Download the latest public Windows build](https://github.com/rytiss78/wildforge/releases/tag/build-16)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
 
-**1.1.3 — Build 17 checkpoint.** Corrected camera-relative minimap rotation, immense stylized Baron with steam, biome foliage/moss and low mist, and dodgeable enemy contact warnings. [Release details and unfinished work](native/docs/release-build17.md).
+**Build 17 is in development; no new public build is available yet.** Its current work includes corrected camera-relative minimap rotation, the immense stylized Baron with steam, biome foliage/moss and low mist, and dodgeable enemy contact warnings. [Development evidence and remaining plan](native/docs/build17-work.md).
 
 The third map leads to the Red Moon, where an immense, slow Baron waits with four visible steam vents and deadly, telegraphed attacks. He is a stylized original fallback, not a photorealistic or officially licensed film model. Defeat him to begin an endless Eclipse. The latest boss-health increase needs full-fight balance testing. Natural groves replace decorative buildings; further ground/color acceptance, controller feel, full-battle audio review and late-Eclipse performance work remain open.
 
-For the public download, unpack all files together and run `Wildforge.exe`. Source development uses `node scripts/native.mjs`. Build 17 changes co-op contact-warning replication, so all co-op players need the same version. Its export manifest records the committed source and executable/pack hashes.
+For the public download, unpack all files together and run `Wildforge.exe`. Source development uses `node scripts/native.mjs`. Co-op players need the same game version. Each verified export includes a manifest of its source commit and executable/pack hashes.
 
 ![First natural ground-cover pass](docs/screenshots/build16/woods.png)
 

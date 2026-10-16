@@ -1,10 +1,10 @@
 # Wildforge — active plan
 
-October 16, 2026 · **1.1.3 / Build 17 release checkpoint** · main branch.
+October 16, 2026 · **1.1.3 / Build 17 development checkpoint** · main branch.
 
 Use [AGENTS.md](AGENTS.md) and the [Godot workflow](native/docs/godot-workflow.md). Work directly, one agent. A checked item requires exercised behavior and evidence; historical completion marks are not verification.
 
-Build 17 is the current release checkpoint. [Current changes and evidence](native/docs/build17-work.md), [release notes](native/docs/release-build17.md). Remaining balance, art acceptance, performance and early co-op desync work stays open. The Baron is a stylized fallback, not photorealistic.
+Build 17 is a local development checkpoint, not a public release. Keep Build 16 as the public download until every active plan item is verified. [Current changes and evidence](native/docs/build17-work.md), [draft release notes](native/docs/release-build17.md). Balance, visual acceptance, performance, human checks and the final early co-op desync investigation remain open. The Baron is a stylized fallback, not photorealistic.
 
 ## Hermes audit and eleven requested improvements
 
@@ -46,7 +46,7 @@ Evidence and limits: [natural-world continuation](native/docs/natural-world-buil
 2. **Enemy and art polish:** finish distinct biome encounter behavior/spacing, original creepypasta-inspired references and remaining older visual assets. Preserve readable silhouettes, quiet ground and vivid attacks.
 3. **Performance:** measure dense scenery and late Eclipse crowds under comparable conditions. LAN correctness and a lower snapshot rate do not prove lower Internet latency or faster frame times.
 4. **Human feel/audio checks:** physical gamepad dash/deploy/menu feel; audition music transitions and Lithuanian speech during a full battle. Preserve the accurate PARANOIA-derived Eclipse provenance.
-5. **Broader UI/stat history:** finish copy cleanup and reconcile last-run/death statistics. Keep semantic skill icons under visual review; different hashes are not proof of useful artwork.
+- [x] **Broader UI/stat history:** cleaned up enemy-kill summary copy and empty state; reran persisted last-run/death, trimming, damage-source and stat-total checks. Reviewed the 1440×810 last-run, stat, recap and mobility-icon captures. Evidence: `2026-10-16T17-41-02-559Z-progression-review` and `2026-10-16T17-41-15-807Z-feedback-review` in [the work log](native/docs/build17-work.md).
 
 ## New request — Baron final boss
 

@@ -1,6 +1,6 @@
 # Build 17 work and evidence
 
-Build 17 is exported from commit `ef416c16e8f0173327cf2708d66f6d4ac08a8fcc`. GitHub publication and the final downloadable package are pending.
+Build 17 is a local checkpoint; publication is on hold until the active plan is complete. The newest clean export is from `f0f850e4774f62ee2562e5d9e6876b34cef79797`. Build 16 remains the public download.
 
 ## Contact attack repair
 
@@ -25,7 +25,7 @@ Validation: `2026-10-15T11-20-04-515Z-check`, `2026-10-15T11-20-27-697Z-integrat
 
 Separate authored GLB, heavy suspended robe, bald face, 42 m reference height, very slow movement and four steam vents (64 particles total). Original Observatory asset retained. [Source/provenance and unresolved photorealism](baron-model.md).
 
-Passing source checks: `2026-10-15T11-26-26-512Z-check`, `2026-10-15T11-27-07-564Z-red-moon-review` (portal, immense silhouette, four deadly patterns, real damage/dodge, weapon targeting, local network reconstruction, steam budget and permanent Eclipse). Silhouette and attack capture inspected; no script errors or warnings. Exported appearance was reviewed below. The Build 17 shared-session review failed; see the final checkpoint notes.
+Passing source checks: `2026-10-15T11-26-26-512Z-check`, `2026-10-15T11-27-07-564Z-red-moon-review` (portal, immense silhouette, four deadly patterns, real damage/dodge, weapon targeting, local network reconstruction, steam budget and permanent Eclipse). Silhouette and attack capture inspected; no script errors or warnings. Exported appearance was reviewed below.
 
 ## Ground and biome pass
 
@@ -55,5 +55,17 @@ Minimap rotation used the wrong 2D sign for Godot's 3D camera convention. A regr
 - `2026-10-16T17-06-29-142Z-build`: clean committed Build 17 export from `ef416c16e8f0173327cf2708d66f6d4ac08a8fcc`; exported startup smoke passes 118 checks. Executable, pack and build manifest hashes are in that report.
 - `2026-10-16T17-07-06-311Z-release-review`: exported UI at 1280×720 and 1920×1080, forge/style checks, all eight bosses and six biomes pass. Inspected menu, HUD, reward cards and Baron capture; no clipping observed in those views.
 - `2026-10-16T17-09-22-042Z-hermes-review`: exported Baron/attack, hunt and Eclipse feature assertions pass; this single-process review does not substitute for shared-session co-op.
-- Shared-session review remains **unverified** for this checkpoint. Packaged headless host/client instances each timed out without emitting a review result (`2026-10-16T17-09-33-275Z-shared-review`). The source review (`2026-10-16T17-12-04-091Z-shared-review`) exposed empty host-member/chest fixture arrays and failed. This is left open for the later co-op investigation; do not treat it as an early-game desync reproduction or resolution. Prior Build 16 and October 15 source evidence does not verify the new exported Build 17 package.
+- `2026-10-16T17-22-37-198Z-shared-review`: fail-fast source host/client review passes all 42 shared progression, chest, magnet, guard, contact-warning and Baron checks when run outside the sandbox. Earlier sandbox-only attempts blocked loopback UDP; their member/chest index errors were secondary setup failures.
+- `2026-10-16T17-23-19-316Z-shared-review`: packaged `Wildforge.console.exe` host/client review passes all 39 checks, including Build 17 contact-warning replication and Baron reconstruction. Console executable is required for headless packaged tests.
+- These focused shared checks do not reproduce or resolve the early-game desynchronization. That investigation remains last in PLAN.md.
 - Human gamepad/audio checks, art acceptance, full-fight balance and late-Eclipse performance remain open.
+
+## October 16 continuation
+
+- `2026-10-16T17-27-50-320Z-check` and `2026-10-16T17-32-43-957Z-check`: JS tests plus Godot import/parse pass after terrain, HUD-copy and review-harness edits.
+- `2026-10-16T17-28-06-501Z-biome-review`: all six biomes, stream/scattering and mist checks pass. Inspected all six 1440×810 captures. Midtones are brighter and more distinct; Woods still reads as bare slate in open areas, Cloudwilds is crowded by large trunks, and Candy Hell still needs stronger ground detail. Art acceptance remains open.
+- Eclipse crowd at seed 81173, 125 enemies, 1440×810: baseline `2026-10-16T17-27-08-100Z-crowd-eclipse` was 14.21 ms p50 / 50.81 ms p95 frame and 117.15 ms physics p95. With the terrain shader edit, `2026-10-16T17-28-49-366Z-crowd-eclipse` was 14.27 / 51.02 ms and 118.99 ms physics p95. The comparable results are effectively unchanged; late-Eclipse performance remains open.
+- `2026-10-16T17-30-02-035Z-balance-review`: all 15 controlled damage fixtures pass. At 24 offensive cards, ideal solo projections are 4.7 minutes weapons, 3.4 minutes turrets, 16.1 minutes status, 20.2 minutes slam and 7.3 minutes flowers; stationary, invulnerable uptime is not real-fight balance or win-rate evidence.
+- `2026-10-16T17-41-02-559Z-progression-review` and `2026-10-16T17-41-15-807Z-feedback-review`: all stat-total, damage attribution, persistence, death-count, last-run trimming, card reachability, mobility-icon and recap checks pass. Reviewed the rendered captures. The run screens now label enemy totals clearly and show an empty state when there were no kills.
+- The boss review now explicitly covers the final Baron, because the previous eight-boss loop skipped him. `2026-10-16T17-40-06-651Z-boss-review` passes 42 m height, 9 m radius, cylinder collision, four emitting vents, network reconstruction and matching remote collision. Inspected `boss-baron.png` in that run: the whole stylized silhouette fits at 69 m using the normal 12 m third-person camera tilted slightly upward. Steam still does not read clearly in the capture, so visible-steam/art acceptance and exported-game review remain open. Photoreal/licensed asset research is still unresolved.
+- Early co-op desync remains deliberately untouched until it is the sole active plan item. Nothing from these shared-review tests proves it fixed.

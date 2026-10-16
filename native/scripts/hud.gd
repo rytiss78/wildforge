@@ -1023,8 +1023,10 @@ func run_report_menu():
 		if item.kind=="skill": icon_text_row(rows,icon_key(item),false,item.name)
 
 	if game.damage_sources.is_empty(): rows.add_child(label("No damage recorded yet.",16))
-	rows.add_child(label("ENEMY TYPES DEFEATED · party kills in co-op",18))
-	for key in game.kill_types: rows.add_child(label("%s · %d" % [key,game.kill_types[key]],16))
+	rows.add_child(label("ENEMIES DEFEATED",18))
+	if game.kill_types.is_empty(): rows.add_child(label("No enemies defeated.",16))
+	else:
+		for key in game.kill_types: rows.add_child(label("%s · %d" % [key,game.kill_types[key]],16))
 	rows.add_child(label("Score: 20×kills + gold + 2×seconds + level/boss/chest/victory bonuses.",14))
 	var back=button("BACK",func():pause_menu(game.run_recorded,not score.is_empty() and score[0].win),true);box.add_child(back);back.grab_focus()
 
@@ -1043,8 +1045,11 @@ func last_run_menu():
 	keys.sort_custom(func(a,b):return sources[a]>sources[b])
 	for key in keys: rows.add_child(label("%s · %d damage" % [RunReport.source_name(game,key),sources[key]],16))
 	if sources.is_empty(): rows.add_child(label("No damage recorded.",16))
-	rows.add_child(label("ENEMY TYPES DEFEATED · party kills in co-op",18))
-	for key in run.get("killTypes",{}): rows.add_child(label("%s · %d" % [key,run.killTypes[key]],16))
+	rows.add_child(label("ENEMIES DEFEATED",18))
+	var kills_by_type=run.get("killTypes",{})
+	if kills_by_type.is_empty(): rows.add_child(label("No enemies defeated.",16))
+	else:
+		for key in kills_by_type: rows.add_child(label("%s · %d" % [key,kills_by_type[key]],16))
 	var back=button("BACK",start_menu,true);box.add_child(back);back.grab_focus()
 
 func settings_menu():

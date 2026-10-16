@@ -21,3 +21,9 @@ The palette/composition recommendations above are proposed art direction for Wil
 ## Acceptance
 
 Capture matched before/after frames in all six biomes, normal combat and Eclipse. Check warning circles, pickups, player silhouette and shadow separation. Compare frame percentiles on the same machine/camera/seed. Keep density adjustable, and keep this task open until the visual result is actually convincing.
+
+## October 16 implementation evidence
+
+`native/shaders/terrain.gdshader` raises the underfoot biome values and exposes more of the painted texture while preserving dark facets and combat highlights. The fresh six-biome captures are in `.build-staging/agent-workflow/2026-10-16T17-28-06-501Z-biome-review/`. They pass the technical biome checks, but visual review found the Woods still too bare, Cloudwilds too dense with trunks, and Candy Hell too simple around its lava. Do not close art acceptance from this pass.
+
+Matched seed 81173 Eclipse crowd runs at 1440×810 were effectively unchanged: frame p95 50.81→51.02 ms and physics p95 117.15→118.99 ms. These figures do not show a measurable performance regression or improvement; dense-crowd performance remains open.

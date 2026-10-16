@@ -12,27 +12,27 @@ varying vec3 p;
 void vertex(){p=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz;}
 vec3 biome_paint(float b,vec2 uv) {
  vec3 paint;vec3 base;
- if(b>4.5){paint=texture(t5,uv).rgb;base=vec3(.065,.038,.11);}
- else if(b>3.5){paint=texture(t4,uv).rgb;base=vec3(.13,.053,.044);}
- else if(b>2.5){paint=texture(t3,uv).rgb;base=vec3(.18,.23,.25);}
- else if(b>1.5){paint=texture(t2,uv).rgb;base=vec3(.075,.10,.16);}
- else if(b>.5){paint=texture(t1,uv).rgb;base=vec3(.045,.08,.065);}
+ if(b>4.5){paint=texture(t5,uv).rgb;base=vec3(.13,.075,.22);}
+ else if(b>3.5){paint=texture(t4,uv).rgb;base=vec3(.27,.105,.065);}
+ else if(b>2.5){paint=texture(t3,uv).rgb;base=vec3(.28,.36,.40);}
+ else if(b>1.5){paint=texture(t2,uv).rgb;base=vec3(.12,.19,.29);}
+ else if(b>.5){paint=texture(t1,uv).rgb;base=vec3(.09,.17,.12);}
  else {
    vec3 stone=texture(t0,p.xz*.15).rgb;
-   // Quiet slate values leave the bright range to actors, lights and combat.
-   // Remap the painted facets; gold chips and moss must not glow across the floor.
+   // Keep shadows legible while letting the painted stone and moss read at gameplay distance.
    float value=dot(stone,vec3(.2126,.7152,.0722));
    float facet=smoothstep(.012,.28,value);
-   vec3 slate=mix(vec3(.018,.028,.034),vec3(.05,.073,.077),facet);
+   vec3 slate=mix(vec3(.035,.052,.065),vec3(.12,.16,.18),facet);
    float islands=sin(p.x*.14+sin(p.z*.09)*2.0)+cos(p.z*.18+p.x*.03);
    float moss=smoothstep(-.3,1.3,islands);
    float detail=texture(t1,p.xz*.38).g;
-   vec3 green=mix(vec3(.018,.055,.038),vec3(.035,.115,.063),detail);
-   return mix(slate,green,moss*.80);
+   vec3 green=mix(vec3(.045,.12,.075),vec3(.10,.25,.14),detail);
+   return mix(slate,green,moss*.84);
  }
  float wash=sin(uv.x*.57+sin(uv.y*.8))*.025+cos(uv.y*.66)*.02;
  float grain=dot(paint,vec3(.299,.587,.114));
- return base*(.40+grain*.42)+vec3(wash*.22);
+ float texture_value=mix(.72,1.14,clamp(grain,0.0,1.0));
+ return base*texture_value+vec3(wash*.5);
 }
 void fragment(){
  vec2 uv=p.xz*.042;

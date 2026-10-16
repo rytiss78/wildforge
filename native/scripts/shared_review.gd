@@ -20,12 +20,25 @@ static func run(g,host: bool):
 	else: g.coop.join_lan("127.0.0.1")
 	var checks={}
 	if host:
-		checks.connected=await wait_for(g,func():return not g.coop.members.is_empty() and g.coop.members.values()[0].get("ready",false))
-		g.coop.set_ready(true);g.coop.start_party(91731)
+		checks.host_open=g.coop.active and g.coop.hosting
+		checks.connected=checks.host_open and await wait_for(g,func():return not g.coop.members.is_empty() and g.coop.members.values()[0].get("ready",false))
+		g.coop.set_ready(true)
+		checks.lobby_valid=checks.connected and g.coop.can_start()
+		if not checks.lobby_valid:
+			print("SHARED_REVIEW "+JSON.stringify({"role":"host","checks":checks,"status":g.coop.status,"members":g.coop.members}))
+			g.coop.leave();g.get_tree().quit(1);return
+		checks.started=g.coop.start_party(91731)
 	else:
 		checks.connected=await wait_for(g,func():return g.coop.welcomed)
+		if not checks.connected:
+			print("SHARED_REVIEW "+JSON.stringify({"role":"client","checks":checks,"status":g.coop.status,"active":g.coop.active}))
+			g.coop.leave();g.get_tree().quit(1);return
 		g.coop.set_ready(true)
 		checks.started=await wait_for(g,func():return g.run_active)
+	if not checks.started or not g.run_active or g.chests.is_empty():
+		checks.started=false;checks.has_chests=not g.chests.is_empty()
+		print("SHARED_REVIEW "+JSON.stringify({"role":"host" if host else "client","checks":checks,"status":g.coop.status,"active":g.coop.active,"members":g.coop.members.size(),"realm":g.realm,"mode":g.mode,"chests":g.chests.size()}))
+		g.coop.leave();g.get_tree().quit(1);return
 	g.set_physics_process(false);g.spawn_clock=99999;g.invulnerable=1000;g.gold=100;g.level_choice_cooldown=0
 	if host:
 		g.player.position=Vector3(-20,g.world.height_at(-20,0),0);g.xp=21;g.xp_target=27
