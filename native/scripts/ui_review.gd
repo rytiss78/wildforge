@@ -12,6 +12,15 @@ static func capture(game, name: String) -> bool:
 	print("UI_CAPTURE "+name+" "+str(error))
 	return error==OK
 
+static func seed_party_options(game, options: Array, source: String):
+	game.party_seen.clear()
+	for player_id in range(1,5):
+		var player_options=[]
+		for offset in range(options.size()):
+			var item=options[(offset+player_id)%options.size()]
+			player_options.append({"id":str(item.id),"name":str(item.name)})
+		game.party_seen[str(player_id)]={"player_id":player_id,"name":"Review Player "+str(player_id),"reward_id":game.party_reward_id,"source":source,"options":player_options,"selected_id":str(player_options[1].id),"selected_name":str(player_options[1].name)}
+
 static func run(game):
 	if DisplayServer.get_name()=="headless": game.get_tree().quit(1);return
 	AudioServer.set_bus_volume_db(0,-80)
@@ -29,6 +38,8 @@ static func run(game):
 	game.hud.coop_menu()
 	okay=expect(game.hud.lobby_ready.disabled and game.hud.lobby_start.disabled,"ui assertion 23") and okay
 	game.coop.host_lan();game.hud.update_lobby_controls()
+	game.hud.coop_name_input.text="UI Host";game.hud.coop_name_input.text_submitted.emit("UI Host")
+	okay=expect(game.career.data.settings.name=="UI Host","co-op player name saves from the lobby field") and okay
 	okay=expect(not game.hud.lobby_ready.disabled and game.hud.lobby_start.disabled,"ui assertion 25") and okay
 	game.hud.lobby_ready.grab_focus();game.hud.controller_accept();game.hud.update_lobby_controls()
 	okay=expect(game.coop.local_ready and not game.hud.lobby_start.disabled,"ui assertion 27") and okay
@@ -36,6 +47,7 @@ static func run(game):
 	var coop_hero=game.hud.menu_controls().filter(func(c):return c is Button and c.text=="Tank Potato")[0]
 	coop_hero.pressed.emit()
 	for frame in range(4): await game.get_tree().process_frame
+	okay=expect(game.hud.coop_name_input.text=="UI Host","co-op name remains when rebuilding the lobby menu") and okay
 	okay=expect(is_instance_valid(game.hud.portrait) and game.hud.portrait.is_inside_tree() and game.hero.name=="Tank Potato","ui assertion 32") and okay
 	okay=expect(game.hud.lobby_specialty.text.contains(game.hero.description),"ui assertion 33") and okay
 	game.hud.update_lobby_controls()
@@ -55,6 +67,29 @@ static func run(game):
 	game.start_run(407);game.set_physics_process(false);game.spawn_clock=99999
 	game.player.position=Vector3(0,.2,0);game.camera.position=Vector3(0,10,15)
 	game.camera.look_at(Vector3(0,0,-5));game.gold=75;game.hp=game.stats.maxHp*.7
+	okay=expect(game.coop.local_nameplate==null,"solo runs do not show a co-op nameplate") and okay
+	game.career.data.settings.name="UI Runner";game.coop.active=true;game.coop.sync_local_nameplate()
+	okay=expect(is_instance_valid(game.coop.local_nameplate) and game.coop.local_nameplate.text=="UI Runner","co-op nameplate shows the custom player name") and okay
+	okay=expect(await capture(game,"coop-nameplate"),"co-op nameplate capture") and okay
+	game.events.boss_focus_id=game.coop.local_id;game.events.boss_focus_until=game.elapsed+4.0;game.coop.sync_local_nameplate()
+	game.hud.tell("BARON MARKS UI RUNNER · MOVE",4)
+	okay=expect(game.coop.local_nameplate.text.contains("TARGET"),"co-op Baron focus is marked above the targeted hero") and okay
+	okay=expect(await capture(game,"coop-boss-target"),"co-op boss target cue capture") and okay
+	game.events.erase("boss_focus_id");game.events.erase("boss_focus_until")
+	game.career.data.cosmetics=["mastery_crown","party_banner"];game.career.data.settings.cosmetic="party_banner";game.coop.sync_local_nameplate()
+	okay=expect(game.coop.local_nameplate.text=="⚑ UI Runner" and game.coop.local_nameplate.modulate==Color("b6d6ff"),"achievement-earned cosmetic style applies to the co-op nameplate") and okay
+	okay=expect(await capture(game,"achievement-nameplate-style"),"achievement nameplate cosmetic capture") and okay
+	game.coop.members[2]={"name":"Review Guest","build":{"weapons":[{"id":"gun","rank":2}],"skills":["Ice Shield"]}}
+	game.hud.party_builds_menu()
+	okay=expect(game.career.data.total.get("party_builds_viewed",0)>=1 and game.hud.modal.find_children("*","Label",true,false).any(func(node):return node.text.contains("Review Guest")),"complete teammate build view awards its achievement") and okay
+	okay=expect(await capture(game,"party-builds"),"shared party-build capture") and okay
+	game.hud.close();game.coop.members.clear()
+	game.hud.settings_menu()
+	var cosmetic_picker=game.hud.achievement_cosmetic_picker
+	okay=expect(is_instance_valid(cosmetic_picker) and cosmetic_picker.item_count>=3 and str(cosmetic_picker.get_item_metadata(cosmetic_picker.selected))=="party_banner","settings menu selects an earned cosmetic") and okay
+	okay=expect(await capture(game,"achievement-cosmetics"),"achievement cosmetics settings capture") and okay
+	game.hud.close();game.career.data.settings.cosmetic="";game.coop.sync_local_nameplate()
+	game.coop.active=false;game.coop.sync_local_nameplate()
 	game.hud.update(0)
 	okay=expect(await capture(game,"hud"),"ui assertion 52") and okay
 	game.hud.build_menu();okay=await capture(game,"build") and okay;game.hud.close()
@@ -82,6 +117,24 @@ static func run(game):
 		for effect in item.effects: effect.amount*=item.strength
 		offers.append(item)
 	game.offers=offers;game.mode="offer";game.offer_kind="item";game.offer_source="level"
+	game.coop.active=true;game.coop.hosting=true;game.coop.local_id=1;game.party_reward_id="ui-review-level"
+	game.hud.show_offers(offers,"level",false)
+	seed_party_options(game,offers,"level")
+	game.coop.publish_reward_choice(offers[2],"level")
+	okay=expect(await capture(game,"coop-level-options"),"co-op level options capture") and okay
+	okay=expect(game.hud.party_overlay.visible and game.hud.party_overlay.get_global_rect().position.x>game.hud.content.get_parent().get_global_rect().end.x,"co-op teammate panel sits beside choices") and okay
+	game.coop.publish_reward_skip("level")
+	okay=expect(await capture(game,"coop-level-skip"),"co-op skip highlight capture") and okay
+	okay=expect(game.hud.party_overlay.find_children("*","Label",true,false).any(func(node):return node.text=="✓  Kept weapons"),"co-op skip choice is highlighted") and okay
+	game.coop.active=false;game.coop.hosting=false;game.hud.party_overlay.visible=false;game.hud.close()
+	game.coop.active=true;game.coop.hosting=true;game.coop.local_id=1;game.party_reward_id="ui-review-chest"
+	game.hud.show_offers(offers,"chest",false)
+	seed_party_options(game,offers,"chest")
+	game.coop.publish_reward_choice(offers[3],"chest")
+	okay=expect(await capture(game,"coop-chest-options"),"co-op chest options capture") and okay
+	game.coop.active=false;game.coop.hosting=false;game.hud.party_overlay.visible=false;game.hud.close()
+	game.coop.leave()
+	game.mode="offer";game.offer_kind="item";game.offer_source="level"
 	game.hud.show_offers(offers,"level",false)
 	okay=expect(await capture(game,"offers"),"ui assertion 79") and okay
 	for card in game.hud.cards:

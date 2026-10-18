@@ -63,9 +63,21 @@ static func run(g):
 	g.player.position=arena_spawn
 	var boss=g.enemies[0]
 	checks.final_identity=boss.boss_id==8 and boss.height==42 and boss.speed<=.22 and boss.maxHp==360000
+	checks.arena_cracks=g.events.final_cracks.size()==32 and g.events.final_cracks.all(func(crack):return is_instance_valid(crack) and crack.mesh is BoxMesh and crack.is_inside_tree())
+	checks.entrance_darkened=is_equal_approx(g.world.environment.ambient_light_energy,.12) and is_equal_approx(g.world.environment.adjustment_brightness,.68) and boss.node.scale.x<.1
+	for frame in range(20):
+		g._process(.016);g.Journey.tick(g);await g.get_tree().process_frame
+		if not g.world.build_in_progress:break
+	g.hud.update(0)
+	checks.entrance_capture=await capture(g,"baron-entrance")
 	g.invulnerable=1000;g.equipped.clear();g.spawn_clock=99999
-	for i in range(180):
-		g._process(.016);await g.get_tree().process_frame
+	for i in range(110):
+		g._process(.016);g.Journey.tick(g);await g.get_tree().process_frame
+	checks.entrance_midpoint=g.events.final_intro and boss.node.scale.x>.1 and boss.node.scale.x<.9
+	checks.rising_capture=await capture(g,"baron-rising")
+	for i in range(130):
+		g._process(.016);g.Journey.tick(g);await g.get_tree().process_frame
+	checks.entrance_rise=not g.events.final_intro and is_equal_approx(boss.node.scale.x,1.0) and is_equal_approx(g.world.environment.ambient_light_energy,.36) and is_equal_approx(g.world.environment.adjustment_brightness,1.0)
 	g.hud.update(0);checks.arena=await capture(g,"arena")
 	# Inspect the full authored silhouette with an ordinary player-controlled look angle.
 	g.player.position=Vector3(0,g.world.height_at(0,46),46);g.pitch=0
@@ -91,6 +103,10 @@ static func run(g):
 	checks.attack_patterns=counts==[10,30,7,15]
 	checks.deadly_warnings=g.hazards.all(func(h):return h.damage>=95 and h.duration>=1.6 and Vector2(h.node.position.x,h.node.position.z).length()<=64.1)
 	checks.terrain_marks=preload("res://scripts/boss_review.gd").marks_follow_terrain(g)
+	clear(g.hazards);preload("res://scripts/final_arena.gd").erupt(g)
+	checks.arena_eruption=g.hazards.size()==10 and g.hazards.all(func(h):return h.style=="lava" and h.damage==48 and h.duration==2.6 and Vector2(h.node.position.x,h.node.position.z).length()<=64.1)
+	checks.eruption_capture=await capture(g,"arena-eruption")
+	clear(g.hazards)
 	var packet=bytes_to_var(var_to_bytes(g.coop.snapshot()));var actor=packet.actors[0]
 	var remote=g.spawn_network_enemy(actor)
 	checks.network_boss=remote.boss_id==8 and remote.maxHp==boss.maxHp and remote.node.get_meta("rig").identity=="boss_8"
@@ -119,10 +135,24 @@ static func run(g):
 	for i in range(90):g.update_combat(1.0/60)
 	checks.giant_weapon_hits=boss.hp<before_shot
 	g.equipped.clear();clear(g.projectiles);g.invulnerable=1000
+	# Cross every health phase with real damage and ensure each new curse asset streams.
+	checks.phase_voice_assets=true
+	for voice_index in range(10,18):
+		var voice=load("res://assets/voices/boss_lt_%d.mp3" % voice_index)
+		checks.phase_voice_assets=checks.phase_voice_assets and voice is AudioStreamMP3 and voice.get_length()>.5
+	var phase_checks=[]
+	for phase in range(1,8):
+		var target_hp=boss.maxHp*(1.0-float(phase)*.125);var applied=boss.hp-target_hp
+		g.hurt_enemy(boss,applied,"shot")
+		phase_checks.append(int(boss.get("voice_phase",-1))==phase and g.sound.boss_voice.stream!=null and g.sound.boss_voice.stream.get_length()>.5)
+	checks.phase_voices=phase_checks.size()==7 and phase_checks.all(func(value):return value) and g.sound.boss_voice_count>=8
 	# Calibrate health with real damage application; no mandatory five-minute invulnerability.
 	var original_hp=boss.hp;g.hurt_enemy(boss,300,"shot");checks.reference_dps=is_equal_approx(original_hp-boss.hp,300)
 	g.hurt_enemy(boss,boss.hp+1000,"shot")
 	checks.death_eclipse=g.events.get("final_defeated",false) and g.events.get("eclipse",false) and g.mode=="playing"
+	checks.baron_fall_event=g.events.get("final_ceremony",false) and g.events.announcement=="THE BARON FALLS"
+	g.realm_time=float(g.events.get("final_ceremony_until",0))+.01;g.Journey.tick(g)
+	checks.eclipse_transition=not g.events.get("final_ceremony",true) and g.events.announcement=="ENDLESS ECLIPSE" and int(g.events.eclipse_stage)>=1 and g.events.final_cracks.all(func(crack):return crack.material_override.emission.g>.5)
 	g.realm_time=660;g.Journey.tick(g)
 	checks.endless=g.events.eclipse and g.events.eclipse_stage>=20 and g.events.wave_budget>0
 	g.spawn_enemy(15);checks.new_corruption=g.enemies[-1].get("corruption",0)==g.events.eclipse_stage

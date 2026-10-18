@@ -1,87 +1,54 @@
 """Lithuanian boss curses using edge-tts native Lithuanian voice."""
 import asyncio
 from pathlib import Path
-import json, hashlib, struct, wave
+import json, hashlib
 
 root = Path(__file__).resolve().parents[1]
 out = root / 'native/assets/voices'
 lines = [
-    'Po velnių!',
-    'Kad tave perkūnas!',
-    'Šūdas! Dar atsiimsi!',
-    'Eik tu velniop!',
-    'Aš jus visus sugniušku!',
-    'Jūnų negalėsite pabėgti!',
-    'Šiame pasaulyje nėra vietos baimingiesiems!',
-    'Jėga manimi rūpinasi!',
-    'Aš esu amžinas!',
-    'Jūsų pasaulis man nepatinka!',
+    'Po velnių, jūs pažadinote mano įniršį!',
+    'Prakeikti, jūs vis dar stovite prieš mane!',
+    'Velnias, mano pyktis tik auga!',
+    'Šūdas, dabar pajusite mano tikrąją galią!',
+    'Eikite po velnių, niekas manęs nesustabdys!',
+    'Kad jus kur perkūnas, aš dar nebaigiau!',
+    'Po velnių, šis pasaulis sugrius kartu su jumis!',
+    'Prakeikimas, jūs pažadinote paskutinę mano galią!',
 ]
+FIRST_NEW_ID = 10
 
 
 async def generate(text: str, tmp_mp3: Path) -> tuple[Path, int]:
     import edge_tts
-    import subprocess
     comm = edge_tts.Communicate(text, 'lt-LT-LeonasNeural', rate='-15%', pitch='-20Hz')
     await comm.save(str(tmp_mp3))
-    # Convert MP3 to WAV via ffmpeg
-    wav_path = tmp_mp3.with_suffix('.wav')
-    subprocess.run(
-        ['C:/Users/rytis/AppData/Local/hermes/tools/ffmpeg-9.0.1-win32-x64/bin/ffmpeg.exe',
-         '-i', str(tmp_mp3), '-f', 's16le', '-ar', '24000', '-ac', '1', '-y', str(wav_path)],
-        capture_output=True, check=True
-    )
-    return wav_path, 24000
-
-
-def apply_effects(pcm: bytes) -> bytes:
-    samples = struct.unpack('<' + 'h' * (len(pcm) // 2), pcm)
-    peak = max(abs(s) for s in samples) if samples else 1
-    if peak > 0:
-        scale = 0.82 * 32767.0 / peak
-        samples = tuple(max(-32768, min(32767, int(s * scale))) for s in samples)
-    fade_len = min(240, len(samples) // 10)
-    fade_in = [i / fade_len for i in range(fade_len)]
-    fade_out = [i / fade_len for i in range(fade_len, 0, -1)]
-    samples = tuple(
-        int(s * fade_in[i]) if i < fade_len else
-        int(s * fade_out[i - len(samples)]) if i >= len(samples) - fade_len else s
-        for i, s in enumerate(samples)
-    )
-    return struct.pack('<' + 'h' * len(samples), *samples)
-
-
-def write_wav(path: Path, pcm: bytes, sr: int):
-    with wave.open(str(path), 'wb') as wf:
-        wf.setnchannels(1)
-        wf.setsampwidth(2)
-        wf.setframerate(sr)
-        wf.writeframes(pcm)
+    # Godot streams MP3 directly; avoid machine-specific ffmpeg dependencies.
+    return tmp_mp3, 24000
 
 
 async def main():
     import tempfile
-    records = []
-    for i, text in enumerate(lines):
+    provenance = out / 'boss-lithuanian-provenance.json'
+    old_records = json.loads(provenance.read_text(encoding='utf-8')).get('lines', []) if provenance.exists() else []
+    generated_ids = {f'boss_lt_{index}' for index in range(FIRST_NEW_ID, FIRST_NEW_ID + len(lines))}
+    records = [record for record in old_records if record.get('id') not in generated_ids]
+    for i, text in enumerate(lines, start=FIRST_NEW_ID):
         with tempfile.TemporaryDirectory() as td:
             tmp_mp3 = Path(td) / f'boss_lt_{i}.mp3'
-            wav_path, sr = await generate(text, tmp_mp3)
-            # Apply effects to get final WAV
-            with open(wav_path, 'rb') as f:
-                pcm = f.read()
-            pcm = apply_effects(pcm)
-            final_path = out / f'boss_lt_{i}.wav'
-            write_wav(final_path, pcm, sr)
-            wav_path.unlink()
+            audio_path, sr = await generate(text, tmp_mp3)
+            final_path = out / f'boss_lt_{i}.mp3'
+            final_path.write_bytes(audio_path.read_bytes())
+            duration = len(audio_path.read_bytes()) / 6000.0 # Edge TTS outputs 48 kbit/s MP3.
             records.append({
                 'id': final_path.stem,
                 'text': text,
                 'language': 'lt',
-                'duration': len(pcm) / 2 / sr,
+                'duration': duration,
                 'sha256': hashlib.sha256(final_path.read_bytes()).hexdigest()
             })
-            print(f'{text} {len(pcm)/2/sr:.2f}s')
-    (out / 'boss-lithuanian-provenance.json').write_text(
+            print(f'{text} {duration:.2f}s')
+    records.sort(key=lambda record: int(record['id'].rsplit('_', 1)[-1]))
+    provenance.write_text(
         json.dumps({'engine': 'edge-tts lt-LT-LeonasNeural, native Lithuanian TTS', 'lines': records}, ensure_ascii=False, indent=2), encoding='utf-8'
     )
 

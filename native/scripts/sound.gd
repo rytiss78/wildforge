@@ -403,13 +403,14 @@ func hero_quip(id: String,context: String,source: Node3D):
 	hurt_voice.stream=cache[path];hurt_voice.pitch_scale=1.0
 	hurt_voice.volume_db=linear_to_db(maxf(.0001,float(settings.voice)));hurt_voice.play()
 
-func boss_curse(position: Vector3,index: int=-1) -> int:
+func boss_curse(position: Vector3,index: int=-1,priority: bool=false) -> int:
 	var now=Time.get_ticks_msec()/1000.0
-	if now-boss_voice_last<4.0: return -1
+	if now-boss_voice_last<4.0 and not priority: return -1
 	boss_voice_last=now;boss_voice_count+=1
-	var selected=rng.randi_range(0,9) if index<0 else clampi(index,0,9)
+	var selected=rng.randi_range(0,9) if index<0 else clampi(index,0,17)
 	if float(settings.voice)>0:
-		boss_voice.global_position=position;boss_voice.stream=load("res://assets/voices/boss_lt_%d.wav" % selected)
+		var extension="mp3" if selected>=10 else "wav"
+		boss_voice.global_position=position;boss_voice.stream=load("res://assets/voices/boss_lt_%d.%s" % [selected,extension])
 		# Louder (-5dB), slower (.75 pitch), more frequent (4s cooldown)
 		boss_voice.volume_db=linear_to_db(maxf(.0001,float(settings.voice)))-5
 		boss_voice.pitch_scale=.75;boss_voice.play()

@@ -64,6 +64,35 @@ Evidence and limits: [natural-world continuation](native/docs/natural-world-buil
 
 Research and implementation choices: [ground-art research](native/docs/ground-art-research.md).
 
+- [x] **Co-op reward choices:** show every player's complete level-up/chest option list in a compact companion window beside the normal chooser; highlight each selected reward, including “Kept weapons.” Verified with the two-process option/selection assertions in `2026-10-18T10-27-48-110Z-shared-review` and rendered level/chest/skip captures in `2026-10-18T10-28-37-245Z-capture-ui`.
+- [x] **Co-op XP boosts and player names:** replicate each collector's evaluated `xpGain` (including skill and XP Juice modifiers) to the host so shared XP is credited once and level thresholds/leftover XP stay synchronized. Add a saved custom name in Play With Friends, show it in the lobby roster and above co-op heroes, and keep nameplates out of solo runs. Verified by `2026-10-18T10-36-13-263Z-shared-review` (two processes, Learn + XP Juice at 1.8×, shared level-up, no duplicate XP, custom names) and `2026-10-18T10-37-07-218Z-integration`; inspected `ui-coop.png` and `ui-coop-nameplate.png` in `2026-10-18T10-37-45-233Z-capture-ui`.
+
+## New request — Baron arena, event, and phase voices
+
+- [x] **Arena entrance:** darken the Red Moon, reveal 32 glowing ground fractures, and animate the Baron rising into the arena. Entrance, midpoint rise and fracture captures inspected in `2026-10-18T11-04-34-708Z-red-moon-review`.
+- [x] **Arena hazards:** add ten clearly telegraphed, terrain-following ground eruptions, 2.6 seconds to dodge and 48 damage, repeating through the Baron encounter. Captured the marks and warning in `2026-10-18T11-04-34-708Z-red-moon-review`; attack and eruption assertions pass.
+- [x] **Co-op warnings:** identify the Baron’s chosen player in one orange overhead `Name · TARGET` line and a HUD alert. Two-process host/client assertions pass in `2026-10-18T11-06-40-104Z-shared-review`; inspected `ui-coop-boss-target.png` from `2026-10-18T11-01-02-179Z-capture-ui`.
+- [x] **Defeat event:** show the Baron fall, arena shockwave and gold fractures for 3.5 seconds, then begin Endless Eclipse. The rendered transition and assertions pass in `2026-10-18T11-04-34-708Z-red-moon-review`.
+- [x] **Lithuanian phase speech:** generated eight new original `lt-LT-LeonasNeural` TTS curse clips for arrival and seven health thresholds. Keep the original ten random hit barks intact. The provenance file preserves their text and hashes; red-moon review streams all eight and crosses all seven phases, while the two-process review confirms the arrival and next phase lines reach the guest after the realm transition.
+
+Validation: final `check` `2026-10-18T11-06-21-475Z-check`, `smoke` `2026-10-18T11-07-08-409Z-smoke` (118 assertions), `integration` `2026-10-18T11-07-23-558Z-integration`, and rendered `red-moon-review` `2026-10-18T11-04-34-708Z-red-moon-review` pass. Two-process co-op checks pass in `2026-10-18T11-06-40-104Z-shared-review`; `capture-ui` `2026-10-18T11-01-02-179Z-capture-ui` passes and its target cue was inspected. No build or upload: existing unrelated plan items remain open.
+
+## New request — mastery, formations, co-op quality, and achievement cosmetics
+
+The October 18 request selected weapon mastery, enemy formations, six-biome collection goals, co-op pings, ready checks, reconnects, teammate build inspection, expanded run recaps, and cosmetics earned through achievements. Each feature must increment a stable local achievement counter, and cosmetic rewards must be unlocked by those achievements rather than purchased.
+
+- [x] **Weapon mastery:** persist each weapon's highest rank across runs; award mastery progress at rank 3 and unlock an earned nameplate style. Review rank-up and save/reload behavior.
+- [x] **Enemy formations:** spawn readable wedge, line, and ring groups, preserve spacing/attacks, and count actual formation members defeated toward the formation achievement.
+- [x] **Biome collection:** retain unique biome discoveries across runs and unlock the six-biome achievement only after all six.
+- [x] **Co-op pings and ready checks:** keep contextual pings, require the host and all connected party members to be ready before start, and award progression only for co-op actions.
+- [x] **Active-run reconnect:** preserve a dropped member for 40 seconds, authenticate a returning copy of the same saved profile, restore their host-side state, and end the client run only after the reconnect window fails.
+- [x] **Shared build view:** show every party member's live weapon ranks and skills from network snapshots; award the achievement only after a complete teammate view.
+- [x] **Run recap:** count completed reports opened; retain the existing damage, kills, and score breakdown.
+- [x] **Achievement cosmetics:** grant eight co-op nameplate styles from their parent achievements, persist the unlocked collection, and let players choose among earned styles.
+- [x] **Evidence:** focused progression, formation, UI, reconnect, and two-process assertions pass; inspected rendered party-build, cosmetic selection, co-op style, and run-report captures. Evidence: `2026-10-18T12-06-15-318Z-integration` (75 checks), `2026-10-18T12-06-50-518Z-progression-review`, `2026-10-18T12-07-27-730Z-shared-review`, and `2026-10-18T12-08-00-279Z-capture-ui`. Final source check `2026-10-18T12-07-43-711Z-check` and smoke `2026-10-18T12-02-07-341Z-smoke` (118 assertions) pass.
+
+Achievement IDs added: `WF_WEAPON_MASTERY`, `WF_FORMATION_BREAKER`, `WF_BIOME_COLLECTOR`, `WF_PARTY_PINGS`, `WF_READY_PARTY`, `WF_WELCOME_BACK`, `WF_BUILD_SCOUT`, `WF_AFTER_ACTION`, and `WF_STYLE_COLLECTION`. Catalog and both native/community icon sets are generated from these definitions.
+
 ## Final task — early-game co-op desync (do last)
 
 **User priority, October 15: tackle this only when it is the sole remaining active plan item.** Record it now; finish the other active work before starting this investigation. The separately deferred NodeTunnel work is not a prerequisite.

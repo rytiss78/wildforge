@@ -143,4 +143,4 @@ await mkdir(new URL('../native/data/',import.meta.url),{recursive:true});
 
 await writeFile(new URL('../native/data/catalog.json',import.meta.url),JSON.stringify({version:8,heroes,weapons,weaponCap:WEAPON_CAP,loot,stats,labels,families,augments,chestPrices:CHEST_PRICES,achievements:[...ACHIEVEMENTS,...discoveries]},null,2));
 
-console.log(`Native content: ${loot.length} loot templates, ${weapons.length} weapons, 108 achievement IDs`);
+console.log(`Native content: ${loot.length} loot templates, ${weapons.length} weapons, ${ACHIEVEMENTS.length+discoveries.length} achievement IDs`);

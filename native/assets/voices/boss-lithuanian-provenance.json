@@ -70,6 +70,62 @@
       "language": "lt",
       "duration": 3.528,
       "sha256": "d8e9db0406bb4bdc1b38aa114fdeef5ae378e187f63c0a0ca1a70ed304aa41f3"
+    },
+    {
+      "id": "boss_lt_10",
+      "text": "Po velnių, jūs pažadinote mano įniršį!",
+      "language": "lt",
+      "duration": 4.248,
+      "sha256": "fe4db12b4d88fcf165183c2fa92a1fbc4015fa406cd4aa23012d421172f9ec4c"
+    },
+    {
+      "id": "boss_lt_11",
+      "text": "Prakeikti, jūs vis dar stovite prieš mane!",
+      "language": "lt",
+      "duration": 4.584,
+      "sha256": "55833f6bc203c75d26923670dfccfabdcea1e2e8963c1066a04c9b35cbe467a2"
+    },
+    {
+      "id": "boss_lt_12",
+      "text": "Velnias, mano pyktis tik auga!",
+      "language": "lt",
+      "duration": 3.864,
+      "sha256": "42599478e9cc547cec7b411391e8aa687ffd22ab1f306e00f8f82d90d0b93d16"
+    },
+    {
+      "id": "boss_lt_13",
+      "text": "Šūdas, dabar pajusite mano tikrąją galią!",
+      "language": "lt",
+      "duration": 4.536,
+      "sha256": "12bb7201e18041e0a13e5344e4d4636b0d965439edf24b5ae03de2dd215210ad"
+    },
+    {
+      "id": "boss_lt_14",
+      "text": "Eikite po velnių, niekas manęs nesustabdys!",
+      "language": "lt",
+      "duration": 4.704,
+      "sha256": "cf1fe90a9fe49549a09c9796ee3bad3909538f69e9292d692871c525284cbdc6"
+    },
+    {
+      "id": "boss_lt_15",
+      "text": "Kad jus kur perkūnas, aš dar nebaigiau!",
+      "language": "lt",
+      "duration": 4.536,
+      "sha256": "f9c1cb001e19d5d14f62b3a0674cd05dd5677bfad62969f9b9ea7bf516d091f5"
+    },
+    {
+      "id": "boss_lt_16",
+      "text": "Po velnių, šis pasaulis sugrius kartu su jumis!",
+      "language": "lt",
+      "duration": 4.656,
+      "sha256": "d214ab3c8793f2543ed62849c820c9324a635a16e91fd694f6426e81deb0d37b"
+    },
+    {
+      "id": "boss_lt_17",
+      "text": "Prakeikimas, jūs pažadinote paskutinę mano galią!",
+      "language": "lt",
+      "duration": 4.848,
+      "sha256": "ef6fb3b9c60b9e724ce98e3341bea1184b4579295ef9b80a399df2ffda59c9db"
     }
   ]
 }

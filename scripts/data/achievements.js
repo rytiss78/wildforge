@@ -101,7 +101,16 @@ add("ROADMAP","Crystal Ball","Read the Community Lab roadmap.","event_ROADMAP",1
 add("MIX_TURRET","Shared Workshop","Equip a turret and another kind of weapon.","event_MIX_TURRET",1,'total','Challenges');
 add("FULL_EXPLORER","Cartographer In A Panic","Reveal thirty map tiles in one world.","event_FULL_EXPLORER",1,'total','Challenges');
 add("GHOST_DANGER","Excuse Me, Coming Through","Ghost dash while a boss is alive.","event_GHOST_DANGER",1,'total','Challenges');
-if(catalog.length!==100)throw new Error(`Expected 100 achievements, got ${catalog.length}`);
+add("WEAPON_MASTERY","Workshop Legend","Reach mastery rank 3 with five different weapons.","weapon_mastery_count",5,'best','Mastery');
+add("FORMATION_BREAKER","Break Their Ranks","Defeat 100 members of enemy formations.","formation_breaks",100,'total','Challenges');
+add("BIOME_COLLECTOR","Six Worlds, One Map","Discover all six biomes across your runs.","biomes_discovered",6,'best','Exploration');
+add("PARTY_PINGS","Good Call","Send 25 useful pings while playing co-op.","coop_pings",25,'total','Co-op');
+add("READY_PARTY","All Together","Start 10 co-op runs after every player readies up.","ready_runs",10,'total','Co-op');
+add("WELCOME_BACK","Back In The Forge","Reconnect to an active co-op run.","coop_reconnects",1,'total','Co-op');
+add("BUILD_SCOUT","Know Your Team","Inspect every teammate’s current build in co-op.","party_builds_viewed",1,'total','Co-op');
+add("AFTER_ACTION","Study The Run","Open 10 completed run reports.","run_reports_viewed",10,'total','Adventure');
+add("STYLE_COLLECTION","Earned, Not Bought","Unlock three achievement cosmetics.","achievement_cosmetics",3,'total','Collection');
+if(catalog.length!==109)throw new Error(`Expected 109 achievements, got ${catalog.length}`);
 export const ACHIEVEMENTS=Object.freeze(catalog.map(Object.freeze));
 export function achievementProgress(a,p){return Math.min(a.target,Math.max(0,Number(p[a.scope]?.[a.key])||0));}
 export function availableAchievements(p){return ACHIEVEMENTS.filter(a=>!p.unlocked[a.id]&&achievementProgress(a,p)>=a.target);}

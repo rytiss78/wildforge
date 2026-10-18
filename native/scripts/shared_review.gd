@@ -15,6 +15,7 @@ static func choose(g):
 
 static func run(g,host: bool):
 	AudioServer.set_bus_volume_db(0,-80);g.coop.test_mode=true
+	g.career.data.settings.name="Review Host" if host else "Review Guest"
 	var trace=[]
 	if not host and OS.get_cmdline_user_args().has("--slow-peer"):
 		Engine.max_fps=20
@@ -32,6 +33,7 @@ static func run(g,host: bool):
 			print("SHARED_REVIEW "+JSON.stringify({"role":"host","checks":checks,"status":g.coop.status,"members":g.coop.members}))
 			g.coop.leave();g.get_tree().quit(1);return
 		checks.started=g.coop.start_party(91731)
+		checks.ready_achievement=float(g.career.data.total.get("ready_runs",0))==1
 	else:
 		checks.connected=await wait_for(g,func():return g.coop.welcomed)
 		if not checks.connected:
@@ -44,6 +46,23 @@ static func run(g,host: bool):
 		print("SHARED_REVIEW "+JSON.stringify({"role":"host" if host else "client","checks":checks,"status":g.coop.status,"active":g.coop.active,"members":g.coop.members.size(),"realm":g.realm,"mode":g.mode,"chests":g.chests.size()}))
 		g.coop.leave();g.get_tree().quit(1);return
 	g.set_physics_process(false);g.spawn_clock=99999;g.invulnerable=1000;g.gold=100;g.level_choice_cooldown=0
+	if not host:
+		var learn=g.rules.data.loot.filter(func(item):return item.id=="study-0")[0]
+		g.rules.apply_effects(g.stats,learn.effects)
+		g.owned.append(learn)
+		g.activate_consumable("xp")
+		checks.boosted_local_stats=g.stat("xpGain")>1.7
+	if host:
+		var guest_id=g.coop.members.keys()[0]
+		checks.custom_guest_name=g.coop.members[guest_id].get("player_name","")=="Review Guest"
+		checks.remote_nameplate=await wait_for(g,func():return g.coop.avatars.has(guest_id) and g.coop.avatars[guest_id].get_meta("nameplate").text=="Review Guest")
+		checks.local_nameplate=is_instance_valid(g.coop.local_nameplate) and g.coop.local_nameplate.text=="Review Host"
+		checks.custom_guest_xp_gain=await wait_for(g,func():return float(g.coop.members.get(guest_id,{}).get("stats",{}).get("xpGain",1))>1.7)
+		checks.custom_host_lobby_name=g.coop.lobby_roster.any(func(entry):return entry.get("host",false) and entry.get("name","")=="Review Host")
+	else:
+		checks.custom_host_lobby_name=await wait_for(g,func():return g.coop.lobby_roster.any(func(entry):return entry.get("host",false) and entry.get("name","")=="Review Host"))
+		checks.local_nameplate=is_instance_valid(g.coop.local_nameplate) and g.coop.local_nameplate.text=="Review Guest"
+		checks.remote_nameplate=await wait_for(g,func():return g.coop.avatars.has(g.coop.owner_id) and g.coop.avatars[g.coop.owner_id].get_meta("nameplate").text=="Review Host")
 	if host:
 		# Repeat a host pause/resume while the guest is otherwise playing. Each
 		# transition records shared progression and both peer positions.
@@ -63,14 +82,19 @@ static func run(g,host: bool):
 		var member=g.coop.members.values()[0];var p=CoopSession.vector(member.position)
 		g.spawn_pickup(p+Vector3.UP*.4,"xp",9)
 		for i in range(30): g.update_pickups(.02);await g.get_tree().create_timer(.02).timeout
-		checks.shared_level=g.level==2 and g.xp==3 and g.update.run_xp==9
+		checks.shared_level=g.level==2 and g.xp==10 and g.update.run_xp==16
 		checks.client_level=await wait_for(g,func():return g.coop.test_messages.has("level"))
 		var data=g.coop.test_messages.get("level",{})
 		checks.same_pool=data.get("pool",[])==g.offers.map(func(o):return o.id)
-		checks.client_progress=data.get("level",0)==2 and data.get("xp",0)==3 and data.get("no_private_xp",false)
+		var client_options=data.get("options",[])
+		var client_state=g.party_seen.get(str(g.coop.members.keys()[0]),{})
+		checks.client_options=data.get("reward_id","")==g.party_reward_id and client_options.size()==g.offers.size() and client_state.get("options",[]).size()==g.offers.size()
+		checks.client_progress=data.get("level",0)==2 and data.get("xp",0)==10 and data.get("xp_gain",1)>1.7 and data.get("no_private_xp",false)
 		await wait_for(g,func():return g.mode=="offer");choose(g)
+		var client_id=g.coop.members.keys()[0]
+		checks.client_choice_highlight=await wait_for(g,func():return str(g.party_seen.get(str(client_id),{}).get("selected_id",""))!="")
 		await wait_for(g,func():return not g.coop.frozen() and g.mode=="playing")
-		checks.no_double_xp=g.xp==3 and g.update.run_xp==9
+		checks.no_double_xp=g.xp==10 and g.update.run_xp==16
 		var chest=g.chests[0];chest.mimic=false;chest.free=false;chest.rolled_free=true
 		send(g,"chest",{"position":CoopSession.array(chest.node.position)})
 		checks.opened=await wait_for(g,func():return chest.opened)
@@ -80,6 +104,8 @@ static func run(g,host: bool):
 		data=g.coop.test_messages.get("chest_done",{})
 		checks.one_payment=data.get("gold",-1)==70 and data.get("paid",-1)==1 and g.gold==100
 		checks.shared_chest_pool=data.get("pool",[])==pool and data.get("hidden",false)
+		checks.shared_chest_options=data.get("options",[]).size()==pool.size() and data.get("reward_id","")==g.party_reward_id and g.party_seen.get(str(client_id),{}).get("options",[]).size()==pool.size()
+		checks.chest_choice_highlight=await wait_for(g,func():return str(g.party_seen.get(str(client_id),{}).get("selected_id",""))!="")
 		checks.resumed=await wait_for(g,func():return not g.coop.frozen() and g.mode=="playing")
 		var sentry=g.update.magnet_turrets[0];var sentry_hp=sentry.hp
 		send(g,"guard",{"id":sentry.net_id})
@@ -94,15 +120,29 @@ static func run(g,host: bool):
 		checks.magnet_mirrored=await wait_for(g,func():return g.coop.test_messages.has("magnet_done"))
 		# Exercise the actual contact entry point and snapshot on two processes.
 		g.equipped.clear();g.spawn_enemy(8);var attacker=g.enemies[-1]
-		var client_id=g.coop.members.keys()[0]
 		attacker.node.position=CoopSession.vector(g.coop.members[client_id].position)+Vector3.FORWARD
 		attacker.speed=0;attacker.behavior="chase";attacker.contact=0;attacker.freeze=0;attacker.blind=0
 		g.update_combat(.04);send(g,"contact",{"id":attacker.net_id})
 		checks.remote_warning=await wait_for(g,func():return g.coop.test_messages.has("contact_seen"))
 		checks.remote_warning_visible=g.coop.test_messages.get("contact_seen",{}).get("visible",false)
 		g.enter_realm(3)
+		checks.baron_intro_peer=await wait_for(g,func():return g.coop.test_messages.has("baron_intro_seen"))
+		var final_bosses=g.enemies.filter(func(e):return e.get("boss_id",-1)==8)
+		if not final_bosses.is_empty():
+			preload("res://scripts/final_arena.gd").phase_changed(g,final_bosses[0],1)
+			var target_id=int(g.coop.members.keys()[0]);var target_name=g.coop.player_name_for(target_id)
+			g.coop.set_boss_focus(target_id,target_name);g.coop.broadcast({"type":"boss_focus","realm":g.realm,"player_id":target_id,"name":target_name})
+			checks.baron_target_remote=await wait_for(g,func():return g.coop.avatars.has(target_id) and g.coop.avatars[target_id].get_meta("nameplate").text.contains("TARGET"))
+			checks.baron_phase_peer=await wait_for(g,func():return g.coop.test_messages.has("baron_phase_seen"))
+			checks.baron_focus_peer=await wait_for(g,func():return g.coop.test_messages.has("baron_focus_seen"))
 		checks.remote_baron=await wait_for(g,func():return g.coop.test_messages.has("baron_seen"))
 		checks.remote_baron_model=g.coop.test_messages.get("baron_seen",{}).get("model",false)
+		var reconnect_id=int(g.coop.members.keys()[0]);var reconnect_token=str(g.coop.members[reconnect_id].get("token",""))
+		send(g,"reconnect_force")
+		checks.reconnect_host=await wait_for(g,func():return g.coop.test_messages.has("reconnected"),42)
+		var restored=g.coop.members.values().filter(func(member):return str(member.get("token",""))==reconnect_token and not member.get("disconnected",false))
+		checks.reconnect_state=not reconnect_token.is_empty() and restored.size()==1 and restored[0].get("mode","")=="playing"
+		send(g,"reconnect_host_confirm",{"restored":checks.reconnect_state})
 		send(g,"finish",checks)
 		await wait_for(g,func():return g.coop.test_messages.has("finished"))
 	else:
@@ -122,8 +162,10 @@ static func run(g,host: bool):
 		checks.level_offer=await wait_for(g,func():return g.mode=="offer" and g.offer_source=="level")
 		var before=g.pickups.size();g.spawn_pickup(g.player.position,"xp",999)
 		checks.no_private_xp=g.pickups.size()==before
-		send(g,"level",{"level":g.level,"xp":g.xp,"pool":g.offers.map(func(o):return o.id),"no_private_xp":checks.no_private_xp})
+		var option_state=g.party_seen.get(str(g.coop.local_id),{})
+		send(g,"level",{"level":g.level,"xp":g.xp,"xp_gain":g.stat("xpGain"),"pool":g.offers.map(func(o):return o.id),"no_private_xp":checks.no_private_xp,"options":option_state.get("options",[]),"reward_id":option_state.get("reward_id","")})
 		choose(g)
+		checks.host_choice_highlight=await wait_for(g,func():return str(g.party_seen.get(str(g.coop.owner_id),{}).get("selected_id",""))!="")
 		# A stale/duplicate client XP credit is never trusted by the host.
 		g.coop.send_to(g.coop.owner_id,{"type":"credit","pickup_id":"xp_0","xp":999})
 		checks.chest_instruction=await wait_for(g,func():return g.coop.test_messages.has("chest"))
@@ -134,8 +176,10 @@ static func run(g,host: bool):
 		g.coop.send_to(g.coop.owner_id,{"type":"chest_request","realm":g.realm,"position":CoopSession.array(position_value)})
 		checks.chest_offer=await wait_for(g,func():return g.mode=="offer" and g.offer_source=="chest")
 		await g.get_tree().create_timer(.3).timeout
-		send(g,"chest_done",{"gold":g.gold,"paid":g.paid_chests,"pool":g.offers.map(func(o):return o.id),"hidden":chest.opened and not chest.node.visible})
+		option_state=g.party_seen.get(str(g.coop.local_id),{})
+		send(g,"chest_done",{"gold":g.gold,"paid":g.paid_chests,"pool":g.offers.map(func(o):return o.id),"hidden":chest.opened and not chest.node.visible,"options":option_state.get("options",[]),"reward_id":option_state.get("reward_id","")})
 		choose(g)
+		checks.host_chest_choice_highlight=await wait_for(g,func():return str(g.party_seen.get(str(g.coop.owner_id),{}).get("selected_id",""))!="")
 		checks.defenses_replicated=g.enemies.filter(func(e):return e.get("magnet_guard",false)).size()==3
 		checks.guard_instruction=await wait_for(g,func():return g.coop.test_messages.has("guard"))
 		var sentry=g.enemies.filter(func(e):return e.net_id==int(g.coop.test_messages.guard.id))[0]
@@ -158,7 +202,19 @@ static func run(g,host: bool):
 		checks.final_realm=await wait_for(g,func():return g.realm==3 and g.enemies.any(func(e):return e.get("boss_id",-1)==8))
 		var bosses=g.enemies.filter(func(e):return e.get("boss_id",-1)==8)
 		checks.baron_model=not bosses.is_empty() and bosses[0].node.get_meta("rig").solid.identity=="boss_8_baron" and bosses[0].node.get_meta("rig").find_children("BaronSteam*","GPUParticles3D",true,false).size()==4
+		var intro_line=g.coop.test_messages.get("boss_phase_0",{})
+		checks.baron_intro_voice=intro_line.get("name","")=="THE ARRIVAL" and intro_line.get("index",-1)==10
+		if checks.baron_intro_voice:send(g,"baron_intro_seen")
+		if not bosses.is_empty():
+			checks.baron_phase_peer=await wait_for(g,func():return g.sound.boss_voice.stream!=null and g.sound.boss_voice.stream.get_length()>0)
+			if checks.baron_phase_peer:send(g,"baron_phase_seen")
+			checks.baron_focus_peer=await wait_for(g,func():return g.events.get("boss_focus_id",0)==g.coop.local_id and is_instance_valid(g.coop.local_nameplate) and g.coop.local_nameplate.text.contains("TARGET"))
+			if checks.baron_focus_peer:send(g,"baron_focus_seen")
 		send(g,"baron_seen",{"model":checks.baron_model})
+		checks.reconnect=await wait_for(g,func():return g.coop.test_messages.has("reconnect_host_confirm"),42)
+		checks.reconnect_mode=g.coop.active and g.coop.welcomed and not g.coop.reconnecting and g.mode=="playing"
+		g.update.ping_clock=0;g.update.send_ping()
+		checks.ping_achievement=float(g.career.data.total.get("coop_pings",0))>=1
 		checks.host_finished=await wait_for(g,func():return g.coop.test_messages.has("finish"))
 		checks.host_checks=g.coop.test_messages.get("finish",{}).values().all(func(v):return v)
 		send(g,"finished");await g.get_tree().create_timer(.3).timeout

@@ -7,7 +7,7 @@ var party_seen={}
 
 # Transport-independent authoritative world. Important events are reliable;
 # poses/snapshots use unreliable ordered delivery. Never deserialize objects.
-const PROTOCOL="wildforge-shared-world-8"
+const PROTOCOL="wildforge-shared-world-9"
 const PORT=29736
 const DISCOVERY_PORT=29737
 var discovery: PacketPeerUDP
@@ -27,6 +27,7 @@ var local_id=1
 var owner_id=1
 var members={}
 var avatars={}
+var local_nameplate: Label3D
 var accumulator=0.0
 var next_entity=1
 var paused=false
@@ -47,10 +48,61 @@ var turret_models={}
 var last_remote_reward_level=1
 var review_lag_ms=0
 var review_packet_queue=[]
+var reconnecting=false
+var reconnect_attempting=false
+var disconnect_started=0.0
 
 func setup(owner_game):
 	game=owner_game
 	if OS.get_cmdline_user_args().has("--shared-review-lag"): review_lag_ms=150
+
+func clean_player_name(value, fallback: String="Player") -> String:
+	var cleaned=str(value).replace("\r"," ").replace("\n"," ").strip_edges().left(24)
+	return cleaned if not cleaned.is_empty() else fallback
+
+func player_name() -> String:
+	return clean_player_name(game.career.data.settings.get("name","Player"))
+
+func player_name_for(id: int) -> String:
+	if id==local_id:return player_name()
+	return clean_player_name(members.get(id,{}).get("name",members.get(id,{}).get("player_name","Player")))
+
+func cosmetic_style(id: String) -> Dictionary:
+	var styles={"mastery_crown":{"mark":"♛ ","color":Color("f6d67c")},"formation_gold":{"mark":"✦ ","color":Color("ffba72")},"biome_prism":{"mark":"❖ ","color":Color("9ff0d2")},"ping_star":{"mark":"✧ ","color":Color("ffe98f")},"party_banner":{"mark":"⚑ ","color":Color("b6d6ff")},"comeback_flame":{"mark":"🔥 ","color":Color("ff927a")},"scout_visor":{"mark":"◈ ","color":Color("b7ebff")},"recap_medal":{"mark":"★ ","color":Color("e8d0a5")}}
+	return styles.get(id,{"mark":"","color":Color("fff1d1")})
+
+func set_boss_focus(id: int,name: String):
+	game.events.boss_focus_id=id;game.events.boss_focus_until=game.elapsed+4.0
+	game.hud.tell("BARON MARKS "+clean_player_name(name)+" · MOVE",3.0)
+	sync_local_nameplate()
+
+func name_changed():
+	if not active: return
+	if game.run_active:
+		sync_local_nameplate()
+	elif hosting:
+		publish_lobby()
+	elif welcomed:
+		publish_lobby_choice()
+
+func sync_local_nameplate():
+	if not active or not game.run_active:
+		if is_instance_valid(local_nameplate): local_nameplate.queue_free()
+		local_nameplate=null
+		return
+	if not is_instance_valid(local_nameplate):
+		local_nameplate=Label3D.new()
+		local_nameplate.name="CoopPlayerNameplate"
+		local_nameplate.font_size=26;local_nameplate.pixel_size=.01
+		local_nameplate.billboard=BaseMaterial3D.BILLBOARD_ENABLED
+		local_nameplate.modulate=Color("fff1d1");local_nameplate.outline_modulate=Color("263138");local_nameplate.outline_size=6
+		game.player.add_child(local_nameplate)
+	local_nameplate.position=Vector3(0,float(game.hero.get("height",1.65))+.55,0)
+	var targeted=int(game.events.get("boss_focus_id",0))==local_id and float(game.events.get("boss_focus_until",0))>game.elapsed
+	var style=cosmetic_style(str(game.career.data.settings.get("cosmetic","")))
+	local_nameplate.text=("⚠ "+player_name()+" · TARGET" if targeted else str(style.mark)+player_name())
+	local_nameplate.font_size=36 if targeted else 26;local_nameplate.pixel_size=.012 if targeted else .01
+	local_nameplate.modulate=Color("ff9675") if targeted else style.color
 
 func local_addresses() -> Array:
 	var addresses=[]
@@ -101,9 +153,6 @@ func host_lan():
 	transport="lan";active=true;hosting=true;local_id=1;owner_id=1
 	discovery=PacketPeerUDP.new()
 	if discovery.bind(DISCOVERY_PORT,"0.0.0.0")!=OK: discovery=null
-	peer.peer_connected.connect(func(id):
-		if game.run_active: peer.disconnect_peer(id)
-	)
 	publish_lobby()
 	peer.peer_disconnected.connect(remove_member);status="Party ready · %s · UDP %d. Friends join before you start." % [", ".join(local_addresses()),PORT]
 
@@ -122,6 +171,8 @@ func join_lan(address: String):
 
 func leave():
 	clear_flower_visuals()
+	if is_instance_valid(local_nameplate): local_nameplate.queue_free()
+	local_nameplate=null
 	review_packet_queue.clear()
 	local_ready=false;lobby_roster.clear()
 	if peer!=null: peer.close();peer=null
@@ -132,12 +183,45 @@ func leave():
 	avatars.clear();members.clear();active=false;hosting=false;paused=false;transport="";joined=false;welcomed=false;connection_clock=0;last_snapshot=0;last_remote_reward_level=1
 
 func connection_lost():
+	if game.run_active and not hosting and not reconnecting:
+		reconnecting=true;disconnect_started=Time.get_ticks_msec()/1000.0;status="Connection lost · trying to rejoin for 40 seconds…";game.mode="paused";game.hud.tell(status,8)
+		if peer!=null: peer.close();peer=null
+		active=false;welcomed=false;joined=false
+		attempt_reconnect.call_deferred()
+		return
+	if reconnecting: return
 	leave();status="Host disconnected. Return to solo or host a new party."
+	if game.run_active: game.end_run(false)
+	game.hud.tell(status,8)
+
+func attempt_reconnect():
+	if reconnect_attempting: return
+	reconnect_attempting=true
+	var address=str(game.career.data.settings.get("coopAddress",""))
+	for attempt in range(8):
+		if not reconnecting: break
+		if Time.get_ticks_msec()/1000.0-disconnect_started>=40: break
+		if not active and not address.is_empty(): join_lan(address)
+		var deadline=Time.get_ticks_msec()+3200
+		while reconnecting and active and not welcomed and Time.get_ticks_msec()<deadline:
+			await get_tree().create_timer(.1).timeout
+		if welcomed and active: reconnect_attempting=false;return
+		if active: leave()
+		await get_tree().create_timer(.8).timeout
+	reconnecting=false;reconnect_attempting=false
+	leave();status="Could not rejoin the active party. This run has ended."
 	if game.run_active: game.end_run(false)
 	game.hud.tell(status,8)
 
 func remove_member(id: int):
 	sync_flowers(id,{"flower_realm":game.realm})
+	if hosting and game.run_active and members.has(id):
+		members[id].disconnected=true;members[id].disconnect_until=Time.get_ticks_msec()/1000.0+40.0;members[id].last_seen=Time.get_ticks_msec()/1000.0
+		if avatars.has(id): avatars[id].queue_free();avatars.erase(id)
+		for key in turret_models.keys():
+			if key.begins_with(str(id)+":"): turret_models[key].queue_free();turret_models.erase(key)
+		status="Player disconnected · waiting 40 seconds for a reconnect."
+		return
 	members.erase(id)
 	if avatars.has(id): avatars[id].queue_free();avatars.erase(id)
 	for key in turret_models.keys():
@@ -148,11 +232,19 @@ func remove_member(id: int):
 func send_to(id: int,message: Dictionary,reliable: bool=true):
 	var bytes=var_to_bytes(message)
 	if bytes.size()>60000: return
-	if transport=="lan" and peer!=null and peer.get_connection_status()==MultiplayerPeer.CONNECTION_CONNECTED:
+	if hosting and members.has(id) and members[id].get("disconnected",false): return
+	if transport=="lan" and transport_peer_connected(id):
 		peer.set_target_peer(id);peer.transfer_mode=MultiplayerPeer.TRANSFER_MODE_RELIABLE if reliable or bytes.size()>1000 else MultiplayerPeer.TRANSFER_MODE_UNRELIABLE_ORDERED;peer.put_packet(bytes)
 
 func broadcast(message: Dictionary,reliable: bool=true):
-	for id in members: send_to(id,message,reliable)
+	for id in members:
+		if not members[id].get("disconnected",false) and transport_peer_connected(int(id)): send_to(id,message,reliable)
+
+func transport_peer_connected(id: int) -> bool:
+	if peer==null or peer.get_connection_status()!=MultiplayerPeer.CONNECTION_CONNECTED: return false
+	if not hosting: return true
+	var remote=peer.get_peer(id)
+	return remote!=null and remote.get_state()==ENetPacketPeer.STATE_CONNECTED
 
 func hero_changed():
 	local_ready=false
@@ -166,14 +258,14 @@ func set_ready(value: bool):
 func publish_lobby_choice():
 	if not active or game.run_active: return
 	if hosting: publish_lobby()
-	elif welcomed: send_to(owner_id,{"type":"lobby_choice","hero":game.hero.id,"ready":local_ready})
+	elif welcomed: send_to(owner_id,{"type":"lobby_choice","hero":game.hero.id,"player_name":player_name(),"ready":local_ready})
 
 func publish_lobby():
 	if not hosting or game.run_active: return
-	lobby_roster=[{"id":local_id,"hero":game.hero.id,"name":game.hero.name,"ready":local_ready,"host":true}]
+	lobby_roster=[{"id":local_id,"hero":game.hero.name,"name":player_name(),"ready":local_ready,"host":true}]
 	for id in members:
 		var member=members[id]
-		lobby_roster.append({"id":id,"hero":member.get("hero",""),"name":member.get("hero_name","Choosing hero…"),"ready":member.get("ready",false),"host":false})
+		lobby_roster.append({"id":id,"hero":member.get("hero_name","Choosing hero…"),"name":clean_player_name(member.get("player_name","Player")),"ready":member.get("ready",false),"host":false})
 	broadcast({"type":"lobby_state","players":lobby_roster})
 
 func can_start() -> bool:
@@ -185,10 +277,18 @@ func can_start() -> bool:
 func start_party(shared_seed: int=-1) -> bool:
 	if not can_start(): 
 		return false
+	if not members.is_empty(): game.career.bump("ready_runs")
 	game.start_run(shared_seed)
 	if shared_seed>=0:
 		run_started()
 	return game.run_active
+
+func party_builds() -> Array:
+	var result=[{"id":local_id,"name":player_name(),"build":pose().get("build",{})}]
+	for id in members:
+		var state=members[id]
+		result.append({"id":int(id),"name":clean_player_name(state.get("name",state.get("player_name","Player"))),"build":state.get("build",{})})
+	return result
 
 func run_started():
 	if not active or not hosting: return
@@ -222,7 +322,7 @@ func tick(delta: float):
 			if connection_clock>12:
 				leave();status="Connection timed out. Check the address and allow UDP 29736 through the host's firewall/router.";return
 		if not hosting and peer.get_connection_status()==MultiplayerPeer.CONNECTION_CONNECTED and not joined:
-			local_id=peer.get_unique_id();send_to(owner_id,{"type":"hello","protocol":PROTOCOL});joined=true
+			local_id=peer.get_unique_id();send_to(owner_id,{"type":"hello","protocol":PROTOCOL,"token":str(game.career.data.settings.get("coopToken",""))});joined=true
 		for i in range(mini(128,peer.get_available_packet_count())):
 			var sender=peer.get_packet_peer();var bytes=peer.get_packet()
 			if bytes.size()<=60000:
@@ -243,7 +343,10 @@ func tick(delta: float):
 	if hosting:
 		var now=Time.get_ticks_msec()/1000.0
 		for id in members.keys():
-			if now-members[id].get("last_seen",now)>20: remove_member(id)
+			if members[id].get("disconnected",false):
+				if now>float(members[id].get("disconnect_until",0)):
+					members.erase(id);game.update.remap_peer_id(int(id),0);publish_lobby()
+			elif now-members[id].get("last_seen",now)>20: remove_member(id)
 	for id in avatars:
 		var state=members.get(id,{})
 		if state.has("position"):
@@ -251,9 +354,16 @@ func tick(delta: float):
 			node.position=node.position.lerp(target,1-exp(-delta*12));node.rotation.y=float(state.get("yaw",0));node.get_meta("rig").animate(delta,movement,true)
 			if state.has("weapons"): node.get_meta("rig").sync_equipment(state.weapons)
 			var is_downed=game.update.downed_ids.has(int(id))
-			if node.has_meta("nameplate"): node.get_meta("nameplate").text="DOWNED · HOLD E / X" if is_downed else ""
+			if node.has_meta("nameplate"):
+				var player_text=clean_player_name(state.get("name","Player"))
+				var targeted=int(game.events.get("boss_focus_id",0))==int(id) and float(game.events.get("boss_focus_until",0))>game.elapsed
+				var label: Label3D=node.get_meta("nameplate")
+				var style=cosmetic_style(str(state.get("cosmetic","")))
+				label.text=("⚠ "+player_text+" · TARGET" if targeted else str(style.mark)+player_text+("\nDOWNED · HOLD E / X" if is_downed else ""))
+				label.font_size=36 if targeted else 26;label.pixel_size=.012 if targeted else .01;label.modulate=Color("ff9675") if targeted else style.color
 			if node.has_meta("down_beacon"): node.get_meta("down_beacon").visible=is_downed
 			update_avatar_vitals(node.get_meta("rig"),state)
+	if is_instance_valid(local_nameplate): sync_local_nameplate()
 
 func update_avatar_vitals(rig,state: Dictionary):
 	var stats=state.get("stats",{})
@@ -268,16 +378,23 @@ func pose() -> Dictionary:
 		if weapon.turret and is_instance_valid(weapon.get("node")): state.placement=array(weapon.node.position)
 		weapons.append(state)
 	var effective=game.stats.duplicate()
+	# Consumable and conditional XP modifiers are computed by stat(), outside the
+	# permanent stats dictionary. The host needs the collector's live value.
+	effective.xpGain=game.stat("xpGain")
 	for key in effective.keys():
 		if str(key).begins_with("augment-"): effective.erase(key)
 	for key in game.conditional_bonuses: effective[key]=game.stat(key)
-	return {"type":"pose","flower_realm":game.realm,"flowers":flower_state(),"position":array(game.player.position),"yaw":game.avatar.rotation.y,"model":game.hero.model,"name":game.hero.name,"mode":"ended" if game.run_recorded else game.mode,"weapons":weapons,"hp":game.hp,"shield_hp":game.shield_hp,"stats":effective,"gold":game.gold,"rescue_hold":game.update.rescue_hold}
+	var build={"weapons":weapons,"skills":game.owned.filter(func(item):return item.kind=="skill").map(func(item):return str(item.name).left(48))}
+	return {"type":"pose","flower_realm":game.realm,"flowers":flower_state(),"position":array(game.player.position),"yaw":game.avatar.rotation.y,"model":game.hero.model,"name":player_name(),"cosmetic":str(game.career.data.settings.get("cosmetic","")),"mode":"ended" if game.run_recorded else game.mode,"weapons":weapons,"build":build,"hp":game.hp,"shield_hp":game.shield_hp,"stats":effective,"gold":game.gold,"rescue_hold":game.update.rescue_hold}
 
 func snapshot() -> Dictionary:
 	var actors=[]
 	for enemy in game.enemies:
 		if not enemy.dead: actors.append({"id":enemy.net_id,"position":array(enemy.node.position),"biome":enemy.biome,"species":enemy.species,"height":enemy.height,"radius":enemy.radius,"hp":enemy.hp,"maxHp":enemy.maxHp,"xp_reward":enemy.xp_reward,"boss":enemy.boss,"boss_id":enemy.get("boss_id",-1),"guardian":enemy.get("guardian",false),"magnet_guard":enemy.get("magnet_guard",false),"title":enemy.get("title",""),"elite":enemy.elite,"corruption":enemy.get("corruption",0),"surface_up":array(enemy.node.basis.y),"surface_forward":array(-enemy.node.basis.z),"fire":enemy.fire,"poison":enemy.poison,"freeze":enemy.freeze,"blind":enemy.blind,"slip_until":enemy.get("slip_until",0),"windup":enemy.get("windup",0),"contact_windup":enemy.get("contact_windup",0)})
-	var poses=members.duplicate(true);poses[local_id]=pose()
+	var poses={}
+	for id in members:
+		if not members[id].get("disconnected",false): poses[id]=members[id].duplicate(true)
+	poses[local_id]=pose()
 	for member in poses.values():
 		var stats=member.get("stats",{})
 		member.vitals={"max_hp":stats.get("maxHp",100),"armor":stats.get("armor",0),"shield_capacity":float(stats.get("shield",0))+float(stats.get("jumpShield",0))}
@@ -289,34 +406,103 @@ static func vector(v) -> Vector3:
 	if not v is Array or v.size()!=3: return Vector3.ZERO
 	return Vector3(float(v[0]),float(v[1]),float(v[2]))
 
+func publish_reward_options(items: Array,source: String,kind: String,elite: bool):
+	if not active or not game.run_active or game.party_reward_id.is_empty(): return
+	var options=[]
+	for item in items.slice(0,5):
+		if item is Dictionary: options.append({"id":str(item.get("id","")),"name":str(item.get("name",item.get("title",""))).left(64)})
+	var state={"player_id":local_id,"name":game.hero.name,"reward_id":game.party_reward_id,"source":source,"kind":kind,"elite":elite,"options":options,"selected_id":""}
+	game.party_seen[str(local_id)]=state
+	if hosting: broadcast({"type":"reward_options","state":state})
+	else: send_to(owner_id,{"type":"reward_options","state":state})
+	game.hud.show_party_panel(game.party_seen)
+
+func publish_reward_choice(item: Dictionary,source: String):
+	if not active or game.party_reward_id.is_empty(): return
+	var key=str(local_id);var state=game.party_seen.get(key,{"player_id":local_id,"name":game.hero.name,"reward_id":game.party_reward_id,"source":source,"options":[]})
+	state.selected_id=str(item.get("id",""));state.selected_name=str(item.get("name","Selected reward")).left(64)
+	game.party_seen[key]=state
+	var message={"type":"reward_chosen","player_id":local_id,"name":game.hero.name,"reward_id":game.party_reward_id,"source":source,"selected_id":state.selected_id,"selected_name":state.selected_name}
+	if hosting: broadcast(message)
+	else: send_to(owner_id,message)
+	game.hud.show_party_panel(game.party_seen)
+
+func publish_reward_skip(source: String):
+	if not active or game.party_reward_id.is_empty(): return
+	var key=str(local_id);var state=game.party_seen.get(key,{"player_id":local_id,"name":game.hero.name,"reward_id":game.party_reward_id,"source":source,"options":[]})
+	state.selected_id="__skip__";state.selected_name="Kept weapons"
+	game.party_seen[key]=state
+	var message={"type":"reward_chosen","player_id":local_id,"name":game.hero.name,"reward_id":game.party_reward_id,"source":source,"selected_id":"__skip__","selected_name":"Kept weapons"}
+	if hosting: broadcast(message)
+	else: send_to(owner_id,message)
+	game.hud.show_party_panel(game.party_seen)
+
+func apply_reward_state(state: Dictionary):
+	var player_id=int(state.get("player_id",0))
+	if player_id<=0: return
+	var options=[]
+	var raw_options=state.get("options",[])
+	if raw_options is Array:
+		for item in raw_options.slice(0,5):
+			if item is Dictionary: options.append({"id":str(item.get("id","" )).left(100),"name":str(item.get("name","Reward")).left(64)})
+	game.party_seen[str(player_id)]={"player_id":player_id,"name":str(state.get("name","Player")).left(32),"reward_id":str(state.get("reward_id","")),"source":str(state.get("source","")),"kind":str(state.get("kind","")),"elite":bool(state.get("elite",false)),"options":options,"selected_id":str(state.get("selected_id","")),"selected_name":str(state.get("selected_name",""))}
+	game.hud.show_party_panel(game.party_seen)
+
+func apply_reward_choice(player_id: int,reward_id: String,selected_id: String,selected_name: String,source: String,name: String):
+	if player_id<=0 or reward_id!=game.party_reward_id: return
+	var key=str(player_id);var state=game.party_seen.get(key,{"player_id":player_id,"name":name,"reward_id":reward_id,"source":source,"options":[]})
+	state.selected_id=selected_id.left(100);state.selected_name=selected_name.left(64)
+	if str(state.get("name","")).is_empty(): state.name=name.left(32)
+	game.party_seen[key]=state
+	game.hud.show_party_panel(game.party_seen)
+
 func receive(sender: int,message):
 	if not message is Dictionary or not message.get("type","") is String: return
 	if game.update.receive(sender,message): return
 	var kind=message.type
 	if kind=="test_shared":
-		if test_mode and (members.has(sender) if hosting else sender==owner_id): test_messages[str(message.get("phase",""))]=message.get("data",{})
+		if test_mode and (members.has(sender) if hosting else sender==owner_id):
+			var phase=str(message.get("phase",""));test_messages[phase]=message.get("data",{})
+			if not hosting and phase=="reconnect_force": connection_lost.call_deferred()
 		return
 	if kind=="test_done":
 		if test_mode and (members.has(sender) if hosting else sender==owner_id): test_finished_peers[sender]=int(message.get("realm",-1))
 		return
 	if hosting:
 		if kind=="hello":
-			if game.run_active or message.get("protocol","")!=PROTOCOL or members.size()>=3: send_to(sender,{"type":"reject","reason":"Party is full, already playing, or on a different version."});return
-			members[sender]={"mode":"loading","last_seen":Time.get_ticks_msec()/1000.0};status="%d / 4 players. Ready to start." % (members.size()+1)
-			send_to(sender,{"type":"welcome"});publish_lobby();return
+			if message.get("protocol","")!=PROTOCOL: send_to(sender,{"type":"reject","reason":"Different game version."});return
+			var token=str(message.get("token","")).left(64);var resume_id=0
+			if game.run_active:
+				for old_id in members:
+					if members[old_id].get("disconnected",false) and str(members[old_id].get("token",""))==token and Time.get_ticks_msec()/1000.0<=float(members[old_id].get("disconnect_until",0)):
+						resume_id=int(old_id);break
+				if resume_id==0: send_to(sender,{"type":"reject","reason":"This party is already playing. Rejoin with the same player profile within 40 seconds."});return
+			else:
+				if members.size()>=3: send_to(sender,{"type":"reject","reason":"Party is full."});return
+			if resume_id>0:
+				var restored=members[resume_id];members.erase(resume_id);restored.erase("disconnected");restored.erase("disconnect_until");restored.last_seen=Time.get_ticks_msec()/1000.0;restored.mode="playing";members[sender]=restored
+				game.update.remap_peer_id(resume_id,sender)
+				status="A player reconnected · %d / 4." % (members.size()+1)
+				send_to(sender,{"type":"welcome","reconnected":true,"realm":game.realm})
+			else:
+				members[sender]={"mode":"loading","player_name":"Player","token":token,"last_seen":Time.get_ticks_msec()/1000.0};status="%d / 4 players. Ready to start." % (members.size()+1)
+				send_to(sender,{"type":"welcome","reconnected":false});publish_lobby()
+			return
 		if not members.has(sender): return
 		members[sender].last_seen=Time.get_ticks_msec()/1000.0
 		if kind=="lobby_choice" and not game.run_active:
 			var choices=game.rules.data.heroes.filter(func(h):return h.id==str(message.get("hero","")))
 			if choices.is_empty(): return
 			members[sender].hero=choices[0].id;members[sender].hero_name=choices[0].name
+			members[sender].player_name=clean_player_name(message.get("player_name",members[sender].get("player_name","Player")))
 			members[sender].ready=message.get("ready",false)==true
 			publish_lobby()
 		elif kind=="pose":
 			var p=vector(message.get("position",[]))
 			if not p.is_finite() or maxf(absf(p.x),absf(p.z))>RealmWorld.EXTENT+10: return
-			for key in ["position","yaw","model","name","mode","weapons","hp","shield_hp","stats","gold","rescue_hold","flower_realm","flowers"]:
+			for key in ["position","yaw","model","name","cosmetic","mode","weapons","build","hp","shield_hp","stats","gold","rescue_hold","flower_realm","flowers"]:
 				if message.has(key): members[sender][key]=message[key]
+			if message.has("name"): members[sender].name=clean_player_name(message.name)
 			if game.run_active: ensure_avatar(sender,members[sender])
 			if game.update.downed_ids.has(sender): members[sender].hp=0
 		elif kind=="force_pulse" and int(message.get("realm",-1))==game.realm and game.run_active and not frozen():
@@ -331,16 +517,30 @@ func receive(sender: int,message):
 			var weapon=str(message.get("weapon",""))
 			if members[sender].get("weapons",[]).any(func(w):return w.get("id","")==weapon):
 				message.actor=sender;show_shot(message);broadcast(message,false)
+		elif kind=="reward_options" and game.run_active:
+			var incoming=message.get("state",{})
+			if not incoming is Dictionary or str(incoming.get("reward_id",""))!=game.party_reward_id: return
+			var state=incoming.duplicate(true);state.player_id=sender;state.name=str(members[sender].get("name",incoming.get("name","Player"))).left(32)
+			state.source=str(state.get("source","" )).left(24);state.kind=str(state.get("kind","")).left(24)
+			var options=[]
+			if state.get("options",[]) is Array:
+				for item in state.options.slice(0,5):
+					if item is Dictionary: options.append({"id":str(item.get("id","")).left(100),"name":str(item.get("name","Reward")).left(64)})
+			state.options=options;game.party_seen[str(sender)]=state
+			game.hud.show_party_panel(game.party_seen)
+			broadcast({"type":"reward_options","state":state})
 		elif kind=="reward_chosen" and game.run_active:
-			var who=str(members[sender].get("name",message.get("name","Friend"))).left(40)
-			var raw_items=message.get("items",[])
-			if not raw_items is Array: return
-			var items=[]
-			for item in raw_items.slice(0,5): items.append(str(item).left(100))
-			game.party_seen[who]={"name":who,"items":items}
-			if game.mode=="offer": game.hud.show_party_panel(game.party_seen)
-			# The host is the relay: broadcast sends only to remote peers.
-			broadcast({"type":"reward_chosen","name":who,"items":items})
+			var who=str(members[sender].get("name",message.get("name","Player"))).left(32)
+			var reward_id=str(message.get("reward_id",""));var selected_id=str(message.get("selected_id",""))
+			if reward_id!=game.party_reward_id: return
+			var selected_name="Kept weapons" if selected_id=="__skip__" else ""
+			if selected_id!="__skip__":
+				var offered=game.party_seen.get(str(sender),{}).get("options",[])
+				if not offered.any(func(item):return str(item.get("id",""))==selected_id): return
+				selected_name=str(offered.filter(func(item):return str(item.get("id",""))==selected_id)[0].get("name",message.get("selected_name","Reward")))
+			apply_reward_choice(sender,reward_id,selected_id,selected_name,str(message.get("source","")),who)
+			# The host relays the accepted highlight to every peer.
+			broadcast({"type":"reward_chosen","player_id":sender,"name":who,"reward_id":reward_id,"source":str(message.get("source","")),"selected_id":selected_id,"selected_name":selected_name})
 		elif kind=="chest_request" and game.run_active:
 			var accepted=false
 			if int(message.get("realm",-1))==game.realm and game.mode=="playing" and not frozen() and float(members[sender].get("hp",0))>0:
@@ -406,7 +606,14 @@ func receive(sender: int,message):
 		if sender!=owner_id: return
 		last_snapshot=Time.get_ticks_msec()/1000.0
 		if kind=="reject": leave();status=str(message.reason);game.hud.tell(status,8)
-		elif kind=="welcome": welcomed=true;status="Joined. Choose your hero and mark Ready.";publish_lobby_choice()
+		elif kind=="welcome":
+			welcomed=true
+			if bool(message.get("reconnected",false)):
+				reconnecting=false;paused=false;game.mode="playing";game.career.bump("coop_reconnects");status="Rejoined the active run.";game.hud.tell(status,5)
+				if test_mode:
+					test_messages["reconnected"]={"mode":game.mode};send_to(owner_id,{"type":"test_shared","phase":"reconnected","data":{"mode":game.mode}})
+			else:
+				status="Joined. Choose your hero and mark Ready.";publish_lobby_choice()
 		elif kind=="lobby_state" and not game.run_active: lobby_roster=message.get("players",[])
 		elif kind=="start":
 			game.start_run(int(message.seed))
@@ -418,6 +625,15 @@ func receive(sender: int,message):
 		elif kind=="shot": show_shot(message)
 		elif kind=="hazard" and int(message.get("realm",-1))==game.realm:
 			game.warn_at(vector(message.position),float(message.radius),float(message.delay),float(message.damage),str(message.style),true)
+		elif kind=="boss_focus" and int(message.get("realm",-1))==game.realm:
+			set_boss_focus(int(message.get("player_id",0)),str(message.get("name","Player")))
+		elif kind=="boss_phase" and int(message.get("realm",-1))==game.realm:
+			game.boss_phases_reached=maxi(int(game.boss_phases_reached),clampi(int(message.get("phase",0)),0,7)+1)
+			game.hud.tell("BARON · "+str(message.get("name","THE WRATH")),4)
+			game.sound.boss_curse(vector(message.get("position",[])),int(message.get("index",10)),true)
+			if test_mode:test_messages["boss_phase_"+str(int(message.get("phase",-1))) ]={"name":str(message.get("name","")),"index":int(message.get("index",-1))}
+		elif kind=="boss_voice" and int(message.get("realm",-1))==game.realm:
+			game.sound.boss_curse(vector(message.get("position",[])),int(message.get("index",10)),true)
 		elif kind=="damage":
 			game.take_damage(float(message.amount),vector(message.position),str(message.sound))
 			if message.get("status","")=="poison" and not game.buffs.has("poison"): game.player_poison=3
@@ -426,14 +642,11 @@ func receive(sender: int,message):
 			for enemy in game.enemies:
 				if enemy.net_id==int(message.id) and not enemy.dead: game.kill_enemy(enemy,str(message.cause));return
 			if message.has("actor"): game.kill_enemy(game.spawn_network_enemy(message.actor),str(message.cause))
+		elif kind=="reward_options":
+			var state=message.get("state",{})
+			if state is Dictionary and str(state.get("reward_id",""))==game.party_reward_id: apply_reward_state(state)
 		elif kind=="reward_chosen":
-			var who=str(message.get("name","Friend")).left(40)
-			var raw_items=message.get("items",[])
-			if not raw_items is Array: return
-			var items=[]
-			for item in raw_items.slice(0,5): items.append(str(item).left(100))
-			game.party_seen[who]={"name":who,"items":items}
-			if game.mode=="offer": game.hud.show_party_panel(game.party_seen)
+			apply_reward_choice(int(message.get("player_id",0)),str(message.get("reward_id","")),str(message.get("selected_id","")),str(message.get("selected_name","")),str(message.get("source","")),str(message.get("name","Player")))
 		elif kind=="level_up" and int(message.get("realm",-1))==game.realm:
 			var shared_level=int(message.get("level",game.level))
 			if shared_level<game.level or shared_level<=last_remote_reward_level: return
@@ -444,14 +657,14 @@ func receive(sender: int,message):
 			game.level=shared_level
 			game.xp=int(message.get("xp",game.xp))
 			game.xp_target=int(message.get("xp_target",game.xp_target))
-			game.open_shared_offer(message.get("offers",[]),str(message.get("kind","skill")),bool(message.get("elite",false)),"level")
+			game.open_shared_offer(message.get("offers",[]),str(message.get("kind","skill")),bool(message.get("elite",false)),"level",str(message.get("reward_id","")))
 		elif kind=="chest_paid" and int(message.get("realm",-1))==game.realm:
 			game.pending_chest=false;var price=int(message.get("price",0));game.gold=maxi(0,game.gold-price)
 			if price>0: game.paid_chests+=1
 			game.run_chests+=1;game.career.bump("chests");game.heal(game.stats.chestHeal)
 		elif kind=="chest_rejected": game.pending_chest=false;game.hud.tell("Chest unavailable or not enough coins")
 		elif kind=="chest_open" and int(message.get("realm",-1))==game.realm:
-			game.open_shared_offer(message.get("offers",[]),str(message.get("kind","item")),bool(message.get("elite",false)),"chest")
+			game.open_shared_offer(message.get("offers",[]),str(message.get("kind","item")),bool(message.get("elite",false)),"chest",str(message.get("reward_id","")))
 		elif kind=="chest_hide" and int(message.get("realm",-1))==game.realm:
 			apply_chest_hide(message.get("pos",[]))
 
@@ -470,7 +683,7 @@ func ensure_avatar(id: int,state: Dictionary):
 		if definition.id=="white-supra":
 			var box=BoxShape3D.new();box.size=Vector3(capsule.radius*2,definition.height,2.3);collider.shape=box;collider.position.y=definition.height*.5
 		var rig=game.world.model(model,float(definition.get("height",1.65)));node.add_child(rig);node.set_meta("rig",rig);game.add_child(node);avatars[id]=node
-		var nameplate=Label3D.new();nameplate.text="";nameplate.position.y=float(definition.get("height",1.65))+.4;nameplate.font_size=26;nameplate.billboard=BaseMaterial3D.BILLBOARD_ENABLED;node.add_child(nameplate);node.set_meta("nameplate",nameplate)
+		var nameplate=Label3D.new();nameplate.text=clean_player_name(state.get("name","Player"));nameplate.position.y=float(definition.get("height",1.65))+.55;nameplate.font_size=26;nameplate.pixel_size=.01;nameplate.billboard=BaseMaterial3D.BILLBOARD_ENABLED;nameplate.modulate=Color("fff1d1");nameplate.outline_modulate=Color("263138");nameplate.outline_size=6;node.add_child(nameplate);node.set_meta("nameplate",nameplate)
 		# A long, translucent cyan column makes a fallen teammate findable
 		# over terrain, while the screen-edge marker works out of view.
 		var beacon=MeshInstance3D.new()
@@ -571,6 +784,7 @@ func target(origin: Vector3) -> Dictionary:
 	if active and hosting:
 		for id in members:
 			var member=members[id]
+			if member.get("disconnected",false): continue
 			if not member.has("position") or member.get("hp",0)<=0: continue
 			var p=vector(member.position);var d=origin.distance_squared_to(p)
 			if d<distance: distance=d;result={"id":id,"position":p}

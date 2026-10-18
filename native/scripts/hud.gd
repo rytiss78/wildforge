@@ -58,6 +58,8 @@ var lobby_ready: Button
 var lobby_start: Button
 var lobby_roster_label: Label
 var lobby_specialty: Label
+var coop_name_input: LineEdit
+var achievement_cosmetic_picker: OptionButton
 var damage_font=SystemFont.new()
 var damage_labels: Array[Label]=[]
 var damage_overlay: Control
@@ -327,14 +329,20 @@ func setup(owner_game):
 	modal.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	# A small companion panel above the ordinary HUD (and reward modal).
 	party_overlay=PanelContainer.new()
-	party_overlay.anchor_left=1.0;party_overlay.anchor_right=1.0
-	party_overlay.offset_left=-420;party_overlay.offset_right=-24
-	party_overlay.offset_top=210;party_overlay.offset_bottom=510
+	party_overlay.anchor_left=.68;party_overlay.anchor_right=.99
+	party_overlay.anchor_top=.035;party_overlay.anchor_bottom=.965
 	party_overlay.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	party_overlay.z_index=8
 	party_overlay.add_theme_stylebox_override("panel",style(Color("182d30"),ThemeTokens.STAR_GOLD,10))
 	party_rows=VBoxContainer.new()
-	party_rows.add_theme_constant_override("separation",8)
-	party_overlay.add_child(party_rows)
+	party_rows.add_theme_constant_override("separation",3)
+	party_rows.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	party_rows.size_flags_vertical=Control.SIZE_EXPAND_FILL
+	var party_scroll=ScrollContainer.new()
+	party_scroll.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	party_scroll.size_flags_vertical=Control.SIZE_EXPAND_FILL
+	party_overlay.add_child(party_scroll)
+	party_scroll.add_child(party_rows)
 	root.add_child(party_overlay)
 	party_overlay.visible=false
 	modal.visible = false
@@ -377,16 +385,37 @@ func tell(text: String, duration: float = 3.0):
 func show_party_panel(selections: Dictionary):
 	if not is_instance_valid(party_rows): return
 	for child in party_rows.get_children(): child.queue_free()
-	party_rows.add_child(label("PARTY REWARDS",18,ThemeTokens.STAR_GOLD))
-	if selections.is_empty():
-		party_rows.add_child(label("No rewards chosen yet",15))
+	var source=""
 	for person in selections.values():
+		if person is Dictionary and not str(person.get("source","")).is_empty(): source=str(person.source);break
+	var title="TEAM LEVEL-UP OPTIONS" if source=="level" else "TEAM CHEST OPTIONS" if source=="chest" else "TEAM OPTIONS"
+	party_rows.add_child(label(title,17,ThemeTokens.STAR_GOLD))
+	if selections.is_empty():
+		party_rows.add_child(label("Waiting for teammate options…",13))
+	var ids=selections.keys();ids.sort_custom(func(a,b):return int(a)<int(b))
+	for index in range(ids.size()):
+		var person=selections[ids[index]]
 		if not person is Dictionary: continue
-		var names=[]
-		for item in person.get("items",[]): names.append(str(item).left(55))
-		var row=label(str(person.get("name","Player")).left(32)+": "+(", ".join(names) if not names.is_empty() else "Choosing…"),15)
-		row.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
-		party_rows.add_child(row)
+		var is_local=int(person.get("player_id",ids[index]))==game.coop.local_id
+		var heading=label(("YOU" if is_local else "PLAYER "+str(index+1))+" · "+str(person.get("name","Player")).left(26),14,ThemeTokens.PAPER)
+		heading.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
+		party_rows.add_child(heading)
+		var options=person.get("options",[]);var selected_id=str(person.get("selected_id",""))
+		if options.is_empty():
+			party_rows.add_child(label("Waiting for options…",12,Color("a9b7b8")))
+		else:
+			for option_index in range(options.size()):
+				var option=options[option_index];var chosen=str(option.get("id", ""))==selected_id and not selected_id.is_empty()
+				var row=PanelContainer.new();row.custom_minimum_size.y=18
+				row.add_theme_stylebox_override("panel",style(Color("574b2b") if chosen else Color("223538"),ThemeTokens.STAR_GOLD if chosen else Color("526568"),4))
+				var text=label(("✓  " if chosen else str(option_index+1)+"  ")+str(option.get("name","Reward")).left(48),12,ThemeTokens.STAR_GOLD if chosen else Color("d4ddda"))
+				text.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
+				text.tooltip_text=str(option.get("name","Reward"))
+				row.add_child(text);party_rows.add_child(row)
+		if selected_id=="__skip__":
+			var skipped=PanelContainer.new();skipped.custom_minimum_size.y=18
+			skipped.add_theme_stylebox_override("panel",style(Color("574b2b"),ThemeTokens.STAR_GOLD,4))
+			skipped.add_child(label("✓  Kept weapons",12,ThemeTokens.STAR_GOLD));party_rows.add_child(skipped)
 	party_panel_open=true
 	party_overlay.visible=game.coop.active and game.run_active
 
@@ -722,16 +751,20 @@ func coop_menu():
 	var loadout=label("STARTING WEAPON · "+str(starter.get("name",game.hero.weapon))+"\n"+WeaponDetails.describe(game.hero.weapon),15)
 	loadout.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;connection.add_child(loadout)
 	party_label=label(game.coop.status,14);party_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;connection.add_child(party_label)
+	connection.add_child(label("PLAYER NAME · SHOWN ABOVE YOU IN CO-OP",13))
+	coop_name_input=LineEdit.new();coop_name_input.text=game.coop.player_name();coop_name_input.placeholder_text="Player name";coop_name_input.max_length=24;coop_name_input.custom_minimum_size=Vector2(340,36);connection.add_child(coop_name_input)
+	coop_name_input.text_submitted.connect(func(value):save_coop_player_name(value))
+	coop_name_input.focus_exited.connect(func():save_coop_player_name(coop_name_input.text) if is_instance_valid(coop_name_input) else null)
 	var hosting_row=HBoxContainer.new();connection.add_child(hosting_row)
-	hosting_row.add_child(button("HOST PARTY",func():game.coop.host_lan()))
+	hosting_row.add_child(button("HOST PARTY",func():save_coop_player_name(coop_name_input.text);game.coop.host_lan()))
 	hosting_row.add_child(button("COPY ADDRESS",func():
 		var addresses=game.coop.local_addresses()
 		if not addresses.is_empty(): DisplayServer.clipboard_set(addresses[0]);tell("Host address copied")
 	))
 	var row=HBoxContainer.new();connection.add_child(row)
 	var address=LineEdit.new();address.text=game.career.data.settings.get("coopAddress","");address.placeholder_text="Host IP / hostname / VPN";address.custom_minimum_size=Vector2(300,32);row.add_child(address)
-	row.add_child(button("JOIN",func():game.coop.join_lan(address.text)))
-	address.text_submitted.connect(func(value):game.coop.join_lan(value))
+	row.add_child(button("JOIN",func():save_coop_player_name(coop_name_input.text);game.coop.join_lan(address.text)))
+	address.text_submitted.connect(func(value):save_coop_player_name(coop_name_input.text);game.coop.join_lan(value))
 	connection.add_child(label("NEARBY PARTIES",13));party_list=VBoxContainer.new();connection.add_child(party_list);party_list_key=""
 	game.coop.begin_discovery();update_party_list()
 	connection.add_child(label("PARTY · HERO / STATUS",14))
@@ -754,8 +787,15 @@ func update_lobby_controls():
 	lobby_start.text="START GAME" if game.coop.hosting else "HOST STARTS GAME"
 	var lines=[]
 	for member in game.coop.lobby_roster:
-		lines.append(("Host" if member.host else "Player")+" · "+str(member.name)+" · "+("READY" if member.ready else "Not ready"))
+		lines.append(("Host" if member.host else "Player")+" · "+str(member.name)+" ("+str(member.get("hero","Hero"))+") · "+("READY" if member.ready else "Not ready"))
 	lobby_roster_label.text="Host or join a party to ready up." if lines.is_empty() else "\n".join(lines)
+
+func save_coop_player_name(value: String):
+	var cleaned=game.coop.clean_player_name(value)
+	if game.career.data.settings.get("name","")==cleaned: return
+	game.career.data.settings.name=cleaned;game.career.dirty=true;game.career.save()
+	if is_instance_valid(coop_name_input) and coop_name_input.text!=cleaned: coop_name_input.text=cleaned
+	game.coop.name_changed()
 
 func update_party_list():
 	var entries=[]
@@ -799,8 +839,9 @@ func icon_key(item: Dictionary) -> String:
 
 func offer_card(item: Dictionary, index: int, select: Callable) -> Button:
 	var card=button("",select,false,"large")
+	var compact=game.coop.active and game.run_active
 	var accent=RunRules.COLORS[item.tier]
-	card.custom_minimum_size=Vector2(0,480)
+	card.custom_minimum_size=Vector2(0,390 if compact and get_viewport().get_visible_rect().size.y<850 else 440 if compact else 480)
 	card.size_flags_horizontal=Control.SIZE_EXPAND_FILL
 	# Rarity glow: inner shadow + colored top bar
 	var normal=style(paper.lerp(accent,.06),accent,12);normal.border_width_top=5
@@ -815,8 +856,8 @@ func offer_card(item: Dictionary, index: int, select: Callable) -> Button:
 	card.add_theme_stylebox_override("focus",focus)
 	var column=VBoxContainer.new();card.add_child(column)
 	column.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	column.offset_left=21;column.offset_right=-21;column.offset_top=18;column.offset_bottom=-18
-	column.mouse_filter=Control.MOUSE_FILTER_IGNORE;column.add_theme_constant_override("separation",8)
+	column.offset_left=10 if compact else 21;column.offset_right=-10 if compact else -21;column.offset_top=12 if compact else 18;column.offset_bottom=-12 if compact else -18
+	column.mouse_filter=Control.MOUSE_FILTER_IGNORE;column.add_theme_constant_override("separation",5 if compact else 8)
 	# Rarity bar with glow
 	var rarity=label(RunRules.RARITIES[item.tier].to_upper()+"   ·   #"+str(index+1),12,accent.darkened(.4))
 	rarity.add_theme_color_override("font_outline_color",accent);rarity.add_theme_color_override("font_outline_color",accent)
@@ -826,7 +867,7 @@ func offer_card(item: Dictionary, index: int, select: Callable) -> Button:
 	# Icon with subtle background
 	var icon_bg=ColorRect.new()
 	icon_bg.color=Color(paper.r,paper.g,paper.b,.85)
-	icon_bg.custom_minimum_size=Vector2(138,176)
+	icon_bg.custom_minimum_size=Vector2(76,92) if compact else Vector2(138,176)
 	var radius=StyleBoxFlat.new();radius.bg_color=Color(accent,.12);radius.set_corner_radius_all(8);radius.set_border_width_all(1);radius.border_color=accent.darkened(.3)
 	icon_bg.add_theme_stylebox_override("normal",radius)
 	column.add_child(icon_bg)
@@ -834,13 +875,13 @@ func offer_card(item: Dictionary, index: int, select: Callable) -> Button:
 	icon_bg.add_child(icon)
 	icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	icon.offset_left=10;icon.offset_top=10;icon.offset_right=-10;icon.offset_bottom=-10
-	var title=label(item.name,20);title.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;title.custom_minimum_size.y=58
+	var title=label(item.name,16 if compact else 20);title.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;title.custom_minimum_size.y=44 if compact else 58
 	title.add_theme_color_override("font_outline_color",ink);title.add_theme_color_override("font_outline_color",ink)
 	column.add_child(title)
 	var effect_desc=""
 	if item.kind!="weapon" and item.has("effects") and item.effects.size()>0: effect_desc=game.rules.describe(item.effects[0])
 	var text=WeaponDetails.describe(item.id) if item.kind=="weapon" else effect_desc
-	var description=label(text,14);description.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;description.max_lines_visible=4;description.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS;card.tooltip_text=text;description.size_flags_vertical=Control.SIZE_EXPAND_FILL
+	var description=label(text,11 if compact else 14);description.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;description.max_lines_visible=4;description.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS;card.tooltip_text=text;description.size_flags_vertical=Control.SIZE_EXPAND_FILL
 	column.add_child(description)
 	var note=item.kind.capitalize()+" · "+str(item.get("family","Weapon"))
 	if item.kind=="weapon":
@@ -854,8 +895,8 @@ func offer_card(item: Dictionary, index: int, select: Callable) -> Button:
 	var useful=true
 	if item.kind!="weapon":
 		var fit=UpgradeFit.describe(game,item);note=fit.text;useful=fit.useful
-	var footer=label(note,15,Color("8ee4b3") if useful else Color("973426"))
-	footer.name="LoadoutBenefit";footer.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;footer.custom_minimum_size.y=68
+	var footer=label(note,12 if compact else 15,Color("8ee4b3") if useful else Color("973426"))
+	footer.name="LoadoutBenefit";footer.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;footer.custom_minimum_size.y=48 if compact else 68
 	footer.max_lines_visible=4;footer.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
 	column.add_child(footer);card.tooltip_text+="\n"+note
 	# Hover scale-up via tween
@@ -896,15 +937,23 @@ func preview_offer(item: Dictionary):
 	var detail=label(comparison,15);detail.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;offer_detail.add_child(detail)
 
 func show_offers(items: Array, source: String,animate: bool=true):
+	var coop_split=game.coop.active and game.run_active
 	var box=open("LEVEL %d · CHOOSE YOUR NEXT POWER" % game.level if source=="level" else "TREASURE FOUND", "Choose one reward. Shape your next fight.")
+	if coop_split: game.coop.publish_reward_options(items,source,game.offer_kind,game.offer_elite)
 	var panel=box.get_parent();panel.position=Vector2(80,83);panel.size=Vector2(1760,914)
+	if coop_split:
+		var viewport=get_viewport().get_visible_rect().size
+		panel.position=Vector2(16,16);panel.size=Vector2(viewport.x*.65,viewport.y-32)
+		for frame in modal.get_children():
+			if frame.get_script()!=null and str(frame.get_script().resource_path).ends_with("forge_frame.gd"): frame.position=panel.position;frame.size=panel.size
+		party_panel_open=true;show_party_panel(game.party_seen)
 	panel.add_theme_stylebox_override("panel",style(ThemeTokens.INK,Color("9b855e"),22))
 	box.get_child(0).add_theme_color_override("font_color",ThemeTokens.PAPER)
 	box.get_child(1).add_theme_color_override("font_color",Color("b5c5cf"))
-	box.add_theme_constant_override("separation",16)
-	var choices=HBoxContainer.new();choices.add_theme_constant_override("separation",16);box.add_child(choices)
+	box.add_theme_constant_override("separation",8 if coop_split else 16)
+	var choices=HBoxContainer.new();choices.add_theme_constant_override("separation",8 if coop_split else 16);box.add_child(choices)
 	for i in range(items.size()): choices.add_child(offer_card(items[i],i,func():game.choose_offer(i)))
-	var detail_panel=PanelContainer.new();detail_panel.custom_minimum_size.y=95
+	var detail_panel=PanelContainer.new();detail_panel.custom_minimum_size.y=64 if coop_split else 95
 	detail_panel.add_theme_stylebox_override("panel",style(paper,Color("a99070"),12));box.add_child(detail_panel)
 	offer_detail=VBoxContainer.new();offer_detail.add_theme_constant_override("separation",6);detail_panel.add_child(offer_detail)
 	var actions=HBoxContainer.new();actions.add_theme_constant_override("separation",12);box.add_child(actions)
@@ -1004,11 +1053,14 @@ func build_menu(return_to_pause: bool=false,detailed: bool=false):
 
 func run_report_menu():
 	game.mode="build"
+	if game.run_recorded and game.run_active: game.career.bump("run_reports_viewed")
 	var score=game.career.data.scores.filter(func(entry):return entry.id==game.run_id)
 	var summary="%d:%02d played · %d kills · %d gold · Deaths %d" % [int(game.elapsed)/60,int(game.elapsed)%60,game.kills,game.gold,game.death_count]
 	if not score.is_empty():
 		summary+=" · Score %d · Local rank #%d" % [score[0].score,game.career.data.scores.find(score[0])+1]
 	var box=open("RUN REPORT",summary);var rows=report_scroll(box)
+	rows.add_child(label("SURVIVED %02d:%02d · %d BOSS PHASES · %d REVIVES · %d RESCUES" % [int(game.elapsed)/60,int(game.elapsed)%60,game.boss_phases_reached,game.update.run_revives,game.update.run_rescues],16))
+	rows.add_child(label("YOUR CONTRIBUTION · %d damage · PARTY TOTAL %d damage" % [game.update.run_damage,game.update.party_damage],15))
 	rows.add_child(label("YOUR DAMAGE BY WEAPON / EFFECT",18))
 	for entry in RunReport.ranked_damage(game):
 		var weapon=game.rules.data.weapons.any(func(w):return w.id==entry.source)
@@ -1030,6 +1082,29 @@ func run_report_menu():
 	rows.add_child(label("Score: 20×kills + gold + 2×seconds + level/boss/chest/victory bonuses.",14))
 	var back=button("BACK",func():pause_menu(game.run_recorded,not score.is_empty() and score[0].win),true);box.add_child(back);back.grab_focus()
 
+func party_builds_menu():
+	if not game.coop.active: return
+	game.mode="build"
+	var members=game.coop.party_builds()
+	var complete=members.size()>1
+	for member in members:
+		if int(member.id)!=game.coop.local_id and (not member.build is Dictionary or not member.build.has("weapons") or not member.build.has("skills")): complete=false
+	if complete: game.career.bump("party_builds_viewed")
+	var box=open("PARTY BUILDS", "Current weapons and skills · refreshed from each player")
+	var rows=report_scroll(box)
+	for member in members:
+		var build=member.build if member.build is Dictionary else {}
+		rows.add_child(label(str(member.name)+(" · YOU" if int(member.id)==game.coop.local_id else ""),20))
+		var weapon_names=[]
+		for item in build.get("weapons",[]):
+			var catalog=game.rules.data.weapons.filter(func(weapon):return weapon.id==str(item.get("id","")))
+			weapon_names.append((str(catalog[0].name) if not catalog.is_empty() else str(item.get("id","Weapon"))+" · UNKNOWN")+" R"+str(item.get("rank",1)))
+		rows.add_child(label("WEAPONS · "+(" · ".join(weapon_names) if not weapon_names.is_empty() else "None yet"),16))
+		rows.add_child(label("SKILLS · "+(" · ".join(build.get("skills",[])) if not build.get("skills",[]).is_empty() else "None yet"),15))
+	if not complete and members.size()>1: rows.add_child(label("Waiting for a teammate’s next status update…",14))
+	rows.add_child(label("Achievement: inspect every teammate’s build · %d / 1" % int(game.career.data.total.get("party_builds_viewed",0)),14))
+	var back=button("BACK",func():close(),true);box.add_child(back);back.grab_focus()
+
 func last_run_menu():
 	game.mode="build"
 	var run=game.career.data.lastRun
@@ -1040,6 +1115,7 @@ func last_run_menu():
 	var summary="%s · %s · %d:%02d · Level %d · Deaths %d" % [hero_name,outcome,int(run.seconds)/60,int(run.seconds)%60,run.level,run.get("deaths",0)]
 	var box=open("LAST RUN",summary);var rows=report_scroll(box)
 	rows.add_child(label("%s · %d kills · %d coins · Score %d" % [run.get("date",""),run.kills,run.get("gold",0),run.score],18))
+	rows.add_child(label("%d boss phases · %d revives · %d rescues · %d damage dealt · %d party damage" % [int(run.get("bossPhases",0)),int(run.get("revives",0)),int(run.get("rescues",0)),int(run.get("localDamage",0)),int(run.get("partyDamage",0))],15))
 	rows.add_child(label("YOUR DAMAGE BY WEAPON / EFFECT",18))
 	var sources=run.get("damageSources",{});var keys=sources.keys()
 	keys.sort_custom(func(a,b):return sources[a]>sources[b])
@@ -1070,6 +1146,17 @@ func settings_menu():
 	var genres = HBoxContainer.new()
 	for genre in ["metal","cyber"]: genres.add_child(button("PHONK" if genre == "metal" else "PHONK SOFT",func(): game.career.data.settings.genre=genre;game.career.dirty=true;game.sound.start(randi())))
 	box.add_child(genres)
+	var cosmetic_row=HBoxContainer.new();box.add_child(cosmetic_row)
+	cosmetic_row.add_child(label("ACHIEVEMENT STYLE · %d / 8 EARNED" % mini(8,game.career.data.cosmetics.size()),16))
+	var cosmetics={"mastery_crown":"Mastery Crown","formation_gold":"Formation Gold","biome_prism":"Biome Prism","ping_star":"Ping Star","party_banner":"Party Banner","comeback_flame":"Comeback Flame","scout_visor":"Scout Visor","recap_medal":"Recap Medal"}
+	var picker=OptionButton.new();achievement_cosmetic_picker=picker;picker.add_item("Default");picker.set_item_metadata(0,"")
+	for id in cosmetics:
+		if game.career.data.cosmetics.has(id): picker.add_item(cosmetics[id]);picker.set_item_metadata(picker.item_count-1,id)
+	for index in range(picker.item_count):
+		if str(picker.get_item_metadata(index))==str(game.career.data.settings.get("cosmetic","")): picker.select(index)
+	picker.disabled=picker.item_count==1
+	picker.item_selected.connect(func(index):game.career.data.settings.cosmetic=str(picker.get_item_metadata(index));game.career.dirty=true;game.career.save();game.coop.sync_local_nameplate())
+	cosmetic_row.add_child(picker)
 	var rumble = CheckButton.new()
 	rumble.text = "Xbox vibration"
 	rumble.add_theme_color_override("font_color",ink)

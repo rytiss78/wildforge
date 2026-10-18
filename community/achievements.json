@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "count": 108,
+  "count": 117,
   "achievements": [
     {
       "apiName": "WF_PLAY_WRENCH",
@@ -1299,6 +1299,123 @@
       "condition": {
         "key": "event_GHOST_DANGER",
         "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_WEAPON_MASTERY",
+      "displayName": "Workshop Legend",
+      "description": "Reach mastery rank 3 with five different weapons.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_weapon_mastery-unlocked.png",
+      "iconLocked": "achievement-icons/wf_weapon_mastery-locked.png",
+      "condition": {
+        "key": "weapon_mastery_count",
+        "target": 5,
+        "scope": "best"
+      }
+    },
+    {
+      "apiName": "WF_FORMATION_BREAKER",
+      "displayName": "Break Their Ranks",
+      "description": "Defeat 100 members of enemy formations.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_formation_breaker-unlocked.png",
+      "iconLocked": "achievement-icons/wf_formation_breaker-locked.png",
+      "condition": {
+        "key": "formation_breaks",
+        "target": 100,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_BIOME_COLLECTOR",
+      "displayName": "Six Worlds, One Map",
+      "description": "Discover all six biomes across your runs.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_biome_collector-unlocked.png",
+      "iconLocked": "achievement-icons/wf_biome_collector-locked.png",
+      "condition": {
+        "key": "biomes_discovered",
+        "target": 6,
+        "scope": "best"
+      }
+    },
+    {
+      "apiName": "WF_PARTY_PINGS",
+      "displayName": "Good Call",
+      "description": "Send 25 useful pings while playing co-op.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_party_pings-unlocked.png",
+      "iconLocked": "achievement-icons/wf_party_pings-locked.png",
+      "condition": {
+        "key": "coop_pings",
+        "target": 25,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_READY_PARTY",
+      "displayName": "All Together",
+      "description": "Start 10 co-op runs after every player readies up.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_ready_party-unlocked.png",
+      "iconLocked": "achievement-icons/wf_ready_party-locked.png",
+      "condition": {
+        "key": "ready_runs",
+        "target": 10,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_WELCOME_BACK",
+      "displayName": "Back In The Forge",
+      "description": "Reconnect to an active co-op run.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_welcome_back-unlocked.png",
+      "iconLocked": "achievement-icons/wf_welcome_back-locked.png",
+      "condition": {
+        "key": "coop_reconnects",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_BUILD_SCOUT",
+      "displayName": "Know Your Team",
+      "description": "Inspect every teammate’s current build in co-op.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_build_scout-unlocked.png",
+      "iconLocked": "achievement-icons/wf_build_scout-locked.png",
+      "condition": {
+        "key": "party_builds_viewed",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_AFTER_ACTION",
+      "displayName": "Study The Run",
+      "description": "Open 10 completed run reports.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_after_action-unlocked.png",
+      "iconLocked": "achievement-icons/wf_after_action-locked.png",
+      "condition": {
+        "key": "run_reports_viewed",
+        "target": 10,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_STYLE_COLLECTION",
+      "displayName": "Earned, Not Bought",
+      "description": "Unlock three achievement cosmetics.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_style_collection-unlocked.png",
+      "iconLocked": "achievement-icons/wf_style_collection-locked.png",
+      "condition": {
+        "key": "achievement_cosmetics",
+        "target": 3,
         "scope": "total"
       }
     },

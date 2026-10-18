@@ -28,6 +28,8 @@ var party_damage=0.0
 var rescue_interrupt_until=0.0
 var run_xp=0.0
 var run_coins=0.0
+var run_revives=0
+var run_rescues=0
 var memories={}
 var mimic={}
 var mimic_clock=0.0
@@ -36,7 +38,7 @@ func setup(owner_game): game=owner_game
 
 func new_run():
 	game.rules.banished.clear();downed=false;downed_ids.clear();rescue_progress.clear()
-	run_damage=0;party_damage=0;run_xp=0;run_coins=0;memories.clear();quip_times.clear();quip_clock=0
+	run_damage=0;party_damage=0;run_xp=0;run_coins=0;run_revives=0;run_rescues=0;memories.clear();quip_times.clear();quip_clock=0
 	if is_instance_valid(magnet_node): magnet_node.queue_free();magnet_node=null
 	magnet_turrets=[];magnet_active=false
 
@@ -117,7 +119,7 @@ func note(key: String):
 func recap() -> String:
 	var powers=[]
 	for weapon in game.equipped: powers.append("%s %d" % [weapon.name,weapon.rank])
-	return "YOUR RUN · %d damage · %d XP · %d coins found\nPARTY DAMAGE · %d\n%d regions · %d landmarks · %s\n%s" % [run_damage,run_xp,run_coins,party_damage,game.biome_seen.size(),game.visited_ruins.size(),", ".join(powers)," · ".join(memories.keys())]
+	return "SURVIVED %02d:%02d · LEVEL %d · %d BOSS PHASES\nYOUR CONTRIBUTION · %d damage · %d revives · %d rescues\nPARTY DAMAGE · %d · %d XP · %d coins found\n%d regions · %d landmarks · %s\n%s" % [int(game.elapsed)/60,int(game.elapsed)%60,game.level,game.boss_phases_reached,run_damage,run_revives,run_rescues,party_damage,run_xp,run_coins,game.biome_seen.size(),game.visited_ruins.size(),", ".join(powers)," · ".join(memories.keys())]
 
 func banish(index: int):
 	if game.mode!="offer" or banish_charges<=0 or index<0 or index>=game.offers.size(): return
@@ -244,6 +246,7 @@ func start_mimic(chest: Dictionary) -> bool:
 func send_ping():
 	if game.mode!="playing" or ping_clock>0: return
 	ping_clock=2;note("PING")
+	if game.coop.active: game.career.bump("coop_pings")
 	var p=game.player.position+Vector3.FORWARD.rotated(Vector3.UP,game.yaw)*12
 	var label="DESTINATION"
 	var chest=game.chests.filter(func(c):return not c.opened and c.node.position.distance_to(p)<12)
@@ -292,7 +295,7 @@ func revive(id: int):
 
 func revived():
 	if not downed: return
-	downed=false;game.hp=game.stats.maxHp*.4;game.invulnerable=3;game.avatar.body.rotation.z=0
+	run_revives+=1;downed=false;game.hp=game.stats.maxHp*.4;game.invulnerable=3;game.avatar.body.rotation.z=0
 	game.hud.tell("BACK ON YOUR FEET",4)
 
 func host_tick(delta: float):
@@ -310,7 +313,7 @@ func host_tick(delta: float):
 		rescue_progress[target]=float(rescue_progress.get(target,0))+delta
 		if rescue_progress[target]>=3:
 			revive(target)
-			if int(helper)==game.coop.local_id: note("RESCUE")
+			if int(helper)==game.coop.local_id: run_rescues+=1;note("RESCUE")
 			else: game.coop.send_to(int(helper),{"type":"big_memory","key":"RESCUE"})
 	for id in rescue_progress.keys():
 		if not working.has(id): rescue_progress.erase(id)
@@ -337,6 +340,15 @@ func apply_state(state: Dictionary):
 	downed_ids.clear()
 	for id in state.get("downed",[]): downed_ids[int(id)]=true
 	rescue_progress=state.get("rescue",{});beacon_state=state.get("beacon","idle");beacon_seconds=float(state.get("seconds",0))
+
+func remap_peer_id(old_id: int,new_id: int):
+	if old_id<=0 or old_id==new_id: return
+	if downed_ids.has(old_id):
+		downed_ids.erase(old_id)
+		if new_id>0: downed_ids[new_id]=true
+	if rescue_progress.has(old_id):
+		var progress=rescue_progress[old_id];rescue_progress.erase(old_id)
+		if new_id>0: rescue_progress[new_id]=progress
 
 func receive(sender: int,message: Dictionary) -> bool:
 	var type=str(message.get("type",""))

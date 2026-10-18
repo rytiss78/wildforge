@@ -19124,6 +19124,96 @@
       "hidden": false
     },
     {
+      "id": "WF_WEAPON_MASTERY",
+      "name": "Workshop Legend",
+      "description": "Reach mastery rank 3 with five different weapons.",
+      "key": "weapon_mastery_count",
+      "target": 5,
+      "scope": "best",
+      "group": "Mastery",
+      "hidden": false
+    },
+    {
+      "id": "WF_FORMATION_BREAKER",
+      "name": "Break Their Ranks",
+      "description": "Defeat 100 members of enemy formations.",
+      "key": "formation_breaks",
+      "target": 100,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_BIOME_COLLECTOR",
+      "name": "Six Worlds, One Map",
+      "description": "Discover all six biomes across your runs.",
+      "key": "biomes_discovered",
+      "target": 6,
+      "scope": "best",
+      "group": "Exploration",
+      "hidden": false
+    },
+    {
+      "id": "WF_PARTY_PINGS",
+      "name": "Good Call",
+      "description": "Send 25 useful pings while playing co-op.",
+      "key": "coop_pings",
+      "target": 25,
+      "scope": "total",
+      "group": "Co-op",
+      "hidden": false
+    },
+    {
+      "id": "WF_READY_PARTY",
+      "name": "All Together",
+      "description": "Start 10 co-op runs after every player readies up.",
+      "key": "ready_runs",
+      "target": 10,
+      "scope": "total",
+      "group": "Co-op",
+      "hidden": false
+    },
+    {
+      "id": "WF_WELCOME_BACK",
+      "name": "Back In The Forge",
+      "description": "Reconnect to an active co-op run.",
+      "key": "coop_reconnects",
+      "target": 1,
+      "scope": "total",
+      "group": "Co-op",
+      "hidden": false
+    },
+    {
+      "id": "WF_BUILD_SCOUT",
+      "name": "Know Your Team",
+      "description": "Inspect every teammate’s current build in co-op.",
+      "key": "party_builds_viewed",
+      "target": 1,
+      "scope": "total",
+      "group": "Co-op",
+      "hidden": false
+    },
+    {
+      "id": "WF_AFTER_ACTION",
+      "name": "Study The Run",
+      "description": "Open 10 completed run reports.",
+      "key": "run_reports_viewed",
+      "target": 10,
+      "scope": "total",
+      "group": "Adventure",
+      "hidden": false
+    },
+    {
+      "id": "WF_STYLE_COLLECTION",
+      "name": "Earned, Not Bought",
+      "description": "Unlock three achievement cosmetics.",
+      "key": "achievement_cosmetics",
+      "target": 3,
+      "scope": "total",
+      "group": "Collection",
+      "hidden": false
+    },
+    {
       "id": "WF_beacon",
       "name": "Signal Served",
       "description": "Defend an explored supply beacon.",

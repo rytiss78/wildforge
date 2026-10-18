@@ -3,11 +3,17 @@ extends RefCounted
 const TARGET_SECONDS=300.0
 const REFERENCE_DPS=300.0
 const HEALTH_MULTIPLIER=4.0 # Latest requested boss-health increase; duration needs real build playtests.
+const INTRO_SECONDS=3.6
+const PHASE_NAMES=["THE ARRIVAL","THE HUNT","THE WRATH","THE EXECUTION","THE RUIN","THE LAST JUDGMENT","THE WORLD BREAKS","THE FINAL CURSE"]
 
 static func setup(g):
 	g.events.final_arena=true;g.events.final_defeated=false
 	g.gate.visible=false;g.player.position=Vector3(0,g.world.height_at(0,28)+1,28)
 	g.world.ensure_ground(g.player.position);g.spawn_clock=99999
+	g.events.final_intro_clock=0.0;g.events.final_intro=true;g.events.final_rift_time=14.0;g.events.final_cracks=[]
+	g.world.environment.ambient_light_energy=.12
+	g.world.environment.adjustment_brightness=.68
+	make_cracks(g)
 	if g.coop.active and not g.coop.hosting: return
 	g.spawn_enemy(1,true,Vector3(0,g.world.height_at(0,-14),-14),true)
 	if g.enemies.is_empty(): push_error("Final arena boss could not spawn");return
@@ -15,12 +21,47 @@ static func setup(g):
 	var party_size=maxi(1,g.coop.members.size()+1) if g.coop.active else 1
 	enemy.maxHp=TARGET_SECONDS*REFERENCE_DPS*HEALTH_MULTIPLIER*(1+.65*(party_size-1));enemy.hp=enemy.maxHp
 	enemy.node.rotation.y=PI
-	enemy.guardian=true;enemy.attack=4;enemy.attack_cycle=0;enemy.freeze=3;enemy.contact=3
+	enemy.final_ground_y=enemy.node.position.y;enemy.node.position.y-=11;enemy.node.scale=Vector3.ONE*.08
+	enemy.voice_phase=0;enemy.guardian=true;enemy.attack=4;enemy.attack_cycle=0;enemy.freeze=INTRO_SECONDS;enemy.contact=INTRO_SECONDS
 	g.events.final_boss_hp=enemy.maxHp
+	phase_changed(g,enemy,0,false)
+
+static func make_cracks(g):
+	var material=StandardMaterial3D.new();material.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED
+	material.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA;material.albedo_color=Color(1.0,.10,.025,.96)
+	material.emission_enabled=true;material.emission=Color("ff2817");material.emission_energy_multiplier=4.0
+	for i in range(32):
+		var angle=TAU*float(i)/32.0+g.rules.rng.randf_range(-.11,.11)
+		var radius=g.rules.rng.randf_range(12,52);var length=g.rules.rng.randf_range(3,10)
+		var point=Vector3(cos(angle)*radius,0,sin(angle)*radius);point.y=g.world.height_at(point.x,point.z)+.045
+		var crack=MeshInstance3D.new();var mesh=BoxMesh.new();mesh.size=Vector3(g.rules.rng.randf_range(.18,.34),.08,length);crack.mesh=mesh
+		crack.position=point;crack.rotation.y=angle+g.rules.rng.randf_range(-.7,.7);crack.material_override=material.duplicate();crack.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		g.world.add_child(crack);g.events.final_cracks.append(crack)
+
+static func phase_changed(g,enemy,phase: int,replicate: bool=true):
+	g.boss_phases_reached=maxi(int(g.boss_phases_reached),clampi(phase,0,7)+1)
+	var index=10+clampi(phase,0,7)
+	var selected=g.sound.boss_curse(enemy.node.position,index,true)
+	var phase_name=PHASE_NAMES[clampi(phase,0,PHASE_NAMES.size()-1)]
+	g.hud.tell("BARON · "+phase_name,4)
+	if replicate and g.coop.active and g.coop.hosting: broadcast_phase(g,enemy,phase,phase_name,selected)
+	return phase_name
+
+static func broadcast_phase(g,enemy,phase: int,phase_name: String,index: int):
+	if g.coop.active and g.coop.hosting: g.coop.broadcast({"type":"boss_phase","realm":g.realm,"phase":phase,"name":phase_name,"index":index,"position":CoopSession.array(enemy.node.position)})
+
+static func broadcast_intro(g):
+	for enemy in g.enemies:
+		if enemy.get("boss_id",-1)==8 and not enemy.dead:
+			broadcast_phase(g,enemy,0,PHASE_NAMES[0],10);return
 
 static func attack(g,enemy):
 	var cycle=int(enemy.get("attack_cycle",0))%4;enemy.attack_cycle=cycle+1
-	var origin=enemy.node.position;var target=g.coop.target(origin).position
+	var origin=enemy.node.position;var target_info=g.coop.target(origin);var target=target_info.position
+	var target_id=int(target_info.id);var target_name=g.coop.player_name_for(target_id)
+	if g.coop.active:
+		g.coop.set_boss_focus(target_id,target_name)
+		if g.coop.hosting:g.coop.broadcast({"type":"boss_focus","realm":g.realm,"player_id":target_id,"name":target_name})
 	var forward=target-origin;forward.y=0;var target_distance=clampf(forward.length(),18,48);forward=forward.normalized()
 	var right=forward.cross(Vector3.UP);var marks=[];var damage=105.0;var style="annihilation"
 	if cycle==0:
@@ -49,15 +90,56 @@ static func attack(g,enemy):
 
 static func defeated(g):
 	g.events.final_defeated=true;g.events.eclipse=true;g.events.eclipse_started=g.realm_time;g.events.eclipse_stage=0
-	g.spawn_clock=0
-	g.Journey.announce(g,"ENDLESS ECLIPSE","The Baron has fallen. Survive until the last light falls.")
+	g.events.final_ceremony=true;g.events.final_ceremony_until=g.realm_time+3.5;g.events.final_ceremony_announced=false
+	g.events.eclipse_started=g.events.final_ceremony_until;g.spawn_clock=99999
+	g.Journey.announce(g,"THE BARON FALLS","The Red Moon cracks beneath him.")
+	CombatInk.wave(g,Vector3(0,g.world.height_at(0,0)+.2,0),58,Color("ffd16c"))
+	for i in range(8):
+		var x=cos(i*TAU/8)*16;var z=sin(i*TAU/8)*16
+		g.burst(Vector3(x,g.world.height_at(x,z)+1,z),Color("ffca66"),12)
+	g.hit_shake=1.0;g.sound.effect("horn",g.player.position)
 
 static func tick(g):
-	if g.coop.active and not g.coop.hosting: return
-	if not g.events.get("final_defeated",false): return
-	g.events.eclipse=true
-	var stage=1+int((g.realm_time-float(g.events.get("eclipse_started",g.realm_time)))/30)
-	if stage>int(g.events.get("eclipse_stage",0)):
-		g.events.eclipse_stage=stage
-		for enemy in g.enemies: EclipseCorruption.apply(enemy,stage)
-		g.events.swarm_until=g.realm_time+30;g.events.wave_active=true;g.events.wave_budget=60+stage*10
+	var replica=g.coop.active and not g.coop.hosting
+	var titan={}
+	for enemy in g.enemies:
+		if enemy.get("boss_id",-1)==8 and not enemy.dead:titan=enemy;break
+	if g.events.get("final_intro",false):
+		g.events.final_intro_clock+=.016
+		var progress=clampf(g.events.final_intro_clock/INTRO_SECONDS,0,1);var eased=progress*progress*(3-2*progress)
+		g.world.environment.ambient_light_energy=lerpf(.12,.36,eased)
+		g.world.environment.adjustment_brightness=lerpf(.68,1.0,eased)
+		if not replica and not titan.is_empty():
+			var ground=float(titan.get("final_ground_y",titan.node.position.y+11))
+			titan.node.position.y=lerpf(ground-11,ground,eased);titan.node.scale=Vector3.ONE*lerpf(.08,1.0,eased)
+		if progress>=1:
+			g.events.final_intro=false;g.world.environment.ambient_light_energy=.36;g.world.environment.adjustment_brightness=1.0
+			g.hud.tell("THE BARON HAS RISEN",3)
+	if replica:return
+	if g.events.get("final_defeated",false):
+		if g.events.get("final_ceremony",false) and g.realm_time>=float(g.events.final_ceremony_until):
+			g.events.final_ceremony=false;g.events.final_ceremony_announced=true;g.spawn_clock=0
+			g.Journey.announce(g,"ENDLESS ECLIPSE","The Baron has fallen. Survive until the last light falls.")
+			for crack in g.events.get("final_cracks",[]):
+				if is_instance_valid(crack) and crack.material_override is StandardMaterial3D:
+					crack.material_override.albedo_color=Color(1,.62,.16,.96);crack.material_override.emission=Color("ffc357");crack.material_override.emission_energy_multiplier=4.0
+		g.events.eclipse=true
+		if not g.events.get("final_ceremony",false):
+			var stage=1+int((g.realm_time-float(g.events.get("eclipse_started",g.realm_time)))/30)
+			if stage>int(g.events.get("eclipse_stage",0)):
+				g.events.eclipse_stage=stage
+				for enemy in g.enemies:EclipseCorruption.apply(enemy,stage)
+				g.events.swarm_until=g.realm_time+30;g.events.wave_active=true;g.events.wave_budget=60+stage*10
+		return
+	if g.events.get("final_intro",false) or not titan.is_empty():return
+	if g.realm_time>=float(g.events.get("final_rift_time",14.0)):
+		erupt(g)
+
+static func erupt(g):
+	g.events.final_rift_time=g.realm_time+19.0
+	g.hud.tell("GROUND BREACH · MOVE BETWEEN THE RED MARKS",3)
+	for i in range(10):
+		var radius=17.0+(i%3)*9.0;var angle=TAU*float(i)/10.0+g.realm_time*.11
+		var p=Vector3(cos(angle)*radius,0,sin(angle)*radius);p.y=g.world.height_at(p.x,p.z)
+		g.warn_at(p,2.7,2.6,48,"lava")
+		if g.coop.active:g.coop.broadcast({"type":"hazard","realm":g.realm,"position":CoopSession.array(p),"radius":2.7,"delay":2.6,"damage":48,"style":"lava"})

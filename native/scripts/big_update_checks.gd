@@ -29,7 +29,15 @@ static func run(game: Node3D):
 	checks.minimap_biome_palette=map_colors.size()==6
 	checks.minimap_interactions=minimap.interactables.any(func(i):return i.kind=="merchant") and minimap.interactables.any(func(i):return i.kind=="supply") and minimap.interactables.filter(func(i):return i.kind=="landmark").size()==6
 	checks.rare_boxes=game.rules.chest_price(0)==30 and RunRules.WEAPON_CAP==3
-	checks.achievements=game.career.achievements.size()==108 and game.career.achievements.map(func(a):return a.id).size()==108
+	checks.achievements=game.career.achievements.size()==117 and game.career.achievements.map(func(a):return a.id).size()==117
+	game.clear_entities();game.spawn_formation()
+	var formation=game.enemies.filter(func(enemy):return int(enemy.get("formation_id",-1))>0)
+	checks.enemy_formation=formation.size()==3 and formation.map(func(enemy):return enemy.formation_id).all(func(id):return id==formation[0].formation_id) and formation[0].get("formation_name","") in ["WEDGE","LINE","RING"]
+	if not formation.is_empty():
+		var formation_before=float(game.career.data.total.get("formation_breaks",0));game.kill_enemy(formation[0],"diagnostic")
+		checks.formation_progress=float(game.career.data.total.get("formation_breaks",0))==formation_before+1
+	else: checks.formation_progress=false
+	game.clear_entities()
 	checks.single_bonus=game.rules.data.loot.all(func(i):return i.effects.size()==1)
 	checks.no_community=not game.hud.has_method("community_menu")
 	game.spawn_enemy(8);game.spawn_enemy(12,true)
@@ -153,7 +161,7 @@ static func run(game: Node3D):
 	checks.quip_throttle=quip==45 and game.update.quip_clock==45
 	game.career.save();var reloaded=game.ProfileScript.new(game.rules.data,true)
 	checks.save_roundtrip=reloaded.data.total.get("runs",0)==game.career.data.total.get("runs",0)
-	checks.recap=game.update.recap().contains("YOUR RUN") and game.update.recap().contains("PARTY DAMAGE")
+	checks.recap=game.update.recap().contains("SURVIVED") and game.update.recap().contains("YOUR CONTRIBUTION") and game.update.recap().contains("PARTY DAMAGE")
 	# All biome scenes, route slopes, and map edges in one rendered traversal.
 	var worst_slope=0.0
 	for biome in range(6):

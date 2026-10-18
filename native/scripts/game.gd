@@ -33,6 +33,7 @@ var realm_time = 0.0
 var elapsed = 0.0
 var realm_bosses = 0
 var run_bosses = 0
+var boss_phases_reached=0
 var boss_history: Array = []
 var network_test_realms: Array = []
 var run_chests = 0
@@ -112,7 +113,8 @@ var party_shown_offer = []
 var party_shown_source = ""
 var party_offers = []
 var party_source = ""
-var party_seen = {}          # player name -> {"name":..., "items":[...]} (companion panel)
+var party_seen = {}          # peer ID -> current reward options and selected item
+var party_reward_id=""
 var pickup_seq = 0           # host-owned pickup identity for shared world replication
 var pending_chest=false
 var projectile_mesh = SphereMesh.new()
@@ -131,6 +133,8 @@ var landing_ready = false
 var buffs = {}
 var consumables = []
 var biome_seen = {}
+var formation_clock=48.0
+var formation_serial=0
 var current_biome = 0
 var level_reveal = 0.0
 var player_poison = 0.0
@@ -408,6 +412,7 @@ func start_run(shared_seed: int=-1):
 	xp = 0
 	pickup_seq = 0
 	party_seen.clear()
+	party_reward_id=""
 	coop.last_remote_reward_level = 1
 	hud.party_panel_open = false
 	xp_target = rules.next_xp(level)
@@ -422,6 +427,7 @@ func start_run(shared_seed: int=-1):
 	gold = 0
 	paid_chests = 0
 	run_bosses = 0
+	boss_phases_reached=0
 	boss_history.clear();network_test_realms.clear()
 	run_chests = 0
 	low_health_warned = false
@@ -442,6 +448,7 @@ func start_run(shared_seed: int=-1):
 	career.bump("play_"+hero.id)
 	sound.start(seed_value)
 	enter_realm(0,false)
+	coop.sync_local_nameplate()
 	hud.close()
 	if shared_seed<0: coop.run_started()
 
@@ -461,6 +468,7 @@ func enter_realm(index: int,broadcast_transition: bool=true):
 	realm_bosses = 0
 	events.clear()
 	spawn_clock = 0
+	formation_clock=48.0
 	last_minute = 0
 	dash_cooldown = 0
 	dash_time = 0
@@ -494,6 +502,7 @@ func enter_realm(index: int,broadcast_transition: bool=true):
 	hud.tell("THE RED MOON" if realm==3 else "%d / 3  ·  %s" % [realm+1,RealmWorld.NAMES[realm]],4)
 	if realm > 0: sound.say("realm",0)
 	if broadcast_transition: coop.realm_changed()
+	if broadcast_transition and realm==3 and coop.active and coop.hosting: preload("res://scripts/final_arena.gd").broadcast_intro(self)
 
 func make_chests():
 	# Four stratified radial bands in each biome, with independent deterministic jitter.
@@ -617,6 +626,7 @@ func buy_chest(chest: Dictionary,payer: int=-1):
 	if chest.node.has_meta("lid"): create_tween().tween_property(chest.node.get_meta("lid"),"rotation:x",1.4,.65).set_trans(Tween.TRANS_BACK)
 	var disappear=create_tween();disappear.tween_interval(1.0);disappear.tween_callback(func():if is_instance_valid(chest.node): chest.node.visible=false)
 	run_chests += 1
+	party_reward_id=run_id+":chest:"+str(realm)+":"+str(run_chests)
 	career.bump("chests")
 	career.best("chestRewards",3)
 	offers = rules.offers("item",float(payer_stats.get("luck",0))+float(payer_stats.get("chestBonus",0))*.2,chest.elite,stats,equipped)
@@ -629,7 +639,7 @@ func buy_chest(chest: Dictionary,payer: int=-1):
 	# never shared); broadcast the rolled pool so every member opens the same chest
 	# and each filters it to their own loadout, and hide the chest from every map.
 	if coop.active:
-		coop.broadcast({"type":"chest_open","offers":offers,"kind":"item","elite":bool(chest.elite),"realm":realm})
+		coop.broadcast({"type":"chest_open","offers":offers,"kind":"item","elite":bool(chest.elite),"realm":realm,"reward_id":party_reward_id})
 		coop.broadcast({"type":"chest_hide","realm":realm,"pos":[int(chest.node.position.x),int(chest.node.position.y),int(chest.node.position.z)]})
 	reveal_duration = [2.6,2.9,3.3,3.8][reveal_tier]
 	sound.chest_open(reveal_tier,reveal_duration)
@@ -654,6 +664,7 @@ func level_up():
 	shield_hp = stats.shield
 	var kind = "weapon" if level == 2 or level%3 == 0 else "skill"
 	offer_kind=kind;offer_elite=false;offer_rerolls=0
+	party_reward_id=run_id+":level:"+str(realm)+":"+str(level)
 	offers = rules.offers(kind,stats.luck,false,stats,equipped)
 	offer_source = "level"
 	mode = "level_reveal"
@@ -667,7 +678,7 @@ func level_up():
 	# rolled pool AND the resulting level/xp/xp_target so every member mirrors the host
 	# and opens the same choice — members never level up on their own.
 	if coop.active and coop.hosting:
-		coop.broadcast({"type":"level_up","offers":offers,"kind":kind,"level":level,"xp":xp,"xp_target":xp_target,"realm":realm})
+		coop.broadcast({"type":"level_up","offers":offers,"kind":kind,"level":level,"xp":xp,"xp_target":xp_target,"realm":realm,"reward_id":party_reward_id})
 
 func choose_offer(index: int):
 	if mode != "offer" or index < 0 or index >= offers.size(): return
@@ -692,12 +703,7 @@ func choose_offer(index: int):
 	# Record both weapon and skill choices. Clients must send to the host,
 	# since broadcast() only sends to their directly connected peer(s).
 	if coop.active:
-		var item_desc=""
-		if item.has("effects") and item.effects.size()>0: item_desc=rules.describe(item.effects[0])
-		party_seen[hero.name]={"name":hero.name,"items":[item.name],"items_full":[item_desc],"kind":offer_kind,"elite":offer_elite}
-		var announcement={"type":"reward_chosen","name":hero.name,"items":[item.name]}
-		if coop.hosting: coop.broadcast(announcement)
-		else: coop.send_to(coop.owner_id,announcement)
+		coop.publish_reward_choice(item,offer_source)
 	hud.tell("+  " + item.name)
 	hud.close()
 	if (not coop.active or coop.hosting) and xp >= xp_target: level_up()
@@ -717,6 +723,7 @@ func reroll_offers():
 
 func skip_offer():
 	if mode!="offer" or not offers.any(func(item):return item.kind=="weapon"): return
+	if coop.active: coop.publish_reward_skip(offer_source)
 	offers.clear();hud.close();hud.tell("Kept your weapons")
 	if (not coop.active or coop.hosting) and xp>=xp_target: level_up()
 
@@ -726,6 +733,7 @@ func equip_weapon(item: Dictionary):
 			achievement_event("RANK_UP")
 			weapon.rank += 1
 			weapon.power += float(item.get("strength",1.0))*.3
+			career.record_weapon_mastery(weapon.id,weapon.rank)
 			avatar.sync_equipment(equipped)
 			if weapon.rank in [3,6,9]: update.quip("weapon")
 			return
@@ -790,7 +798,7 @@ func record_run(win: bool, abandoned: bool = false):
 	if run_recorded or not run_active: return
 	run_recorded = true
 	if elapsed < 2 and abandoned: return
-	career.score({"id":run_id,"hero":hero.id,"seconds":elapsed,"kills":kills,"level":level,"bosses":run_bosses,"chests":run_chests,"win":win,"abandoned":abandoned,"healthDamage":health_damage,"realm":realm,"gold":gold,"seed":seed_value,"recap":update.recap(),"localDamage":update.run_damage,"partyDamage":update.party_damage,"damageSources":damage_sources.duplicate(),"killTypes":kill_types.duplicate(),"deaths":death_count})
+	career.score({"id":run_id,"hero":hero.id,"seconds":elapsed,"kills":kills,"level":level,"bosses":run_bosses,"bossPhases":boss_phases_reached,"revives":update.run_revives,"rescues":update.run_rescues,"chests":run_chests,"win":win,"abandoned":abandoned,"healthDamage":health_damage,"realm":realm,"gold":gold,"seed":seed_value,"recap":update.recap(),"localDamage":update.run_damage,"partyDamage":update.party_damage,"damageSources":damage_sources.duplicate(),"killTypes":kill_types.duplicate(),"deaths":death_count})
 	# Career totals: sum kills and deaths across all runs
 	career.bump("deaths",death_count)
 	# Best run time and max level
@@ -882,7 +890,7 @@ func _input(event):
 	if event.is_action_pressed("deploy"):
 		var turrets = equipped.filter(func(weapon):return weapon.turret)
 		if not turrets.is_empty() and turrets[selected_turret%turrets.size()].deploy_clock <= 0: deploy_turret(turrets[selected_turret%turrets.size()])
-	if coop.active and event.is_action_pressed("party"): hud.party_panel_toggle()
+	if coop.active and event.is_action_pressed("party"): hud.party_builds_menu()
 
 func finish_reveal():
 	if mode != "reveal": return
@@ -895,8 +903,11 @@ func finish_reveal():
 # machine. Filter this player's visible cards to their own loadout so the shared
 # level does NOT force a shared build — the companion panel (party_seen /
 # hud.show_party_panel) shows what the other players picked instead.
-func open_shared_offer(pool: Array, kind: String, elite: bool, source: String):
+func open_shared_offer(pool: Array, kind: String, elite: bool, source: String, reward_id: String=""):
 	if pool.is_empty(): return
+	if reward_id.is_empty(): reward_id=run_id+":"+source+":"+str(realm)+":"+str(level if source=="level" else run_chests)
+	if party_reward_id!=reward_id: party_seen.clear()
+	party_reward_id=reward_id
 	mode = "offer"  # Network-delivered rewards must allow choose_offer().
 	party_offers = pool
 	party_source = source
@@ -908,8 +919,6 @@ func open_shared_offer(pool: Array, kind: String, elite: bool, source: String):
 	if shown.is_empty(): shown = pool.duplicate(true)
 	offers = shown
 	offer_kind = kind;offer_elite = elite;offer_rerolls = 0
-	if not party_seen.has(hero.name):
-		party_seen[hero.name] = {"name":hero.name,"items":[],"items_full":[]}
 	hud.show_offers(offers,source)
 
 func random_spawn(radius: float,anchor: Vector3=Vector3.INF) -> Vector3:
@@ -930,7 +939,7 @@ func random_spawn(radius: float,anchor: Vector3=Vector3.INF) -> Vector3:
 	p.y = world.height_at(p.x,p.z)
 	return p
 
-func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector3.INF,guardian: bool=false,structure: bool=false):
+func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector3.INF,guardian: bool=false,structure: bool=false,formation_id: int=-1):
 	if coop.active and not coop.hosting: return
 	if not boss and not make_spawn_room(): return
 	var p=random_spawn(radius,anchor)
@@ -978,7 +987,7 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 	if not boss: max_health*=species.health*pow(body_scale,1.5)*(.60 if species.behavior=="spit" else 1.0)
 	if boss: max_health*=4
 	if elite: max_health*=2.5
-	var enemy = {"biome":biome,"elite":elite,"node":node,"hp":max_health,"maxHp":max_health,"speed":2.9+realm*.35+randf()*0.6,"boss":boss,"fire":0.0,"poison":0.0,"status_time":0.0,"freeze":0.0,"blind":0.0,"slow":0.0,"attack":2.5*realm_difficulty,"telegraph":0.0,"dead":false,"contact":0.0,"phase":1,"startDamage":health_damage}
+	var enemy = {"biome":biome,"elite":elite,"node":node,"hp":max_health,"maxHp":max_health,"speed":2.9+realm*.35+randf()*0.6,"boss":boss,"fire":0.0,"poison":0.0,"status_time":0.0,"freeze":0.0,"blind":0.0,"slow":0.0,"attack":2.5*realm_difficulty,"telegraph":0.0,"dead":false,"contact":0.0,"phase":1,"startDamage":health_damage,"formation_id":formation_id}
 	enemy.guardian=guardian
 	enemy.merge(species);enemy.speed*=species.speed/pow(body_scale,.6)*(.9 if elite else 1.0)
 	enemy.height=height;enemy.radius=radius_value;enemy.flying=species.flying and not boss and not structure
@@ -1021,6 +1030,25 @@ func make_spawn_room() -> bool:
 	# Despawn, never kill: no XP, gold, achievements or boss progress for recycling.
 	farthest.dead=true;farthest.node.queue_free();enemies.erase(farthest)
 	return true
+
+func spawn_formation():
+	if realm>=3 or not coop.hosting and coop.active or enemies.size()>110: return
+	formation_serial+=1
+	var id=formation_serial
+	var center=random_spawn(randf_range(23,31))
+	var angle=randf()*TAU
+	var formation_names=["WEDGE","LINE","RING"]
+	for i in range(3):
+		var offset=Vector3.ZERO
+		if formation_names[(id-1)%3]=="WEDGE": offset=Vector3((i-1)*3.0,0,absf(i-1)*2.0)
+		elif formation_names[(id-1)%3]=="LINE": offset=Vector3((i-1)*3.5,0,0)
+		else: offset=Vector3(cos(float(i)*TAU/3)*3.5,0,sin(float(i)*TAU/3)*3.5)
+		var before=enemies.size()
+		spawn_enemy(1.0,false,center+offset.rotated(Vector3.UP,angle),false,false,id)
+		if enemies.size()>before:
+			enemies[-1].formation_name=formation_names[(id-1)%3]
+			enemies[-1].formation_leader=(i==0)
+			if i==0: enemies[-1].name=formation_names[(id-1)%3].capitalize()+" leader"
 
 func steer_enemy(enemy: Dictionary,aim: Vector3,delta: float=1.0/30.0) -> Vector3:
 	if enemy.flying or aim.length_squared()<.01: return aim
@@ -1453,6 +1481,11 @@ func hurt_enemy(enemy: Dictionary, damage: float, cause: String,mechanic: String
 	enemy.node.get_meta("rig").set_health(enemy.hp/enemy.maxHp,enemy.boss or enemy.health>=1.8)
 	if enemy.node.has_meta("rig"): enemy.node.get_meta("rig").hurt=.18
 	if enemy.hp <= 0: kill_enemy(enemy,cause)
+	elif enemy.get("boss_id",-1)==8:
+		var voice_phase=clampi(int(floor((1.0-clampf(enemy.hp/enemy.maxHp,0,1))*8.0)),0,7)
+		if voice_phase>int(enemy.get("voice_phase",0)):
+			enemy.voice_phase=voice_phase
+			preload("res://scripts/final_arena.gd").phase_changed(self,enemy,voice_phase)
 
 func kill_enemy(enemy: Dictionary, cause: String):
 	condition_times.kill=elapsed
@@ -1466,6 +1499,7 @@ func kill_enemy(enemy: Dictionary, cause: String):
 	var enemy_kind="Boss" if enemy.boss else str(enemy.get("name",enemy.get("model","Unknown")))
 	kill_types[enemy_kind]=int(kill_types.get(enemy_kind,0))+1
 	career.bump("kills")
+	if int(enemy.get("formation_id",-1))>=0: career.bump("formation_breaks")
 	if cause != "hit" and cause != "melee": career.bump(cause+"Kills")
 	var p = enemy.node.position
 	spawn_pickup(p+Vector3.UP*.35,"xp",float(enemy.get("xp_reward",enemy_xp_reward(enemy))))
@@ -1715,7 +1749,7 @@ func update_combat(delta: float):
 	var section_times={"movement":0.0,"visuals":0.0,"steering":0.0} if profile_crowd else {}
 	update_melee(delta)
 	spawn_clock -= delta
-	if spawn_clock <= 0 and (realm<3 or events.get("eclipse",false)):
+	if spawn_clock <= 0 and (realm<3 or events.get("eclipse",false) and not events.get("final_ceremony",false)):
 		var swarm = events.get("swarm_until",0.0)>realm_time or update.beacon_state=="defending"
 		var count = 2+realm+(3 if swarm else 0)
 		var budget=int(update.beacon_budget) if update.beacon_state=="defending" else int(events.get("wave_budget",0))
@@ -1724,6 +1758,10 @@ func update_combat(delta: float):
 		if update.beacon_state=="defending": update.beacon_budget=maxi(0,update.beacon_budget-count)
 		elif swarm: events.wave_budget=maxi(0,budget-count)
 		spawn_clock = maxf(.4,.95-realm_time*.0005)*(1.0/1.35 if swarm else 2.0)
+	if realm<3 and (not coop.active or coop.hosting):
+		formation_clock-=delta
+		if formation_clock<=0:
+			spawn_formation();formation_clock=105.0
 	crowd.clear()
 	for enemy in enemies:
 		if enemy.dead: continue
@@ -2607,7 +2645,7 @@ func run_smoke():
 	var report=FileAccess.open("user://smoke-results.json",FileAccess.WRITE)
 	if report!=null: report.store_string(JSON.stringify(checks,"  "));report.close()
 	print("NATIVE_SMOKE "+JSON.stringify(checks))
-	var failure = not checks.main_menu or not checks.opaque_ui or not checks.illustrated_icons or not checks.selection_preview or not checks.weapon_cards_fit or not checks.item_cards_fit or not checks.camera_look or not checks.menu_blocks_look or not checks.weapon_rank or not checks.weapon_mechanics or not checks.mouse_camera or not checks.xbox_prompts or not checks.settings_fit or checks.initial_enemies<6 or checks.chests!=24 or checks.first_price!=30 or checks.achievements!=108 or not checks.paid_once or not checks.one_item or not checks.weapon_limit or not checks.disk_save or not checks.free_price or not checks.garden or not checks.garden_goals or not checks.realm_preserves or not checks.three_realms or not checks.standalone
+	var failure = not checks.main_menu or not checks.opaque_ui or not checks.illustrated_icons or not checks.selection_preview or not checks.weapon_cards_fit or not checks.item_cards_fit or not checks.camera_look or not checks.menu_blocks_look or not checks.weapon_rank or not checks.weapon_mechanics or not checks.mouse_camera or not checks.xbox_prompts or not checks.settings_fit or checks.initial_enemies<6 or checks.chests!=24 or checks.first_price!=30 or checks.achievements!=117 or not checks.paid_once or not checks.one_item or not checks.weapon_limit or not checks.disk_save or not checks.free_price or not checks.garden or not checks.garden_goals or not checks.realm_preserves or not checks.three_realms or not checks.standalone
 	for key in checks:
 		if checks[key] is bool and not checks[key]: failure=true
 	get_tree().quit(1 if failure else 0)
@@ -2939,6 +2977,7 @@ func update_exploration(delta: float):
 	current_biome=world.biome_at(player.position)
 	if not biome_seen.has(current_biome):
 		biome_seen[current_biome]=true
+		career.discover_biome(current_biome)
 		hud.tell("DISCOVERED  ·  "+RealmWorld.BIOMES[current_biome],4)
 		sound.say("biome_"+str(current_biome),0)
 	for key in buffs.keys():
