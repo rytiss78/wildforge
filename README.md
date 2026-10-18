@@ -4,21 +4,11 @@
 
 A vivid 3D survival game where a duck, a loaf of bread and an angry granny are perfectly reasonable hero choices. Explore strange places, grab unpredictable upgrades and become outrageously overpowered before the monsters catch you.
 
-**[Download the latest public Windows build](https://github.com/rytiss78/wildforge/releases/tag/build-16)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
+**[Download Build 17 for Windows](https://github.com/rytiss78/wildforge/releases/tag/build-17)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
 
-**Build 17 is in development; no new public build is available yet.** Its current work includes corrected camera-relative minimap rotation, the immense stylized Baron with steam, biome foliage/moss and low mist, and dodgeable enemy contact warnings. [Development evidence and remaining plan](native/docs/build17-work.md).
+**Build 17 (1.1.3) is now available as an alpha release.** It includes the immense stylized Baron and Red Moon event, Lithuanian phase voices, refreshed six-biome ground art, weapon mastery, enemy formations, six-biome collection goals, co-op reconnects and live build inspection, expanded run reports, and eight achievement-earned nameplate styles. [Build 17 notes and validation limits](native/docs/build17-release.md).
 
-The third map leads to the Red Moon, where an immense, slow Baron waits with four visible steam vents and deadly, telegraphed attacks. He is a stylized original fallback, not a photorealistic or officially licensed film model. Defeat him to begin an endless Eclipse. The refreshed six-biome ground/color views and the controller, music and Lithuanian speech checks have been accepted. Comparable late-Eclipse performance measurements are complete, with high physics-time spikes recorded. Full-fight balance and the reported early-game co-op desynchronization remain open; Build 17 will stay unpublished until the plan is complete.
-
-For the public download, unpack all files together and run `Wildforge.exe`. Source development uses `node scripts/native.mjs`. Co-op players need the same game version. Each verified export includes a manifest of its source commit and executable/pack hashes.
-
-![First natural ground-cover pass](docs/screenshots/build16/woods.png)
-
-*Natural groves and short grass; the refreshed six-biome ground/color pass was accepted for Build 17.*
-
-![Co-op hero selection with the new dark interface](docs/screenshots/red-moon-1.1.0/ui-coop.png)
-
-*Choose your hero and join a party.*
+The third map leads to the Red Moon, where an immense, slow Baron waits with four visible steam vents and deadly, telegraphed attacks. He is a stylized original fallback, not a photorealistic or officially licensed film model. Defeat him to begin an endless Eclipse. The refreshed six-biome ground/color views and the controller, music and Lithuanian speech checks have been accepted. **Known limits:** real-fight Baron balance remains unverified. The exported two-process route completed, but its client-side lobby-ready synchronization assertion failed; the exact early-game desync originally reported has not been identified and is not claimed fixed.
 
 ## Your hero. Your chaos.
 
@@ -34,7 +24,7 @@ Carry three weapons at once. When two hands aren't enough, grow a third arm. Mix
 
 Roam through Clover Woods, Puffcap Marsh, Moon Craters, Cloudwilds, Candy Hell and Starfall Space. Hunt for treasure, jump over trouble, squash enemies underfoot and face huge bosses as the clock ticks down.
 
-Spend your coins on a chest, choose one of five rewards and keep building your ridiculous little disaster. Chase 108 achievements built around exploration, clever combinations and unusual challenges.
+Spend your coins on a chest, choose one of five rewards and keep building your ridiculous little disaster. Chase 117 achievements built around exploration, clever combinations and unusual challenges.
 
 ![Detailed skill cards with paid rerolls](docs/screenshots/red-moon-1.1.0/ui-offers.png)
 

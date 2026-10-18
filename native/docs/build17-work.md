@@ -139,3 +139,10 @@ Minimap rotation used the wrong 2D sign for Godot's 3D camera convention. A regr
 - `game.gd` now stops client gameplay input during a remote pause after handling pause/resume and offer input. The regression repeats three pause/resume cycles. Normal review `2026-10-18T10-10-55-862Z-shared-review` and committed-source stress review `2026-10-18T10-15-03-377Z-shared-review-stress` pass; the stress run caps the client at 20 Hz and delays packets by 150 ms in each direction. Traces record realm, level, XP target, elapsed time, client mode, pause state, offer IDs, enemy IDs/health/positions and player positions. Shared XP/level, chest transactions, guards and Baron checks also pass. No script/runtime errors were found.
 - Source validation: `2026-10-18T10-11-47-315Z-check` and `2026-10-18T10-12-03-534Z-integration` pass.
 - This confirms and fixes a concrete pause-input defect. It does not prove that it was the user's exact major-desync symptom; sustained exported-process/rendered validation remains open. Build 16 remains public and no Build 17 export was created or uploaded.
+
+## October 18 Build 17 publication
+
+- The user approved publishing Build 17 with outstanding validation limits documented. Public release: https://github.com/rytiss78/wildforge/releases/tag/build-17.
+- The final release executable and PCK were exported from source commit `2ccdb333d689d5e00f58bf49c38fe00c242e8b54`; executable smoke passed 118 assertions. See `.build-staging/agent-workflow/2026-10-18T12-20-25-412Z-build/result.json`.
+- The exported two-process route covered the full 0 → 1 → 2 → 3 → 0 realm cycle, Baron, rescue, hunt/guardian and party transactions. Host checks passed. The client reported `lobby_hero_ready_synced: false`; all other reported client route checks passed. The rendered exported Play With Friends and nameplate captures were inspected at 1440×810.
+- Real-fight Baron balance remains unverified, and the original early-game desynchronization symptom is still unspecified. These limits are stated in the README and release notes; the plan stays open for those items.

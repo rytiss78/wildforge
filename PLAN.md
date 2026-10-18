@@ -113,3 +113,12 @@ Achievement IDs added: `WF_WEAPON_MASTERY`, `WF_FORMATION_BREAKER`, `WF_BIOME_CO
 - [Build 12 / Red Moon](native/docs/release-1.1.0.md)
 - [Build 1.0 visual rollout](native/docs/visual-rollout-1.0.0.md)
 - [Older repair audit](native/docs/repair-audit-2026-10-12.md)
+
+## Build 17 public release — October 18, 2026
+
+- [x] User approved publication with remaining limits documented.
+- [x] Build 17 (1.1.3), source commit `2ccdb333d689d5e00f58bf49c38fe00c242e8b54`, exported and smoke-tested: 118 assertions passed. Build manifest and artifact SHA-256 values are retained in `.build-staging/agent-workflow/2026-10-18T12-20-25-412Z-build/`.
+- [x] Uploaded the Windows ZIP and SHA-256 sums to GitHub Release `build-17`; README links the release and lists known limits.
+- [ ] Real-fight Baron balance remains unverified. Full-fight duration/survival/win rates have not been established by stationary DPS estimates.
+- [ ] The exported two-process full realm route completed. Host assertions passed; the client failed `lobby_hero_ready_synced`. The original reported early-game desync symptom remains unspecified, so the source pause fix is not claimed as a complete resolution.
+- Rendered exported Play With Friends and gameplay/nameplate captures inspected at 1440×810. Two-process logs and capture evidence are in `.build-staging/agent-workflow/2026-10-18T12-20-25-412Z-build/`.
