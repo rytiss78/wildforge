@@ -87,7 +87,7 @@ export function assertCommittedBuild(cwd) {
 }
 
 async function main(action) {
-  if (!['balance-review', 'shared-review', 'hermes-review', 'playfeel-review', 'red-moon-review', 'fresh-import', 'biome-review', 'release-review', 'roster-review', 'bake-roster', 'style-review', 'boss-review', 'forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
+  if (!['balance-review', 'shared-review', 'shared-review-stress', 'hermes-review', 'playfeel-review', 'red-moon-review', 'fresh-import', 'biome-review', 'release-review', 'roster-review', 'bake-roster', 'style-review', 'boss-review', 'forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
     console.error('Usage: node scripts/agent-workflow.mjs check|smoke|capture|capture-ui|combat-review|pace-review|soak|integration|build|status'); return 2;
   }
   const git = (...args) => spawnSync('git', ['-C', root, ...args], {encoding:'utf8', windowsHide:true}).stdout?.trim() ?? '';
@@ -298,11 +298,13 @@ async function main(action) {
       if(Object.values(report.surface).some(v=>v===false)) throw new Error('Surface checks failed');
       report.capture=['before','wall','ceiling','ledge','slope'].map(name=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','surface-'+name+'.png'),started));
     }
-    if (action === 'shared-review') {
+    if (action === 'shared-review' || action === 'shared-review-stress') {
       const runs=['host','client'].map(async(role)=>{
         if(role==='client') await new Promise(r=>setTimeout(r,1200));
         const profile=join(runDir,role);mkdirSync(profile,{recursive:true});
-        const result=await runStep(process.env.WILDFORGE_TEST_EXE||godot,['--headless',...(process.env.WILDFORGE_TEST_EXE?[]:['--path',join(root,'native')]),'--','--shared-review-'+role],{cwd:root,env:{...env,APPDATA:profile},timeoutMs:120000,logPath:join(runDir,role+'.log')});
+        const reviewArgs=['--headless',...(process.env.WILDFORGE_TEST_EXE?[]:['--path',join(root,'native')]),'--','--shared-review-'+role];
+        if(action==='shared-review-stress') { reviewArgs.push('--shared-review-lag');if(role==='client')reviewArgs.push('--slow-peer'); }
+        const result=await runStep(process.env.WILDFORGE_TEST_EXE||godot,reviewArgs,{cwd:root,env:{...env,APPDATA:profile},timeoutMs:180000,logPath:join(runDir,role+'.log')});
         const {output,...record}=result;report.steps.push(record);
         const line=output.split(/\r?\n/).findLast(x=>x.startsWith('SHARED_REVIEW '));
         if(result.exitCode!==0 || fatal.test(output) || /ERROR:|ObjectDB instances were leaked/.test(output) || !line) throw new Error(role+' shared review failed: '+output.slice(-3000));

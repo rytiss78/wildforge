@@ -15,6 +15,10 @@ static func choose(g):
 
 static func run(g,host: bool):
 	AudioServer.set_bus_volume_db(0,-80);g.coop.test_mode=true
+	var trace=[]
+	if not host and OS.get_cmdline_user_args().has("--slow-peer"):
+		Engine.max_fps=20
+		Engine.physics_ticks_per_second=20
 	g.set_physics_process(false)
 	if host: g.coop.host_lan()
 	else: g.coop.join_lan("127.0.0.1")
@@ -41,6 +45,18 @@ static func run(g,host: bool):
 		g.coop.leave();g.get_tree().quit(1);return
 	g.set_physics_process(false);g.spawn_clock=99999;g.invulnerable=1000;g.gold=100;g.level_choice_cooldown=0
 	if host:
+		# Repeat a host pause/resume while the guest is otherwise playing. Each
+		# transition records shared progression and both peer positions.
+		for cycle in range(3):
+			var phase="pause_probe_"+str(cycle);var resume_phase="pause_resumed_"+str(cycle)
+			g.mode="paused";g.coop.broadcast(g.coop.snapshot(),false)
+			checks[phase]=await wait_for(g,func():return g.coop.test_messages.has(phase))
+			var pause_result=g.coop.test_messages.get(phase,{})
+			checks[phase+"_input_blocked"]=not pause_result.get("dash_started",true) and not pause_result.get("chest_pending",true)
+			var enemies=g.enemies.filter(func(e):return not e.dead).map(func(e):return {"id":e.net_id,"hp":e.hp,"position":CoopSession.array(e.node.position)}).slice(0,8)
+			trace.append({"phase":phase,"host":{"mode":g.mode,"realm":g.realm,"level":g.level,"xp":g.xp,"xp_target":g.xp_target,"elapsed":g.elapsed,"position":CoopSession.array(g.player.position),"pause":g.mode!="playing","offer_source":g.offer_source,"offers":g.offers.map(func(o):return o.id),"enemies":enemies},"client":pause_result})
+			g.mode="playing";g.coop.broadcast(g.coop.snapshot(),false)
+			checks[resume_phase]=await wait_for(g,func():return g.coop.test_messages.has(resume_phase))
 		g.player.position=Vector3(-20,g.world.height_at(-20,0),0);g.xp=21;g.xp_target=27
 		checks.client_ready=await wait_for(g,func():return g.coop.test_messages.has("ready"))
 		await g.get_tree().create_timer(.3).timeout
@@ -91,6 +107,18 @@ static func run(g,host: bool):
 		await wait_for(g,func():return g.coop.test_messages.has("finished"))
 	else:
 		g.player.position=Vector3(20,g.world.height_at(20,0),0);send(g,"ready")
+		for cycle in range(3):
+			var phase="pause_probe_"+str(cycle);var resume_phase="pause_resumed_"+str(cycle)
+			checks[phase]=await wait_for(g,func():return g.coop.paused and g.mode=="playing")
+			var nearby=g.chests.filter(func(c):return not c.opened).front();g.player.position=nearby.node.position
+			var dash=InputEventAction.new();dash.action="dash";dash.pressed=true;dash.strength=1;g._input(dash)
+			var interact=InputEventAction.new();interact.action="interact";interact.pressed=true;interact.strength=1;g._input(interact)
+			var enemies=g.enemies.filter(func(e):return not e.dead).map(func(e):return {"id":e.net_id,"hp":e.hp,"position":CoopSession.array(e.node.position)}).slice(0,8)
+			var pause_probe={"dash_started":g.dash_time>0,"chest_pending":g.pending_chest,"mode":g.mode,"realm":g.realm,"level":g.level,"xp":g.xp,"xp_target":g.xp_target,"elapsed":g.elapsed,"position":CoopSession.array(g.player.position),"paused":g.coop.paused,"offer_source":g.offer_source,"offers":g.offers.map(func(o):return o.id),"enemies":enemies,"max_fps":Engine.max_fps,"physics_hz":Engine.physics_ticks_per_second}
+			send(g,phase,pause_probe);g.pending_chest=false
+			checks[resume_phase]=await wait_for(g,func():return not g.coop.paused and g.mode=="playing")
+			send(g,resume_phase)
+			trace.append({"phase":phase,"client":pause_probe})
 		checks.level_offer=await wait_for(g,func():return g.mode=="offer" and g.offer_source=="level")
 		var before=g.pickups.size();g.spawn_pickup(g.player.position,"xp",999)
 		checks.no_private_xp=g.pickups.size()==before
@@ -134,7 +162,7 @@ static func run(g,host: bool):
 		checks.host_finished=await wait_for(g,func():return g.coop.test_messages.has("finish"))
 		checks.host_checks=g.coop.test_messages.get("finish",{}).values().all(func(v):return v)
 		send(g,"finished");await g.get_tree().create_timer(.3).timeout
-	print("SHARED_REVIEW "+JSON.stringify({"role":"host" if host else "client","checks":checks}))
+	print("SHARED_REVIEW "+JSON.stringify({"role":"host" if host else "client","checks":checks,"trace":trace}))
 	g.set_process(false);g.coop.leave();g.mode="test_finished";g.clear_entities();g.sound.active=false;g.sound.shutdown()
 	await g.get_tree().create_timer(.25).timeout
 	g.get_tree().quit(0 if checks.values().all(func(v):return v) else 1)

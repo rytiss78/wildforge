@@ -864,6 +864,10 @@ func _input(event):
 		finish_reveal();get_viewport().set_input_as_handled();return
 	if coop.active and mode=="offer" and event.is_action_pressed("party"):
 		hud.party_panel_toggle();return
+	# A remote party pause freezes physics through coop.paused while this client
+	# can remain in mode=="playing". Do not let its gameplay actions mutate local
+	# state during that interval; pause/resume and offer input above stay usable.
+	if coop.active and not coop.hosting and coop.paused and mode=="playing": return
 	if mode != "playing": return
 	if event.is_action_pressed("next_turret"):
 		selected_turret+=1

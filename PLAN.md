@@ -68,10 +68,10 @@ Research and implementation choices: [ground-art research](native/docs/ground-ar
 
 **User priority, October 15: tackle this only when it is the sole remaining active plan item.** Record it now; finish the other active work before starting this investigation. The separately deferred NodeTunnel work is not a prerequisite.
 
-- [ ] Reproduce the reported major early-game co-op desynchronization on host and client. Record each executable's version/commit and synchronized logs, positions, shared XP/level, enemy state and pause/offer state around the first divergence.
-- [ ] Investigate pause/resume and reward/level-up menus, different player frame rates, and a slow or lagging peer. These are user-suggested hypotheses, not established causes. Compare a normal baseline with each condition separately and then combinations.
-- [ ] Fix the demonstrated cause without breaking host authority, independent upgrade choices or shared progression. Add a regression that fails before the fix.
-- [ ] Verify sustained early-game play in two actual exported processes, including repeated pause/menu transitions and deliberately unequal frame rates/lag. Inspect both peers' logs and rendered behavior; existing LAN/shared-XP checks do not prove this report resolved.
+- [x] Reproduced a pause-state input defect on two source host/client processes. When the host paused, the client's authoritative pause flag became true while its local mode remained `playing`; dash and chest-interaction input still executed even though physics was frozen. The failing pre-fix run is `2026-10-18T10-08-53-417Z-shared-review`.
+- [x] Added a client gameplay-input gate for the remotely paused state. Three repeated pause/resume cycles pass without dash or chest requests during the pause. Normal host/client review: `2026-10-18T10-10-55-862Z-shared-review`.
+- [x] Repeated the same scenarios with a 20 Hz client and 150 ms simulated one-way packet delay. Shared XP/level, offers, chest payment/hiding, pause/resume, enemy warnings and Baron reconstruction all pass: `2026-10-18T10-15-03-377Z-shared-review-stress`.
+- [ ] Verify sustained early-game play in two actual exported processes and inspect rendered behavior. The exact original major-desync symptom is not described in the retained evidence, and these source-process regressions do not establish that every reported desync is fixed. Keep this investigation open until exported validation and a symptom-matched reproduction are recorded.
 
 ## Deferred
 

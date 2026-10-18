@@ -8,13 +8,13 @@ A vivid 3D survival game where a duck, a loaf of bread and an angry granny are p
 
 **Build 17 is in development; no new public build is available yet.** Its current work includes corrected camera-relative minimap rotation, the immense stylized Baron with steam, biome foliage/moss and low mist, and dodgeable enemy contact warnings. [Development evidence and remaining plan](native/docs/build17-work.md).
 
-The third map leads to the Red Moon, where an immense, slow Baron waits with four visible steam vents and deadly, telegraphed attacks. He is a stylized original fallback, not a photorealistic or officially licensed film model. Defeat him to begin an endless Eclipse. The latest boss-health increase needs full-fight balance testing. Natural groves replace decorative buildings; further ground/color acceptance, controller feel, full-battle audio review and late-Eclipse performance work remain open.
+The third map leads to the Red Moon, where an immense, slow Baron waits with four visible steam vents and deadly, telegraphed attacks. He is a stylized original fallback, not a photorealistic or officially licensed film model. Defeat him to begin an endless Eclipse. The refreshed six-biome ground/color views and the controller, music and Lithuanian speech checks have been accepted. Comparable late-Eclipse performance measurements are complete, with high physics-time spikes recorded. Full-fight balance and the reported early-game co-op desynchronization remain open; Build 17 will stay unpublished until the plan is complete.
 
 For the public download, unpack all files together and run `Wildforge.exe`. Source development uses `node scripts/native.mjs`. Co-op players need the same game version. Each verified export includes a manifest of its source commit and executable/pack hashes.
 
 ![First natural ground-cover pass](docs/screenshots/build16/woods.png)
 
-*Natural groves and short grass; further ground and colour polish remains planned.*
+*Natural groves and short grass; the refreshed six-biome ground/color pass was accepted for Build 17.*
 
 ![Co-op hero selection with the new dark interface](docs/screenshots/red-moon-1.1.0/ui-coop.png)
 

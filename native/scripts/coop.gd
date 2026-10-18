@@ -45,9 +45,12 @@ var saw_pause=false
 var saw_realm=false
 var turret_models={}
 var last_remote_reward_level=1
+var review_lag_ms=0
+var review_packet_queue=[]
 
 func setup(owner_game):
 	game=owner_game
+	if OS.get_cmdline_user_args().has("--shared-review-lag"): review_lag_ms=150
 
 func local_addresses() -> Array:
 	var addresses=[]
@@ -119,6 +122,7 @@ func join_lan(address: String):
 
 func leave():
 	clear_flower_visuals()
+	review_packet_queue.clear()
 	local_ready=false;lobby_roster.clear()
 	if peer!=null: peer.close();peer=null
 	if discovery!=null: discovery.close();discovery=null
@@ -207,6 +211,12 @@ func tick(delta: float):
 	if transport=="lan" and peer!=null:
 		peer.poll()
 		if peer==null or not active: return
+		if not review_packet_queue.is_empty():
+			var now=Time.get_ticks_msec();var waiting=[]
+			for item in review_packet_queue:
+				if item.due<=now: receive(item.sender,item.message)
+				else: waiting.append(item)
+			review_packet_queue=waiting
 		if not hosting and not welcomed:
 			connection_clock+=delta
 			if connection_clock>12:
@@ -215,7 +225,10 @@ func tick(delta: float):
 			local_id=peer.get_unique_id();send_to(owner_id,{"type":"hello","protocol":PROTOCOL});joined=true
 		for i in range(mini(128,peer.get_available_packet_count())):
 			var sender=peer.get_packet_peer();var bytes=peer.get_packet()
-			if bytes.size()<=60000: receive(sender,bytes_to_var(bytes))
+			if bytes.size()<=60000:
+				var message=bytes_to_var(bytes)
+				if review_lag_ms>0: review_packet_queue.append({"sender":sender,"message":message,"due":Time.get_ticks_msec()+review_lag_ms})
+				else: receive(sender,message)
 			if peer==null or not active: return
 	# Full world packets include every enemy, player and event. Ten updates per
 	# second saves bandwidth and serialization work without dropping reliable hits.
