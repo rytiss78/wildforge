@@ -365,7 +365,9 @@ func make_environment():
 	var env=Environment.new();env.background_mode=Environment.BG_SKY
 	var sky=Sky.new();var gradient=ShaderMaterial.new();gradient.shader=load("res://shaders/biome_sky.gdshader");gradient.set_shader_parameter("paint",load("res://assets/illustrated/terrain-2.png"));sky.sky_material=gradient;sky.process_mode=Sky.PROCESS_MODE_REALTIME;env.sky=sky
 	env.ambient_light_source=Environment.AMBIENT_SOURCE_COLOR;env.ambient_light_color=Color("e6efff");env.ambient_light_energy=.36
-	env.adjustment_enabled=true;env.adjustment_saturation=1.12;env.adjustment_contrast=1.03
+	# Painterly grade: rich saturated midtones, firmer contrast, glowing hot accents.
+	env.adjustment_enabled=true;env.adjustment_saturation=1.22;env.adjustment_contrast=1.1
+	env.glow_enabled=true;env.glow_intensity=.55;env.glow_strength=.9;env.glow_bloom=.04;env.glow_hdr_threshold=1.05;env.glow_blend_mode=Environment.GLOW_BLEND_MODE_SOFTLIGHT
 	# Keep the playable foreground crisp; distant scenery still fades out.
 	env.fog_enabled=true;env.fog_mode=Environment.FOG_MODE_DEPTH;env.fog_light_color=sky_horizon;env.fog_density=1.0;env.fog_depth_begin=35;env.fog_depth_end=155;env.fog_sky_affect=0
 	var world_env=WorldEnvironment.new();world_env.environment=env;add_child(world_env)
@@ -373,7 +375,7 @@ func make_environment():
 	weather=GPUParticles3D.new();weather.amount=180;weather.lifetime=4;weather.visibility_aabb=AABB(Vector3(-40,-55,-40),Vector3(80,85,80));add_child(weather)
 	var particles=ParticleProcessMaterial.new();particles.emission_shape=ParticleProcessMaterial.EMISSION_SHAPE_BOX;particles.emission_box_extents=Vector3(14,4,14);particles.direction=Vector3.DOWN;particles.spread=35;weather.process_material=particles
 	make_low_mist()
-	var sun=DirectionalLight3D.new();sun.rotation_degrees=Vector3(-42,-35,0);sun.light_energy=1.05;sun.light_color=Color("ffe4b5");sun.shadow_enabled=true;sun.directional_shadow_max_distance=38;add_child(sun)
+	var sun=DirectionalLight3D.new();sun.rotation_degrees=Vector3(-42,-35,0);sun.light_energy=1.2;sun.light_color=Color("ffe0ad");sun.shadow_enabled=true;sun.directional_shadow_max_distance=38;add_child(sun)
 	for i in range(16):
 		var cloud=Node3D.new();cloud.position=Vector3(cos(i*TAU/16)*370,60+sin(i)*15,sin(i*TAU/16)*370);add_child(cloud);clouds.append(cloud)
 		for j in range(3): ToonArt.ball(cloud,Color("fff2de"),Vector3(j*6,0,0),Vector3(20,9,12))

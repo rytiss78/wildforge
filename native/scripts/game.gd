@@ -218,6 +218,7 @@ func _ready():
 	select_hero(hero)
 	player.position = Vector3(0,1,0)
 	add_child(camera)
+	InkOverlay.attach(camera)
 	camera.fov = 70
 	camera.far = 180
 	camera.current = true
