@@ -126,6 +126,20 @@ static func run(game):
 	game.coop.publish_reward_skip("level")
 	okay=expect(await capture(game,"coop-level-skip"),"co-op skip highlight capture") and okay
 	okay=expect(game.hud.party_overlay.find_children("*","Label",true,false).any(func(node):return node.text=="✓  Kept weapons"),"co-op skip choice is highlighted") and okay
+	# Teammate picks that arrive after this player chose must not reopen the
+	# panel over gameplay or over another full-width screen.
+	game.hud.cards[0].pressed.emit()
+	okay=expect(game.mode=="playing" and not game.hud.modal.visible,"co-op choice closes the reward screen") and okay
+	game.coop.apply_reward_choice(3,game.party_reward_id,str(offers[1].id),str(offers[1].name),"level","Review Player 3")
+	game.hud.update(0)
+	okay=expect(await capture(game,"coop-after-choice"),"co-op after-choice capture") and okay
+	okay=expect(not game.hud.party_overlay.visible,"team panel stays hidden after this player chose") and okay
+	game.hud.pause_menu()
+	game.coop.apply_reward_choice(4,game.party_reward_id,str(offers[2].id),str(offers[2].name),"level","Review Player 4")
+	game.hud.update(0)
+	okay=expect(await capture(game,"coop-pause-after-choice"),"co-op pause capture") and okay
+	okay=expect(not game.hud.party_overlay.visible,"team panel never covers the pause menu") and okay
+	game.hud.close()
 	game.coop.active=false;game.coop.hosting=false;game.hud.party_overlay.visible=false;game.hud.close()
 	game.coop.active=true;game.coop.hosting=true;game.coop.local_id=1;game.party_reward_id="ui-review-chest"
 	game.hud.show_offers(offers,"chest",false)

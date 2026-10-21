@@ -44,6 +44,7 @@ var party_list_key=""
 var party_overlay: PanelContainer
 var party_rows: VBoxContainer
 var party_panel_open=false
+var party_split=false   # true only while this player's co-op reward screen leaves room for the team panel
 var offer_tween: Tween
 var preview_id=""
 var health_text: Label
@@ -350,7 +351,7 @@ func setup(owner_game):
 func open(title: String, subtitle: String = "") -> VBoxContainer:
 	binding_action=""
 	if offer_tween!=null and offer_tween.is_valid(): offer_tween.kill()
-	preview_id=""
+	preview_id="";party_split=false
 	for child in modal.get_children(): child.queue_free()
 	modal.visible = true
 	var vp_size = get_viewport().get_visible_rect().size
@@ -374,7 +375,7 @@ func open(title: String, subtitle: String = "") -> VBoxContainer:
 
 func close():
 	if offer_tween!=null and offer_tween.is_valid(): offer_tween.kill()
-	modal.visible = false
+	modal.visible = false;party_split=false;party_panel_open=false
 	game.mode = "playing"
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED if not game.smoke else Input.MOUSE_MODE_VISIBLE
 
@@ -416,8 +417,12 @@ func show_party_panel(selections: Dictionary):
 			var skipped=PanelContainer.new();skipped.custom_minimum_size.y=18
 			skipped.add_theme_stylebox_override("panel",style(Color("574b2b"),ThemeTokens.STAR_GOLD,4))
 			skipped.add_child(label("✓  Kept weapons",12,ThemeTokens.STAR_GOLD));party_rows.add_child(skipped)
-	party_panel_open=true
-	party_overlay.visible=game.coop.active and game.run_active
+	party_overlay.visible=party_visible()
+
+# Teammate updates only refresh the rows; the panel shows beside this player's
+# own reward choice and never over gameplay or another full-width screen.
+func party_visible() -> bool:
+	return party_panel_open and party_split and modal.visible and game.coop.active and game.run_active
 
 func party_panel_toggle():
 	party_panel_open=not party_panel_open
@@ -467,7 +472,7 @@ func update(delta: float):
 	journey_overlay.queue_redraw()
 	for widget in root.get_children():
 		if widget is CanvasItem and widget!=modal and widget!=blast and widget!=_ach_note_panel and widget!=party_overlay: widget.visible=not modal.visible
-	party_overlay.visible=party_panel_open and game.coop.active and game.run_active
+	party_overlay.visible=party_visible()
 	_ach_note_panel.visible=_ach_note_active and not modal.visible
 	level_plate.visible=game.mode=="level_reveal"
 	level_plate.text="LEVEL %d  ·  NEW POWER!" % game.level
@@ -946,7 +951,7 @@ func show_offers(items: Array, source: String,animate: bool=true):
 		panel.position=Vector2(16,16);panel.size=Vector2(viewport.x*.65,viewport.y-32)
 		for frame in modal.get_children():
 			if frame.get_script()!=null and str(frame.get_script().resource_path).ends_with("forge_frame.gd"): frame.position=panel.position;frame.size=panel.size
-		party_panel_open=true;show_party_panel(game.party_seen)
+		party_panel_open=true;party_split=true;show_party_panel(game.party_seen)
 	panel.add_theme_stylebox_override("panel",style(ThemeTokens.INK,Color("9b855e"),22))
 	box.get_child(0).add_theme_color_override("font_color",ThemeTokens.PAPER)
 	box.get_child(1).add_theme_color_override("font_color",Color("b5c5cf"))
