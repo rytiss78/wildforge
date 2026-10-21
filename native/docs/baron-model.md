@@ -30,12 +30,10 @@ No verified free, photoreal Baron asset met the request. A paid generic Fab char
 
 Initial rendered review `2026-10-15T11-24-54-623Z-red-moon-review` passed combat, size, portal and local network-reconstruction checks but failed steam count because duplicate node names were rewritten by Godot. Each vent now has a unique name. The original failure log is retained. Facial outlines were removed after inspecting the silhouette image. Later robe-model reviews are superseded by the October 16 bare-model review above.
 
-## October 21 — Blender pipeline rebuild
+## October 21 — floating Baron and the rejected Blender version
 
-The primitive builder is retired. The Baron is now authored by `scripts/blender/baron.py` (helpers in `scripts/blender/forge.py`) and run headless with Blender 5.2:
+The current model is the floating Python build from commit `4234a03` (`scripts/build-baron.py`). It is a colossal, pear-shaped, bald figure with fat folds, a double chin, lesions and short dangling legs. He hovers and bobs at runtime, and the four steam vents ride on the floating body.
 
-```powershell
-& "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe" -b --factory-startup -P scripts/blender/baron.py -- "$PWD\native\assets\style3d\boss_8_baron.glb"
-```
+A metaball/voxel Blender rebuild (`d58262b`) was tried and then reverted. The user judged it worse: the fused forms read as a lumpy marshmallow and lost the crisp silhouette. The Blender helper module remains for future work; `scripts/blender/baron.py` was removed.
 
-Metaballs fuse a continuous colossal body, and negative elements carve the belly folds, the chest separation, the navel, the eye sockets and the mouth line. Each part is voxel-remeshed, smoothed and decimated (about 47,000 triangles total). A cavity pass bakes darker creases into vertex colours, which `style_model.gd` uses as albedo. He floats and bobs at runtime with dangling legs, and the four steam vents ride on the floating body. The model is original and stylized: no third-party mesh, texture or actor likeness. Evidence: `2026-10-21T09-02-07-542Z-red-moon-review` and `2026-10-21T09-02-32-946Z-boss-review`.
+The user wants a closer match to Baron Harkonnen in the *Dune* film. Copying the film's character design or the actor's likeness from photos is not done here. A faithful film likeness needs a licensed model.
