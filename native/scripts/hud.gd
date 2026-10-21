@@ -624,6 +624,13 @@ func update(delta: float):
 			var band_bottom=screen_size.y-210.0-floorf(float(dn.get("lane",0))/8.0)*56.0
 			var rise=(1.0-life_ratio)*190.0*float(dn.get("fly_speed",1.0))
 			label.position=Vector2(clampf(screen_size.x*dn.screen_x-label_size.x*.5,32,screen_size.x-label_size.x-32),band_bottom-label_size.y-rise)
+			# A weapon's own hits rise from its slot icon; all other damage keeps the band above.
+			var slot=weapons.slot_rect(str(dn.get("weapon_id",""))) if not str(dn.get("weapon_id","")).is_empty() else Rect2()
+			if slot.size!=Vector2.ZERO:
+				var top=damage_overlay.get_global_transform().affine_inverse()*Vector2(slot.get_center().x,slot.position.y)
+				var spread=float(int(dn.get("lane",0))%3-1)*30.0
+				var drawn=label.size.max(label_size)
+				label.position=Vector2(top.x-drawn.x*.5+spread,top.y-drawn.y-rise)
 
 			label.modulate.a = clampf(life_ratio * 2.0, 0.0, 1.0)
 

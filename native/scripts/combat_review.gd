@@ -8,17 +8,19 @@ static func run(game):
 	game.damage_numbers.clear()
 	for i in range(500): game.record_damage_number(1,0.25,"poison")
 	var aggregated=game.damage_numbers.size()==1 and game.damage_numbers[0].value==125
+	# October 21 spec: ordinary hits show numbers; the pool stays bounded and crits
+	# still get through when it is full of ordinary hits.
 	for i in range(500): game.record_damage_number(i+2,2,"hit")
-	var regular_hits_hidden=game.damage_numbers.size()==1
+	var regular_hits_shown=game.damage_numbers.size()==game.MAX_DAMAGE_NUMBERS and game.damage_numbers.any(func(n):return n.cause=="hit")
 	for i in range(500): game.record_damage_number(i+2,2,"crit")
 	game.hud.update(0)
-	var bounded=game.damage_numbers.size()==game.MAX_DAMAGE_NUMBERS and game.hud.damage_labels.size()==game.MAX_DAMAGE_NUMBERS
+	var bounded=game.damage_numbers.size()==game.MAX_DAMAGE_NUMBERS and game.hud.damage_labels.size()==game.MAX_DAMAGE_NUMBERS and game.damage_numbers.any(func(n):return n.cause=="crit")
 	var label_id=game.hud.damage_labels[0].get_instance_id()
 	game.damage_numbers.clear();game.hud.update(0)
 	var cleared=game.hud.damage_labels.all(func(n):return not n.visible)
 	game.record_damage_number(999,12,"ice");game.hud.update(0)
 	var reused=game.hud.damage_labels[0].get_instance_id()==label_id
-	if not (aggregated and regular_hits_hidden and bounded and cleared and reused):
+	if not (aggregated and regular_hits_shown and bounded and cleared and reused):
 		push_error("Damage feedback burst/reuse contract failed");game.get_tree().quit(1);return
 	game.damage_numbers.clear()
 	# Behind-camera actors must still emit feedback above the lower HUD.
@@ -35,6 +37,16 @@ static func run(game):
 	game.hud.close()
 	if not (band_clear and rises and fades and modal_clear):
 		push_error("Bottom-band damage motion/clearance contract failed");game.get_tree().quit(1);return
+	# A weapon's own hit rises from that weapon's slot icon.
+	game.damage_numbers.clear();game.hud.update(0)
+	var weapon_id=str(game.equipped[0].id)
+	game.record_damage_number(10002,21,"hit",game.player.position,weapon_id);game.hud.update(0)
+	var slot=game.hud.weapons.slot_rect(weapon_id);var shown=game.hud.damage_labels[0].get_global_rect()
+	var from_slot=slot.size!=Vector2.ZERO and absf(shown.get_center().x-slot.get_center().x)<40 and shown.end.y<=slot.position.y+1 and shown.end.y>slot.position.y-20
+	game.damage_numbers[0].life=.5;game.hud.update(0)
+	var slot_rises=game.hud.damage_labels[0].get_global_rect().end.y<shown.end.y-40
+	if not (from_slot and slot_rises):
+		push_error("Weapon damage does not rise from its slot: slot=%s label=%s later=%s weapon=%s visible=%s" % [slot,shown,game.hud.damage_labels[0].get_global_rect(),weapon_id,game.hud.damage_labels[0].visible]);game.get_tree().quit(1);return
 	game.damage_numbers.clear()
 	game.xp_target=100000;game.stats.damage=4
 	for id in ["shotgun","ice"]:

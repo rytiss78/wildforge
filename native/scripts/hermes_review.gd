@@ -36,14 +36,20 @@ static func run(g):
 	for guard in guards:
 		if not guard.dead: g.hurt_enemy(guard,100000,"melee")
 	g.update.tick(.01);checks.defenses_destroyed=g.update.magnet_turret_count==0
+	# October 21 spec: one pull of every drop on the map at activation, then spent.
+	for pickup in g.pickups: pickup.node.queue_free()
+	g.pickups.clear();g.spawn_pickup(g.update.magnet_position+Vector3(5,1,0),"xp",7);g.spawn_pickup(g.update.magnet_position+Vector3(-200,1,0),"gold",3)
 	g.mode="playing";g.player.position=g.update.magnet_position;g.interact()
 	checks.interact_activates=g.update.magnet_active
 	g.player.position=g.update.magnet_position+Vector3(40,0,0);g.xp=0;g.xp_target=10000
-	for pickup in g.pickups: pickup.node.queue_free()
-	g.pickups.clear();g.spawn_pickup(g.update.magnet_position+Vector3(5,1,0),"xp",7);g.spawn_pickup(g.update.magnet_position+Vector3(-5,1,0),"gold",3)
 	var coins=g.gold
-	for i in range(100): g.update_pickups(.02)
+	for i in range(900): g.update_pickups(.02)
 	checks.magnet_collects=g.xp==7 and g.gold==coins+3 and g.pickups.is_empty()
+	g.spawn_pickup(g.update.magnet_position+Vector3(6,1,0),"gold",5)
+	for i in range(150): g.update.tick(.02);g.update_pickups(.02)
+	checks.magnet_spent_once=g.update.magnet_spent and not g.update.magnet_active and g.pickups.size()==1 and g.gold==coins+3
+	g.player.position=g.update.magnet_position;g.interact()
+	checks.magnet_not_reusable=not g.update.magnet_active and g.update.hint().contains("SPENT")
 	var old_magnet=g.update.magnet_node
 	g.enter_realm(1);g.set_physics_process(false);g.set_process(false)
 	await g.get_tree().process_frame

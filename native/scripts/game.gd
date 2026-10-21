@@ -1346,18 +1346,26 @@ func hit_enemy(enemy: Dictionary, shot: Dictionary,cause: String="hit"):
 		hurt_enemy(next,damage*.6,"lightning")
 		origin = next.node.position
 
-func record_damage_number(enemy_id: int, damage: float, cause: String,position_value: Vector3=Vector3.INF):
-	# Show damage numbers for meaningful hits: crits (always), fire/ice (DOTs), explosions, melee, slam, heal
-	var show_causes=["crit","fire","ice","slam","explosion","melee","sonic","thorn","poison","aura","burn","heal","coop"]
+func record_damage_number(enemy_id: int, damage: float, cause: String,position_value: Vector3=Vector3.INF,weapon_id: String=""):
+	# Only equipped weapons have a HUD slot to rise from.
+	if not equipped.any(func(w):return w.id==weapon_id): weapon_id=""
+	# Every damaging hit shows a number, ordinary gun hits included (October 21 request).
+	var show_causes=["hit","lightning","crit","fire","ice","slam","explosion","melee","sonic","thorn","poison","aura","burn","heal","coop"]
 	if cause not in show_causes: return
 	# De-dup: merge damage within 400ms for same enemy+cause to reduce visual noise
 	for entry in damage_numbers:
-		if entry.life>.8 and entry.enemy_id==enemy_id and entry.cause==cause:
+		if entry.life>.8 and entry.enemy_id==enemy_id and entry.cause==cause and entry.get("weapon_id","")==weapon_id:
 			entry.amount+=damage
 			entry.value=maxi(1,roundi(entry.amount))
 			entry.life=1.2
 			return
-	if damage_numbers.size()>=MAX_DAMAGE_NUMBERS: return
+	if damage_numbers.size()>=MAX_DAMAGE_NUMBERS:
+		# Frequent ordinary hits give way to crits and bigger effects.
+		var oldest_plain=-1
+		for i in range(damage_numbers.size()):
+			if damage_numbers[i].cause in ["hit","lightning"]: oldest_plain=i;break
+		if cause in ["hit","lightning"] or oldest_plain<0: return
+		damage_numbers.remove_at(oldest_plain)
 	# Stable free lanes keep simultaneous hits legible without tying them to actors.
 	var lane=0
 	while damage_numbers.any(func(entry):return int(entry.get("lane",-1))==lane): lane+=1
@@ -1398,9 +1406,15 @@ func record_damage_number(enemy_id: int, damage: float, cause: String,position_v
 		fly_speed=0.45
 	elif cause=="heal":
 		dmg_color=Color("00ff00")  # Green for healing
+	elif cause=="lightning":
+		dmg_color=Color("#8fd0ff")  # Pale blue for chained lightning
+		fly_speed=0.55
+	elif cause=="hit":
+		dmg_color=Color("f4ecdc")  # Soft white: present but quieter than crits
+		fly_speed=0.5
 	else:
 		dmg_color=Color("ffffff")  # White fallback
-	damage_numbers.append({"enemy_id":enemy_id,"amount":damage,"value":maxi(1,roundi(damage)),"world_position":position_value,"lane":lane,"screen_x":.2+float(lane%8)*.6/7.0,"life":1.2,"maxLife":1.2,"cause":cause,"color":dmg_color,"fly_speed":fly_speed,"size_boost":size_boost,"flash_timer":1.2 if cause in ["crit","heal"] else 0})
+	damage_numbers.append({"enemy_id":enemy_id,"amount":damage,"value":maxi(1,roundi(damage)),"world_position":position_value,"lane":lane,"screen_x":.2+float(lane%8)*.6/7.0,"life":1.2,"maxLife":1.2,"cause":cause,"weapon_id":weapon_id,"color":dmg_color,"fly_speed":fly_speed,"size_boost":size_boost,"flash_timer":1.2 if cause in ["crit","heal"] else 0})
 
 func create_status_indicator(enemy: Dictionary, color: Color, name: String) -> Node3D:
 	if not enemy.node.has_meta("status_fx"): enemy.node.set_meta("status_fx",{})
@@ -1487,7 +1501,8 @@ func hurt_enemy(enemy: Dictionary, damage: float, cause: String,mechanic: String
 	update.party_damage+=credited
 	# Host displays confirmed damage, including hits from teammates. Client
 	# receives its own authoritative total via big_damage below.
-	record_damage_number(enemy.net_id,credited,cause,enemy_center(enemy))
+	# This hero's weapon hits rise from that weapon's slot on the HUD.
+	record_damage_number(enemy.net_id,credited,cause,enemy_center(enemy),mechanic if owner==coop.local_id else "")
 	if owner==coop.local_id:
 		update.run_damage+=credited;credit_damage(mechanic if not mechanic.is_empty() else "effect:"+cause,credited)
 	elif coop.hosting and coop.members.has(owner): coop.send_to(owner,{"type":"big_damage","enemy_id":enemy.net_id,"position":coop.array(enemy_center(enemy)),"cause":cause,"amount":credited,"source":mechanic if not mechanic.is_empty() else "effect:"+cause,"realm":realm})
@@ -1687,6 +1702,7 @@ func merge_xp_orbs():
 			buckets[cell].append(pickup)
 		else:
 			survivor.value+=pickup.value;survivor.units+=pickup.units;survivor.merge_pulse=.22;resize_xp(survivor)
+			if pickup.get("magnet_pull",false): survivor.magnet_pull=true
 			pickup.age=-1;pickup.node.queue_free()
 	pickups=pickups.filter(func(pickup):return pickup.age>=0)
 
@@ -1710,7 +1726,8 @@ func update_pickups(delta: float):
 		var collector_alive=hp>0 if target.id==coop.local_id else float(coop.members.get(target.id,{}).get("hp",0))>0
 		var radius=stats.coinRadius if pickup.kind=="gold" else stat("pickup") if target.id==coop.local_id else float(coop.members[target.id].get("stats",{}).get("pickup",4))
 		var destination=target.position+Vector3.UP*.4
-		var collecting_at_magnet=update.magnet_active and is_instance_valid(update.magnet_node) and pickup.node.position.distance_to(update.magnet_position)<update.magnet_range
+		# Only drops tagged when the magnet fired fly in, from anywhere on the map.
+		var collecting_at_magnet=pickup.get("magnet_pull",false) and is_instance_valid(update.magnet_node)
 		if collecting_at_magnet: destination=update.magnet_position+Vector3.UP*.5
 		if not collector_alive and not collecting_at_magnet: pickup.attracted=false
 		elif collecting_at_magnet or target.position.distance_to(pickup.node.position)<radius: pickup.attracted=true

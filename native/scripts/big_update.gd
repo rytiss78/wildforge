@@ -40,7 +40,7 @@ func new_run():
 	game.rules.banished.clear();downed=false;downed_ids.clear();rescue_progress.clear()
 	run_damage=0;party_damage=0;run_xp=0;run_coins=0;run_revives=0;run_rescues=0;memories.clear();quip_times.clear();quip_clock=0
 	if is_instance_valid(magnet_node): magnet_node.queue_free();magnet_node=null
-	magnet_turrets=[];magnet_active=false
+	magnet_turrets=[];magnet_active=false;magnet_spent=false;magnet_hold=0.0
 
 func realm_started():
 	if downed: game.hp=game.stats.maxHp*.4;game.invulnerable=3
@@ -48,7 +48,7 @@ func realm_started():
 		if is_instance_valid(node): node.queue_free()
 	merchant=null;beacon=null;stock.clear();purchased.clear();beacon_claimed.clear()
 	if is_instance_valid(magnet_node): magnet_node.queue_free();magnet_node=null
-	magnet_turrets=[];magnet_active=false
+	magnet_turrets=[];magnet_active=false;magnet_spent=false;magnet_hold=0.0
 	banish_charges=5;pending_purchase=-1;downed=false;downed_ids.clear();rescue_progress.clear()
 	beacon_state="idle";beacon_seconds=0;beacon_absent=0;mimic.clear();pings.clear()
 	if game.realm==3: return
@@ -138,7 +138,8 @@ func hint() -> String:
 	if is_instance_valid(beacon) and game.player.position.distance_to(beacon_position)<4 and beacon_state=="idle": return "E / X · ACTIVATE SUPPLY · DEFEND 25 s"
 	if beacon_state=="defending": return "SUPPLY · %d s · STAY WITHIN 14 m" % ceili(25-beacon_seconds)
 	if is_instance_valid(magnet_node) and game.player.position.distance_to(magnet_position)<5:
-		if magnet_active: return "MAGNET ACTIVE · Sucking up loot!"
+		if magnet_active: return "MAGNET ACTIVE · Pulling in the whole map!"
+		if magnet_spent: return "E.X.P. MAGNET · SPENT FOR THIS MAP"
 		if magnet_turret_count>0: return "MAGNET · Destroy %d turrets first" % magnet_turret_count
 		return "E / X · ACTIVATE E.X.P. MAGNET"
 	return ""
@@ -152,7 +153,7 @@ func interact() -> bool:
 		return true
 	# Magnet interaction: activate when turrets are destroyed.
 	if is_instance_valid(magnet_node) and game.player.position.distance_to(magnet_position)<5:
-		if not magnet_active and magnet_turret_count<=0:
+		if not magnet_active and not magnet_spent and magnet_turret_count<=0:
 			if game.coop.active and not game.coop.hosting:
 				game.coop.send_to(game.coop.owner_id,game.coop.pose())
 				game.coop.send_to(game.coop.owner_id,{"type":"big_action","action":"magnet","realm":game.realm})
@@ -160,10 +161,23 @@ func interact() -> bool:
 			return true
 	return false
 
+# One pull per map: everything lying anywhere on the map at activation flies in;
+# loot dropped later is not pulled, and the magnet is spent once its haul lands.
 func activate_magnet():
-	if magnet_active or magnet_turret_count>0 or not is_instance_valid(magnet_node): return
-	magnet_active=true
-	game.hud.tell("E.X.P. MAGNET ACTIVATED · Sucking up XP & gold!",4)
+	if magnet_active or magnet_spent or magnet_turret_count>0 or not is_instance_valid(magnet_node): return
+	magnet_active=true;magnet_hold=2.5
+	tag_magnet_loot()
+	game.hud.tell("E.X.P. MAGNET ACTIVATED · Pulling in every drop on the map!",4)
+
+func tag_magnet_loot():
+	for pickup in game.pickups: pickup.magnet_pull=true
+
+func magnet_tick(delta: float):
+	if not magnet_active: return
+	magnet_hold=maxf(0,magnet_hold-delta)
+	if magnet_hold<=0 and not game.pickups.any(func(p):return p.get("magnet_pull",false)):
+		magnet_active=false;magnet_spent=true
+		game.hud.tell("E.X.P. MAGNET SPENT",3)
 
 func merchant_menu():
 	quip("discovery")
@@ -332,11 +346,14 @@ func host_tick(delta: float):
 				else: game.coop.send_to(int(id),{"type":"big_beacon_reward","realm":game.realm})
 
 func world_state() -> Dictionary:
-	return {"downed":downed_ids.keys(),"rescue":rescue_progress,"beacon":beacon_state,"seconds":beacon_seconds,"party_damage":party_damage,"magnet_active":magnet_active,"magnet_guards":magnet_turret_count}
+	return {"downed":downed_ids.keys(),"rescue":rescue_progress,"beacon":beacon_state,"seconds":beacon_seconds,"party_damage":party_damage,"magnet_active":magnet_active,"magnet_spent":magnet_spent,"magnet_guards":magnet_turret_count}
 
 func apply_state(state: Dictionary):
 	party_damage=float(state.get("party_damage",0))
-	magnet_active=bool(state.get("magnet_active",false));magnet_turret_count=int(state.get("magnet_guards",3))
+	var was_active=magnet_active;magnet_active=bool(state.get("magnet_active",false));magnet_spent=bool(state.get("magnet_spent",false))
+	# Clients pull their own local drops once, when the host switches the magnet on.
+	if magnet_active and not was_active: tag_magnet_loot()
+	magnet_turret_count=int(state.get("magnet_guards",3))
 	downed_ids.clear()
 	for id in state.get("downed",[]): downed_ids[int(id)]=true
 	rescue_progress=state.get("rescue",{});beacon_state=state.get("beacon","idle");beacon_seconds=float(state.get("seconds",0))
@@ -378,7 +395,7 @@ func receive(sender: int,message: Dictionary) -> bool:
 			var amount=float(message.get("amount",0));var position_value=CoopSession.vector(message.get("position",[]))
 			if not is_finite(amount) or amount<=0 or not position_value.is_finite(): return true
 			run_damage+=amount;game.credit_damage(str(message.get("source","effect:coop")),amount)
-			game.record_damage_number(int(message.get("enemy_id",-1)),amount,str(message.get("cause","hit")),position_value)
+			game.record_damage_number(int(message.get("enemy_id",-1)),amount,str(message.get("cause","hit")),position_value,str(message.get("source","")))
 		elif type=="big_boss_voice": game.sound.boss_curse(CoopSession.vector(message.get("position",[])),int(message.get("index",0)))
 		elif type=="big_ping": show_ping(message)
 		elif type=="big_revive": revived()
@@ -412,8 +429,16 @@ func tick(delta: float):
 			var remaining=magnet_turrets.filter(func(t):return not t.dead).size()
 			if remaining==0 and magnet_turret_count>0: game.hud.tell("MAGNET DEFENSE DOWN · INTERACT TO ACTIVATE",4)
 			magnet_turret_count=remaining
-		var pulse=sin(game.realm_time*4)*(.12 if magnet_active else .025)
+		if not game.coop.active or game.coop.hosting: magnet_tick(delta)
+		var pulse=sin(game.realm_time*4)*(.12 if magnet_active else 0.0 if magnet_spent else .025)
 		magnet_node.scale=Vector3.ONE+pulse*Vector3(1,.3,1)
+		if magnet_spent and not magnet_node.has_meta("spent"):
+			# A spent magnet goes dark so nobody walks back to it.
+			magnet_node.set_meta("spent",true)
+			for light in magnet_node.find_children("*","OmniLight3D",true,false): light.visible=false
+			for part in magnet_node.find_children("*","MeshInstance3D",true,false):
+				if part.material_override is StandardMaterial3D and part.material_override.emission_enabled:
+					part.material_override=part.material_override.duplicate();part.material_override.emission_enabled=false;part.material_override.albedo_color=Color("39505c")
 
 func quip(context: String):
 	if quip_clock>0 or float(quip_times.get(context,-100))+90>game.elapsed: return
@@ -433,6 +458,8 @@ var magnet_position: Vector3
 var magnet_turrets: Array = []
 var magnet_turret_count: int
 var magnet_active: bool = false
+var magnet_spent: bool = false
+var magnet_hold: float = 0.0
 var magnet_range: float = 120.0
 
 func effect_node(mesh: Mesh,paint: Material,p: Vector3) -> MeshInstance3D:

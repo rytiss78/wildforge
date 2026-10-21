@@ -4,6 +4,12 @@ class_name WeaponBar
 var signature = ""
 var game
 
+# Screen rectangle of an equipped weapon's slot; damage numbers rise from it.
+func slot_rect(weapon_id: String) -> Rect2:
+	for panel in get_children():
+		if panel.get_meta("weapon_id","")==weapon_id and not panel.is_queued_for_deletion(): return panel.get_global_rect()
+	return Rect2()
+
 func refresh():
 	var turrets=game.equipped.filter(func(w):return w.turret)
 	var selected=turrets[game.selected_turret%turrets.size()] if not turrets.is_empty() else {}
@@ -35,6 +41,7 @@ func refresh():
 		panel.add_child(column)
 		if filled:
 			var weapon = game.equipped[i]
+			panel.set_meta("weapon_id",weapon.id)
 			if weapon.id==selected.get("id",""):
 				var selected_style=game.hud.style(ThemeTokens.PAPER_RUNTIME,ThemeTokens.STAR_GOLD,3);selected_style.set_border_width_all(2)
 				panel.add_theme_stylebox_override("panel",selected_style);panel.set_meta("selected_turret",true)
