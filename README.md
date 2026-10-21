@@ -4,9 +4,9 @@
 
 A vivid 3D survival game where a duck, a loaf of bread and an angry granny are perfectly reasonable hero choices. Explore strange places, grab unpredictable upgrades and become outrageously overpowered before the monsters catch you.
 
-**[Download Build 17 for Windows](https://github.com/rytiss78/wildforge/releases/tag/build-17)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
+**[Download Build 18 for Windows](https://github.com/rytiss78/wildforge/releases/tag/build-18)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
 
-**Build 17 (1.1.3) is now available as an alpha release.** It includes the immense stylized Baron and Red Moon event, Lithuanian phase voices, refreshed six-biome ground art, weapon mastery, enemy formations, six-biome collection goals, co-op reconnects and live build inspection, expanded run reports, and eight achievement-earned nameplate styles. [Build 17 notes and validation limits](native/docs/build17-release.md).
+**Build 18 (1.2.0) is now available as an alpha release.** It adds 102 run-changing mutations, a new ink-outlined look, a floating colossal Baron, the giant-orb XP magnet, and damage numbers on every hit. It also fixes co-op crowd desync, reconnects and the teammates' reward panel. [Build 18 notes and limits](native/docs/build18-release.md).
 
 The third map leads to the Red Moon, where an immense, slow Baron waits with four visible steam vents and deadly, telegraphed attacks. He is a stylized original fallback, not a photorealistic or officially licensed film model. Defeat him to begin an endless Eclipse. The refreshed six-biome ground/color views and the controller, music and Lithuanian speech checks have been accepted. **Known limits:** real-fight Baron balance remains unverified. The exported two-process route completed, but its client-side lobby-ready synchronization assertion failed; the exact early-game desync originally reported has not been identified and is not claimed fixed.
 
@@ -54,11 +54,11 @@ For Windows packaging, place the console editor at `tools/godot/Godot_v4.7.2-sta
 ```powershell
 node scripts/native.mjs
 ./scripts/package-native.ps1
-./scripts/package-release.ps1 -BuildNumber 17 -BuildDirectory build/baron-1.1.3-build17 -SourceCommit HEAD
+./scripts/package-release.ps1 -BuildNumber 18 -BuildDirectory <staged build directory> -SourceCommit HEAD
 ./scripts/test-coop.ps1 -Packaged -RenderedClient
 ```
 
-Published downloads use sequential build numbers. This release is `Wildforge 1.1.3 — Build 17`, tag `build-17`, archive `Wildforge-1.1.3-Windows.zip`. The game remains a development alpha. Packaging includes `build-info.json` and a version-specific SHA-256 checksum. Pass `-BuildDirectory` and its exact `-SourceCommit` when packaging a verified staging directory.
+Published downloads use sequential build numbers. This release is `Wildforge 1.2.0 — Build 18`, tag `build-18`, archive `Wildforge-1.2.0-Windows.zip`. The game remains a development alpha. Packaging includes `build-info.json` and a version-specific SHA-256 checksum. Pass `-BuildDirectory` and its exact `-SourceCommit` when packaging a verified staging directory.
 
 WASD / left stick moves; mouse / right stick looks; Space / A jumps; Shift / RT dashes; Ctrl / B slams; E / X interacts; B / Y opens your build; Escape / Menu pauses. Weapons attack automatically. Florist plants while moving.
 
