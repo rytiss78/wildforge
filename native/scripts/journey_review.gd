@@ -51,5 +51,6 @@ static func run(game):
 	checks.captures=await capture(game,"boss") and checks.captures
 	game.kill_enemy(guardian,"diagnostic");checks.guardian_unlocks=game.Journey.state(game)=="cleared"
 	game.Journey.activate(game);checks.travel=game.realm==1 and game.Journey.state(game)=="sealed"
-	game.enter_realm(2);game.events.guardian_defeated=true;game.Journey.activate(game);checks.final_victory=game.mode=="ended"
+	# Since the Red Moon (Build 12) a cleared third map leads to the final arena, not the end screen.
+	game.enter_realm(2);game.events.guardian_defeated=true;game.Journey.activate(game);checks.final_portal=game.realm==3 and game.events.get("final_arena",false) and game.mode!="ended"
 	print("JOURNEY_REVIEW "+JSON.stringify(checks));game.get_tree().quit(0 if checks.values().all(func(v):return v) else 1)
