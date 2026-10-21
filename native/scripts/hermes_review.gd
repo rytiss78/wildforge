@@ -36,18 +36,30 @@ static func run(g):
 	for guard in guards:
 		if not guard.dead: g.hurt_enemy(guard,100000,"melee")
 	g.update.tick(.01);checks.defenses_destroyed=g.update.magnet_turret_count==0
-	# October 21 spec: one pull of every drop on the map at activation, then spent.
+	# October 21 spec: one pull of every XP orb on the map to a heap beside the
+	# magnet, where they merge into one giant orb the player must walk over.
 	for pickup in g.pickups: pickup.node.queue_free()
-	g.pickups.clear();g.spawn_pickup(g.update.magnet_position+Vector3(5,1,0),"xp",7);g.spawn_pickup(g.update.magnet_position+Vector3(-200,1,0),"gold",3)
+	g.pickups.clear();g.xp=0;g.xp_target=10000
+	var inward=Vector3(-g.update.magnet_position.x,0,-g.update.magnet_position.z).normalized()
+	if inward.length_squared()<.5: inward=Vector3.RIGHT
+	var values=[7.0,60.0,80.0,90.0];var spots=[g.update.magnet_position+Vector3(5,1,0)]
+	for angle in [-.5,0.0,.5]: spots.append(g.update.magnet_position+inward.rotated(Vector3.UP,angle)*120+Vector3.UP)
+	for i in range(4): g.spawn_pickup(spots[i],"xp",values[i])
+	g.spawn_pickup(spots[2],"gold",3)
 	g.mode="playing";g.player.position=g.update.magnet_position;g.interact()
 	checks.interact_activates=g.update.magnet_active
-	g.player.position=g.update.magnet_position+Vector3(40,0,0);g.xp=0;g.xp_target=10000
-	var coins=g.gold
-	for i in range(900): g.update_pickups(.02)
-	checks.magnet_collects=g.xp==7 and g.gold==coins+3 and g.pickups.is_empty()
-	g.spawn_pickup(g.update.magnet_position+Vector3(6,1,0),"gold",5)
-	for i in range(150): g.update.tick(.02);g.update_pickups(.02)
-	checks.magnet_spent_once=g.update.magnet_spent and not g.update.magnet_active and g.pickups.size()==1 and g.gold==coins+3
+	g.player.position=g.update.magnet_position+Vector3(0,0,40);var coins=g.gold
+	for i in range(1200): g.update.tick(.02);g.update_pickups(.02)
+	var heap=g.pickups.filter(func(p):return p.kind=="xp")
+	checks.magnet_builds_heap=heap.size()==1 and is_equal_approx(heap[0].value,237.0) and heap[0].radius>.6 and heap[0].node.position.distance_to(g.update.magnet_heap_spot)<3 and g.xp==0
+	g.camera.position=g.update.magnet_heap_spot+Vector3(6,5,9);g.camera.look_at(g.update.magnet_heap_spot+Vector3.UP)
+	checks.heap_capture=await capture(g,"magnet-heap")
+	checks.magnet_ignores_gold=g.pickups.any(func(p):return p.kind=="gold" and p.node.position.distance_to(spots[2])<4)
+	g.spawn_pickup(g.update.magnet_position+Vector3(0,1,-8),"xp",5)
+	for i in range(100): g.update.tick(.02);g.update_pickups(.02)
+	checks.magnet_spent_once=g.update.magnet_spent and not g.update.magnet_active and g.pickups.filter(func(p):return p.kind=="xp").size()==2
+	g.player.position=g.update.magnet_heap_spot;for i in range(60): g.update_pickups(.02)
+	checks.player_collects_heap=g.xp==237 and g.gold==coins
 	g.player.position=g.update.magnet_position;g.interact()
 	checks.magnet_not_reusable=not g.update.magnet_active and g.update.hint().contains("SPENT")
 	var old_magnet=g.update.magnet_node

@@ -459,7 +459,7 @@ func snapshot() -> Dictionary:
 		var stats=member.get("stats",{})
 		member.vitals={"max_hp":stats.get("maxHp",100),"armor":stats.get("armor",0),"shield_capacity":float(stats.get("shield",0))+float(stats.get("jumpShield",0))}
 		member.erase("stats");member.erase("last_seen")
-	return {"type":"world","seq":snapshot_seq,"actors":actors,"players":poses,"seconds":game.realm_time,"elapsed":game.elapsed,"realm":game.realm,"journey":game.events,"wardens":game.realm_bosses,"level":game.level,"xp":game.xp,"xp_target":game.xp_target,"run_xp":game.update.run_xp,"pause":frozen() or game.mode not in ["playing","ended"],"big_update":game.update.world_state(),"xp_drops":game.pickups.filter(func(p):return p.kind=="xp" and p.age>=0).map(func(p):return {"id":p.net_id,"position":array(p.node.position),"value":p.value})}
+	return {"type":"world","seq":snapshot_seq,"actors":actors,"players":poses,"seconds":game.realm_time,"elapsed":game.elapsed,"realm":game.realm,"journey":game.events,"wardens":game.realm_bosses,"level":game.level,"xp":game.xp,"xp_target":game.xp_target,"run_xp":game.update.run_xp,"pause":frozen() or game.mode not in ["playing","ended"],"big_update":game.update.world_state(),"xp_drops":game.pickups.filter(func(p):return p.kind=="xp" and p.age>=0).map(func(p):return {"id":p.net_id,"position":array(p.node.position),"value":p.value,"heap":p.get("magnet_heap",false)})}
 
 static func array(v: Vector3) -> Array: return [v.x,v.y,v.z]
 static func vector(v) -> Vector3:
@@ -817,7 +817,7 @@ func apply_world(message: Dictionary):
 			game.spawn_pickup(vector(drop.position),"xp",float(drop.value),true)
 			pickup=game.pickups[-1];pickup.net_id=drop_id
 		else: pickup=matches[0]
-		pickup.value=float(drop.value);pickup.target_position=vector(drop.position);game.resize_xp(pickup,true)
+		pickup.value=float(drop.value);pickup.target_position=vector(drop.position);pickup.magnet_heap=bool(drop.get("heap",false));game.resize_xp(pickup,true)
 	for pickup in game.pickups:
 		if pickup.kind=="xp" and not drop_ids.has(pickup.net_id): pickup.age=-1;pickup.node.queue_free()
 	game.pickups=game.pickups.filter(func(p):return p.age>=0)

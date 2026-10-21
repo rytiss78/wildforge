@@ -1676,7 +1676,9 @@ func spawn_pickup(p: Vector3, kind: String, value: float, replicated: bool=false
 	pickup.net_id=pickup_seq;pickup_seq+=1
 	resize_xp(pickup,true);pickups.append(pickup)
 func resize_xp(pickup: Dictionary,instant: bool=false):
-	pickup.radius=clampf(.12*pow(maxf(1,pickup.value/1.5),1.0/3.0),.12,.6) if pickup.kind=="xp" else .27
+	# The magnet heap may grow far beyond an ordinary orb; that growth is the fun.
+	var largest=2.6 if pickup.get("magnet_heap",false) else .6
+	pickup.radius=clampf(.12*pow(maxf(1,pickup.value/1.5),1.0/3.0),.12,largest) if pickup.kind=="xp" else .27
 	if instant and pickup.kind=="xp": pickup.node.scale=Vector3.ONE*(pickup.radius/.12)
 
 func merge_xp_orbs():
@@ -1692,7 +1694,8 @@ func merge_xp_orbs():
 				for z in range(-1,2):
 					for other in buckets.get(cell+Vector3i(x,y,z),[]):
 						if other.kind!=pickup.kind or absf(other.base_y-pickup.base_y)>1.25: continue
-						if pickup.kind=="xp" and other.value+pickup.value>maxf(12,xp_target*.4): continue
+						var heap=pickup.get("magnet_heap",false) and other.get("magnet_heap",false)
+						if pickup.kind=="xp" and not heap and other.value+pickup.value>maxf(12,xp_target*.4): continue
 						if other.node.position.distance_to(p)>6.0: continue
 						var query=PhysicsRayQueryParameters3D.create(p+Vector3.UP*.3,other.node.position+Vector3.UP*.3,1)
 						if not get_world_3d().direct_space_state.intersect_ray(query).is_empty(): continue
@@ -1703,6 +1706,7 @@ func merge_xp_orbs():
 		else:
 			survivor.value+=pickup.value;survivor.units+=pickup.units;survivor.merge_pulse=.22;resize_xp(survivor)
 			if pickup.get("magnet_pull",false): survivor.magnet_pull=true
+			if pickup.get("magnet_heap",false): survivor.magnet_heap=true;resize_xp(survivor)
 			pickup.age=-1;pickup.node.queue_free()
 	pickups=pickups.filter(func(pickup):return pickup.age>=0)
 
@@ -1728,7 +1732,7 @@ func update_pickups(delta: float):
 		var destination=target.position+Vector3.UP*.4
 		# Only drops tagged when the magnet fired fly in, from anywhere on the map.
 		var collecting_at_magnet=pickup.get("magnet_pull",false) and is_instance_valid(update.magnet_node)
-		if collecting_at_magnet: destination=update.magnet_position+Vector3.UP*.5
+		if collecting_at_magnet: destination=update.magnet_heap_spot+Vector3.UP*.5
 		if not collector_alive and not collecting_at_magnet: pickup.attracted=false
 		elif collecting_at_magnet or target.position.distance_to(pickup.node.position)<radius: pickup.attracted=true
 		if pickup.attracted:
@@ -1747,6 +1751,12 @@ func update_pickups(delta: float):
 					else: pickup.velocity=Vector3.ZERO;pickup.settled=true
 		pickup.node.rotation.y+=delta*2
 		if (collector_alive or collecting_at_magnet) and destination.distance_to(pickup.node.position)<1.05+float(pickup.get("radius",.12))-.12:
+			if collecting_at_magnet:
+				# Pulled orbs drop onto the heap beside the magnet and merge into one
+				# ever-bigger orb that the player has to walk over to collect.
+				pickup.magnet_pull=false;pickup.magnet_heap=true;pickup.attracted=false
+				pickup.settled=false;pickup.bounced=true;pickup.velocity=Vector3.ZERO;resize_xp(pickup)
+				continue
 			if pickup.kind=="gold":
 				update.run_coins+=pickup.value;gold+=roundi(pickup.value);heal(stats.coinHeal*pickup.get("units",1));sound.effect("coin")
 				MutationBook.event(self,"pickup",player.position)

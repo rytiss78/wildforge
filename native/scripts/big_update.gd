@@ -83,6 +83,8 @@ func realm_started():
 	magnet_position=Vector3(rng.randf_range(-150,150),0,rng.randf_range(-150,150))
 	magnet_position.y=game.world.height_at(magnet_position.x,magnet_position.z)
 	magnet_node=Node3D.new();magnet_node.position=magnet_position;add_child(magnet_node)
+	# Pulled XP gathers here, beside the magnet, into one orb the player collects.
+	magnet_heap_spot=magnet_position+Vector3(3.4,0,0);magnet_heap_spot.y=game.world.height_at(magnet_heap_spot.x,magnet_heap_spot.z)
 	# Split iron jaws frame the bright core; the silhouette reads at combat distance.
 	ToonArt.tube(magnet_node,Color("263849"),Vector3(0,.25,0),1.7,2.0,.5)
 	ToonArt.tube(magnet_node,Color("d2aa62"),Vector3(0,.54,0),1.45,1.6,.12)
@@ -138,7 +140,7 @@ func hint() -> String:
 	if is_instance_valid(beacon) and game.player.position.distance_to(beacon_position)<4 and beacon_state=="idle": return "E / X · ACTIVATE SUPPLY · DEFEND 25 s"
 	if beacon_state=="defending": return "SUPPLY · %d s · STAY WITHIN 14 m" % ceili(25-beacon_seconds)
 	if is_instance_valid(magnet_node) and game.player.position.distance_to(magnet_position)<5:
-		if magnet_active: return "MAGNET ACTIVE · Pulling in the whole map!"
+		if magnet_active: return "MAGNET ACTIVE · Watch the orb grow!"
 		if magnet_spent: return "E.X.P. MAGNET · SPENT FOR THIS MAP"
 		if magnet_turret_count>0: return "MAGNET · Destroy %d turrets first" % magnet_turret_count
 		return "E / X · ACTIVATE E.X.P. MAGNET"
@@ -161,23 +163,25 @@ func interact() -> bool:
 			return true
 	return false
 
-# One pull per map: everything lying anywhere on the map at activation flies in;
-# loot dropped later is not pulled, and the magnet is spent once its haul lands.
+# One pull per map: every XP orb lying anywhere on the map at activation flies to
+# the heap beside the magnet and merges into one giant orb for the player to
+# collect. Orbs dropped later are not pulled; the magnet is spent once its haul lands.
 func activate_magnet():
 	if magnet_active or magnet_spent or magnet_turret_count>0 or not is_instance_valid(magnet_node): return
 	magnet_active=true;magnet_hold=2.5
 	tag_magnet_loot()
-	game.hud.tell("E.X.P. MAGNET ACTIVATED · Pulling in every drop on the map!",4)
+	game.hud.tell("E.X.P. MAGNET ACTIVATED · Every XP orb on the map is coming!",4)
 
 func tag_magnet_loot():
-	for pickup in game.pickups: pickup.magnet_pull=true
+	for pickup in game.pickups:
+		if pickup.kind=="xp": pickup.magnet_pull=true
 
 func magnet_tick(delta: float):
 	if not magnet_active: return
 	magnet_hold=maxf(0,magnet_hold-delta)
 	if magnet_hold<=0 and not game.pickups.any(func(p):return p.get("magnet_pull",false)):
 		magnet_active=false;magnet_spent=true
-		game.hud.tell("E.X.P. MAGNET SPENT",3)
+		game.hud.tell("E.X.P. MAGNET SPENT · Grab the giant orb!",4)
 
 func merchant_menu():
 	quip("discovery")
@@ -459,6 +463,7 @@ var magnet_turrets: Array = []
 var magnet_turret_count: int
 var magnet_active: bool = false
 var magnet_spent: bool = false
+var magnet_heap_spot: Vector3
 var magnet_hold: float = 0.0
 var magnet_range: float = 120.0
 
