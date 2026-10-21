@@ -5,8 +5,8 @@ static func attach(rig: Node3D):
 	var puff=SphereMesh.new();puff.radius=.06;puff.height=.16;puff.radial_segments=10;puff.rings=5
 	var paint=StandardMaterial3D.new();paint.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED
 	paint.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA;paint.albedo_color=Color(.84,.92,.96,.42);puff.material=paint
-	# Place vents at the chest and belly; negative local Z faces the arena after the model's half-turn.
-	for point in [Vector3(-.57,2.05,-.48),Vector3(.57,2.05,-.48),Vector3(-.54,1.28,-.63),Vector3(.54,1.28,-.63)]:
+	# Steam rises off the chest and the hanging belly; negative local Z faces the arena after the model's half-turn.
+	for point in [Vector3(-.50,2.10,-.58),Vector3(.50,2.10,-.58),Vector3(-.62,1.30,-1.02),Vector3(.62,1.30,-1.02)]:
 		var steam=GPUParticles3D.new();steam.name="BaronSteam_"+str(rig.get_child_count());steam.amount=16;steam.lifetime=3.0;steam.emitting=true
 		steam.position=point;steam.local_coords=true;steam.visibility_aabb=AABB(Vector3(-1,-.3,-1),Vector3(2,2,2))
 		steam.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;steam.draw_pass_1=puff

@@ -131,6 +131,16 @@ func animate(delta: float, speed: float = 0, grounded: bool = true):
 	was_grounded=grounded;land_squash=maxf(0,land_squash-delta)
 	body.scale=Vector3(1+land_squash,1-land_squash,1+land_squash)
 	body.rotation.x=lerpf(body.rotation.x,-.06*walk if grounded else -.14 if speed>0 else .05,minf(1,delta*10))
+	if identity=="boss_8_baron":
+		# He never walks: he floats a body-height off the ground, bobbing slowly,
+		# legs dangling, and drifts toward his target.
+		model.position.y=.95+sin(clock*1.3)*.08
+		for i in range(legs.size()): legs[i].rotation.x=.18+sin(clock*1.1+i*1.7)*.06
+		for i in range(arms.size()): arms[i].rotation.z=(.12 if i==0 else -.12)+sin(clock*.9+i)*.04
+		body.rotation.z=sin(clock*.7)*.02+sin(hit_clock*70)*hit_clock*.2
+		if jaw!=null: jaw.rotation.x=sin(clock*2.1)*.05
+		if head!=null: head.rotation.y=sin(clock*.6)*.08
+		return
 	for i in range(legs.size()):
 		legs[i].rotation.x=sin(clock*11+i*PI)*.45*walk if grounded else -.3
 	for i in range(arms.size()): arms[i].rotation.x=sin(clock*11+i*PI)*.14*walk
