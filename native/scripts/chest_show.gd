@@ -8,7 +8,8 @@ var last_lock=-1
 var last_tick=-1
 func setup(offers: Array):
 	mouse_filter=Control.MOUSE_FILTER_IGNORE;items=offers
-	for item in items: textures.append(IllustratedIcons.texture(item.id,item.kind=="weapon"))
+	# Mutations have drawn medallions rather than texture files.
+	for item in items: textures.append(null if item.kind=="mutation" else IllustratedIcons.texture(item.id,item.kind=="weapon"))
 func animate(value: float):
 	progress=value
 	var locked=clampi(int(floor((progress-.48)/.095))+1,0,5)
@@ -38,7 +39,13 @@ func _draw():
 		draw_style_box(sb,rect)
 		var index=i if locked else (int(progress*48*(1-progress*.5))+i*3)%textures.size()
 		var shift=0.0 if locked else sin(progress*160+i)*15*(1-progress)
-		draw_texture_rect(textures[index],Rect2(rect.position+Vector2(22,24+shift),Vector2(118,118)),false)
+		if textures[index]!=null: draw_texture_rect(textures[index],Rect2(rect.position+Vector2(22,24+shift),Vector2(118,118)),false)
+		else:
+			var definition=MutationBook.entry(str(items[index].id).trim_prefix("mut:"))
+			var tone=MutationBook.STRAINS[definition.strain].color if definition.has("strain") else Color("e6c36a")
+			var centre=rect.position+Vector2(81,83+shift)
+			draw_circle(centre,58,Color("10161a"));draw_circle(centre,52,tone.darkened(.35));draw_arc(centre,52,0,TAU,48,tone,6)
+			draw_string(font,centre+Vector2(-60,14),str(MutationBook.family(definition)).left(1),HORIZONTAL_ALIGNMENT_CENTER,120,44,Color("fff4dc"))
 		draw_string(font,rect.position+Vector2(9,170),"LOCKED" if locked else "ROLLING",HORIZONTAL_ALIGNMENT_CENTER,144,13,Color("274052"))
 		draw_string(font,Vector2(start+i*172,264),items[i].name if locked else "?",HORIZONTAL_ALIGNMENT_CENTER,162,15,Color("fff0c9"))
 		for bulb in range(5): draw_circle(Vector2(start+i*172+16+bulb*31,34),3,RunRules.COLORS[items[i].tier] if locked else Color("6c735f"))

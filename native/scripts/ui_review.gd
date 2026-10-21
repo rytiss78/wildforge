@@ -156,6 +156,18 @@ static func run(game):
 		okay=expect(icons.size()==1 and icons[0].is_visible_in_tree() and icons[0].size.x>0,"ui assertion 82") and okay
 	game.hud.controller_move(Vector2.RIGHT)
 	okay=expect(game.hud.cards[1].has_focus() and game.update.focused_offer==1,"ui assertion 84") and okay
+	# Mutation cards: one per group, each with a drawn strain medallion.
+	for id in ["ember_dash","frost_kill"]: game.mutations[id]=1
+	var mutation_cards=[MutationBook.card("storm_crit",1),MutationBook.card("ember_dash",2),MutationBook.card("frost_shatter",1),MutationBook.card("hy_thermal",1),MutationBook.card("wild_echo",1)]
+	game.offers=mutation_cards;game.mode="offer";game.offer_kind="skill";game.offer_source="level"
+	game.hud.show_offers(mutation_cards,"level",false)
+	okay=expect(await capture(game,"mutation-offers"),"mutation offer capture") and okay
+	okay=expect(game.hud.cards.size()==5 and game.hud.cards.all(func(card):return card.find_children("*","PowerIcon",true,false).size()==1),"mutation cards carry icons") and okay
+	game.hud.cards[1].pressed.emit()
+	okay=expect(game.mutations.get("ember_dash",0)==2 and game.mode=="playing","mutation card choice levels the mutation") and okay
+	game.hud.update(0)
+	okay=expect(await capture(game,"mutation-hud"),"mutation HUD capture") and okay
+	game.mutations.clear();game.owned=game.owned.filter(func(item):return item.kind!="mutation")
 	okay=expect(await capture(game,"focus"),"ui assertion 85") and okay
 	var fit_offers=[]
 	for key in ["turretDamage","flowerHeal","damage","pierce","augment-air-rate"]:

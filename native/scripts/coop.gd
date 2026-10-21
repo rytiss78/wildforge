@@ -418,7 +418,7 @@ func pose() -> Dictionary:
 	for key in effective.keys():
 		if str(key).begins_with("augment-"): effective.erase(key)
 	for key in game.conditional_bonuses: effective[key]=game.stat(key)
-	var build={"weapons":weapons,"skills":game.owned.filter(func(item):return item.kind=="skill").map(func(item):return str(item.name).left(48))}
+	var build={"weapons":weapons,"skills":game.owned.filter(func(item):return item.kind in ["skill","mutation"]).map(func(item):return str(item.name).left(48))}
 	return {"type":"pose","flower_realm":game.realm,"flowers":flower_state(),"position":array(game.player.position),"yaw":game.avatar.rotation.y,"model":game.hero.model,"name":player_name(),"cosmetic":str(game.career.data.settings.get("cosmetic","")),"mode":"ended" if game.run_recorded else game.mode,"weapons":weapons,"build":build,"hp":game.hp,"shield_hp":game.shield_hp,"stats":effective,"gold":game.gold,"rescue_hold":game.update.rescue_hold}
 
 # Everything a client needs to construct a replica of a host enemy.

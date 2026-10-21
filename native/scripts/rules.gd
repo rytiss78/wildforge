@@ -103,7 +103,7 @@ func offers(kind: String, luck: float, elite: bool = false, current_stats: Dicti
 
 			else:
 				effect.amount=(candidate[key]/current_stats[key]-1) if effect.get("mode","add")=="multiply" and current_stats[key]!=0 else candidate[key]-current_stats[key]
-		if attempts < 80 and result.any(func(a): return a.id == item.id or a.name == item.name): continue
+		if attempts < 80 and result.any(func(a): return a.id == item.id or a.name == item.name or a.kind!="weapon" and item.kind!="weapon" and a.effects[0].key==item.effects[0].key): continue
 		result.append(item)
 	if result.size()<OFFER_COUNT:
 		var fallback=offers("weapon",luck,elite,{},equipped) if kind!="weapon" else []
@@ -144,6 +144,7 @@ func apply_effects(stats: Dictionary, effects: Array):
 	stats.chestBonus = minf(stats.chestBonus, 0.75)
 
 func describe(effect: Dictionary) -> String:
+	if str(effect.key).begins_with("mut:"): return MutationBook.describe(str(effect.key),int(effect.amount))
 	if data.augments.has(effect.key):
 		var bonus=data.augments[effect.key];var amount=float(effect.amount)
 		var percent=bonus.mode=="multiply" or bonus.stat in ["crit","dodge","lifesteal"]

@@ -937,7 +937,7 @@ func preview_offer(item: Dictionary):
 		var source=game.rules.loot_by_id.get(item.id,{})
 		comparison=game.rules.describe(effect) if effect else ""
 		comparison+=" · "+UpgradeFit.describe(game,item).text
-		if effect and not str(effect.key).begins_with("augment-"): comparison+="  ·  Current %s → %s" % [snappedf(game.stats.get(effect.key,0),.01),snappedf(candidate.get(effect.key,0),.01)]
+		if effect and not str(effect.key).begins_with("augment-") and not str(effect.key).begins_with("mut:"): comparison+="  ·  Current %s → %s" % [snappedf(game.stats.get(effect.key,0),.01),snappedf(candidate.get(effect.key,0),.01)]
 		if not source.is_empty() and item.tier>0 and source.has("effects") and source.effects.size()>0: comparison+="  ·  Common version: "+game.rules.describe(source.effects[0])
 	var detail=label(comparison,15);detail.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;offer_detail.add_child(detail)
 
@@ -1296,10 +1296,12 @@ func icon_text_row(rows: VBoxContainer,key: String,weapon: bool,text: String):
 func update_skill_strip():
 	skill_strip.visible=not modal.visible and game.run_active
 	var skills={}
-	for item in game.owned:
-		if item.kind=="skill":
-			if not skills.has(item.id): skills[item.id]={"item":item,"count":0}
-			skills[item.id].count+=1
+	# Mutations first: they define how this run plays.
+	for kind in ["mutation","skill"]:
+		for item in game.owned:
+			if item.kind==kind:
+				if not skills.has(item.id): skills[item.id]={"item":item,"count":0}
+				skills[item.id].count+=1
 	var signature=str(skills.keys())+str(skills.values().map(func(v):return v.count))
 	if signature==skill_strip_key: return
 	skill_strip_key=signature
@@ -1307,7 +1309,7 @@ func update_skill_strip():
 	var index=0
 	for entry in skills.values():
 		if index>=18: break
-		var tile=Control.new();tile.custom_minimum_size=Vector2(30,34);tile.tooltip_text=entry.item.name+" ×"+str(entry.count);skill_strip.add_child(tile)
+		var tile=Control.new();tile.custom_minimum_size=Vector2(30,34);tile.tooltip_text=str(entry.item.get("title",entry.item.name))+(" · Lv " if entry.item.kind=="mutation" else " ×")+str(entry.count);skill_strip.add_child(tile)
 		var icon=PowerIcon.new();icon.key=icon_key(entry.item);icon.size=Vector2(30,30);tile.add_child(icon)
 		if entry.count>1:
 			var count_label=label(str(entry.count),12);count_label.position=Vector2(20,20);tile.add_child(count_label)
@@ -1317,7 +1319,7 @@ func update_skill_strip():
 func about_menu():
 	var box=open("ABOUT WILDFORGE", "Grow strange. Fight hard. Start again.")
 	box.add_child(label("Version %s · Build %d" % [ProjectSettings.get_setting("application/config/version"),ProjectSettings.get_setting("application/config/build_number",0)],24,ThemeTokens.STAR_GOLD))
-	for text in ["25 heroes · 69 weapons · 738 upgrades · 6 biomes · 9 bosses", "Original angular artwork, engraved icons and vivid combat effects.", "Hero and enemy health is shown in glass orbs. Your camera controls stay familiar.", "Created by Rytis with AI-assisted code and original procedural artwork.", "Original synthesized achievement chime. Voice attribution and licenses ship with the game."]:
+	for text in ["25 heroes · 69 weapons · %d mutations · 738 upgrades · 6 biomes · 9 bosses" % MutationBook.all().size(), "Original angular artwork, engraved icons and vivid combat effects.", "Hero and enemy health is shown in glass orbs. Your camera controls stay familiar.", "Created by Rytis with AI-assisted code and original procedural artwork.", "Original synthesized achievement chime. Voice attribution and licenses ship with the game."]:
 		var line=label(text,20);line.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;box.add_child(line)
 	box.add_child(button("BACK",start_menu,true));box.get_child(box.get_child_count()-1).grab_focus()
 

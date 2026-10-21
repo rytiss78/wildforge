@@ -37,6 +37,12 @@ static func for_key(game,key: String) -> Dictionary:
 	return {"useful":false,"text":"NO CURRENT BENEFIT · needs "+requires}
 
 static func describe(game,item: Dictionary) -> Dictionary:
+	if item.get("kind","")=="mutation":
+		var definition=MutationBook.entry(str(item.id).trim_prefix("mut:"))
+		var level=int(game.mutations.get(definition.get("id",""),0))
+		var group=str(definition.get("group",""))
+		var text={"core":"MUTATION · ","rule":"STRAIN RULE · ","hybrid":"HYBRID · "}.get(group,"WILD CARD · changes every mutation")+("" if group=="wild" else MutationBook.family(definition))
+		return {"useful":true,"text":text+(" · owned Lv %d" % level if level>0 else "")}
 	var notes=[];var useful=false
 	var candidate=game.stats.duplicate(true);game.rules.apply_effects(candidate,item.effects)
 	for effect in item.effects:

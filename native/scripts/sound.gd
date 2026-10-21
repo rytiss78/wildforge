@@ -390,6 +390,9 @@ func ui_effect(id: String):
 	ui_voice.stream=cache[key];ui_voice.volume_db=linear_to_db(float(settings.sfx))-3;ui_voice.play()
 
 func choose_power(key: String):
+	if key.begins_with("mut:"):
+		var strain=str(MutationBook.entry(key.trim_prefix("mut:")).get("strain","comet"))
+		ui_effect({"bloom":"garden","venom":"poison","frost":"ice","storm":"lightning","ember":"fire"}.get(strain,"magic"));return
 	var tile=int(IllustratedIcons.SKILLS.get(key,0 if key.ends_with("Power") else 7))
 	var families=["damage","engineering","engineering","damage","magic","lightning","engineering","magic","garden","healing","armour","coins","poison","fire","ice","movement"]
 	ui_effect(families[tile])

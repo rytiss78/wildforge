@@ -89,6 +89,8 @@ var melee_attacks = []
 var hazards = []
 var equipped = []
 var owned = []
+var mutations = {}          # mutation id -> level; see MutationBook
+var mutation_state = {}
 var flowers = []
 var flower_serial=0
 var garden_patches = {}
@@ -437,6 +439,7 @@ func start_run(shared_seed: int=-1):
 	visited_ruins.clear()
 	last_plant = Vector3(9999,0,9999)
 	owned.clear()
+	MutationBook.reset(self)
 	equipped.clear()
 	buffs.clear();harvest_buffs.clear();biome_seen.clear();player_poison=0;player_fire=0;player_chill=0;player_blind=0
 	var first = rules.data.weapons.filter(func(w): return w.id == hero.weapon)[0].duplicate(true)
@@ -629,7 +632,7 @@ func buy_chest(chest: Dictionary,payer: int=-1):
 	party_reward_id=run_id+":chest:"+str(realm)+":"+str(run_chests)
 	career.bump("chests")
 	career.best("chestRewards",3)
-	offers = rules.offers("item",float(payer_stats.get("luck",0))+float(payer_stats.get("chestBonus",0))*.2,chest.elite,stats,equipped)
+	offers = MutationBook.mix(self,rules.offers("item",float(payer_stats.get("luck",0))+float(payer_stats.get("chestBonus",0))*.2,chest.elite,stats,equipped),"chest")
 	offer_kind="item";offer_elite=chest.elite;offer_rerolls=0
 	if local_payer: heal(stats.chestHeal)
 	offer_source = "chest"
@@ -665,7 +668,7 @@ func level_up():
 	var kind = "weapon" if level == 2 or level%3 == 0 else "skill"
 	offer_kind=kind;offer_elite=false;offer_rerolls=0
 	party_reward_id=run_id+":level:"+str(realm)+":"+str(level)
-	offers = rules.offers(kind,stats.luck,false,stats,equipped)
+	offers = MutationBook.mix(self,rules.offers(kind,stats.luck,false,stats,equipped),"level")
 	offer_source = "level"
 	mode = "level_reveal"
 	level_reveal = .95
@@ -690,6 +693,10 @@ func choose_offer(index: int):
 			mode="replace";hud.replace_menu(item)
 			return
 		equip_weapon(item)
+	elif item.kind == "mutation":
+		MutationBook.take(self,item)
+		owned.append(item)
+		career.bump("mutations")
 	else:
 		var previous_hp = stats.maxHp
 		var item_effects=item.get("effects",[])
@@ -716,7 +723,7 @@ func reroll_offers():
 	var price=reroll_price()
 	if gold<price: return
 	var excluded=offers.map(func(item):return item.id)
-	var new_offers=rules.offers(offer_kind,stats.luck+(stats.chestBonus*.2 if offer_source=="chest" else 0),offer_elite,stats,equipped,excluded)
+	var new_offers=MutationBook.mix(self,rules.offers(offer_kind,stats.luck+(stats.chestBonus*.2 if offer_source=="chest" else 0),offer_elite,stats,equipped,excluded),offer_source)
 	if new_offers.is_empty(): return
 	gold-=price;offer_rerolls+=1;offers=new_offers
 	sound.ui_effect("reroll");hud.show_offers(offers,offer_source)
@@ -1321,6 +1328,8 @@ func hit_enemy(enemy: Dictionary, shot: Dictionary,cause: String="hit"):
 			enemy.node.move_and_collide((enemy.node.position-player.position).normalized()*minf(3,stat("knockback")))
 		if stats.execute > 0 and not enemy.boss and enemy.hp < enemy.maxHp*stats.execute: hurt_enemy(enemy,enemy.hp+1,"hit")
 	heal(damage*stat("lifesteal"))
+	MutationBook.event(self,"hit",enemy.node.position,{"enemy":enemy})
+	if cause=="crit": MutationBook.event(self,"crit",enemy.node.position,{"enemy":enemy})
 	if kind=="bomb":
 		damage_area(enemy.node.position,3.5*stats.bombSize*float(shot.get("area_scale",1)),damage,"explosion",enemy,str(shot.get("weapon_id",kind)))
 	if stats.splash>0 or kind.contains("rocket"):
@@ -1456,6 +1465,10 @@ func credit_damage(source: String,amount: float):
 
 func hurt_enemy(enemy: Dictionary, damage: float, cause: String,mechanic: String="",mechanic_origin: Vector3=Vector3.ZERO):
 	if enemy.dead or damage <= 0: return
+	# Remote hits arrive with hit_owner; damage-over-time ticks keep their own owner.
+	if not enemy.has("hit_owner") and cause not in ["poison","fire"]:
+		enemy.last_local_hit=elapsed
+		damage=MutationBook.modify_damage(self,enemy,damage)
 	if cause in ["hit","crit","melee","coop","sonic","lightning","explosion","meteor","burrow","stomp"]: blood_hit(enemy)
 	# Hit flash on enemy
 	if enemy.node.has_meta("rig"): enemy.node.set_meta("flash_timer",0.05)
@@ -1537,6 +1550,8 @@ func kill_enemy(enemy: Dictionary, cause: String):
 		pools.append({"node":node,"life":5.0,"damage":stats.pools})
 		if pools.size()>16: pools[0].node.queue_free();pools.pop_front()
 	if rules.rng.randf()<stats.salvage: heal(4)
+	# Only kills this hero took part in feed their kill mutations.
+	if elapsed-float(enemy.get("last_local_hit",-99))<1.5: MutationBook.event(self,"kill",p,{"enemy":enemy})
 	# Dead flying enemies should settle toward the terrain instead of
 	# shrinking permanently at their airborne position.
 	var landing=enemy.node.position
@@ -1584,6 +1599,7 @@ func take_damage(amount: float, source: Vector3=Vector3.ZERO, voice_type: String
 	condition_times.hurt=elapsed
 	health_damage += taken
 	if stats.hurtGold>0: achievement_event("HURT_PAY");gold += roundi(stats.hurtGold*maxf(1,taken))
+	MutationBook.event(self,"hurt",player.position)
 	invulnerable = .55
 	avatar.hurt=.35
 	hit_shake=maxf(hit_shake,.18+damage_feedback_strength*.24)
@@ -1617,6 +1633,7 @@ func dash():
 		if boss_active(): achievement_event("GHOST_DANGER")
 	if stats.burrow>0: burrow_time=.4;career.bump("burrows")
 	if stats.dashBlast>0: damage_area(player.position,4.5,stats.dashBlast,"explosion")
+	MutationBook.event(self,"dash",player.position)
 	CombatInk.beam(self,player.position+Vector3.UP*.6,player.position+Vector3.UP*.6-dash_direction*3,Color("43eaff"))
 	burst(player.position+Vector3.UP*.5,Color("43eaff"),7)
 	sound.effect("dash")
@@ -1714,6 +1731,7 @@ func update_pickups(delta: float):
 		if (collector_alive or collecting_at_magnet) and destination.distance_to(pickup.node.position)<1.05+float(pickup.get("radius",.12))-.12:
 			if pickup.kind=="gold":
 				update.run_coins+=pickup.value;gold+=roundi(pickup.value);heal(stats.coinHeal*pickup.get("units",1));sound.effect("coin")
+				MutationBook.event(self,"pickup",player.position)
 			else:
 				var gain=stat("xpGain") if target.id==coop.local_id else float(coop.members[target.id].get("stats",{}).get("xpGain",1))
 				var gained=roundi(pickup.value*gain)
@@ -2066,6 +2084,7 @@ func _physics_process(delta: float):
 	condition_clock-=delta
 	if condition_clock<=0: ContentExpansion.refresh(self);condition_clock=.1
 	update.tick(delta)
+	if not update.downed: MutationBook.tick(self,delta)
 	update.contact_shadows()
 	if update.downed:
 		# Preserve gravity after a co-op knockout. Otherwise an airborne hero
@@ -2748,6 +2767,7 @@ func try_jump():
 	player.velocity.y=8.5*sqrt(stat("jumpHeight"))
 	shield_hp=minf(stats.shield+stats.jumpShield,shield_hp+stats.jumpShield)
 	if stats.jumpBlast>0: damage_area(player.position,3,stats.jumpBlast,"jump")
+	MutationBook.event(self,"jump",player.position)
 	sound.effect("jump")
 	burst(player.position+Vector3.UP*.1,Color("e6dfb8"),5)
 	vibrate(.12,.18,.07)
@@ -2956,6 +2976,7 @@ func check_landing(was_grounded: bool):
 			burst(player.position+Vector3.UP*.1,Color("dfbb8d"),20)
 			vibrate(.5,.75,.2)
 			heal(stats.slamHeal)
+			MutationBook.event(self,"slam",player.position)
 			for enemy in enemies:
 				if not enemy.dead and enemy.node.position.distance_to(player.position)<4*stats.slamRadius+enemy.radius:
 					set_damage_status(enemy,"fire",stats.slamFire,coop.local_id);set_damage_status(enemy,"poison",stats.slamPoison,coop.local_id);enemy.status_time=4
