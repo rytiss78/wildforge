@@ -60,6 +60,8 @@ var snapshot_seq=0
 var last_snapshot_seq=-1
 var actor_info={}
 var actor_requested={}
+var test_reconnect_hold=0.0
+var mode_before_drop="playing"
 
 func setup(owner_game):
 	game=owner_game
@@ -169,11 +171,16 @@ func join_lan(address: String):
 	address=address.strip_edges()
 	if address.is_empty() or address.length()>253 or address.contains(" ") or address.contains("/"):
 		status="Enter the host's IP address or hostname.";return
-	leave();peer=ENetMultiplayerPeer.new()
+	leave();open_client(address)
+
+# Opens only the client transport. A run rejoin keeps avatars, nameplates and
+# reward progress; leave() is reserved for actually quitting the party.
+func open_client(address: String):
+	peer=ENetMultiplayerPeer.new()
 	var err=peer.create_client(address,PORT)
 	if err!=OK: status="Could not connect to that address.";peer=null;return
 	transport="lan";hosting=false;active=true;owner_id=1;status="Connecting…"
-	connection_clock=0;welcomed=false;game.career.data.settings.coopAddress=address;game.career.dirty=true
+	connection_clock=0;welcomed=false;joined=false;game.career.data.settings.coopAddress=address;game.career.dirty=true
 	peer.peer_disconnected.connect(func(id):
 		if id==1: connection_lost.call_deferred()
 	)
@@ -192,14 +199,19 @@ func leave():
 	avatars.clear();members.clear();active=false;hosting=false;paused=false;transport="";joined=false;welcomed=false;connection_clock=0;last_snapshot=0;last_remote_reward_level=1
 	reset_actor_sync()
 
+func close_transport():
+	if peer!=null: peer.close();peer=null
+	active=false;welcomed=false;joined=false
+
 func reset_actor_sync():
 	last_snapshot_seq=-1;actor_info.clear();actor_requested.clear()
 
 func connection_lost():
 	if game.run_active and not hosting and not reconnecting:
+		# Remember an open reward/pause screen so the rejoin returns to it.
+		mode_before_drop=game.mode if game.mode!="paused" or game.hud.modal.visible else "playing"
 		reconnecting=true;disconnect_started=Time.get_ticks_msec()/1000.0;status="Connection lost · trying to rejoin for 40 seconds…";game.mode="paused";game.hud.tell(status,8)
-		if peer!=null: peer.close();peer=null
-		active=false;welcomed=false;joined=false
+		close_transport()
 		attempt_reconnect.call_deferred()
 		return
 	if reconnecting: return
@@ -210,16 +222,18 @@ func connection_lost():
 func attempt_reconnect():
 	if reconnect_attempting: return
 	reconnect_attempting=true
+	if test_reconnect_hold>0:
+		await get_tree().create_timer(test_reconnect_hold).timeout;test_reconnect_hold=0.0
 	var address=str(game.career.data.settings.get("coopAddress",""))
 	for attempt in range(8):
 		if not reconnecting: break
 		if Time.get_ticks_msec()/1000.0-disconnect_started>=40: break
-		if not active and not address.is_empty(): join_lan(address)
+		if not active and not address.is_empty(): open_client(address)
 		var deadline=Time.get_ticks_msec()+3200
 		while reconnecting and active and not welcomed and Time.get_ticks_msec()<deadline:
 			await get_tree().create_timer(.1).timeout
 		if welcomed and active: reconnect_attempting=false;return
-		if active: leave()
+		if active: close_transport()
 		await get_tree().create_timer(.8).timeout
 	reconnecting=false;reconnect_attempting=false
 	leave();status="Could not rejoin the active party. This run has ended."
@@ -318,6 +332,7 @@ func frozen() -> bool:
 	if not active or not game.run_active: return false
 	if not hosting: return paused
 	for member in members.values():
+		if member.get("disconnected",false): continue
 		if member.get("mode","loading") not in ["playing","ended"]: return true
 	return false
 
@@ -355,7 +370,9 @@ func tick(delta: float):
 		if hosting:
 			if game.run_active and not members.is_empty(): broadcast(snapshot(),false)
 		else:
-			send_to(owner_id,pose(),false)
+			# Before the host's welcome a rejoining client still reports its
+			# disconnected "paused" mode, which would freeze the host's run.
+			if welcomed: send_to(owner_id,pose(),false)
 			if game.run_active and last_snapshot>0 and Time.get_ticks_msec()/1000.0-last_snapshot>12: connection_lost()
 	if hosting:
 		var now=Time.get_ticks_msec()/1000.0
@@ -506,7 +523,10 @@ func receive(sender: int,message):
 	if kind=="test_shared":
 		if test_mode and (members.has(sender) if hosting else sender==owner_id):
 			var phase=str(message.get("phase",""));test_messages[phase]=message.get("data",{})
-			if not hosting and phase=="reconnect_force": connection_lost.call_deferred()
+			if not hosting and phase=="reconnect_force":
+				# A test drop may stay away briefly so the host observes the absence.
+				test_reconnect_hold=clampf(float(message.get("data",{}).get("hold",0)),0,5)
+				connection_lost.call_deferred()
 		return
 	if kind=="test_done":
 		if test_mode and (members.has(sender) if hosting else sender==owner_id): test_finished_peers[sender]=int(message.get("realm",-1))
@@ -525,8 +545,12 @@ func receive(sender: int,message):
 			if resume_id>0:
 				var restored=members[resume_id];members.erase(resume_id);restored.erase("disconnected");restored.erase("disconnect_until");restored.last_seen=Time.get_ticks_msec()/1000.0;restored.mode="playing";members[sender]=restored
 				game.update.remap_peer_id(resume_id,sender)
+				if game.party_seen.has(str(resume_id)):
+					game.party_seen[str(sender)]=game.party_seen[str(resume_id)];game.party_seen[str(sender)].player_id=sender;game.party_seen.erase(str(resume_id))
 				status="A player reconnected · %d / 4." % (members.size()+1)
-				send_to(sender,{"type":"welcome","reconnected":true,"realm":game.realm})
+				# Everything one-off broadcasts changed while the member was away.
+				var opened=game.chests.filter(func(c):return c is Dictionary and c.get("opened",false) and is_instance_valid(c.get("node"))).map(func(c):return [int(c.node.position.x),int(c.node.position.y),int(c.node.position.z)])
+				send_to(sender,{"type":"welcome","reconnected":true,"realm":game.realm,"opened_chests":opened})
 			else:
 				members[sender]={"mode":"loading","player_name":"Player","token":token,"last_seen":Time.get_ticks_msec()/1000.0};status="%d / 4 players. Ready to start." % (members.size()+1)
 				send_to(sender,{"type":"welcome","reconnected":false});publish_lobby()
@@ -654,7 +678,11 @@ func receive(sender: int,message):
 		elif kind=="welcome":
 			welcomed=true;reset_actor_sync()
 			if bool(message.get("reconnected",false)):
-				reconnecting=false;paused=false;game.mode="playing";game.career.bump("coop_reconnects");status="Rejoined the active run.";game.hud.tell(status,5)
+				var host_realm=int(message.get("realm",game.realm))
+				if host_realm!=game.realm: game.enter_realm(host_realm)
+				for position in message.get("opened_chests",[]): apply_chest_hide(position)
+				reconnecting=false;paused=false;game.mode=mode_before_drop;game.career.bump("coop_reconnects");status="Rejoined the active run.";game.hud.tell(status,5)
+				sync_local_nameplate()
 				if test_mode:
 					test_messages["reconnected"]={"mode":game.mode};send_to(owner_id,{"type":"test_shared","phase":"reconnected","data":{"mode":game.mode}})
 			else:

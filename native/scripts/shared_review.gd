@@ -142,6 +142,31 @@ static func run(g,host: bool):
 		g.update_combat(.04);send(g,"contact",{"id":attacker.net_id})
 		checks.remote_warning=await wait_for(g,func():return g.coop.test_messages.has("contact_seen"))
 		checks.remote_warning_visible=g.coop.test_messages.get("contact_seen",{}).get("visible",false)
+		# Drop 1: the guest disconnects mid-reward while the host opens another chest.
+		var free_chest=func():
+			var free=g.chests.filter(func(c):return not c.opened)[0];free.mimic=false;free.free=true;free.rolled_free=true
+			g.buy_chest(free)
+			if g.mode=="reveal": g.finish_reveal()
+			choose(g);return free
+		free_chest.call()
+		checks.pre_drop_offer=await wait_for(g,func():return g.coop.test_messages.has("pre_drop_offer"))
+		g.coop.test_messages.erase("reconnected");send(g,"reconnect_force",{"hold":1.5})
+		checks.drop1_dropped=await wait_for(g,func():return g.coop.members.values().any(func(m):return m.get("disconnected",false)))
+		checks.host_runs_while_away=not g.coop.frozen()
+		var away_chest=free_chest.call()
+		checks.drop1_rejoined=await wait_for(g,func():return g.coop.test_messages.has("reconnected"),42)
+		send(g,"away_chest",{"position":CoopSession.array(away_chest.node.position)})
+		checks.drop1_client=await wait_for(g,func():return g.coop.test_messages.has("drop1_done"),15) and g.coop.test_messages.drop1_done.values().all(func(v):return v)
+		# Drop 2: the host travels to a new realm while the guest is away.
+		var away_token=str(g.coop.members.values()[0].get("token",""))
+		g.coop.test_messages.erase("reconnected");send(g,"reconnect_force",{"hold":1.5})
+		checks.drop2_dropped=await wait_for(g,func():return g.coop.members.values().any(func(m):return m.get("disconnected",false)))
+		g.enter_realm(1)
+		checks.drop2_rejoined=await wait_for(g,func():return g.coop.test_messages.has("reconnected"),42)
+		var away_restored=g.coop.members.values().filter(func(member):return str(member.get("token",""))==away_token and not member.get("disconnected",false))
+		checks.drop2_state=away_restored.size()==1 and away_restored[0].get("mode","")=="playing"
+		checks.drop2_client=await wait_for(g,func():return g.coop.test_messages.has("drop2_done"),15) and g.coop.test_messages.drop2_done.values().all(func(v):return v)
+		trace.append({"phase":"rejoin","drop1":g.coop.test_messages.get("drop1_done",{}),"drop2":g.coop.test_messages.get("drop2_done",{})})
 		g.enter_realm(3)
 		checks.baron_intro_peer=await wait_for(g,func():return g.coop.test_messages.has("baron_intro_seen"))
 		var final_bosses=g.enemies.filter(func(e):return e.get("boss_id",-1)==8)
@@ -155,10 +180,11 @@ static func run(g,host: bool):
 		checks.remote_baron=await wait_for(g,func():return g.coop.test_messages.has("baron_seen"))
 		checks.remote_baron_model=g.coop.test_messages.get("baron_seen",{}).get("model",false)
 		var reconnect_id=int(g.coop.members.keys()[0]);var reconnect_token=str(g.coop.members[reconnect_id].get("token",""))
-		send(g,"reconnect_force")
+		g.coop.test_messages.erase("reconnected");send(g,"reconnect_force")
 		checks.reconnect_host=await wait_for(g,func():return g.coop.test_messages.has("reconnected"),42)
 		var restored=g.coop.members.values().filter(func(member):return str(member.get("token",""))==reconnect_token and not member.get("disconnected",false))
 		checks.reconnect_state=not reconnect_token.is_empty() and restored.size()==1 and restored[0].get("mode","")=="playing"
+		trace.append({"phase":"reconnect","host_mode":g.mode,"restored":restored.map(func(m):return {"mode":m.get("mode",""),"hp":m.get("hp",-1)})})
 		send(g,"reconnect_host_confirm",{"restored":checks.reconnect_state})
 		send(g,"finish",checks)
 		await wait_for(g,func():return g.coop.test_messages.has("finished"))
@@ -226,6 +252,31 @@ static func run(g,host: bool):
 		var attackers=g.enemies.filter(func(e):return e.net_id==attack_id)
 		checks.warning_visible=not attackers.is_empty() and attackers[0].has("contact_ring") and attackers[0].contact_ring.visible
 		send(g,"contact_seen",{"visible":checks.warning_visible})
+		# Drop 1: disconnect mid-reward; the choice must survive the rejoin.
+		checks.pre_drop_offer=await wait_for(g,func():return g.mode=="offer" and g.offer_source=="chest")
+		g.coop.test_messages.erase("reconnected");send(g,"pre_drop_offer")
+		var drop1={}
+		drop1.rejoined=await wait_for(g,func():return g.coop.test_messages.has("reconnected"),42)
+		drop1.offer_kept=g.mode=="offer" and g.hud.modal.visible and not g.offers.is_empty()
+		choose(g)
+		drop1.offer_chosen=await wait_for(g,func():return g.mode=="playing",4)
+		drop1.nameplate=is_instance_valid(g.coop.local_nameplate) and g.coop.local_nameplate.is_inside_tree()
+		var away_instruction=await wait_for(g,func():return g.coop.test_messages.has("away_chest"))
+		var away=CoopSession.vector(g.coop.test_messages.get("away_chest",{}).get("position",[]))
+		drop1.away_chest_hidden=away_instruction and await wait_for(g,func():return g.chests.any(func(c):return c.node.position.distance_to(away)<.1 and c.opened and not c.node.visible),4)
+		checks.drop1=drop1.values().all(func(v):return v)
+		g.coop.test_messages.erase("reconnected");send(g,"drop1_done",drop1)
+		# Drop 2: the host changes realm while this guest is away.
+		var drop2={}
+		drop2.rejoined=await wait_for(g,func():return g.coop.test_messages.has("reconnected"),42)
+		var rejoin_start=g.coop.snapshots_received
+		drop2.realm=await wait_for(g,func():return g.realm==1,6)
+		# The host may still be streaming the new realm; require snapshots to resume.
+		drop2.snapshots=await wait_for(g,func():return g.coop.snapshots_received-rejoin_start>=5,5)
+		drop2.mode=g.mode=="playing"
+		trace.append({"phase":"rejoin_client","snapshots":g.coop.snapshots_received-rejoin_start,"last_seq":g.coop.last_snapshot_seq,"realm":g.realm,"run_active":g.run_active,"since_snapshot":Time.get_ticks_msec()/1000.0-g.coop.last_snapshot})
+		checks.drop2=drop2.values().all(func(v):return v)
+		send(g,"drop2_done",drop2)
 		checks.final_realm=await wait_for(g,func():return g.realm==3 and g.enemies.any(func(e):return e.get("boss_id",-1)==8))
 		var bosses=g.enemies.filter(func(e):return e.get("boss_id",-1)==8)
 		checks.baron_model=not bosses.is_empty() and bosses[0].node.get_meta("rig").solid.identity=="boss_8_baron" and bosses[0].node.get_meta("rig").find_children("BaronSteam*","GPUParticles3D",true,false).size()==4
