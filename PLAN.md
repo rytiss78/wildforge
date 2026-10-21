@@ -73,7 +73,7 @@ Review and evidence: [alpha exit review](native/docs/alpha-exit-review-2026-10-2
 - [x] **Visual direction pass** (`fc6697e`): screen-space ink outlines over every surface, a vignette, a stronger saturated grade, a warm key light and glow. Six biomes inspected in `2026-10-21T08-55-09-325Z-biome-review`.
 - [x] **Asset pipeline** (`d58262b`): Blender 5.2 (installed with winget) runs headless with `scripts/blender/forge.py`. Metaballs, voxel remesh, smoothing and decimation replace primitive blobs, with cavity shading baked into vertex colours.
 - [x] **Second user bug batch (October 21)**, committed in `1b8ed75`:
-  - The magnet now pulls every drop on the map once, then goes dark as spent.
+  - The magnet now pulls every XP orb on the map once into a heap beside it, where the orbs merge into one giant orb (up to 2.6 m radius) that the player must walk over to collect. It then goes dark as spent. Gold and later drops are not pulled. Revised in `dae3c8e`. Exported build `2026-10-21T09-36-50-540Z-build` passes exported shared-review and hermes-review.
   - Magnet guards are tall cyan pylons labelled MAGNET GUARD.
   - Ordinary gun hits show damage numbers that rise from that weapon's slot icon; other damage keeps the bottom band.
   - Verified with `hermes-review`, `combat-review`, smoke, integration and shared-review. Exported build `2026-10-21T09-30-36-368Z-build` (source `5c53892`) passes exported smoke (118), shared-review and hermes-review.
