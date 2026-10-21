@@ -52,8 +52,7 @@ static func run(g):
 		checks["animated_"+str(id)]=not rig.legs.is_empty() and not is_equal_approx(before,rig.legs[0].rotation.x)
 		clear_list(g.effects);g.hud.update(0)
 		checks["capture_"+str(id)]=await capture(g,str(id))
-		var packet=bytes_to_var(var_to_bytes(g.coop.snapshot()))
-		var actor=packet.actors.filter(func(a):return a.id==enemy.net_id)[0]
+		var actor=bytes_to_var(var_to_bytes(g.coop.actor_descriptor(enemy)))
 		var remote=g.spawn_network_enemy(actor)
 		var local_shape=enemy.node.get_child(0).shape;var remote_shape=remote.node.get_child(0).shape
 		checks["network_"+str(id)]=remote.boss_id==id and remote.model==enemy.model and remote.node.get_meta("rig").identity==rig.identity and is_equal_approx(remote.radius,enemy.radius) and remote.height==enemy.height
@@ -116,8 +115,7 @@ static func run(g):
 		g.camera.look_at(camera_anchor)
 		for frame in range(60): await g.get_tree().process_frame
 		clear_list(g.effects);g.hud.update(0);checks.baron_capture=await capture(g,"baron")
-		var packet=bytes_to_var(var_to_bytes(g.coop.snapshot()))
-		var actor=packet.actors.filter(func(a):return a.id==baron.net_id)[0]
+		var actor=bytes_to_var(var_to_bytes(g.coop.actor_descriptor(baron)))
 		var remote=g.spawn_network_enemy(actor);var remote_rig=remote.node.get_meta("rig")
 		checks.baron_network=remote.boss_id==8 and remote.model=="boss_8" and remote_rig.identity=="boss_8" and remote_rig.solid.identity=="boss_8_baron" and remote_rig.find_children("BaronSteam_*","GPUParticles3D",true,false).size()==4
 		checks.baron_network_collider=remote.node.get_child(0).shape.height==local_shape.height and remote.node.get_child(0).shape.radius==local_shape.radius

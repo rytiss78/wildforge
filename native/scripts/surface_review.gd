@@ -40,7 +40,7 @@ static func run(game):
 	print("SURFACE_CEILING "+str(enemy.node.position)+" up "+str(enemy.node.basis.y))
 	checks.ceiling_capture=await capture(game,"ceiling")
 	checks.no_roof_damage=not game.enemy_touching(enemy,Vector3(enemy.node.position.x,38.5,enemy.node.position.z))
-	var actor=game.coop.snapshot().actors.filter(func(a):return a.id==enemy.net_id)[0]
+	var actor=game.coop.actor_descriptor(enemy)
 	var remote=game.spawn_network_enemy(actor);EnemySurface.replicate(remote,CoopSession.vector(actor.surface_up),CoopSession.vector(actor.surface_forward))
 	checks.network_orientation=remote.node.basis.is_equal_approx(enemy.node.basis)
 	checks.hit_center=game.enemy_center(enemy).y<enemy.node.position.y

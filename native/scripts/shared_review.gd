@@ -76,6 +76,23 @@ static func run(g,host: bool):
 			trace.append({"phase":phase,"host":{"mode":g.mode,"realm":g.realm,"level":g.level,"xp":g.xp,"xp_target":g.xp_target,"elapsed":g.elapsed,"position":CoopSession.array(g.player.position),"pause":g.mode!="playing","offer_source":g.offer_source,"offers":g.offers.map(func(o):return o.id),"enemies":enemies},"client":pause_result})
 			g.mode="playing";g.coop.broadcast(g.coop.snapshot(),false)
 			checks[resume_phase]=await wait_for(g,func():return g.coop.test_messages.has(resume_phase))
+		# Early-game crowd: ~100 live enemies must keep replicating to the guest.
+		var crowd_ids=[]
+		for i in range(100):
+			var crowd_before=g.enemies.size();g.spawn_enemy(30)
+			if g.enemies.size()>crowd_before: crowd_ids.append(g.enemies[-1].net_id)
+		checks.crowd_spawned=crowd_ids.size()>=90
+		var crowd_bytes=var_to_bytes(g.coop.snapshot()).size()
+		checks.crowd_snapshot_compact=crowd_bytes<16000
+		send(g,"crowd",{"ids":crowd_ids})
+		checks.crowd_reported=await wait_for(g,func():return g.coop.test_messages.has("crowd_seen"),20)
+		var crowd_seen=g.coop.test_messages.get("crowd_seen",{})
+		checks.crowd_snapshots_flowing=int(crowd_seen.get("snapshots",0))>=10
+		checks.crowd_all_visible=int(crowd_seen.get("visible",0))==crowd_ids.size()
+		trace.append({"phase":"crowd","count":crowd_ids.size(),"snapshot_bytes":crowd_bytes,"client":crowd_seen})
+		for enemy in g.enemies:
+			if enemy.net_id in crowd_ids: enemy.dead=true;enemy.node.queue_free()
+		g.enemies=g.enemies.filter(func(e):return not e.dead)
 		g.player.position=Vector3(-20,g.world.height_at(-20,0),0);g.xp=21;g.xp_target=27
 		checks.client_ready=await wait_for(g,func():return g.coop.test_messages.has("ready"))
 		await g.get_tree().create_timer(.3).timeout
@@ -159,6 +176,16 @@ static func run(g,host: bool):
 			checks[resume_phase]=await wait_for(g,func():return not g.coop.paused and g.mode=="playing")
 			send(g,resume_phase)
 			trace.append({"phase":phase,"client":pause_probe})
+		checks.crowd_instruction=await wait_for(g,func():return g.coop.test_messages.has("crowd"))
+		var crowd_ids=g.coop.test_messages.get("crowd",{}).get("ids",[]).map(func(id):return int(id))
+		var crowd_start=g.coop.snapshots_received
+		var count_crowd=func():return g.enemies.filter(func(e):return not e.dead and int(e.net_id) in crowd_ids).size()
+		await wait_for(g,func():return count_crowd.call()==crowd_ids.size(),6)
+		await g.get_tree().create_timer(2).timeout
+		var crowd_seen={"visible":count_crowd.call(),"snapshots":g.coop.snapshots_received-crowd_start,"connected":g.coop.active and not g.coop.reconnecting}
+		send(g,"crowd_seen",crowd_seen)
+		checks.crowd_visible=crowd_seen.visible==crowd_ids.size() and crowd_seen.snapshots>=10
+		trace.append({"phase":"crowd","client":crowd_seen})
 		checks.level_offer=await wait_for(g,func():return g.mode=="offer" and g.offer_source=="level")
 		var before=g.pickups.size();g.spawn_pickup(g.player.position,"xp",999)
 		checks.no_private_xp=g.pickups.size()==before

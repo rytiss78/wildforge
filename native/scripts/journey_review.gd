@@ -33,7 +33,7 @@ static func run(game):
 	rig.statuses(false,true,false,false)
 	checks.corruption_status=rig.batched.get_shader_parameter("corruption")>0 and rig.batched.get_shader_parameter("tint").y==1
 	checks.corruption_after=await capture(game,"corruption-after")
-	var actor=game.coop.snapshot().actors.filter(func(a):return a.id==specimen.net_id)[0]
+	var actor=game.coop.actor_descriptor(specimen)
 	var remote=game.spawn_network_enemy(actor);EclipseCorruption.apply(remote,int(actor.get("corruption",0)))
 	checks.corruption_replication=remote.get("corruption",0)==specimen.get("corruption",0) and remote.node.get_meta("rig").scale.is_equal_approx(rig.scale)
 	remote.node.queue_free();game.enemies.erase(remote)

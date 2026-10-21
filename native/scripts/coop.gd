@@ -7,7 +7,12 @@ var party_seen={}
 
 # Transport-independent authoritative world. Important events are reliable;
 # poses/snapshots use unreliable ordered delivery. Never deserialize objects.
-const PROTOCOL="wildforge-shared-world-9"
+const PROTOCOL="wildforge-shared-world-10"
+# World snapshots carry each enemy as ACTOR_STRIDE floats: id, position(3), hp,
+# maxHp, surface up(3), surface forward(3), ACTOR_STATUS(7), corruption. Static
+# identity (species, size, boss/elite flags) is sent once via actors_info.
+const ACTOR_STRIDE=20
+const ACTOR_STATUS=["fire","poison","freeze","blind","slip_until","windup","contact_windup"]
 const PORT=29736
 const DISCOVERY_PORT=29737
 var discovery: PacketPeerUDP
@@ -51,6 +56,10 @@ var review_packet_queue=[]
 var reconnecting=false
 var reconnect_attempting=false
 var disconnect_started=0.0
+var snapshot_seq=0
+var last_snapshot_seq=-1
+var actor_info={}
+var actor_requested={}
 
 func setup(owner_game):
 	game=owner_game
@@ -181,6 +190,10 @@ func leave():
 	for turret in turret_models.values(): turret.queue_free()
 	turret_models.clear()
 	avatars.clear();members.clear();active=false;hosting=false;paused=false;transport="";joined=false;welcomed=false;connection_clock=0;last_snapshot=0;last_remote_reward_level=1
+	reset_actor_sync()
+
+func reset_actor_sync():
+	last_snapshot_seq=-1;actor_info.clear();actor_requested.clear()
 
 func connection_lost():
 	if game.run_active and not hosting and not reconnecting:
@@ -231,10 +244,13 @@ func remove_member(id: int):
 
 func send_to(id: int,message: Dictionary,reliable: bool=true):
 	var bytes=var_to_bytes(message)
-	if bytes.size()>60000: return
+	if bytes.size()>60000: push_warning("Co-op %s message dropped: %d bytes" % [str(message.get("type","")),bytes.size()]);return
 	if hosting and members.has(id) and members[id].get("disconnected",false): return
 	if transport=="lan" and transport_peer_connected(id):
-		peer.set_target_peer(id);peer.transfer_mode=MultiplayerPeer.TRANSFER_MODE_RELIABLE if reliable or bytes.size()>1000 else MultiplayerPeer.TRANSFER_MODE_UNRELIABLE_ORDERED;peer.put_packet(bytes)
+		# World snapshots stay unreliable at any size: a newer one supersedes a
+		# lost one, and reliable delivery would stall events behind stale state.
+		var unreliable=not reliable and (bytes.size()<=1000 or message.get("type","")=="world")
+		peer.set_target_peer(id);peer.transfer_mode=MultiplayerPeer.TRANSFER_MODE_UNRELIABLE_ORDERED if unreliable else MultiplayerPeer.TRANSFER_MODE_RELIABLE;peer.put_packet(bytes)
 
 func broadcast(message: Dictionary,reliable: bool=true):
 	for id in members:
@@ -325,7 +341,8 @@ func tick(delta: float):
 			local_id=peer.get_unique_id();send_to(owner_id,{"type":"hello","protocol":PROTOCOL,"token":str(game.career.data.settings.get("coopToken",""))});joined=true
 		for i in range(mini(128,peer.get_available_packet_count())):
 			var sender=peer.get_packet_peer();var bytes=peer.get_packet()
-			if bytes.size()<=60000:
+			if bytes.size()>60000: push_warning("Co-op packet ignored: %d bytes" % bytes.size())
+			else:
 				var message=bytes_to_var(bytes)
 				if review_lag_ms>0: review_packet_queue.append({"sender":sender,"message":message,"due":Time.get_ticks_msec()+review_lag_ms})
 				else: receive(sender,message)
@@ -387,10 +404,36 @@ func pose() -> Dictionary:
 	var build={"weapons":weapons,"skills":game.owned.filter(func(item):return item.kind=="skill").map(func(item):return str(item.name).left(48))}
 	return {"type":"pose","flower_realm":game.realm,"flowers":flower_state(),"position":array(game.player.position),"yaw":game.avatar.rotation.y,"model":game.hero.model,"name":player_name(),"cosmetic":str(game.career.data.settings.get("cosmetic","")),"mode":"ended" if game.run_recorded else game.mode,"weapons":weapons,"build":build,"hp":game.hp,"shield_hp":game.shield_hp,"stats":effective,"gold":game.gold,"rescue_hold":game.update.rescue_hold}
 
-func snapshot() -> Dictionary:
-	var actors=[]
+# Everything a client needs to construct a replica of a host enemy.
+func actor_descriptor(enemy: Dictionary) -> Dictionary:
+	return {"id":enemy.net_id,"position":array(enemy.node.position),"biome":enemy.biome,"species":enemy.species,"height":enemy.height,"radius":enemy.radius,"hp":enemy.hp,"maxHp":enemy.maxHp,"xp_reward":enemy.xp_reward,"boss":enemy.boss,"boss_id":enemy.get("boss_id",-1),"guardian":enemy.get("guardian",false),"magnet_guard":enemy.get("magnet_guard",false),"title":enemy.get("title",""),"elite":enemy.elite,"corruption":enemy.get("corruption",0),"surface_up":array(enemy.node.basis.y),"surface_forward":array(-enemy.node.basis.z),"fire":enemy.fire,"poison":enemy.poison,"freeze":enemy.freeze,"blind":enemy.blind,"slip_until":enemy.get("slip_until",0),"windup":enemy.get("windup",0),"contact_windup":enemy.get("contact_windup",0)}
+
+func request_actors(ids: Array):
+	var now=Time.get_ticks_msec()
+	if actor_requested.size()>1024: actor_requested.clear()
+	var wanted=ids.filter(func(id):return now-int(actor_requested.get(id,-100000))>1000).slice(0,160)
+	if wanted.is_empty(): return
+	for id in wanted: actor_requested[id]=now
+	send_to(owner_id,{"type":"need_actors","realm":game.realm,"ids":wanted})
+
+func send_actor_descriptors(id: int,requested):
+	if not requested is Array: return
+	var wanted={}
+	for value in requested.slice(0,160): wanted[int(value)]=true
+	var batch=[]
 	for enemy in game.enemies:
-		if not enemy.dead: actors.append({"id":enemy.net_id,"position":array(enemy.node.position),"biome":enemy.biome,"species":enemy.species,"height":enemy.height,"radius":enemy.radius,"hp":enemy.hp,"maxHp":enemy.maxHp,"xp_reward":enemy.xp_reward,"boss":enemy.boss,"boss_id":enemy.get("boss_id",-1),"guardian":enemy.get("guardian",false),"magnet_guard":enemy.get("magnet_guard",false),"title":enemy.get("title",""),"elite":enemy.elite,"corruption":enemy.get("corruption",0),"surface_up":array(enemy.node.basis.y),"surface_forward":array(-enemy.node.basis.z),"fire":enemy.fire,"poison":enemy.poison,"freeze":enemy.freeze,"blind":enemy.blind,"slip_until":enemy.get("slip_until",0),"windup":enemy.get("windup",0),"contact_windup":enemy.get("contact_windup",0)})
+		if enemy.dead or not wanted.has(int(enemy.net_id)): continue
+		batch.append(actor_descriptor(enemy))
+		if batch.size()==40: send_to(id,{"type":"actors_info","realm":game.realm,"actors":batch});batch=[]
+	if not batch.is_empty(): send_to(id,{"type":"actors_info","realm":game.realm,"actors":batch})
+
+func snapshot() -> Dictionary:
+	var actors=PackedFloat32Array()
+	for enemy in game.enemies:
+		if enemy.dead: continue
+		var p=enemy.node.position;var up=enemy.node.basis.y;var forward=-enemy.node.basis.z
+		actors.append_array(PackedFloat32Array([enemy.net_id,p.x,p.y,p.z,enemy.hp,enemy.maxHp,up.x,up.y,up.z,forward.x,forward.y,forward.z,enemy.fire,enemy.poison,enemy.freeze,enemy.blind,enemy.get("slip_until",0),enemy.get("windup",0),enemy.get("contact_windup",0),enemy.get("corruption",0)]))
+	snapshot_seq+=1
 	var poses={}
 	for id in members:
 		if not members[id].get("disconnected",false): poses[id]=members[id].duplicate(true)
@@ -399,7 +442,7 @@ func snapshot() -> Dictionary:
 		var stats=member.get("stats",{})
 		member.vitals={"max_hp":stats.get("maxHp",100),"armor":stats.get("armor",0),"shield_capacity":float(stats.get("shield",0))+float(stats.get("jumpShield",0))}
 		member.erase("stats");member.erase("last_seen")
-	return {"type":"world","actors":actors,"players":poses,"seconds":game.realm_time,"elapsed":game.elapsed,"realm":game.realm,"journey":game.events,"wardens":game.realm_bosses,"level":game.level,"xp":game.xp,"xp_target":game.xp_target,"run_xp":game.update.run_xp,"pause":frozen() or game.mode not in ["playing","ended"],"big_update":game.update.world_state(),"xp_drops":game.pickups.filter(func(p):return p.kind=="xp" and p.age>=0).map(func(p):return {"id":p.net_id,"position":array(p.node.position),"value":p.value})}
+	return {"type":"world","seq":snapshot_seq,"actors":actors,"players":poses,"seconds":game.realm_time,"elapsed":game.elapsed,"realm":game.realm,"journey":game.events,"wardens":game.realm_bosses,"level":game.level,"xp":game.xp,"xp_target":game.xp_target,"run_xp":game.update.run_xp,"pause":frozen() or game.mode not in ["playing","ended"],"big_update":game.update.world_state(),"xp_drops":game.pickups.filter(func(p):return p.kind=="xp" and p.age>=0).map(func(p):return {"id":p.net_id,"position":array(p.node.position),"value":p.value})}
 
 static func array(v: Vector3) -> Array: return [v.x,v.y,v.z]
 static func vector(v) -> Vector3:
@@ -497,6 +540,8 @@ func receive(sender: int,message):
 			members[sender].player_name=clean_player_name(message.get("player_name",members[sender].get("player_name","Player")))
 			members[sender].ready=message.get("ready",false)==true
 			publish_lobby()
+		elif kind=="need_actors" and game.run_active and int(message.get("realm",-1))==game.realm:
+			send_actor_descriptors(sender,message.get("ids",[]))
 		elif kind=="pose":
 			var p=vector(message.get("position",[]))
 			if not p.is_finite() or maxf(absf(p.x),absf(p.z))>RealmWorld.EXTENT+10: return
@@ -607,7 +652,7 @@ func receive(sender: int,message):
 		last_snapshot=Time.get_ticks_msec()/1000.0
 		if kind=="reject": leave();status=str(message.reason);game.hud.tell(status,8)
 		elif kind=="welcome":
-			welcomed=true
+			welcomed=true;reset_actor_sync()
 			if bool(message.get("reconnected",false)):
 				reconnecting=false;paused=false;game.mode="playing";game.career.bump("coop_reconnects");status="Rejoined the active run.";game.hud.tell(status,5)
 				if test_mode:
@@ -616,9 +661,13 @@ func receive(sender: int,message):
 				status="Joined. Choose your hero and mark Ready.";publish_lobby_choice()
 		elif kind=="lobby_state" and not game.run_active: lobby_roster=message.get("players",[])
 		elif kind=="start":
+			reset_actor_sync()
 			game.start_run(int(message.seed))
 			game.hud.close()
-		elif kind=="realm": game.enter_realm(int(message.realm));saw_realm=true
+		elif kind=="realm": actor_info.clear();actor_requested.clear();game.enter_realm(int(message.realm));saw_realm=true
+		elif kind=="actors_info" and int(message.get("realm",-1))==game.realm and message.get("actors",[]) is Array:
+			for actor in message.actors:
+				if actor is Dictionary and actor.has("id"): actor_info[int(actor.id)]=actor
 		elif kind=="force_pulse_fx" and int(message.get("realm",-1))==game.realm: ForcePulse.visual(game,vector(message.position),str(message.key));saw_force_pulse=true
 		elif kind=="world": apply_world(message)
 		elif kind=="journey_announcement": game.Journey.announce(game,str(message.title),str(message.detail))
@@ -721,6 +770,11 @@ func apply_chest_hide(position):
 
 func apply_world(message: Dictionary):
 	if not game.run_active or int(message.realm)!=game.realm: return
+	# Unreliable snapshots can arrive late; never roll state back to an older one.
+	var seq=int(message.get("seq",0))
+	if seq>0:
+		if seq<last_snapshot_seq: return
+		last_snapshot_seq=seq
 	# Refresh shared progression even when no level-up message is in flight.
 	game.level=int(message.get("level",game.level))
 	game.xp=int(message.get("xp",game.xp))
@@ -755,18 +809,23 @@ func apply_world(message: Dictionary):
 		members[number]=message.players[id];ensure_avatar(number,members[number])
 	for id in avatars.keys():
 		if not message.players.has(str(id)) and not message.players.has(id): avatars[id].queue_free();avatars.erase(id);members.erase(id)
-	var ids={}
-	for actor in message.actors:
-		var id=int(actor.id);ids[id]=true
-		var found={}
-		for enemy in game.enemies:
-			if enemy.net_id==id: found=enemy;break
-		if found.is_empty(): found=game.spawn_network_enemy(actor)
+	var packed=message.get("actors",PackedFloat32Array())
+	if not packed is PackedFloat32Array: packed=PackedFloat32Array()
+	var known={}
+	for enemy in game.enemies: known[int(enemy.net_id)]=enemy
+	var ids={};var missing=[]
+	for base in range(0,packed.size()-ACTOR_STRIDE+1,ACTOR_STRIDE):
+		var id=int(packed[base]);ids[id]=true
+		var found=known.get(id,{})
+		if found.is_empty():
+			if not actor_info.has(id): missing.append(id);continue
+			found=game.spawn_network_enemy(actor_info[id]);actor_info.erase(id);known[id]=found
 		if found.is_empty() or found.dead: continue
-		EnemySurface.replicate(found,vector(actor.get("surface_up",[0,1,0])),vector(actor.get("surface_forward",[0,0,-1])))
-		EclipseCorruption.apply(found,int(actor.get("corruption",0)))
-		found.hp=float(actor.hp);found.target_position=vector(actor.position)
-		for key in ["fire","poison","freeze","blind","slip_until","windup","contact_windup"]: found[key]=float(actor.get(key,0))
+		EnemySurface.replicate(found,Vector3(packed[base+6],packed[base+7],packed[base+8]),Vector3(packed[base+9],packed[base+10],packed[base+11]))
+		EclipseCorruption.apply(found,int(packed[base+19]))
+		found.hp=packed[base+4];found.maxHp=packed[base+5];found.target_position=Vector3(packed[base+1],packed[base+2],packed[base+3])
+		for i in range(ACTOR_STATUS.size()): found[ACTOR_STATUS[i]]=packed[base+12+i]
+	request_actors(missing)
 	for enemy in game.enemies:
 		if not ids.has(enemy.net_id) and not enemy.dead: enemy.dead=true;enemy.node.queue_free()
 
@@ -777,7 +836,7 @@ func stomp(enemy: Dictionary):
 	if active and not hosting: send_to(owner_id,{"type":"stomp","id":enemy.net_id})
 
 func died(enemy: Dictionary,cause: String):
-	if active and hosting: broadcast({"type":"kill","id":enemy.net_id,"position":array(enemy.node.position),"cause":cause,"actor":{"id":enemy.net_id,"position":array(enemy.node.position),"biome":enemy.biome,"species":enemy.species,"height":enemy.height,"radius":enemy.radius,"hp":enemy.hp,"maxHp":enemy.maxHp,"xp_reward":enemy.xp_reward,"boss":enemy.boss,"boss_id":enemy.get("boss_id",-1),"guardian":enemy.get("guardian",false),"magnet_guard":enemy.get("magnet_guard",false),"title":enemy.get("title",""),"elite":enemy.elite}})
+	if active and hosting: broadcast({"type":"kill","id":enemy.net_id,"position":array(enemy.node.position),"cause":cause,"actor":actor_descriptor(enemy)})
 
 func target(origin: Vector3) -> Dictionary:
 	var result={"id":local_id,"position":game.player.position};var distance=origin.distance_squared_to(game.player.position) if game.hp>0 else INF

@@ -107,7 +107,7 @@ static func run(g):
 	checks.arena_eruption=g.hazards.size()==10 and g.hazards.all(func(h):return h.style=="lava" and h.damage==48 and h.duration==2.6 and Vector2(h.node.position.x,h.node.position.z).length()<=64.1)
 	checks.eruption_capture=await capture(g,"arena-eruption")
 	clear(g.hazards)
-	var packet=bytes_to_var(var_to_bytes(g.coop.snapshot()));var actor=packet.actors[0]
+	var actor=bytes_to_var(var_to_bytes(g.coop.actor_descriptor(boss)))
 	var remote=g.spawn_network_enemy(actor)
 	checks.network_boss=remote.boss_id==8 and remote.maxHp==boss.maxHp and remote.node.get_meta("rig").identity=="boss_8"
 	remote.node.queue_free();g.enemies.erase(remote)

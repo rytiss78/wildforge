@@ -2769,9 +2769,11 @@ func check_stomp(previous: Vector3,falling_speed: float):
 
 func update_boiling_edge():
 	if maxf(absf(player.position.x),absf(player.position.z))>RealmWorld.EXTENT-60: hud.tell("DEADLY SEA  ·  TURN BACK",.2)
-	for enemy in enemies:
-		if not enemy.dead and world.dangerous(enemy.node.position):
-			enemy.dead=true;burst(enemy.node.position+Vector3.UP,Color("ffd498"),6);enemy.node.queue_free()
+	# Host-owned enemies leave a client only through a kill or snapshot absence.
+	if not coop.active or coop.hosting:
+		for enemy in enemies:
+			if not enemy.dead and world.dangerous(enemy.node.position):
+				enemy.dead=true;burst(enemy.node.position+Vector3.UP,Color("ffd498"),6);enemy.node.queue_free()
 	for collection in [pickups,consumables,pots,flowers,pools,projectiles]:
 		for i in range(collection.size()-1,-1,-1):
 			var item=collection[i]
