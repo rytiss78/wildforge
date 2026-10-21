@@ -29,3 +29,13 @@ No verified free, photoreal Baron asset met the request. A paid generic Fab char
 ## Validation
 
 Initial rendered review `2026-10-15T11-24-54-623Z-red-moon-review` passed combat, size, portal and local network-reconstruction checks but failed steam count because duplicate node names were rewritten by Godot. Each vent now has a unique name. The original failure log is retained. Facial outlines were removed after inspecting the silhouette image. Later robe-model reviews are superseded by the October 16 bare-model review above.
+
+## October 21 — Blender pipeline rebuild
+
+The primitive builder is retired. The Baron is now authored by `scripts/blender/baron.py` (helpers in `scripts/blender/forge.py`) and run headless with Blender 5.2:
+
+```powershell
+& "C:\Program Files\Blender Foundation\Blender 5.2\blender.exe" -b --factory-startup -P scripts/blender/baron.py -- "$PWD\native\assets\style3d\boss_8_baron.glb"
+```
+
+Metaballs fuse a continuous colossal body, and negative elements carve the belly folds, the chest separation, the navel, the eye sockets and the mouth line. Each part is voxel-remeshed, smoothed and decimated (about 47,000 triangles total). A cavity pass bakes darker creases into vertex colours, which `style_model.gd` uses as albedo. He floats and bobs at runtime with dangling legs, and the four steam vents ride on the floating body. The model is original and stylized: no third-party mesh, texture or actor likeness. Evidence: `2026-10-21T09-02-07-542Z-red-moon-review` and `2026-10-21T09-02-32-946Z-boss-review`.

@@ -93,6 +93,9 @@ func prepare_meshes(node: Node):
 					if identity=="boss_8_baron":
 						prepared.diffuse_mode=BaseMaterial3D.DIFFUSE_BURLEY
 						prepared.next_pass=null;prepared.roughness=.88
+					# Blender-pipeline meshes carry their skin tone and baked creases per vertex.
+					if node.mesh.surface_get_format(surface) & Mesh.ARRAY_FORMAT_COLOR:
+						prepared.vertex_color_use_as_albedo=true;prepared.albedo_color=Color.WHITE
 					prepared_materials[key]=preload("res://scripts/hero_surfaces.gd").material(original,surface_kind,outline) if surface_kind>0 else prepared
 				var material=prepared_materials[key]
 				node.set_surface_override_material(surface,material)
