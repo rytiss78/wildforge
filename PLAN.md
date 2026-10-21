@@ -72,7 +72,15 @@ Review and evidence: [alpha exit review](native/docs/alpha-exit-review-2026-10-2
   - **Not done:** balance and real playtest.
 - [x] **Visual direction pass** (`fc6697e`): screen-space ink outlines over every surface, a vignette, a stronger saturated grade, a warm key light and glow. Six biomes inspected in `2026-10-21T08-55-09-325Z-biome-review`.
 - [x] **Asset pipeline** (`d58262b`): Blender 5.2 (installed with winget) runs headless with `scripts/blender/forge.py`. Metaballs, voxel remesh, smoothing and decimation replace primitive blobs, with cavity shading baked into vertex colours.
-- [ ] **Rebuild the remaining blob assets with the Blender pipeline:** heroes, creatures and bosses 0–7. Also replace the bead-like steam puffs with soft sprites.
+- [x] **Second user bug batch (October 21)**, committed in `1b8ed75`:
+  - The magnet now pulls every drop on the map once, then goes dark as spent.
+  - Magnet guards are tall cyan pylons labelled MAGNET GUARD.
+  - Ordinary gun hits show damage numbers that rise from that weapon's slot icon; other damage keeps the bottom band.
+  - Verified with `hermes-review`, `combat-review`, smoke, integration and shared-review. Exported build `2026-10-21T09-30-36-368Z-build` (source `5c53892`) passes exported smoke (118), shared-review and hermes-review.
+- [x] Main menu uses the in-game window frame (`b64f598`). The Baron's steam is soft, fading vapour (`569a40a`). The journey-review route test is fixed (`c7f7c38`).
+- [ ] **Better art assets.** Procedural attempts have hit their ceiling:
+  - The Blender metaball Baron and a generated creature set both read as blobs and were rejected or reverted (`5c53892`). The Python floating Baron is current.
+  - Real improvement needs authored art: a licensed or commissioned model (also required for any faithful *Dune*-film Baron likeness), an AI 3D generator account, or CC0 packs (Quaternius, Kenney), which need user approval to download.
 - [ ] Local build `2026-10-21T09-03-39-561Z-build/Wildforge.exe` (source `d58262b`, exported smoke 118). Exported `2026-10-21T09-03-57-992Z-shared-review` passes all 104 checks, and exported `2026-10-21T09-04-16-670Z-release-review` passes; the 1080p HUD was inspected. It still reports 1.1.3 / Build 17 metadata and is not published.
 - [ ] Upgrade overhaul (user direction, October 21): **more than 100 upgrades, mostly rules-changing**, so each run plays very differently. Merge the 738 single-stat entries (94 duplicate names) into a small set of named stat tiers, and add 100+ mechanic upgrades (on-dash, on-kill, projectile behaviour, summons, status interactions, hero-specific twists). No duplicate names in one offer.
 - [ ] Unified UI theme for menu, HUD and modals, in the Hades-like style below; regroup the HUD into three clusters; remove debug copy.
