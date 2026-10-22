@@ -173,14 +173,28 @@ func button(text: String, action: Callable, accent: bool = false, radius_key: St
 	item.pressed.connect(action)
 	return item
 
+const VITALS=Rect2(22,18,352,150)
+const LOADOUT=Rect2(676,900,568,140)
+const MAP_CLOCK=Vector2(1613,332)
+
+# A framed backing plate in the in-game window style, drawn behind its cluster.
+func cluster_plate(area: Rect2):
+	var plate=Panel.new();plate.position=area.position;plate.size=area.size;plate.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	var look=style(ThemeTokens.INK,Color("9b855e"),8);look.bg_color=Color(ThemeTokens.INK,.82);plate.add_theme_stylebox_override("panel",look)
+	root.add_child(plate);root.move_child(plate,0)
+	var frame=preload("res://scripts/forge_frame.gd").new();frame.panel=plate;frame.position=area.position;frame.size=area.size;frame.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	root.add_child(frame);root.move_child(frame,1)
+
 func setup(owner_game):
 	game = owner_game
-	skill_strip.position=Vector2(976,1003);skill_strip.add_theme_constant_override("separation",3);root.add_child(skill_strip)
+	# HUD clusters (1920×1080 logical): vitals top-left, map + run clock top-right,
+	# loadout (skills, weapons, slam/turret, level/XP) bottom-centre.
+	skill_strip.position=Vector2(LOADOUT.position.x+34,LOADOUT.position.y+8);skill_strip.add_theme_constant_override("separation",3);root.add_child(skill_strip)
 	player_locator=preload("res://scripts/player_locator.gd").new();player_locator.game=game;player_locator.mouse_filter=Control.MOUSE_FILTER_IGNORE;root.add_child(player_locator)
-	buff_icons=HBoxContainer.new();buff_icons.position=Vector2(1000,913);root.add_child(buff_icons)
-	buff_label=label("",14);buff_label.position=Vector2(1013,930);root.add_child(buff_label)
-	biome_label=label("",16);biome_label.position=Vector2(32,292);root.add_child(biome_label)
-	harvest_status=label("",17);harvest_status.position=Vector2(32,336);harvest_status.custom_minimum_size.x=360
+	buff_icons=HBoxContainer.new();buff_icons.position=Vector2(VITALS.position.x,VITALS.end.y+10);buff_icons.add_theme_constant_override("separation",6);root.add_child(buff_icons)
+	buff_label=label("",14);buff_label.position=Vector2(VITALS.position.x,VITALS.end.y+10);root.add_child(buff_label)
+	biome_label=label("",16);biome_label.position=Vector2(MAP_CLOCK.x,MAP_CLOCK.y+68);biome_label.custom_minimum_size.x=254;biome_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;root.add_child(biome_label)
+	harvest_status=label("",17);harvest_status.position=Vector2(VITALS.position.x,VITALS.end.y+104);harvest_status.custom_minimum_size.x=VITALS.size.x
 	harvest_status.add_theme_stylebox_override("normal",style(paper,Color("74a876"),10));root.add_child(harvest_status)
 	level_plate=label("",30);level_plate.position=Vector2(733,333);root.add_child(level_plate)
 	level_plate.add_theme_stylebox_override("normal",style(paper,ThemeTokens.EARTH_TERRACOTTA))
@@ -197,12 +211,14 @@ func setup(owner_game):
 	root.theme=desktop_theme
 	root.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	root.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	clock.position = Vector2(32,26)
+	# The run clock docks under the minimap with the biome name below it.
+	clock.position = MAP_CLOCK
 	clock.scale=Vector2.ONE*.75
 	clock.size = Vector2(400,149)
 	root.add_child(clock)
-	var health_panel=PanelContainer.new();health_panel.position=Vector2(32,106);health_panel.custom_minimum_size=Vector2(310,76)
-	health_panel.add_theme_stylebox_override("panel",style(paper,Color("8eac93"),10));root.add_child(health_panel)
+	for area in [VITALS,LOADOUT]: cluster_plate(area)
+	var health_panel=PanelContainer.new();health_panel.position=VITALS.position+Vector2(12,10);health_panel.custom_minimum_size=Vector2(VITALS.size.x-24,76)
+	health_panel.add_theme_stylebox_override("panel",StyleBoxEmpty.new());root.add_child(health_panel)
 	var health_row=HBoxContainer.new();health_panel.add_child(health_row)
 	health_orb=preload("res://scripts/hud_vessel.gd").new();health_orb.custom_minimum_size=Vector2(60,60);health_row.add_child(health_orb)
 	var health_column=VBoxContainer.new();health_column.add_theme_constant_override("separation",0);health_column.size_flags_horizontal=Control.SIZE_EXPAND_FILL;health_row.add_child(health_column)
@@ -216,9 +232,10 @@ func setup(owner_game):
 	map_view.clip_contents=true
 	root.add_child(map_view)
 	status=label("",16,ThemeTokens.STAR_GOLD);root.add_child(status)
-	status.name="EdgeLevel";status.set_anchors_preset(Control.PRESET_BOTTOM_LEFT);status.offset_left=32;status.offset_top=-30;status.offset_bottom=-10
+	# Level and XP values frame the loadout, just above the full-width XP meter.
+	status.name="EdgeLevel";status.set_anchors_preset(Control.PRESET_BOTTOM_LEFT);status.offset_left=LOADOUT.position.x+14;status.offset_top=-34;status.offset_bottom=-12
 	xp_text=label("",14);root.add_child(xp_text)
-	xp_text.name="EdgeXP";xp_text.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT);xp_text.offset_left=-380;xp_text.offset_right=-32;xp_text.offset_top=-30;xp_text.offset_bottom=-10
+	xp_text.name="EdgeXP";xp_text.set_anchors_preset(Control.PRESET_BOTTOM_LEFT);xp_text.offset_left=LOADOUT.end.x-360;xp_text.offset_right=LOADOUT.end.x-14;xp_text.offset_top=-34;xp_text.offset_bottom=-12
 	xp_text.horizontal_alignment=HORIZONTAL_ALIGNMENT_RIGHT
 	# Bottom-edge full-viewport XP meter, independent of the compact stat panel.
 	xp = ProgressBar.new()
@@ -248,22 +265,25 @@ func setup(owner_game):
 	root.add_child(rescue_meter)
 	coins = label("GOLD  0    BOX PRICE  30",18,ThemeTokens.STAR_GOLD)
 	box_counter=label("",15);box_counter.position=Vector2(32,243);box_counter.add_theme_stylebox_override("normal",style());root.add_child(box_counter)
-	var coins_panel=PanelContainer.new();coins_panel.position=Vector2(32,192);coins_panel.custom_minimum_size=Vector2(310,40)
-	coins_panel.add_theme_stylebox_override("panel",style(paper,ThemeTokens.STAR_GOLD,3));root.add_child(coins_panel)
+	# Coins sit in the vitals plate under a thin gilt divider.
+	var coins_panel=PanelContainer.new();coins_panel.position=VITALS.position+Vector2(12,94);coins_panel.custom_minimum_size=Vector2(VITALS.size.x-24,40)
+	var divider=StyleBoxFlat.new();divider.bg_color=Color.TRANSPARENT;divider.border_color=Color(ThemeTokens.STAR_GOLD,.45);divider.border_width_top=1
+	divider.content_margin_left=8;divider.content_margin_top=6;coins_panel.add_theme_stylebox_override("panel",divider);root.add_child(coins_panel)
 	coins.add_theme_color_override("font_color",ink);coins_panel.add_child(coins)
 	weapons = WeaponBar.new()
 	weapons.game = game
-	weapons.position = Vector2(426,920)
+	weapons.position = LOADOUT.position+Vector2(14,44)
 	weapons.add_theme_constant_override("separation",10)
 	root.add_child(weapons)
 	control_hints = HBoxContainer.new()
 	control_hints.position = Vector2(32,1033)
 	control_hints.add_theme_constant_override("separation",10)
 	root.add_child(control_hints)
-	turret_hints.position=Vector2(1070,955)
+	# Ability readouts sit beside the weapon slots inside the loadout plate.
+	turret_hints.position=LOADOUT.position+Vector2(400,86)
 	root.add_child(turret_hints)
 	turret_status=label("",14,ThemeTokens.STAR_GOLD);turret_hints.add_child(turret_status)
-	slam_status=label("",14,ThemeTokens.STAR_GOLD);slam_status.position=Vector2(825,940);root.add_child(slam_status)
+	slam_status=label("",14,ThemeTokens.STAR_GOLD);slam_status.position=LOADOUT.position+Vector2(400,56);root.add_child(slam_status)
 	damage_feedback=preload("res://scripts/damage_feedback.gd").new();damage_feedback.game=game;damage_feedback.mouse_filter=Control.MOUSE_FILTER_IGNORE;root.add_child(damage_feedback)
 	prompt = label("",18,ThemeTokens.BIOME_ACCENTS.verdant.petal)
 	prompt.position = Vector2(540,682);prompt.size=Vector2(840,42)
@@ -459,7 +479,7 @@ func update_achievement_notification(delta: float):
 	_ach_note_row.size=Vector2(full_width-28,80)
 	_ach_note_text.modulate.a=minf(clampf((age-.44)/.22,0,1),clampf((_ach_note_timer-.3)/.18,0,1))
 	_ach_note_panel.size=Vector2(width,108)
-	_ach_note_panel.position=Vector2((viewport_size.x-width)*.5,viewport_size.y-282+(1-ease)*18)
+	_ach_note_panel.position=Vector2((viewport_size.x-width)*.5,viewport_size.y-300+(1-ease)*18)
 	_ach_note_panel.modulate.a=_ach_note_alpha;_ach_note_panel.visible=true
 
 func level_flash():
