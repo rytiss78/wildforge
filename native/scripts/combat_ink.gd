@@ -9,12 +9,20 @@ var parts=[]
 var paints: Array[ShaderMaterial]=[]
 var flash: OmniLight3D
 var flash_energy=0.0
+var fall=3.0
 static var shard_mesh: ArrayMesh
+static var unit_quad: QuadMesh
+# Separate budgets keep shot trails and status flares from starving impacts.
+const BUDGET={"hit":28,"trail":30,"status":24}
 
-static func begin(g: Node3D,point: Vector3,seconds: float) -> CombatInk:
-	if g.effects.size()>220 or g.effects.filter(func(e):return e.get("ink_fx",false)).size()>=28: return null
+static func begin(g: Node3D,point: Vector3,seconds: float,budget: String="hit") -> CombatInk:
+	if g.effects.size()>220: return null
+	var used=0
+	for effect in g.effects:
+		if effect.get("ink_budget","")==budget: used+=1
+	if used>=BUDGET[budget]: return null
 	var root=CombatInk.new();root.duration=seconds;g.add_child(root);root.position=point
-	g.effects.append({"node":root,"life":seconds,"velocity":Vector3.ZERO,"stationary":true,"ink_fx":true})
+	g.effects.append({"node":root,"life":seconds,"velocity":Vector3.ZERO,"stationary":true,"ink_fx":true,"ink_budget":budget})
 	return root
 
 func mesh_part(mesh: Mesh,paint: Material) -> MeshInstance3D:
@@ -49,6 +57,18 @@ static func burst(g: Node3D,point: Vector3,color: Color,count: int):
 	if root==null: return
 	var saturated=Color.from_hsv(color.h,maxf(.58,color.s) if color.s>.08 else color.s,minf(1.0,maxf(.72,color.v)))
 	root.shards(saturated,clampi(count,1,12),4.5)
+
+# Camera-facing ink star: impacts, muzzle flashes and status flares. points sets the
+# spikes; stretch above 1 flattens it into a slash.
+static func star(g: Node3D,point: Vector3,size: float,color: Color,points: float=6.0,seconds: float=.24,stretch: float=1.0,budget: String="hit") -> CombatInk:
+	var root=begin(g,point,seconds,budget)
+	if root==null: return null
+	if unit_quad==null: unit_quad=QuadMesh.new()
+	var paint=root.pigment(preload("res://shaders/ink_star.gdshader"),color)
+	paint.set_shader_parameter("points",points);paint.set_shader_parameter("stretch",stretch)
+	paint.set_shader_parameter("twist",fmod(absf(point.x*7.1+point.z*3.3),TAU))
+	root.mesh_part(unit_quad,paint).scale=Vector3.ONE*size
+	return root
 
 static func blast(g: Node3D,point: Vector3,radius: float):
 	var root=begin(g,point,.62)
@@ -105,6 +125,6 @@ func advance(delta: float):
 	age+=delta;var fraction=clampf(age/duration,0,1)
 	for paint in paints: paint.set_shader_parameter("age",fraction)
 	for part in parts:
-		part.node.position=part.velocity*age+Vector3.DOWN*age*age*3.0
+		part.node.position=part.velocity*age+Vector3.DOWN*age*age*fall
 		part.node.scale=part.scale*(1.0-smoothstep(.18,1.0,fraction))
 	if is_instance_valid(flash): flash.light_energy=flash_energy*pow(1.0-fraction,3.0)

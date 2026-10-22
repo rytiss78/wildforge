@@ -65,6 +65,7 @@ Prefix every action below with `node scripts/agent-workflow.mjs`.
 | `release-review` | Exported 720p/1080p menus and 810p forge/combat/boss/biome captures | Uses the latest successful staged build |
 | `bake-roster` | Rebuild all baked enemy/prop resources | After Forge generators |
 | `style-review` | Short lighting and combat-art iteration | Eight rendered captures; actual explosion damage, effect expiry and unchanged camera checks. Full regression/export testing remains separate. |
+| `fx-review` | Every weapon archetype in flight and on impact, enemy statuses (burning, poisoned, frozen, blinded) with catch flares and death bursts, the six mutation strains, slam and hero hits | Rendered; four contact sheets (`fx-flight`, `fx-impact`, `fx-status`, `fx-skills`, four columns, cell order in the result) must be inspected. Enemy species are random per run, so judge statuses on more than one run. |
 | `red-moon-review` | Four new hero buttons, third portal, giant final boss, real damage/dodges/weapon hits and permanent Eclipse | Rendered; inspect silhouette, four patterns and impact. Health duration is a reference calculation, not a representative build playtest. |
 | `playfeel-review` | Slam progression, turret bindings, damage feedback, music, drops and natural groves | Rendered; actual grove walkthroughs and shared co-op stomp recovery. |
 | `boss-review` | Eight bosses, seeded rotations, warnings and network identities | Rendered; inspect each silhouette and attack capture; includes real portal/guardian path |

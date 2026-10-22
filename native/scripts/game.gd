@@ -194,7 +194,7 @@ func _ready():
 	smoke=smoke or OS.get_cmdline_user_args().has("--golden-scene")
 	smoke=smoke or OS.get_cmdline_user_args().has("--ui-review")
 	smoke=smoke or OS.get_cmdline_user_args().has("--journey-review") or OS.get_cmdline_user_args().has("--scenery-review") or OS.get_cmdline_user_args().has("--hunt-review")
-	smoke=smoke or OS.get_cmdline_user_args().has("--playfeel-review") or OS.get_cmdline_user_args().has("--red-moon-review") or OS.get_cmdline_user_args().has("--biome-review") or OS.get_cmdline_user_args().has("--style-review") or OS.get_cmdline_user_args().has("--boss-review") or OS.get_cmdline_user_args().has("--forge-review") or OS.get_cmdline_user_args().has("--combat-review") or OS.get_cmdline_user_args().has("--pace-review")
+	smoke=smoke or OS.get_cmdline_user_args().has("--playfeel-review") or OS.get_cmdline_user_args().has("--red-moon-review") or OS.get_cmdline_user_args().has("--biome-review") or OS.get_cmdline_user_args().has("--style-review") or OS.get_cmdline_user_args().has("--fx-review") or OS.get_cmdline_user_args().has("--boss-review") or OS.get_cmdline_user_args().has("--forge-review") or OS.get_cmdline_user_args().has("--combat-review") or OS.get_cmdline_user_args().has("--pace-review")
 	camera_locked=OS.get_cmdline_user_args().has("--golden-scene") or OS.get_cmdline_user_args().has("--ui-review")
 	career = ProfileScript.new(rules.data,smoke)
 	if network_test_role!="": career.file="user://coop-test-"+network_test_role+".json"
@@ -312,6 +312,7 @@ func _ready():
 	elif OS.get_cmdline_user_args().has("--playfeel-review"): preload("res://scripts/playfeel_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--red-moon-review"): preload("res://scripts/red_moon_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--style-review"): preload("res://scripts/style_review.gd").run.call_deferred(self)
+	elif OS.get_cmdline_user_args().has("--fx-review"): preload("res://scripts/fx_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--boss-review"): preload("res://scripts/boss_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--forge-review"): preload("res://scripts/forge_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--combat-review"): preload("res://scripts/combat_review.gd").run.call_deferred(self)
@@ -1242,12 +1243,12 @@ func fire(weapon: Dictionary, origin: Vector3):
 		for meteor_index in range(1+int(mods.get("extraMeteors",0))+mini(5,int(stats.meteorCount))):
 			var position_value=target.node.position+Vector3.RIGHT.rotated(Vector3.UP,meteor_index*2.4)*meteor_index*.8
 			position_value.y=world.height_at(position_value.x,position_value.z)
-			var marker=CylinderMesh.new();marker.top_radius=3*float(mods.get("areaScale",1));marker.bottom_radius=marker.top_radius;marker.height=.04
-			var warning=shape(marker,Color("f3c27f"),self,position_value+Vector3.UP*.08)
-			hazards.append({"node":warning,"life":.85+meteor_index*.12,"radius":3.0*float(mods.get("areaScale",1)),"damage":base_damage,"weapon_id":weapon.id,"friendly":true})
+			var warning=preload("res://scripts/danger_mark.gd").make(self,position_value,3.0*float(mods.get("areaScale",1)),"ally")
+			hazards.append({"node":warning,"life":.85+meteor_index*.12,"duration":.85+meteor_index*.12,"radius":3.0*float(mods.get("areaScale",1)),"damage":base_damage,"weapon_id":weapon.id,"friendly":true})
 			var meteor=shape(orb_mesh,Color("ee986d"),self,position_value+Vector3.UP*14,1.0);meteor.scale=Vector3.ONE*6
 			effects.append({"node":meteor,"life":.85,"velocity":Vector3(0,-13,0),"meteor":true})
 		return
+	ShotFx.muzzle(self,origin,aim,kind)
 	for i in range(shot_count):
 		var node = MeshInstance3D.new()
 		node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
@@ -1267,6 +1268,7 @@ func fire(weapon: Dictionary, origin: Vector3):
 		var rage = 1+stats.berserk*(1-hp/stats.maxHp)
 		var damage = base_damage*(stat("turretDamage") if weapon.turret else 1.0)*rage*(stat("critPower") if critical else 1.0)
 		projectiles.append({"node":node,"velocity":aim.rotated(Vector3.UP,spread)*stat("projectileSpeed"),"damage":damage,"critical":critical,"life":2.0 if kind=="boomerang" else float(mods.get("fuse",1)) if kind=="bomb" else effective_range/stat("projectileSpeed")+0.25,"kind":kind,"weapon_id":weapon.id,"payload":mods.get("payload",""),"area_scale":mods.get("areaScale",1),"hit":[],"hit_radius":.1*minf(2.5,stat("size"))*float(mods.get("shotScale",1)),"pierce":int(stats.pierce)+int(mods.get("extraPierce",0))+(8 if kind=="rail" else 3 if kind=="harpoon" else 2+int(stats.boomerangPierce) if kind=="boomerang" else 0),"bounce":int(stats.ricochet)+int(mods.get("extraBounce",0))+(3+int(stats.discBounces) if kind=="disc" else 0),"return":stats.boomerang>0 or kind=="boomerang" or mods.get("returning",false),"return_clock":.55})
+		ShotFx.launch(projectiles[-1],kind,critical)
 	if projectiles.size() > 140:
 		for i in range(projectiles.size()-140): projectiles[0].node.queue_free();projectiles.pop_front()
 
@@ -1287,6 +1289,7 @@ func remote_weapon_effect(id: String,origin: Vector3,target: Vector3,duration: f
 		node.material_override=painted_shot;node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;add_child(node);node.position=origin
 		var aim=(target-origin).normalized();node.look_at(origin+aim)
 		effects.append({"node":node,"life":maxf(.05,origin.distance_to(target)/22),"velocity":aim*22,"visual_shot":true,"remote_impact":target,"bomb":id=="bomb"})
+		ShotFx.launch(effects[-1],id);ShotFx.muzzle(self,origin,aim,id)
 	else: beam(origin,target,PowerIcon.color_for(id))
 
 func hit_enemy(enemy: Dictionary, shot: Dictionary,cause: String="hit"):
@@ -1422,31 +1425,7 @@ func create_status_indicator(enemy: Dictionary, color: Color, name: String) -> N
 	if enemy.node.get_meta("status_fx").has(name):
 		var old=enemy.node.get_meta("status_fx")[name]
 		if is_instance_valid(old): old.queue_free()
-	var node=GPUParticles3D.new()
-	var pp=ParticleProcessMaterial.new()
-	pp.gravity=Vector3(0,-1.5,0)
-	pp.initial_velocity_min=0
-	pp.initial_velocity_max=0
-	pp.emission_shape=ParticleProcessMaterial.EMISSION_SHAPE_SPHERE
-	pp.emission_sphere_radius=.35
-	pp.spread=120
-	node.emitting=true
-	node.amount=12
-	node.lifetime=.6
-	node.process_material=pp
-	node.one_shot=false
-	node.visible=true
-	var mat=StandardMaterial3D.new()
-	mat.albedo_color=color
-	mat.emission_enabled=true
-	mat.emission=color
-	mat.emission_energy_multiplier=2.0
-	mat.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA
-	node.material_override=mat
-	var mote=SphereMesh.new();mote.radius=.055;mote.height=.11
-	node.draw_pass_1=mote
-	var rig_height=float(enemy.get("height",1.7))
-	node.position=Vector3(0,rig_height*1.65,0)
+	var node=StatusFx.make(self,enemy,name)
 	enemy.node.add_child(node)
 	enemy.node.get_meta("status_fx")[name]=node
 	enemy["indicator_"+name] = node
@@ -1455,16 +1434,17 @@ func create_status_indicator(enemy: Dictionary, color: Color, name: String) -> N
 	return node
 
 func update_status_indicators(enemy: Dictionary):
-	for effect in [["fire",enemy.status_time if enemy.fire>0 else 0,Color("ff6633")],["poison",enemy.status_time if enemy.poison>0 else 0,Color("44cc66")],["ice",enemy.freeze,Color("66bbdd")],["blind",enemy.blind,Color("554477")]]:
+	for effect in [["fire",enemy.status_time if enemy.fire>0 else 0,Color("ff6633")],["poison",enemy.status_time if enemy.poison>0 else 0,Color("44cc66")],["ice",enemy.freeze if enemy.freeze>.5 or is_instance_valid(enemy.get("indicator_ice")) else 0.0,Color("66bbdd")],["blind",enemy.blind,Color("554477")]]:
 		var id=effect[0]
 		if effect[1]<=0:
 			kill_status_indicator(enemy,id)
 			continue
 		var indicator=enemy.get("indicator_"+id)
-		if not is_instance_valid(indicator): indicator=create_status_indicator(enemy,effect[2],id)
+		if not is_instance_valid(indicator):
+			indicator=create_status_indicator(enemy,effect[2],id);StatusFx.caught(self,enemy,id)
 		var remaining=clampf(float(effect[1])/4.0,.08,1.0)
-		indicator.scale=Vector3.ONE*lerpf(.25,.95,remaining)
-		indicator.material_override.emission_energy_multiplier=lerpf(.3,3.0,remaining)
+		indicator.scale=Vector3.ONE*lerpf(.6,1.0,remaining)
+		indicator.material_override.set_shader_parameter("strength",lerpf(.55,1.0,remaining))
 
 func kill_status_indicator(enemy: Dictionary, name: String):
 	var key="indicator_"+name
@@ -1523,6 +1503,7 @@ func kill_enemy(enemy: Dictionary, cause: String):
 	enemy.hp=0;enemy.node.get_meta("rig").set_health(0,enemy.boss or enemy.health>=1.8)
 	coop.died(enemy,cause)
 	enemy.dead = true
+	StatusFx.death(self,enemy)
 	Hunt.defeated(self,enemy)
 	if enemy.boss or enemy.get("elite",false) or rules.rng.randf()<.03: drop_consumable(enemy.node.position,enemy.boss)
 	kills += 1
@@ -1619,6 +1600,11 @@ func take_damage(amount: float, source: Vector3=Vector3.ZERO, voice_type: String
 	MutationBook.event(self,"hurt",player.position)
 	invulnerable = .55
 	avatar.hurt=.35
+	# Mark where the blow landed: red on health, cyan when the shield took it all.
+	var struck=player.position+Vector3.UP*.95+(((source-player.position)*Vector3(1,0,1)).limit_length(.45) if source!=Vector3.ZERO else Vector3.ZERO)
+	struck+=(camera.global_position-struck).normalized()*.7
+	var mark=CombatInk.star(self,struck,2.1+damage_feedback_strength,Color("8fe9ff") if taken<=0 else Color("ff3b3b"),5.0,.3)
+	if mark!=null: mark.shards(Color("d9f8ff") if taken<=0 else Color("ff8a6a"),6,3.4)
 	hit_shake=maxf(hit_shake,.18+damage_feedback_strength*.24)
 	if source!=Vector3.ZERO:
 		knock_velocity=(player.position-source).normalized()*8;knock_velocity.y=0
@@ -1996,6 +1982,7 @@ func update_combat(delta: float):
 			if shot.node.position.distance_to(player.position+Vector3.UP*.9)<.6: shot.life=0
 		var shot_start: Vector3=shot.node.position
 		shot.node.position += shot.velocity*delta
+		ShotFx.follow(self,shot,shot.velocity,delta)
 		if shot.kind in ["boomerang","disc"]: shot.node.rotation.y+=delta*18
 		if shot.kind=="bomb":
 			shot.node.position.y=world.height_at(shot.node.position.x,shot.node.position.z)+.3;shot.node.rotation.x+=delta*9
@@ -2015,7 +2002,7 @@ func update_combat(delta: float):
 			if closest.distance_squared_to(center) < pow(enemy_hit+shot.get("hit_radius",.1),2):
 				shot.hit.append(enemy.net_id)
 				hit_enemy(enemy,shot)
-				burst(closest,Color("ffcc44"),5)
+				ShotFx.impact(self,closest,shot.kind,shot.get("critical",false),shot.velocity)
 				hit_shake=maxf(hit_shake,.04)
 				if shot.bounce>0:
 					var target=nearest_enemy(shot.node.position,12,shot.hit)
@@ -2283,6 +2270,7 @@ func _process(delta: float):
 	for effect in effects:
 		effect.life-=delta
 		effect.node.position+=effect.velocity*delta
+		if effect.has("fx_kind"): ShotFx.follow(self,effect,effect.velocity,delta)
 		if not effect.get("visual_shot",false) and not effect.get("stationary",false): effect.velocity.y-=8*delta
 		if not effect.get("aura",false):
 			effect.node.scale=Vector3.ONE*maxf(.05,effect.life/.55)
@@ -2299,6 +2287,7 @@ func _process(delta: float):
 		if effect.has("base_scale"): effect.node.scale=effect.base_scale*minf(1,effect.life/.12)
 		if effect.life<=0:
 			if effect.has("remote_impact") and (effect.get("meteor",false) or effect.get("bomb",false)): explosion_fx(effect.remote_impact,3)
+			elif effect.has("remote_impact") and effect.has("fx_kind"): ShotFx.impact(self,effect.remote_impact,effect.fx_kind,false,effect.velocity)
 			update.release_effect(effect.node)
 	effects=effects.filter(func(effect):return effect.life>0)
 	if mode=="reveal":

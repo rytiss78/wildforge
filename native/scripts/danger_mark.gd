@@ -10,6 +10,7 @@ static func make(game,point: Vector3,radius: float,style: String) -> MeshInstanc
 	mesh.generate_normals()
 	var node=MeshInstance3D.new();node.mesh=mesh.commit();node.position=point
 	var paint=ShaderMaterial.new();paint.shader=preload("res://shaders/danger_mark.gdshader")
-	paint.set_shader_parameter("ink",Color("ff354f") if style=="annihilation" else Color("55bfff") if style=="orbital" else Color("b5a1ff") if style=="void" else Color("ed9455") if style in ["roots","lava","meteor"] else Color("72d5d8") if style=="storm" else Color("b5d775"))
+	# "ally" marks the hero's own strikes in gold, apart from enemy warnings.
+	paint.set_shader_parameter("ink",Color("ffd35a") if style=="ally" else Color("ff354f") if style=="annihilation" else Color("55bfff") if style=="orbital" else Color("b5a1ff") if style=="void" else Color("ed9455") if style in ["roots","lava","meteor"] else Color("72d5d8") if style=="storm" else Color("b5d775"))
 	node.material_override=paint;node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;game.add_child(node)
 	return node
