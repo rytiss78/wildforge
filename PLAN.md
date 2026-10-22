@@ -222,11 +222,17 @@ Achievement IDs added: `WF_WEAPON_MASTERY`, `WF_FORMATION_BREAKER`, `WF_BIOME_CO
 - [Build 1.0 visual rollout](native/docs/visual-rollout-1.0.0.md)
 - [Older repair audit](native/docs/repair-audit-2026-10-12.md)
 
-## Build 19 local build — October 22, 2026
+## Build 19 public release — October 22, 2026
 
-- [x] Local build `2026-10-22T17-26-45-819Z-build/Wildforge.exe`, version 1.2.1 / Build 19, source commit `9dbee5df4c501cfca476f42053cd905dce40a4fe`. It contains the mutation balance pass (`91bfa5e`) and the combat visual cues (`e66af4c`). Built from the committed `game.gd`; the uncommitted `lobby_synced` change in the working tree is not part of it.
+- [x] Published GitHub Release [`build-19`](https://github.com/rytiss78/wildforge/releases/tag/build-19) at user request: "Wildforge 1.2.1 — Build 19". The annotated tag resolves to source commit `9dbee5df4c501cfca476f42053cd905dce40a4fe`.
+  - Assets: `Wildforge-1.2.1-Windows.zip` (81,669,713 bytes) and `SHA256SUMS-1.2.1.txt`. The re-downloaded ZIP matches SHA-256 `7d22b8b3…6bbb22`, and its `build-info.json` reports 1.2.1 / Build 19 from `9dbee5d`.
+  - The exported exe passed shared-review (104 checks), shared-review-stress and hermes-review (33 features): `2026-10-22T17-29-35-710Z-shared-review`, `2026-10-22T17-29-49-143Z-shared-review-stress` and `2026-10-22T17-30-11-973Z-hermes-review`, all run against it via `WILDFORGE_TEST_EXE`.
+- Notes: [build19-release.md](native/docs/build19-release.md). README now points at Build 19.
+
+
+- [x] Build `2026-10-22T17-26-45-819Z-build/Wildforge.exe`, version 1.2.1 / Build 19, source commit `9dbee5df4c501cfca476f42053cd905dce40a4fe`. It contains the mutation balance pass (`91bfa5e`) and the combat visual cues (`e66af4c`). Built from the committed `game.gd`; the uncommitted `lobby_synced` change in the working tree is not part of it.
   - Exported smoke passes 118 checks with no script errors. Exported `2026-10-22T17-27-25-702Z-release-review` passes; the exported combat capture shows the new gun tracer and muzzle flash.
-  - Not published: README and the GitHub release still point at Build 18.
+  - Published as `build-19` (above).
 
 ## Build 18 public release — October 22, 2026
 
