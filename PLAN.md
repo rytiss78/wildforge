@@ -1,10 +1,46 @@
 # Wildforge — active plan
 
-October 16, 2026 · **1.1.3 / Build 17 development checkpoint** · main branch.
+October 22, 2026 · **1.2.1 / Build 19 is the public release** · main branch.
 
 Use [AGENTS.md](AGENTS.md) and the [Godot workflow](native/docs/godot-workflow.md). Work directly, one agent. A checked item requires exercised behavior and evidence; historical completion marks are not verification.
 
-Build 17 is a local development checkpoint, not a public release. Keep Build 16 as the public download until every active plan item is verified. [Current changes and evidence](native/docs/build17-work.md), [draft release notes](native/docs/release-build17.md). Real-fight balance and the final early co-op desync investigation remain open. Comparable performance measurements are complete but show a high physics tail; see the work log. The accepted Baron is a stylized fallback, not photorealistic.
+## Next work plan (user selection, October 22)
+
+The user picked these from a list of 30 suggestions, plus internet co-op without external apps. Phases run in order; each item lands as its own verified commit. Numbers refer to the suggestion list.
+
+### Phase A — foundations (first: everything later is measured and tuned on top of these)
+- [x] **30 · Housekeeping.** At the user's decision (October 22), the uncommitted `game.gd` lobby change and the `README.txt` deletion were discarded; a patch of them is kept in the session scratchpad. Still open: the user deletes the `G:\game-fxbase` folder by hand.
+- [ ] **25 · Flaky combat-review check.** `contact_warning_saved` depends on a random species and the soak's frame count; give the check a fixed melee attacker.
+- [ ] **9 · Reroll, banish, merchant: verify and fix.** Checked October 22: reroll (button, R / Y, doubling gold price), 5 banishes per run and the wandering merchant exist. Bugs found: banishing a mutation card does not stop that mutation being offered again, and the replacement offers after a banish drop mutations (reroll keeps them) and ignore the chest luck bonus. Exercise the real buttons with rendered captures.
+- [ ] **24 · Frame cost at scale.** Measure rank-9 spells, statuses and shots in 100+ enemy crowds against the current baseline; add automatic effect-detail scaling for big crowds.
+- [ ] **21 · Effect intensity settings.** Flashing, screen shake and particle density options, saved with the other settings.
+
+### Phase B — co-op over the internet
+- [ ] **Internet co-op without external apps.** Today co-op is ENet on UDP 29736 with LAN discovery; over the internet it needs port forwarding or a VPN app. User decision: invite codes plus automatic router port opening (UPnP), no hosted server. The host's router opens the port and the game shows a code holding the public address; friends paste the code. Players behind strict or carrier NAT cannot host this way; the game must say so clearly and suggest a friend hosts instead.
+- [ ] **27 · Drop-in join mid-run** with a ping indicator on teammates' nameplates.
+- [ ] **28 · Co-op revive and combo synergies** (for example one player's Void Orb feeding the other's Inferno Halo).
+
+### Phase C — difficulty ("the game must be hard")
+- [ ] **11 · Automated full-run playtests.** A bot plays complete runs with several builds and records realm reached, deaths, time-to-kill and the Baron fight. Proposed target for a competent bot: clears the first realm about 70% of the time, reaches the Baron about 25%, wins about 10%. Tune until met.
+- [ ] **14 · Wave pacing.** Crowd density that rewards area builds while single-target builds stay viable, judged by the bot runs.
+- [ ] **4 · Elite modifiers.** Shielded, splitting, teleporting and berserk elites with a clear badge; co-op synced.
+
+### Phase D — run depth
+- [ ] **1 · Weapon evolutions.** A max-rank weapon plus a matching card evolves it into a stronger form with its own look.
+- [ ] **3 · Spell–mutation synergies.** Mutation triggers react to spells (for example Ember igniting inside Inferno Halo).
+- [ ] **8 · Biome mechanics in fights.** Ice floors, spreading lava, toxic fog and similar, one per biome.
+
+### Phase E — look and feel (Hades direction)
+- [ ] **15 · Art bible and per-biome pass:** palette, lighting and ink weight per biome.
+- [ ] **16 · Enemy death animations:** ink dissolve or shatter.
+- [ ] **17 · Better creature and hero models.** User asked for models made here rather than bought or downloaded. Earlier procedural and Blender rebuilds were rejected as worse. Approach: pilot one hero and one creature with a slower, hand-directed Blender pipeline (blocked silhouette, subdivision, painted texture, ink outline) and compare side by side with the current models before any wider rollout.
+- [ ] **18 · Spell sounds:** their own sounds and loops for the four spells.
+- [ ] **19 · Camera zoom** when spells or crowds fill the screen.
+- [ ] **20 · Telegraph consistency:** one warning language (shape, colour, timing) for every enemy attack.
+
+### Older notes
+
+Build 17 was a local checkpoint; Builds 18 and 19 are published (sections below). Real-fight balance and the early co-op desync investigation were open there; Phase C and the co-op items above carry them forward.
 
 ## New request — exit alpha (October 21)
 
