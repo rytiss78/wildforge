@@ -17,15 +17,15 @@ const STRAINS={
 const STRAIN_ORDER=["bloom","venom","frost","storm","ember","comet"]
 # power scales the hero's damage stat; chance/cooldown keep frequent triggers readable.
 const TRIGGERS={
-	"hit":{"when":"on 20% of weapon hits","power":.45,"chance":.2,"cooldown":.3,"glyph":"hit"},
-	"crit":{"when":"on critical hits","power":.9,"cooldown":.25,"glyph":"crit"},
-	"kill":{"when":"when you defeat an enemy","power":1.1,"cooldown":.12,"glyph":"kill"},
-	"dash":{"when":"when you dash","power":1.6,"glyph":"dash"},
-	"jump":{"when":"when you jump","power":1.0,"cooldown":.2,"glyph":"jump"},
-	"slam":{"when":"when your slam lands","power":2.4,"glyph":"slam"},
-	"hurt":{"when":"when you are hit","power":2.2,"glyph":"hurt"},
-	"pulse":{"when":"every 4 seconds","power":.9,"glyph":"pulse"},
-	"pickup":{"when":"on 25% of coin pickups","power":.7,"chance":.25,"cooldown":.4,"glyph":"pickup"},
+	"hit":{"when":"on 20% of weapon hits","power":.6,"chance":.2,"cooldown":.3,"glyph":"hit"},
+	"crit":{"when":"on critical hits","power":1.0,"cooldown":.25,"glyph":"crit"},
+	"kill":{"when":"when you defeat an enemy","power":.75,"cooldown":.12,"glyph":"kill"},
+	"dash":{"when":"when you dash","power":.8,"glyph":"dash"},
+	"jump":{"when":"when you jump","power":.45,"cooldown":.2,"glyph":"jump"},
+	"slam":{"when":"when your slam lands","power":3.4,"glyph":"slam"},
+	"hurt":{"when":"when you are hit","power":1.6,"glyph":"hurt"},
+	"pulse":{"when":"every 4 seconds","power":1.0,"glyph":"pulse"},
+	"pickup":{"when":"on 25% of coin pickups","power":.9,"chance":.25,"cooldown":.4,"glyph":"pickup"},
 }
 const TRIGGER_ORDER=["hit","crit","kill","dash","jump","slam","hurt","pulse","pickup"]
 const CORE_NAMES={
@@ -37,22 +37,22 @@ const CORE_NAMES={
 	"comet":["Star Edge","Nova Point","Meteor Wake","Orbit Step","Starfall Leap","Impact Fist","Event Horizon","Gravity Pulse","Stardust Purse"],
 }
 const RULES=[
-	{"id":"bloom_mastery","strain":"bloom","name":"Deep Roots","text":"Bloom mutations deal +60% damage and reach 30% farther."},
+	{"id":"bloom_mastery","strain":"bloom","name":"Deep Roots","text":"Bloom mutations deal +40% damage and reach 15% farther."},
 	{"id":"bloom_echo","strain":"bloom","name":"Second Bloom","text":"Bloom mutations burst again 0.45 s later at 60% power."},
 	{"id":"bloom_lifebloom","strain":"bloom","name":"Lifebloom","text":"Bloom healing is tripled; healing past full grows your shield."},
-	{"id":"venom_mastery","strain":"venom","name":"Potent Spores","text":"Venom mutations deal +60% damage and reach 30% farther."},
+	{"id":"venom_mastery","strain":"venom","name":"Potent Spores","text":"Venom mutations deal +40% damage and reach 15% farther."},
 	{"id":"venom_echo","strain":"venom","name":"Lingering Bite","text":"Venom mutations burst again 0.45 s later at 60% power."},
 	{"id":"venom_rot","strain":"venom","name":"Rot","text":"Poisoned enemies take +40% damage from you."},
-	{"id":"frost_mastery","strain":"frost","name":"Deep Winter","text":"Frost mutations deal +60% damage and reach 30% farther."},
+	{"id":"frost_mastery","strain":"frost","name":"Deep Winter","text":"Frost mutations deal +40% damage and reach 15% farther."},
 	{"id":"frost_echo","strain":"frost","name":"Second Frost","text":"Frost mutations burst again 0.45 s later at 60% power."},
-	{"id":"frost_shatter","strain":"frost","name":"Shatter","text":"Frozen enemies take +75% damage from you."},
-	{"id":"storm_mastery","strain":"storm","name":"High Voltage","text":"Storm mutations deal +60% damage and reach 30% farther."},
+	{"id":"frost_shatter","strain":"frost","name":"Shatter","text":"Frozen enemies take +50% damage from you."},
+	{"id":"storm_mastery","strain":"storm","name":"High Voltage","text":"Storm mutations deal +40% damage and reach 15% farther."},
 	{"id":"storm_echo","strain":"storm","name":"Afterstrike","text":"Storm mutations strike again 0.45 s later at 60% power."},
-	{"id":"storm_conductor","strain":"storm","name":"Conductor","text":"Storm lightning jumps to 3 more enemies."},
-	{"id":"ember_mastery","strain":"ember","name":"White Heat","text":"Ember mutations deal +60% damage and reach 30% farther."},
+	{"id":"storm_conductor","strain":"storm","name":"Conductor","text":"Storm lightning jumps to 2 more enemies."},
+	{"id":"ember_mastery","strain":"ember","name":"White Heat","text":"Ember mutations deal +40% damage and reach 15% farther."},
 	{"id":"ember_echo","strain":"ember","name":"Twin Flames","text":"Ember mutations erupt again 0.45 s later at 60% power."},
 	{"id":"ember_wildfire","strain":"ember","name":"Wildfire","text":"Enemies you defeat while they burn erupt in flame."},
-	{"id":"comet_mastery","strain":"comet","name":"Dense Core","text":"Comet mutations deal +60% damage and reach 30% farther."},
+	{"id":"comet_mastery","strain":"comet","name":"Dense Core","text":"Comet mutations deal +40% damage and reach 15% farther."},
 	{"id":"comet_echo","strain":"comet","name":"Aftershock","text":"Comet mutations strike again 0.45 s later at 60% power."},
 	{"id":"comet_slipstream","strain":"comet","name":"Slipstream","text":"Move 20% faster; each kill cuts dash cooldown by 0.3 s.","stats":{"speed":.2}},
 ]
@@ -84,7 +84,7 @@ const WILD=[
 	{"id":"wild_second","name":"Second Wind","text":"For 3 s after you are hit, mutations deal double damage."},
 	{"id":"wild_vortex","name":"Vortex","text":"Mutation bursts drag nearby enemies inward."},
 	{"id":"wild_echo","name":"Great Echo","text":"Every mutation repeats once more at 40% power."},
-	{"id":"wild_wide","name":"Wide Arc","text":"Mutation bursts reach 40% farther."},
+	{"id":"wild_wide","name":"Wide Arc","text":"Mutation bursts reach 25% farther."},
 	{"id":"wild_last","name":"Last Stand","text":"Below 35% health, mutations deal double damage."},
 	{"id":"wild_momentum","name":"Momentum","text":"For 1 s after a dash, mutations deal +50% damage."},
 	{"id":"wild_hunter","name":"Hunter's Mark","text":"Mutations deal +80% damage to elites and bosses."},
@@ -195,7 +195,7 @@ static func has(g,id: String) -> bool:
 # Damage scaling shared by every strain effect.
 static func power(g,strain: String,base: float,target: Dictionary={}) -> float:
 	var value=g.stat("damage")*base
-	if has(g,strain+"_mastery"): value*=1.6
+	if has(g,strain+"_mastery"): value*=1.4
 	if has(g,"wild_resonance"): value*=1.0+.15*strains_owned(g).size()
 	if has(g,"wild_glass"): value*=1.6
 	if has(g,"wild_second") and g.elapsed-float(g.mutation_state.second_wind)<3.0: value*=2.0
@@ -206,15 +206,15 @@ static func power(g,strain: String,base: float,target: Dictionary={}) -> float:
 
 static func reach(g,strain: String,base: float) -> float:
 	var value=base
-	if has(g,strain+"_mastery"): value*=1.3
-	if has(g,"wild_wide"): value*=1.4
+	if has(g,strain+"_mastery"): value*=1.15
+	if has(g,"wild_wide"): value*=1.25
 	if strain=="bloom" and has(g,"hy_pollen"): value*=1.6
 	return value
 
 # Damage the hero deals personally (not remote hits or damage-over-time ticks).
 static func modify_damage(g,enemy: Dictionary,damage: float) -> float:
 	if g.mutations.is_empty(): return damage
-	if has(g,"frost_shatter") and float(enemy.get("freeze",0))>0: damage*=1.75
+	if has(g,"frost_shatter") and float(enemy.get("freeze",0))>0: damage*=1.5
 	if has(g,"venom_rot") and float(enemy.get("poison",0))>0: damage*=1.4
 	return damage
 
@@ -233,7 +233,7 @@ static func event(g,trigger: String,point: Vector3,context: Dictionary={}):
 			var key=int(target.net_id)
 			if g.elapsed-float(state.shocked.get(key,-99))>2.0:
 				state.shocked[key]=g.elapsed
-				CombatInk.blast(g,point,3.5);g.damage_area(point,3.5,power(g,"ember",3.0,target),"explosion")
+				CombatInk.blast(g,point,3.5);g.damage_area(point,3.5,power(g,"ember",.8,target),"explosion")
 	var cooldown_scale=.65 if has(g,"wild_twin") else 1.0
 	for strain in STRAIN_ORDER:
 		var id=strain+"_"+trigger
@@ -289,7 +289,7 @@ static func area(g,strain: String,point: Vector3,radius: float,damage: float,cau
 static func bloom(g,point: Vector3,strength: float,target: Dictionary):
 	var radius=reach(g,"bloom",2.8)
 	CombatInk.wave(g,point,radius,STRAINS.bloom.color)
-	area(g,"bloom",point,radius,power(g,"bloom",strength*.8,target),"thorn")
+	area(g,"bloom",point,radius,power(g,"bloom",strength*1.15,target),"thorn")
 	var amount=1.0+strength*1.2
 	if has(g,"bloom_lifebloom"):
 		amount*=3.0
@@ -298,10 +298,10 @@ static func bloom(g,point: Vector3,strength: float,target: Dictionary):
 	g.heal(amount)
 
 static func venom(g,point: Vector3,strength: float,target: Dictionary):
-	var radius=reach(g,"venom",3.0)
+	var radius=reach(g,"venom",2.4)
 	g.burst(point+Vector3.UP*.6,STRAINS.venom.color,8)
-	area(g,"venom",point,radius,power(g,"venom",strength*.6,target),"poison")
-	cloud(g,point,radius*.8,power(g,"venom",strength*.25,target))
+	area(g,"venom",point,radius,power(g,"venom",strength*.25,target),"poison")
+	cloud(g,point,radius*.8,power(g,"venom",strength*.1,target))
 
 static func frost(g,point: Vector3,strength: float,target: Dictionary):
 	var radius=reach(g,"frost",3.6)
@@ -309,14 +309,14 @@ static func frost(g,point: Vector3,strength: float,target: Dictionary):
 	area(g,"frost",point,radius,power(g,"frost",strength*.85,target),"ice")
 
 static func storm(g,point: Vector3,strength: float,target: Dictionary):
-	var bolts=3+(3 if has(g,"storm_conductor") else 0)
+	var bolts=3+(2 if has(g,"storm_conductor") else 0)
 	var origin=point;var struck=[]
 	for i in range(bolts):
 		var next=g.nearest_enemy(origin,reach(g,"storm",11.0),struck.map(func(e):return e.net_id))
 		if next.is_empty(): break
 		struck.append(next)
 		g.lightning_bolt(origin+Vector3.UP*(2.5 if i==0 else 1.0),g.enemy_center(next))
-		var damage=power(g,"storm",strength*.9,next)
+		var damage=power(g,"storm",strength*1.15,next)
 		if has(g,"hy_supercond") and float(next.get("freeze",0))>0: damage*=2.0
 		g.hurt_enemy(next,damage,"lightning","mutation:storm")
 		origin=next.node.position
@@ -326,13 +326,13 @@ static func storm(g,point: Vector3,strength: float,target: Dictionary):
 static func ember(g,point: Vector3,strength: float,target: Dictionary):
 	var radius=reach(g,"ember",3.2)
 	CombatInk.blast(g,point,radius)
-	area(g,"ember",point,radius,power(g,"ember",strength,target),"fire")
-	if has(g,"hy_fumes"): cloud(g,point,radius*.8,power(g,"venom",strength*.25,target))
+	area(g,"ember",point,radius,power(g,"ember",strength*.85,target),"fire")
+	if has(g,"hy_fumes"): cloud(g,point,radius*.8,power(g,"venom",strength*.1,target))
 
 static func comet(g,point: Vector3,strength: float,target: Dictionary):
 	var radius=reach(g,"comet",4.2)
 	CombatInk.wave(g,point,radius,STRAINS.comet.color)
-	area(g,"comet",point,radius,power(g,"comet",strength*.7,target),"hit")
+	area(g,"comet",point,radius,power(g,"comet",strength*.8,target),"hit")
 	drag(g,point,radius,2.2)
 	if has(g,"hy_thunderhead"): storm(g,point,strength*.6,target)
 

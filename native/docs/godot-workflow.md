@@ -71,6 +71,7 @@ Prefix every action below with `node scripts/agent-workflow.mjs`.
 | `bake-forge` | Rebuild only Clover Woods baked meshes | Run after `python scripts/build-forge-slice.py`; preserves other biome cores |
 | `forge-weapon-icon` | Render the rebuilt pistol thumbnail | Rendered; only writes gun.png |
 | `balance-review` | Controlled final-boss DPS for five build archetypes at three budgets | Ideal estimates, not survival duration or representative win rates. |
+| `mutation-balance` | Measured damage of all 102 mutations against stationary dummies (crowd and sparse), as % of the starting gun; summarise with `node scripts/summarise-mutation-balance.mjs` | Fixed trigger rates and a seeded RNG; the `repeat` row must be identical. Not a survival or full-run measurement; utility cards (cooldowns, dash, healing-only) measure 0 damage. About 3 minutes. |
 | `combat-review` | Combat, damage numbers and frame measurements | Rendered; metrics alone do not prove improvement |
 | `surface-review` | Wall, ceiling, ledge and slope traversal | Rendered; captures several positions |
 | `feedback-review`, `progression-review` | Feedback, reports and progression UI | Rendered; inspect feature captures |

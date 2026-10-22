@@ -282,6 +282,7 @@ func _ready():
 	)
 	if OS.get_cmdline_user_args().has("--shared-review-host") or OS.get_cmdline_user_args().has("--shared-review-client"): preload("res://scripts/shared_review.gd").run.call_deferred(self,OS.get_cmdline_user_args().has("--shared-review-host"))
 	elif OS.get_cmdline_user_args().has("--balance-review"): preload("res://scripts/balance_review.gd").run.call_deferred(self)
+	elif OS.get_cmdline_user_args().has("--mutation-balance"): preload("res://scripts/mutation_balance.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--hermes-review"): preload("res://scripts/hermes_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--big-update-check"): preload("res://scripts/big_update_checks.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--presentation-check"): preload("res://scripts/presentation_checks.gd").run.call_deferred(self)

@@ -58,7 +58,7 @@ static func run(g) -> Dictionary:
 	checks.hybrid_requires_pair=MutationBook.eligible(g,MutationBook.entry("hy_thermal")) and not MutationBook.eligible(g,MutationBook.entry("hy_neuro"))
 	choose(g,"frost_shatter")
 	near.freeze=2.0;near.hp=5000.0;g.hurt_enemy(near,100,"hit")
-	checks.shatter_amplifies=is_equal_approx(5000.0-near.hp,175.0)
+	checks.shatter_amplifies=is_equal_approx(5000.0-near.hp,150.0)
 	# Kill mutations need this hero's recent hit; a teammate's kill does not trigger them.
 	choose(g,"bloom_kill")
 	g.hp=g.stats.maxHp-40;var hp_before=g.hp

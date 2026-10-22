@@ -88,6 +88,13 @@ Review and evidence: [alpha exit review](native/docs/alpha-exit-review-2026-10-2
   - All 738 names are unique, and the exporter refuses duplicates. Ids, effects, kinds, families and all other catalog sections are unchanged (285 renamed).
   - Tier stays the per-offer rarity roll shown on each card; no fixed per-card tier was added, because that would stack a second rarity system and change balance.
   - Verified: new JS test (17/17 pass), check, smoke, integration and capture-ui; offer and icon-sheet captions inspected.
+- [x] Mutation balance pass with measured damage (October 22). The new `mutation-balance` action (`mutation_balance.gd`) runs every mutation through the real game code against stationary dummies for 12 s at fixed trigger rates with a seeded RNG, in a crowd (12 enemies) and a sparse field (3). Results are % of the starting gun (23.8 dps); summarise them with `node scripts/summarise-mutation-balance.mjs`.
+  - Harness fixes found while measuring: dummies are moved back home each run (knockback had pushed Comet's targets out of range for good), formation spawns are off, and the RNG is reseeded after setup. The `repeat` row (same kit three times) now matches exactly, 83.8 / 83.8 / 83.8.
+  - Before, crowd: trigger averages 34–125%, strain averages 34–123% (Venom 123, Comet looked like 34). Thermal Shock reached 473% and Conductor 190%.
+  - After, crowd (`2026-10-22T16-16-05-910Z-mutation-balance`): triggers 43–69%, strains 48–65% (Bloom also heals 0.35–0.95 HP/s). The strongest rule, hybrid and wild cards add 104–134%. Sparse fields favour Storm (55%, it chains to single targets) and penalise Comet (12%, an area strain).
+  - Tuning: trigger powers rebalanced (dash/jump down, slam up, kill down); strain factors for Bloom, Venom (smaller radius, weaker cloud), Storm, Ember and Comet; Mastery is now +40% damage / 15% reach; Conductor +2 bolts; Shatter +50%; Wide Arc 25%; Thermal Shock detonation cut to a quarter. Card texts match.
+  - Limitations: utility cards (cooldowns, dash, healing only, Last Stand at half health) measure 0 damage by design; this is not a survival or full-run measurement and is not playtested.
+  - Verified: check, smoke and integration pass (the Shatter check now expects the +50% spec: 150 damage).
 - [x] Unified UI theme for menu, HUD and modals; HUD regrouped into three clusters.
   - The menu gained the in-game window frame (`b64f598`).
   - Vitals top-left: one framed plate with the HP orb, HP, shield and armor, a gold/chest row, then buffs and harvest effects.
@@ -213,7 +220,7 @@ Achievement IDs added: `WF_WEAPON_MASTERY`, `WF_FORMATION_BREAKER`, `WF_BIOME_CO
   - Assets: `Wildforge-1.2.0-Windows.zip` (81,626,463 bytes) and `SHA256SUMS-1.2.0.txt`. The re-downloaded ZIP matches SHA-256 `ada0ae3d…8b77b01`.
   - Built in `2026-10-21T09-38-57-882Z-build`; exported smoke passes 118 checks.
   - Exported shared-review, shared-review-stress, hermes-review and release-review pass.
-- Notes: [build18-release.md](native/docs/build18-release.md). Known limits: mutation balance has not been playtested, and real-fight Baron balance is unverified.
+- Notes: [build18-release.md](native/docs/build18-release.md). Known limits: mutation balance has not been playtested (a measured damage pass followed on October 22, after this release), and real-fight Baron balance is unverified.
 
 ## Build 17 public release — October 18, 2026
 

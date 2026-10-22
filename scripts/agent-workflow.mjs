@@ -87,7 +87,7 @@ export function assertCommittedBuild(cwd) {
 }
 
 async function main(action) {
-  if (!['balance-review', 'shared-review', 'shared-review-stress', 'hermes-review', 'playfeel-review', 'red-moon-review', 'fresh-import', 'biome-review', 'release-review', 'roster-review', 'bake-roster', 'style-review', 'boss-review', 'forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
+  if (!['balance-review', 'mutation-balance', 'shared-review', 'shared-review-stress', 'hermes-review', 'playfeel-review', 'red-moon-review', 'fresh-import', 'biome-review', 'release-review', 'roster-review', 'bake-roster', 'style-review', 'boss-review', 'forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
     console.error('Usage: node scripts/agent-workflow.mjs check|smoke|capture|capture-ui|combat-review|pace-review|soak|integration|build|status'); return 2;
   }
   const git = (...args) => spawnSync('git', ['-C', root, ...args], {encoding:'utf8', windowsHide:true}).stdout?.trim() ?? '';
@@ -273,6 +273,12 @@ async function main(action) {
       if(!line) throw new Error('Missing balance measurements');
       report.balance=JSON.parse(line.slice('BALANCE_REVIEW '.length));
       if(Object.values(report.balance.checks).includes(false)) throw new Error('A build could not damage the boss');
+    }
+    if (action === 'mutation-balance') {
+      const output=await step('mutation-balance',godot,['--headless','--path',join(root,'native'),'--','--mutation-balance'],600000);
+      const line=output.split(/\r?\n/).findLast(x=>x.startsWith('MUTATION_BALANCE '));
+      if(!line) throw new Error('Missing mutation measurements');
+      report.mutations=JSON.parse(line.slice('MUTATION_BALANCE '.length));
     }
     if (action === 'feedback-review') {
       const output=await step('feedback-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--feedback-review'],180000);
