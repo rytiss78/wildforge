@@ -8,12 +8,14 @@ extends RefCounted
 const KINDS=["gun","shotgun","rail","harpoon","flame","poison","ice","lightning","rocket","ghost","bubble","boomerang","disc","bomb","saw","horn","meteor","gravity"]
 const CELL=Vector2i(480,270)
 
-static func frame(g: Node3D) -> Image:
+static func frame(g: Node3D,full: bool=false) -> Image:
 	await RenderingServer.frame_post_draw
 	var image=g.get_viewport().get_texture().get_image()
 	# The action sits between the hero and the dummies, in the middle of the screen.
 	var size=Vector2(image.get_size())
-	image=image.get_region(Rect2i(Vector2i(size*Vector2(.36,.2)),Vector2i(size*.5)));image.resize(CELL.x,CELL.y,Image.INTERPOLATE_LANCZOS);return image
+	if not full: image=image.get_region(Rect2i(Vector2i(size*Vector2(.36,.2)),Vector2i(size*.5)))
+	image.resize(CELL.x,CELL.y,Image.INTERPOLATE_LANCZOS)
+	return image
 
 static func step(g: Node3D,frames: int):
 	for i in range(frames):
@@ -132,8 +134,45 @@ static func run(g: Node3D):
 		g.take_damage(5.0,g.enemies[0].node.position);await step(g,4);skills.append(await frame(g))
 		checks["hero_hit_shield" if shielded else "hero_hit"]=g.effects.any(func(e):return e.get("ink_fx",false))
 		g.invulnerable=1e9;g.hp=g.stats.maxHp
+	# Spells (SkillBook): each cast through the real fire path at rank 1 and rank 9,
+	# into a 24-enemy crowd around the hero, plus the Void Orb's collapse at rank 9.
+	var spells=[]
 	await step(g,150)
+	for enemy in g.enemies:
+		if is_instance_valid(enemy.node): enemy.node.queue_free()
+	g.enemies.clear()
+	g.player.position=center-side*6.5-forward*4.0
+	for i in range(24):
+		g.spawn_enemy(12+i%5);var enemy=g.enemies[-1]
+		var p=g.player.position+forward.rotated(Vector3.UP,i*2.39996)*(4.0+float(i)*.45);p.y=g.world.height_at(p.x,p.z)
+		enemy.node.position=p;enemy.speed=0.0;enemy.attack=1e9;enemy.contact=1e9;enemy.damage=0.0;enemy.hp=1e6;enemy.maxHp=1e6
+	var timing={"tornado":45,"blackhole":60,"thunderstorm":14,"inferno":28}
+	for kind in SkillBook.KINDS:
+		for rank in [1,9]:
+			for weapon in g.equipped:
+				if is_instance_valid(weapon.get("node")): weapon.node.queue_free()
+			g.equipped.clear();clear_effects(g)
+			for spell in g.skills:
+				if is_instance_valid(spell.node): spell.node.queue_free()
+			g.skills.clear()
+			var item=weapons[kind].duplicate(true);item.kind="weapon";item.strength=1.0
+			for i in range(rank): g.equip_weapon(item)
+			var weapon=g.equipped[-1];weapon.clock=1e9
+			await step(g,10)
+			var before=total_hp(g)
+			g.fire(weapon,g.player.position+Vector3.UP*.9)
+			checks[kind+"_cast_r"+str(rank)]=not g.skills.is_empty()
+			await step(g,timing[kind]);spells.append(await frame(g,true))
+			if kind=="blackhole" and rank==9:
+				await step(g,160-timing[kind]);spells.append(await frame(g,true))
+			await step(g,60)
+			checks[kind+"_hurts_r"+str(rank)]=total_hp(g)<before
+	for weapon in g.equipped:
+		if is_instance_valid(weapon.get("node")): weapon.node.queue_free()
+	g.equipped.clear()
+	await step(g,150)
+	checks.spells_expired=g.skills.is_empty()
 	checks.effects_expired=not g.effects.any(func(e):return e.get("ink_fx",false))
-	checks.sheets=sheet(flights,"flight") and sheet(impacts,"impact") and sheet(statuses,"status") and sheet(skills,"skills")
-	var result={"checks":checks,"kinds":KINDS,"skill_cells":MutationBook.STRAIN_ORDER+["slam","hero hit","hero hit on shield"],"status_cells":["statuses","statuses later","ember burst","burning","poison burst","poisoned","burning deaths","after deaths"]}
+	checks.sheets=sheet(flights,"flight") and sheet(impacts,"impact") and sheet(statuses,"status") and sheet(skills,"skills") and sheet(spells,"spells")
+	var result={"checks":checks,"kinds":KINDS,"spell_cells":["tornado r1","tornado r9","blackhole r1","blackhole r9","blackhole r9 collapse","thunderstorm r1","thunderstorm r9","inferno r1","inferno r9"],"skill_cells":MutationBook.STRAIN_ORDER+["slam","hero hit","hero hit on shield"],"status_cells":["statuses","statuses later","ember burst","burning","poison burst","poisoned","burning deaths","after deaths"]}
 	print("FX_REVIEW "+JSON.stringify(result));g.get_tree().quit(0 if not checks.values().has(false) else 1)

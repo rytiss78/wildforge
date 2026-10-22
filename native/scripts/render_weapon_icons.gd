@@ -10,10 +10,15 @@ func render_icons():
 	var camera=Camera3D.new();stage.add_child(camera);camera.position=Vector3(.9,.6,-1.2);camera.projection=Camera3D.PROJECTION_ORTHOGONAL;camera.size=1.12;camera.look_at(Vector3(0,.1,-.12))
 	DirAccess.make_dir_recursive_absolute("res://assets/illustrated/weapon-icons")
 	var catalog=JSON.parse_string(FileAccess.get_file_as_string("res://data/catalog.json"))
+	# --only=a,b renders just those weapons and leaves every other icon untouched.
+	var only=[]
+	for arg in OS.get_cmdline_user_args():
+		if arg.begins_with("--only="): only=arg.trim_prefix("--only=").split(",")
 	var count=0
 	for entry in catalog.weapons:
 		var id=str(entry.id)
 		if OS.get_cmdline_user_args().has("--forge-slice") and id!="gun": continue
+		if not only.is_empty() and not id in only: continue
 		var weapon=WeaponModel.new();weapon.setup(id);stage.add_child(weapon)
 		await process_frame
 		var bounds=AABB();var first=true

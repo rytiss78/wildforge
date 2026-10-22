@@ -209,7 +209,7 @@ async function main(action) {
       const line=output.split(/\r?\n/).findLast(x=>x.startsWith('FX_REVIEW '));
       if(!line) throw new Error('Missing fx review');report.fx=JSON.parse(line.slice(10));
       if(Object.values(report.fx.checks).some(v=>v===false)) throw new Error('Fx review assertions failed');
-      report.capture=['flight','impact','status','skills'].map(n=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','fx-'+n+'.png'),started));
+      report.capture=['flight','impact','status','skills','spells'].map(n=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','fx-'+n+'.png'),started));
     }
     if (action === 'boss-review') {
       const output=await step('boss-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--boss-review'],180000);

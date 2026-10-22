@@ -2,8 +2,9 @@ extends RefCounted
 
 static func run(game) -> Dictionary:
 	var checks={};var data=game.rules.data
-	checks.content_count=data.loot.size()==738 and data.weapons.size()==69 and data.augments.size()==400
-	checks.unique_ids=(data.loot+data.weapons).map(func(i):return i.id).size()==807
+	# October 22: four spell weapons (skill_book.gd) and their eight Power/Mastery cards.
+	checks.content_count=data.loot.size()==746 and data.weapons.size()==73 and data.augments.size()==400
+	checks.unique_ids=(data.loot+data.weapons).map(func(i):return i.id).size()==819
 	var positions=game.chests.map(func(c):return c.node.position)
 	var per_biome=[0,0,0,0,0,0];var spacing=1000.0
 	for p in positions:

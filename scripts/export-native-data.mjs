@@ -32,7 +32,6 @@ weapons.push(...[
  ['horn','Horn','Magic',1.1,.8,14],['bubble','Bubble Gun','Ice',.85,.8,24],
  ['meteor','Meteor Gun','Fire',2.5,.45,32],['bomb','Rolling Bomb','Boom',2.2,.5,25]
 ].map(([id,name,family,damage,rate,range])=>({id,name,family,damage,rate,range,turret:false})));
-
 const models={wrench:'pipe_wrench',duck:'rubber_duck_toy',broccoli:'sweet_potato',grandma:'marble_bust_01',goblin:'street_rat',loaf:'hamburger_buns'};
 
 const heroes=HEROES.map(h=>({...h,name:names[h.id],model:models[h.id],weapon:h.id==='wrench'?'turret':h.id==='grandma'?'rocket':h.id==='loaf'?'saw':'gun'}));
@@ -95,6 +94,15 @@ for(const [id,name,title,weapon,perk,description,effects] of [
  ['alcoholic','Alcoholic','Last call. First into trouble.','bottle-barrage','Last Orders','Bottle explosions and 30% more health.',['maxHp',.3,'multiply']],
  ['white-supra','White Supra','The white coupe has entered the dungeon.','supra-backfire','Turbocharged','Very fast, wide, low-jumping; dashes blast for 24 damage.',['dashBlast',24,'add']]
 ]) heroes.push({id,name,title,model:id,weapon,perk,description,effects:[{key:effects[0],amount:effects[1],mode:effects[2]}]});
+// Screen-filling spells (native/scripts/skill_book.gd): each cast is a large area
+// that grows with rank and Size, and multiplies with extra shots. Added after the
+// class weapons so their generated art (indexed by list position) is unchanged.
+weapons.push(...[
+ ['tornado','Twister Totem','Magic',1,.55,20,'Releases wandering twisters that drag enemies in and shred them.'],
+ ['blackhole','Void Orb','Ghost',1,.4,26,'Opens a black hole that pulls a crowd together, then collapses in a blast.'],
+ ['thunderstorm','Storm Crown','Lightning',1.2,.45,26,'Calls a volley of sky lightning down on every nearby enemy.'],
+ ['inferno','Inferno Halo','Fire',1.6,.5,12,'Sends a ring of fire sweeping outward that sets everything alight.']
+].map(([id,name,family,damage,rate,range,description])=>({id,name,family,damage,rate,range,turret:false,description})));
 // Physical profiles are shared by local collision, remote visuals and selection descriptions.
 const physiques={
  wrench:[1.7,.43,.96,.95],duck:[1.5,.38,1.02,1.1],broccoli:[2.05,.57,.82,.8],grandma:[1.85,.48,.86,.85],goblin:[1.2,.31,1.17,1.25],loaf:[1.5,.46,1.05,1.05],
@@ -114,7 +122,7 @@ const stats={...createStats(),damage:15,rate:1.65,speed:8,maxHp:100,turretCount:
 
 // A bonus has one common baseline across families; rarity always improves that baseline.
 const moreCards=[
- ...['boomerang','disc','harpoon','gravity','horn','bubble','meteor','bomb'].map(id=>[id+'-power',weapons.find(w=>w.id===id).name+' Power',id+'Power',.25,'multiply',1]),
+ ...['boomerang','disc','harpoon','gravity','horn','bubble','meteor','bomb','tornado','blackhole','thunderstorm','inferno'].map(id=>[id+'-power',weapons.find(w=>w.id===id).name+' Power',id+'Power',.25,'multiply',1]),
  ['disc-bounce','Disc Bounce','discBounces',1,'add',0],['blade-pierce','Blade Pierce','boomerangPierce',1,'add',0],
  ['harpoon-pull','Strong Hook','harpoonPull',.3,'add',0],['big-well','Big Well','gravitySize',.25,'multiply',1],
  ['loud-horn','Loud Horn','hornStun',.3,'add',0],['long-bubble','Long Bubble','bubbleTime',.3,'multiply',1],

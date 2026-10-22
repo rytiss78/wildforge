@@ -6,6 +6,7 @@ extends RefCounted
 # a seeded RNG, in a crowd (12 enemies within 7 m) and a sparse field (3).
 # Runs last 12 s at 20 steps/s to keep the whole sweep within the step budget.
 # Rule, hybrid and wild cards are measured as the damage they add to a kit.
+# Spell weapons are measured alone at rank 1 and 5 against the gun.
 # The hero sits at half health, so low-health cards stay in their ordinary state.
 # This compares mutations with each other and with the starting gun; it is not
 # a survival or full-run measurement.
@@ -30,7 +31,7 @@ static func field(g,crowd: bool) -> Array:
 	return dummies
 
 static func reset(g,dummies: Array,seed_value: int):
-	for list in [g.projectiles,g.effects,g.pools,g.hazards]:
+	for list in [g.projectiles,g.effects,g.pools,g.hazards,g.skills]:
 		for item in list:
 			if is_instance_valid(item.get("node")): item.node.queue_free()
 		list.clear()
@@ -46,11 +47,12 @@ static func reset(g,dummies: Array,seed_value: int):
 	MutationBook.reset(g);g.rules.rng.seed=seed_value;g.elapsed=1000.0;g.dash_cooldown=0.0
 
 # Damage per second dealt to the dummies, and healing per second, over one run.
-static func run_once(g,dummies: Array,mutations: Array,gun: bool,seed_value: int) -> Dictionary:
+static func run_once(g,dummies: Array,mutations: Array,gun: bool,seed_value: int,weapon_id: String="gun",rank: int=1) -> Dictionary:
 	reset(g,dummies,seed_value)
 	for id in mutations: MutationBook.take(g,MutationBook.card(id,1))
 	if gun:
-		var weapon=g.rules.data.weapons.filter(func(w):return w.id=="gun")[0].duplicate(true);weapon.kind="weapon";weapon.strength=1.0;g.equip_weapon(weapon)
+		var weapon=g.rules.data.weapons.filter(func(w):return w.id==weapon_id)[0].duplicate(true);weapon.kind="weapon";weapon.strength=1.0
+		for i in range(rank): g.equip_weapon(weapon)
 	# Reseed after setup: taking cards and weapons draws from the RNG, and a shifted
 	# sequence would show up as damage noise on cards that change nothing here.
 	g.rules.rng.seed=seed_value
@@ -75,10 +77,14 @@ static func run(g):
 	AudioServer.set_bus_volume_db(0,-80)
 	g.start_run(2025);g.set_process(false);g.set_physics_process(false)
 	g.invulnerable=1e9;g.spawn_clock=1e9;g.formation_clock=1e9;g.xp_target=1e9;g.sound.settings.sfx=0
-	var result={"seconds":SECONDS,"rates":RATES,"gun":{},"core":{},"extras":{}}
+	var result={"seconds":SECONDS,"rates":RATES,"gun":{},"core":{},"extras":{},"weapons":{}}
 	for layout in ["crowd","sparse"]:
 		var dummies=field(g,layout=="crowd")
 		result.gun[layout]=run_once(g,dummies,[],true,7).dps
+		# Spell weapons against the gun and existing area weapons, at rank 1 and rank 5.
+		for id in ["gun","rocket","meteor","lightning","gravity"]+SkillBook.KINDS:
+			for rank in [1,5]:
+				var row=result.weapons.get(id,{});row[layout+"_r"+str(rank)]=run_once(g,dummies,[],true,7,id,rank).dps;result.weapons[id]=row
 		for strain in MutationBook.STRAIN_ORDER:
 			for trigger in MutationBook.TRIGGER_ORDER:
 				var id=strain+"_"+trigger;var row=result.core.get(id,{})

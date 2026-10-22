@@ -84,6 +84,7 @@ var pots = []
 var harvestables = []
 var harvest_buffs={}
 var pools = []
+var skills = [] # active SkillBook casts
 var effects = []
 var melee_attacks = []
 var hazards = []
@@ -385,7 +386,7 @@ func clear_entities():
 	for drop in consumables:
 		if is_instance_valid(drop.node): drop.node.queue_free()
 	consumables.clear()
-	for list in [enemies,projectiles,pickups,chests,pots,harvestables,pools,effects,hazards,flowers]:
+	for list in [enemies,projectiles,pickups,chests,pots,harvestables,pools,effects,hazards,flowers,skills]:
 		for item in list:
 			if is_instance_valid(item.node): item.node.queue_free()
 		list.clear()
@@ -1216,7 +1217,7 @@ func fire(weapon: Dictionary, origin: Vector3):
 	var target = nearest_enemy(origin,effective_range)
 	if target.is_empty(): return
 	avatar.shot(weapon.id)
-	if kind not in ["saw","flame","fire-turret"]: sound.effect(kind,origin)
+	if kind not in ["saw","flame","fire-turret"]: sound.effect(SkillBook.sound(kind),origin)
 	avatar.aim_weapon(weapon.id,enemy_center(target))
 	if not weapon.turret: origin=avatar.muzzle_position(weapon.id)
 	elif weapon.node.has_meta("model"): weapon.node.get_meta("model").shoot()
@@ -1224,10 +1225,11 @@ func fire(weapon: Dictionary, origin: Vector3):
 	hit_shake = maxf(hit_shake, float(weapon.get("recoil", 0.05)) * 0.8)
 	# Weapon bob on fire
 	if is_instance_valid(weapon.node) and weapon.node.has_meta("model"): weapon.node.get_meta("model").recoil = float(weapon.get("recoil", 0.05))
-	coop.shot(weapon.id,origin,enemy_center(target))
+	if not kind in SkillBook.KINDS: coop.shot(weapon.id,origin,enemy_center(target))
 	var shot_count = (3 if kind == "shotgun" else 1)+int(mods.get("extraShots",0))+mini(7,int(stats.multishot))
 	var aim = ((melee_contact(target,origin) if kind=="horn" else enemy_center(target))-origin).normalized()
 	var base_damage=stat("damage")*weapon.damage*float(weapon.get("power",1.0))*stats.get(kind+"Power",1.0)*(1+stats.get("airDamage",0.0) if not player.is_on_floor() else 1.0)
+	if SkillBook.cast(self,weapon,kind,origin,target,base_damage): return
 	if kind=="horn":
 		for enemy in enemies:
 			var offset=melee_contact(enemy,origin)-origin
@@ -1275,6 +1277,7 @@ func fire(weapon: Dictionary, origin: Vector3):
 
 func remote_weapon_effect(id: String,origin: Vector3,target: Vector3,duration: float=.44):
 	id=ContentExpansion.kind(id)
+	if id in SkillBook.KINDS: SkillBook.cast_visual(self,id,origin,target,duration);return
 	if id=="saw":
 		melee_attacks.append({"origin":origin,"target":target,"delay":duration*.5,"visual_only":true});return
 	if id=="gravity":
@@ -1357,8 +1360,11 @@ func record_damage_number(enemy_id: int, damage: float, cause: String,position_v
 	var show_causes=["hit","lightning","crit","fire","ice","slam","explosion","melee","sonic","thorn","poison","aura","burn","heal","coop"]
 	if cause not in show_causes: return
 	# De-dup: merge damage within 400ms for same enemy+cause to reduce visual noise
+	# A spell hits a whole crowd at once; its numbers merge into one running total
+	# at its weapon slot instead of stacking one per enemy.
+	var spell=weapon_id in SkillBook.KINDS
 	for entry in damage_numbers:
-		if entry.life>.8 and entry.enemy_id==enemy_id and entry.cause==cause and entry.get("weapon_id","")==weapon_id:
+		if entry.life>.8 and (entry.enemy_id==enemy_id or spell) and entry.cause==cause and entry.get("weapon_id","")==weapon_id:
 			entry.amount+=damage
 			entry.value=maxi(1,roundi(entry.amount))
 			entry.life=1.2
@@ -2009,6 +2015,7 @@ func update_combat(delta: float):
 					if not target.is_empty(): shot.velocity=(enemy_center(target)-shot.node.position).normalized()*stat("projectileSpeed");shot.bounce-=1;break
 				shot.pierce-=1
 				if shot.pierce<0 and not shot.return: shot.life=0;break
+	SkillBook.tick(self,delta)
 	update_pickups(delta)
 	for pool in pools:
 		pool.life-=delta

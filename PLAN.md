@@ -111,6 +111,15 @@ Review and evidence: [alpha exit review](native/docs/alpha-exit-review-2026-10-2
   - Verified: new `fx-review` contact sheets inspected in `2026-10-22T17-18-59-859Z-fx-review` and `2026-10-22T17-05-50-788Z-fx-review` (skills and hero hits). Check, smoke, integration, style-review and playfeel-review pass with no script or shader errors.
   - Performance (combat-review, 69 enemies, interleaved against a HEAD worktree in the same session): median frame 16.36 → 16.71 ms, p95 31.3 → 31.4 ms; final settings 16.26 / 28.13 ms. Run-to-run spread is ±3 ms at p95.
   - Known flaky check: combat-review `contact_warning_saved` failed 2 of about 10 runs. The test's attacker species depends on how many frames the preceding soak ran (700–848). The new code touches neither that RNG nor contact logic.
+- [x] Screen-filling spells (user request, October 22: "skills like in Megabonk that have screen-filling effects"). Four new weapons in `skill_book.gd` take a weapon slot and cast on the weapon clock. Each cast is a large area that grows with rank and Size (1× at rank 1, about 2.3× at rank 9, capped at 4×), and extra shots add twisters or strikes:
+  - **Twister Totem**: wandering ink twisters that drag enemies in and shred them.
+  - **Void Orb**: a vortex that pulls a crowd together for 2.6 s, then collapses in a purple burst.
+  - **Storm Crown**: a volley of sky lightning across nearby enemies.
+  - **Inferno Halo**: a fire ring sweeping outward (7 m, about 16 m at rank 9) that burns everything it passes.
+  - Each has a held focus model, a rendered icon, card art, a description, and Power/Mastery cards. Upgrade fit counts Size and Multishot as useful for spells; projectile and on-hit cards show "no current benefit". Co-op teammates see a teammate's cast at its size; only the caster deals damage. Spell hits merge into one running number at the weapon slot.
+  - Balance (`2026-10-22T19-47-15-561Z-mutation-balance`, % of the gun at the same rank; crowd r1/r5, sparse r1/r5): Twister 132/274, 137/163; Void Orb 239/226, 61/62; Storm 200/352, 102/115; Inferno 323/193, 54/48. Existing references: rocket 202/116, lightning 191/139, gravity 336/168, meteor 368/237. Damage grows with the square root of weapon power, because rank already widens the area.
+  - Verified: rendered `fx-spells` sheet (ranks 1 and 9, plus the collapse) inspected in `2026-10-22T19-42-04-345Z-fx-review`; check, smoke, integration and co-op shared-review pass with no errors. The content-count check now expects 746 cards and 73 weapons.
+  - Not measured: frame cost of rank-9 spells in a large crowd; not playtested.
 - [ ] Art direction (user direction, October 21): **Hades-like look** — painterly hand-drawn textures, heavy ink outlines, strong rim light, saturated accents against dark backgrounds, an isometric-leaning readable camera. Write the art bible, then do a per-biome pass.
 - [ ] Real playtest and balance of one focused run.
 

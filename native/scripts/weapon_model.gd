@@ -23,6 +23,7 @@ func setup(weapon_id: String):
 	id=weapon_id
 	add_child(base)
 	base.add_child(rank_parts)
+	if SkillBook.build_model(self): return
 	var definition=ContentExpansion.weapon(id)
 	if definition.has("archetype") and not ResourceLoader.exists("res://assets/style3d/weapon_"+id+".glb"):
 		var original=WeaponModel.new();variant_base=original;original.setup(str(definition.archetype));base.add_child(original)

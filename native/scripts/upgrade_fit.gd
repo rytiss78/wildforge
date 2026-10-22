@@ -6,7 +6,7 @@ const ON_HIT=["burn","poison","slow","freeze","blind","stun","execute","lifestea
 const SPECIAL={"discBounces":"disc","boomerangPierce":"boomerang","harpoonPull":"harpoon","gravitySize":"gravity","hornStun":"horn","bubbleTime":"bubble","meteorCount":"meteor","bombSize":"bomb"}
 
 static func weapon_key(key: String) -> bool:
-	return key in SHOTS or key in ON_HIT or key in ["damage","rate","range","airDamage","repair"] or key.begins_with("turret") or key.begins_with("flower") or SPECIAL.has(key) or key.ends_with("Power") and key.trim_suffix("Power") in ["boomerang","disc","harpoon","gravity","horn","bubble","meteor","bomb"]
+	return key in SHOTS or key in ON_HIT or key in ["damage","rate","range","airDamage","repair"] or key.begins_with("turret") or key.begins_with("flower") or SPECIAL.has(key) or key.ends_with("Power") and key.trim_suffix("Power") in ["boomerang","disc","harpoon","gravity","horn","bubble","meteor","bomb"]+SkillBook.KINDS
 
 static func affects(key: String, weapon: Dictionary) -> bool:
 	var kind=ContentExpansion.kind(weapon.id)
@@ -17,6 +17,8 @@ static func affects(key: String, weapon: Dictionary) -> bool:
 	if key=="damage": return true
 	if key=="rate": return kind!="flowers" and not weapon.get("turret",false)
 	if key in ["range","airDamage"]: return kind!="flowers"
+	# Spells grow with Size and multiply with extra shots; they have no projectile or on-hit.
+	if kind in SkillBook.KINDS and (key in SHOTS or key in ON_HIT): return key in ["size","multishot"]
 	if key in SHOTS: return kind not in ["flowers","saw","horn","gravity","meteor"]
 	if key in ON_HIT: return kind not in ["flowers","horn","gravity","meteor"]
 	return false

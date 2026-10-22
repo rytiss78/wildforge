@@ -901,7 +901,7 @@ func show_shot(message: Dictionary):
 	if ContentExpansion.kind(weapon)=="saw": avatars[actor].get_meta("rig").begin_melee(weapon,target_position,duration)
 	else: avatars[actor].get_meta("rig").shot(weapon)
 	if weapon.contains("turret") and turret_models.has(str(actor)+":"+weapon): turret_models[str(actor)+":"+weapon].shoot()
-	game.remote_weapon_effect(weapon,origin,target_position,duration);game.sound.effect("slash" if weapon=="saw" else weapon,origin)
+	game.remote_weapon_effect(weapon,origin,target_position,duration);game.sound.effect("slash" if weapon=="saw" else SkillBook.sound(weapon),origin)
 
 func flower_state() -> PackedFloat32Array:
 	var result=PackedFloat32Array()

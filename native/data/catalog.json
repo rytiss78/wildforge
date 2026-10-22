@@ -1092,6 +1092,46 @@
       }
     },
     {
+      "id": "tornado",
+      "name": "Twister Totem",
+      "family": "Magic",
+      "damage": 1,
+      "rate": 0.55,
+      "range": 20,
+      "turret": false,
+      "description": "Releases wandering twisters that drag enemies in and shred them."
+    },
+    {
+      "id": "blackhole",
+      "name": "Void Orb",
+      "family": "Ghost",
+      "damage": 1,
+      "rate": 0.4,
+      "range": 26,
+      "turret": false,
+      "description": "Opens a black hole that pulls a crowd together, then collapses in a blast."
+    },
+    {
+      "id": "thunderstorm",
+      "name": "Storm Crown",
+      "family": "Lightning",
+      "damage": 1.2,
+      "rate": 0.45,
+      "range": 26,
+      "turret": false,
+      "description": "Calls a volley of sky lightning down on every nearby enemy."
+    },
+    {
+      "id": "inferno",
+      "name": "Inferno Halo",
+      "family": "Fire",
+      "damage": 1.6,
+      "rate": 0.5,
+      "range": 12,
+      "turret": false,
+      "description": "Sends a ring of fire sweeping outward that sets everything alight."
+    },
+    {
       "id": "popcorn-repeater",
       "name": "Popcorn Repeater",
       "family": "Shots",
@@ -5893,6 +5933,118 @@
       "effects": [
         {
           "key": "bombPower",
+          "amount": 0.25,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "tornado-power-item",
+      "name": "Twister Totem Power",
+      "title": "Twister Totem Power",
+      "family": "Arcane",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "tornadoPower",
+          "amount": 0.25,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "tornado-power-skill",
+      "name": "Twister Totem Mastery",
+      "title": "Twister Totem Mastery",
+      "family": "Arcane",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "tornadoPower",
+          "amount": 0.25,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "blackhole-power-item",
+      "name": "Void Orb Power",
+      "title": "Void Orb Power",
+      "family": "Arcane",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "blackholePower",
+          "amount": 0.25,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "blackhole-power-skill",
+      "name": "Void Orb Mastery",
+      "title": "Void Orb Mastery",
+      "family": "Arcane",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "blackholePower",
+          "amount": 0.25,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "thunderstorm-power-item",
+      "name": "Storm Crown Power",
+      "title": "Storm Crown Power",
+      "family": "Arcane",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "thunderstormPower",
+          "amount": 0.25,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "thunderstorm-power-skill",
+      "name": "Storm Crown Mastery",
+      "title": "Storm Crown Mastery",
+      "family": "Arcane",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "thunderstormPower",
+          "amount": 0.25,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "inferno-power-item",
+      "name": "Inferno Halo Power",
+      "title": "Inferno Halo Power",
+      "family": "Arcane",
+      "kind": "item",
+      "effects": [
+        {
+          "key": "infernoPower",
+          "amount": 0.25,
+          "mode": "multiply"
+        }
+      ]
+    },
+    {
+      "id": "inferno-power-skill",
+      "name": "Inferno Halo Mastery",
+      "title": "Inferno Halo Mastery",
+      "family": "Arcane",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "infernoPower",
           "amount": 0.25,
           "mode": "multiply"
         }
@@ -14282,6 +14434,10 @@
     "bubblePower": 1,
     "meteorPower": 1,
     "bombPower": 1,
+    "tornadoPower": 1,
+    "blackholePower": 1,
+    "thunderstormPower": 1,
+    "infernoPower": 1,
     "discBounces": 0,
     "boomerangPierce": 0,
     "harpoonPull": 0,
@@ -14784,6 +14940,10 @@
     "bubblePower": "Bubble Gun Power",
     "meteorPower": "Meteor Gun Power",
     "bombPower": "Rolling Bomb Power",
+    "tornadoPower": "Twister Totem Power",
+    "blackholePower": "Void Orb Power",
+    "thunderstormPower": "Storm Crown Power",
+    "infernoPower": "Inferno Halo Power",
     "discBounces": "Disc Bounce",
     "boomerangPierce": "Blade Pierce",
     "harpoonPull": "Strong Hook",

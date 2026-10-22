@@ -63,6 +63,8 @@ function weaponShape(w){
  const k=w.archetype||w.id;
  if(k==='saw')return '<circle cx="65" cy="61" r="33"/><circle cx="65" cy="61" r="11"/><path d="M49 90l-15 25M34 115l-9-6"/>';
  if(['gravity','ghost','bubble','meteor','bomb'].includes(k))return `<path d="M39 101l7-56h39l9 56z"/><circle cx="66" cy="57" r="29"/><path d="M51 54l15-18 15 18-15 24z"/><path d="M43 101h47"/>`;
+ // Spells (skill_book.gd): a staff topped with an orb carrying the spell's mark.
+ if(['tornado','blackhole','thunderstorm','inferno'].includes(k))return `<path d="M58 114l6-58h8l-6 58z"/><circle cx="68" cy="38" r="22"/>${{tornado:'<path d="M52 30h32M56 38h24M60 46h16" fill="none"/>',blackhole:'<circle cx="68" cy="38" r="9" fill="#080e19"/><path d="M40 44q28 12 56-12" fill="none"/>',thunderstorm:'<path d="m71 22-11 18h12l-9 18" fill="none"/>',inferno:'<path d="M68 18v-8M88 38h8M68 58v8M48 38h-8M82 24l6-6M54 24l-6-6" fill="none"/>'}[k]}`;
  if(k==='horn')return '<path d="M25 65l39-15 29-21v72L64 79 25 74z"/><path d="M52 81l10 26h19L67 84M102 43l11-8M102 62h16M102 83l11 8"/>';
  if(k==='boomerang')return '<path d="M27 101l18-69 52-12 11 19-46 9-18 61z"/>';
  if(k==='disc')return '<circle cx="65" cy="65" r="39"/><circle cx="65" cy="65" r="16"/><circle cx="65" cy="65" r="5"/><path d="M40 44q22-17 40 0M42 86q19 14 37-1" fill="none"/>';
@@ -113,7 +115,7 @@ const aliases={execute:'bossDamage',berserk:'damage',salvage:'repair',coinRadius
 function symbol(key){
  key=aliases[key]||key;
  if(semantic[key])return semantic[key];
- const w={boomerangPower:'boomerang',boomerangPierce:'boomerang',discPower:'disc',discBounces:'disc',harpoonPower:'harpoon',harpoonPull:'harpoon',gravityPower:'gravity',gravitySize:'gravity',hornPower:'horn',hornStun:'horn',bubblePower:'bubble',bubbleTime:'bubble',meteorPower:'meteor',meteorCount:'meteor',bombPower:'bomb',bombSize:'bomb'}[key];
+ const w={boomerangPower:'boomerang',boomerangPierce:'boomerang',discPower:'disc',discBounces:'disc',harpoonPower:'harpoon',harpoonPull:'harpoon',gravityPower:'gravity',tornadoPower:'tornado',blackholePower:'blackhole',thunderstormPower:'thunderstorm',infernoPower:'inferno',gravitySize:'gravity',hornPower:'horn',hornStun:'horn',bubblePower:'bubble',bubbleTime:'bubble',meteorPower:'meteor',meteorCount:'meteor',bombPower:'bomb',bombSize:'bomb'}[key];
  if(w)return weaponShape({id:w});
  return legacyArtwork(key);
 }

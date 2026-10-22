@@ -2592,6 +2592,78 @@
     "sha256": "7df55e0920247262807aa4b7e716ae0a2e9b65119b09759151eea224c0edbff0"
   },
   {
+    "id": "tornado-power-item",
+    "path": "res://assets/illustrated/content/tornado-power-item.svg",
+    "semantic": "tornadoPower",
+    "shape": -1,
+    "condition": "item",
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "65910aeb0681ae800b7c0d0200b3bba42b051e1f17d383fcfc99f78957b44a9d"
+  },
+  {
+    "id": "tornado-power-skill",
+    "path": "res://assets/illustrated/content/tornado-power-skill.svg",
+    "semantic": "tornadoPower",
+    "shape": -1,
+    "condition": "skill",
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "f71b8c93a1f02abe1032204bca6beae60d288d46b883d099931d288ecca921de"
+  },
+  {
+    "id": "blackhole-power-item",
+    "path": "res://assets/illustrated/content/blackhole-power-item.svg",
+    "semantic": "blackholePower",
+    "shape": -1,
+    "condition": "item",
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "90cf62a18713b5026a83c7e742e46975da19307d6316257721ed815751072fec"
+  },
+  {
+    "id": "blackhole-power-skill",
+    "path": "res://assets/illustrated/content/blackhole-power-skill.svg",
+    "semantic": "blackholePower",
+    "shape": -1,
+    "condition": "skill",
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "21e345a0ed66900a28a583f5ca46fe7c0e35f2f1a4a10c952f3efa056a8b5b9b"
+  },
+  {
+    "id": "thunderstorm-power-item",
+    "path": "res://assets/illustrated/content/thunderstorm-power-item.svg",
+    "semantic": "thunderstormPower",
+    "shape": -1,
+    "condition": "item",
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "db7d923a821b974b6cb4794aa44bc6fdb46ce718fe8d2c09e673849c0ea75167"
+  },
+  {
+    "id": "thunderstorm-power-skill",
+    "path": "res://assets/illustrated/content/thunderstorm-power-skill.svg",
+    "semantic": "thunderstormPower",
+    "shape": -1,
+    "condition": "skill",
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "b0ebbde027c78c6fd778fd4828f8e7b3b19d64f1517d8159ccb829cb9dbf3cf9"
+  },
+  {
+    "id": "inferno-power-item",
+    "path": "res://assets/illustrated/content/inferno-power-item.svg",
+    "semantic": "infernoPower",
+    "shape": -1,
+    "condition": "item",
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "6042bc929a25afa64739d9c438a26a8c09563389ecf115101d03532774669037"
+  },
+  {
+    "id": "inferno-power-skill",
+    "path": "res://assets/illustrated/content/inferno-power-skill.svg",
+    "semantic": "infernoPower",
+    "shape": -1,
+    "condition": "skill",
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "8d8083f64e4ad751dcd41c27708aa66f8a35e98482bd1bffd6bb1d4cca4b2b07"
+  },
+  {
     "id": "disc-bounce-item",
     "path": "res://assets/illustrated/content/disc-bounce-item.svg",
     "semantic": "discBounces",
@@ -6832,6 +6904,38 @@
     "shape": 8,
     "source": "Original semantic vector geometry; intentional shared effect symbols",
     "sha256": "5162b3190c4b62f57f6507954d0331240f09e9d66b098cfc25dbba87dc89b858"
+  },
+  {
+    "id": "tornado",
+    "path": "res://assets/illustrated/content/tornado.svg",
+    "semantic": "tornado",
+    "shape": -1,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "5ffa7b709af65947bc49dcd8d66ed5aaccf41048b76935b202cf8a6e0c8115ca"
+  },
+  {
+    "id": "blackhole",
+    "path": "res://assets/illustrated/content/blackhole.svg",
+    "semantic": "blackhole",
+    "shape": -1,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "a86a5a22845ec8e46fc1dcb2fe3a2197b7c46f4829190e424bc5c9ab76ad1c05"
+  },
+  {
+    "id": "thunderstorm",
+    "path": "res://assets/illustrated/content/thunderstorm.svg",
+    "semantic": "thunderstorm",
+    "shape": -1,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "525c03c5d90e2be5a6d1f4a0ccf34ca175a661001dcccd94e3083ec5cdf46fb9"
+  },
+  {
+    "id": "inferno",
+    "path": "res://assets/illustrated/content/inferno.svg",
+    "semantic": "inferno",
+    "shape": -1,
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "02aadf0aa5ff53148b7b62ab2a45bc6a9a93212b83d0e63facaea9de223d5d15"
   },
   {
     "id": "popcorn-repeater",
