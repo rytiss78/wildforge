@@ -222,6 +222,12 @@ Achievement IDs added: `WF_WEAPON_MASTERY`, `WF_FORMATION_BREAKER`, `WF_BIOME_CO
 - [Build 1.0 visual rollout](native/docs/visual-rollout-1.0.0.md)
 - [Older repair audit](native/docs/repair-audit-2026-10-12.md)
 
+## Build 19 local build — October 22, 2026
+
+- [x] Local build `2026-10-22T17-26-45-819Z-build/Wildforge.exe`, version 1.2.1 / Build 19, source commit `9dbee5df4c501cfca476f42053cd905dce40a4fe`. It contains the mutation balance pass (`91bfa5e`) and the combat visual cues (`e66af4c`). Built from the committed `game.gd`; the uncommitted `lobby_synced` change in the working tree is not part of it.
+  - Exported smoke passes 118 checks with no script errors. Exported `2026-10-22T17-27-25-702Z-release-review` passes; the exported combat capture shows the new gun tracer and muzzle flash.
+  - Not published: README and the GitHub release still point at Build 18.
+
 ## Build 18 public release — October 22, 2026
 
 - [x] Published GitHub Release [`build-18`](https://github.com/rytiss78/wildforge/releases/tag/build-18) at user request: "Wildforge 1.2.0 — Build 18", source commit `1347ca08045ac6092960f274f851898b2b07ce58` (the tag resolves to it).
