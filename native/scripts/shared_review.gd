@@ -10,6 +10,9 @@ static func send(g,phase: String,data: Dictionary={}):
 	var message={"type":"test_shared","phase":phase,"data":data}
 	if g.coop.hosting: g.coop.broadcast(message)
 	else: g.coop.send_to(g.coop.owner_id,message)
+# A teammate's nameplate is their name, optionally followed by " · <ping> ms".
+static func named(text: String,name: String) -> bool:
+	return text==name or text.begins_with(name+" · ") and text.ends_with(" ms")
 static func choose(g):
 	if g.mode=="offer" and not g.hud.cards.is_empty(): g.hud.cards[0].pressed.emit()
 
@@ -22,7 +25,9 @@ static func run(g,host: bool):
 		Engine.physics_ticks_per_second=20
 	g.set_physics_process(false)
 	if host: g.coop.host_lan()
-	else: g.coop.join_lan("127.0.0.1")
+	# The guest joins with an internet invite code for this machine, exercising
+	# the same decode-and-connect path a friend uses.
+	else: g.coop.join_lan(InviteCode.encode("127.0.0.1",CoopSession.PORT))
 	var checks={}
 	if host:
 		checks.host_open=g.coop.active and g.coop.hosting
@@ -55,14 +60,14 @@ static func run(g,host: bool):
 	if host:
 		var guest_id=g.coop.members.keys()[0]
 		checks.custom_guest_name=g.coop.members[guest_id].get("player_name","")=="Review Guest"
-		checks.remote_nameplate=await wait_for(g,func():return g.coop.avatars.has(guest_id) and g.coop.avatars[guest_id].get_meta("nameplate").text=="Review Guest")
+		checks.remote_nameplate=await wait_for(g,func():return g.coop.avatars.has(guest_id) and named(g.coop.avatars[guest_id].get_meta("nameplate").text,"Review Guest"))
 		checks.local_nameplate=is_instance_valid(g.coop.local_nameplate) and g.coop.local_nameplate.text=="Review Host"
 		checks.custom_guest_xp_gain=await wait_for(g,func():return float(g.coop.members.get(guest_id,{}).get("stats",{}).get("xpGain",1))>1.7)
 		checks.custom_host_lobby_name=g.coop.lobby_roster.any(func(entry):return entry.get("host",false) and entry.get("name","")=="Review Host")
 	else:
 		checks.custom_host_lobby_name=await wait_for(g,func():return g.coop.lobby_roster.any(func(entry):return entry.get("host",false) and entry.get("name","")=="Review Host"))
 		checks.local_nameplate=is_instance_valid(g.coop.local_nameplate) and g.coop.local_nameplate.text=="Review Guest"
-		checks.remote_nameplate=await wait_for(g,func():return g.coop.avatars.has(g.coop.owner_id) and g.coop.avatars[g.coop.owner_id].get_meta("nameplate").text=="Review Host")
+		checks.remote_nameplate=await wait_for(g,func():return g.coop.avatars.has(g.coop.owner_id) and named(g.coop.avatars[g.coop.owner_id].get_meta("nameplate").text,"Review Host"))
 	if host:
 		# Repeat a host pause/resume while the guest is otherwise playing. Each
 		# transition records shared progression and both peer positions.

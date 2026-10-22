@@ -794,13 +794,15 @@ func coop_menu():
 	coop_name_input.text_submitted.connect(func(value):save_coop_player_name(value))
 	coop_name_input.focus_exited.connect(func():save_coop_player_name(coop_name_input.text) if is_instance_valid(coop_name_input) else null)
 	var hosting_row=HBoxContainer.new();connection.add_child(hosting_row)
-	hosting_row.add_child(button("HOST PARTY",func():save_coop_player_name(coop_name_input.text);game.coop.host_lan()))
-	hosting_row.add_child(button("COPY ADDRESS",func():
+	hosting_row.add_child(button("HOST PARTY",func():save_coop_player_name(coop_name_input.text);game.coop.host_lan();game.coop.open_internet()))
+	hosting_row.add_child(button("COPY INVITE CODE",func():
+		if not game.coop.invite.is_empty(): DisplayServer.clipboard_set(game.coop.invite);tell("Invite code copied: "+game.coop.invite);return
 		var addresses=game.coop.local_addresses()
-		if not addresses.is_empty(): DisplayServer.clipboard_set(addresses[0]);tell("Host address copied")
+		if game.coop.hosting and not addresses.is_empty(): DisplayServer.clipboard_set(addresses[0]);tell("No internet invite code · local address copied")
+		else: tell("Host a party first")
 	))
 	var row=HBoxContainer.new();connection.add_child(row)
-	var address=LineEdit.new();address.text=game.career.data.settings.get("coopAddress","");address.placeholder_text="Host IP / hostname / VPN";address.custom_minimum_size=Vector2(300,32);row.add_child(address)
+	var address=LineEdit.new();address.text=game.career.data.settings.get("coopAddress","");address.placeholder_text="Invite code (WF-…) or host IP";address.custom_minimum_size=Vector2(300,32);row.add_child(address)
 	row.add_child(button("JOIN",func():save_coop_player_name(coop_name_input.text);game.coop.join_lan(address.text)))
 	address.text_submitted.connect(func(value):save_coop_player_name(coop_name_input.text);game.coop.join_lan(value))
 	connection.add_child(label("NEARBY PARTIES",13));party_list=VBoxContainer.new();connection.add_child(party_list);party_list_key=""
@@ -811,7 +813,7 @@ func coop_menu():
 	lobby_ready=button("READY",func():game.coop.set_ready(not game.coop.local_ready));actions.add_child(lobby_ready)
 	lobby_start=button("START GAME",func():game.coop.start_party(),true);actions.add_child(lobby_start)
 	connection.add_child(button("Leave party",func():game.coop.leave();game.coop.status="Solo"))
-	var help=label("LAN: join a nearby party. Internet: use a VPN or forward UDP 29736 on the host. Hero changes clear your Ready status.",13)
+	var help=label("Internet: the host shares the invite code shown after HOST PARTY; friends paste it into Join. Same network: pick a nearby party. Friends can join a run already in progress. Hero changes clear your Ready status.",13)
 	help.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;box.add_child(help)
 	box.add_child(button("Back",start_menu))
 	update_lobby_controls()

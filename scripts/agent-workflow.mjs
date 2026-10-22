@@ -87,7 +87,7 @@ export function assertCommittedBuild(cwd) {
 }
 
 async function main(action) {
-  if (!['balance-review', 'mutation-balance', 'shared-review', 'shared-review-stress', 'hermes-review', 'playfeel-review', 'red-moon-review', 'fresh-import', 'biome-review', 'release-review', 'roster-review', 'bake-roster', 'style-review', 'fx-review', 'boss-review', 'forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'crowd-spells', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
+  if (!['balance-review', 'mutation-balance', 'shared-review', 'shared-review-stress', 'coop-dropin', 'hermes-review', 'playfeel-review', 'red-moon-review', 'fresh-import', 'biome-review', 'release-review', 'roster-review', 'bake-roster', 'style-review', 'fx-review', 'boss-review', 'forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'crowd-spells', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
     console.error('Usage: node scripts/agent-workflow.mjs check|smoke|capture|capture-ui|combat-review|pace-review|soak|integration|build|status'); return 2;
   }
   const git = (...args) => spawnSync('git', ['-C', root, ...args], {encoding:'utf8', windowsHide:true}).stdout?.trim() ?? '';
@@ -326,6 +326,22 @@ async function main(action) {
         return parsed;
       });
       const results=await Promise.allSettled(runs);report.shared=results.filter(r=>r.status==='fulfilled').map(r=>r.value);
+      const failed=results.filter(r=>r.status==='rejected');if(failed.length)throw new Error(failed.map(r=>r.reason.message).join('\n'));
+    }
+    if (action === 'coop-dropin') {
+      // Host starts alone; a new player joins the running game by invite code.
+      const runs=['host','client'].map(async(role)=>{
+        const profile=join(runDir,role);mkdirSync(profile,{recursive:true});
+        const args=['--headless',...(process.env.WILDFORGE_TEST_EXE?[]:['--path',join(root,'native')]),'--','--dropin-review-'+role];
+        const result=await runStep(process.env.WILDFORGE_TEST_EXE||godot,args,{cwd:root,env:{...env,APPDATA:profile},timeoutMs:120000,logPath:join(runDir,role+'.log')});
+        const {output,...record}=result;report.steps.push(record);
+        const line=output.split(/\r?\n/).findLast(x=>x.startsWith('DROPIN_REVIEW '));
+        if(result.exitCode!==0 || fatal.test(output) || /ERROR:|ObjectDB instances were leaked/.test(output) || !line) throw new Error(role+' drop-in review failed: '+output.slice(-3000));
+        const parsed=JSON.parse(line.slice('DROPIN_REVIEW '.length));
+        if(Object.values(parsed.checks).some(v=>v===false))throw new Error(role+' drop-in assertions failed');
+        return parsed;
+      });
+      const results=await Promise.allSettled(runs);report.dropin=results.filter(r=>r.status==='fulfilled').map(r=>r.value);
       const failed=results.filter(r=>r.status==='rejected');if(failed.length)throw new Error(failed.map(r=>r.reason.message).join('\n'));
     }
     if (action === 'hermes-review') {

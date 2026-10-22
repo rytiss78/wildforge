@@ -80,6 +80,7 @@ Prefix every action below with `node scripts/agent-workflow.mjs`.
 | `pace-review` | XP/level pacing | Review measurements against the intended design |
 | `eclipse-review` | Eclipse handling and music state | Drift, settling and frame-rate invariance; see 1.0.0 rollout |
 | `coop-feedback` | Focused multiplayer feedback behavior | Not a substitute for the two-process network test |
+| `coop-dropin` | Two processes: the host starts a run alone, a new player joins mid-run with an invite code, then both trigger the Crossfire and Overload combos | Run alone (shares UDP ports with other co-op checks). Never touches router port mappings. |
 | `coop` | Real host/client networking | Approximately six minutes; includes full 0 → 1 → 2 → 3 → 0 route, final death/Eclipse and peer completion handshake |
 | `build` | New Windows executable and pack | Imports/parses, exports and smoke-tests that executable |
 | `test-build` | Broader rendered checks of the last exported build | Does not rebuild; release-review adds full exported visual coverage |

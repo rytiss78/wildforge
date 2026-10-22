@@ -283,6 +283,7 @@ func _ready():
 		if not connected and id == controller_id and mode == "playing": hud.pause_menu(); hud.tell("Controller disconnected")
 	)
 	if OS.get_cmdline_user_args().has("--shared-review-host") or OS.get_cmdline_user_args().has("--shared-review-client"): preload("res://scripts/shared_review.gd").run.call_deferred(self,OS.get_cmdline_user_args().has("--shared-review-host"))
+	elif OS.get_cmdline_user_args().has("--dropin-review-host") or OS.get_cmdline_user_args().has("--dropin-review-client"): preload("res://scripts/dropin_review.gd").run.call_deferred(self,OS.get_cmdline_user_args().has("--dropin-review-host"))
 	elif OS.get_cmdline_user_args().has("--balance-review"): preload("res://scripts/balance_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--mutation-balance"): preload("res://scripts/mutation_balance.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--hermes-review"): preload("res://scripts/hermes_review.gd").run.call_deferred(self)
@@ -1513,6 +1514,11 @@ func hurt_enemy(enemy: Dictionary, damage: float, cause: String,mechanic: String
 	if enemy.boss and cause not in ["poison","fire"]:
 		var curse=sound.boss_curse(enemy.node.position)
 		if curse>=0 and coop.active: coop.broadcast({"type":"big_boss_voice","realm":realm,"index":curse,"position":CoopSession.array(enemy.node.position)})
+	# Co-op combos (host): Crossfire marks add damage; Overload blasts.
+	if PartyCombo.active(self) and cause not in ["poison","fire","gravity"]:
+		damage*=PartyCombo.multiplier(self,enemy)
+		PartyCombo.on_hit(self,enemy,damage,cause,int(enemy.get("hit_owner",coop.local_id)))
+		if enemy.dead: return
 	var credited=minf(enemy.hp,damage)
 	var owner=int(enemy.get("hit_owner",enemy.get(cause+"_owner",enemy.get("status_owner",coop.local_id)) if cause in ["poison","fire"] else coop.local_id))
 	update.party_damage+=credited
@@ -1961,7 +1967,7 @@ func update_combat(delta: float):
 			if enemy.get("recovery",0)>realm_time: aim=Vector3.ZERO
 		if enemy.get("contact_windup",0)>0: aim=Vector3.ZERO
 		var is_stunned=enemy.freeze>0
-		var velocity=(aim*enemy.speed*(2 if enemy.get("charge",0)>0 else 1)*(1-minf(.7,enemy.slow))+separation.limit_length(enemy.speed*1.3+1.0)) if not is_stunned else Vector3.ZERO
+		var velocity=(aim*enemy.speed*(2 if enemy.get("charge",0)>0 else 1)*(1-minf(.7,enemy.slow))+separation.limit_length(enemy.speed*1.4)) if not is_stunned else Vector3.ZERO
 		# Spell pulls (SkillBook) ride on this movement step instead of extra physics moves.
 		var pull: Vector3=enemy.get("pull",Vector3.ZERO)
 		if pull!=Vector3.ZERO: velocity+=pull;enemy.pull=Vector3.ZERO
@@ -2903,7 +2909,8 @@ func run_coop_test():
 			hero_reset=not coop.local_ready
 			coop.set_ready(true);ready_sent=true
 		if network_test_role=="client":
-			lobby_synced=lobby_synced or coop.lobby_roster.any(func(m):return m.id==coop.local_id and m.hero==hero.id and m.ready)
+			# The lobby roster carries hero display names (CoopSession.publish_lobby).
+			lobby_synced=lobby_synced or coop.lobby_roster.any(func(m):return m.id==coop.local_id and m.hero==hero.name and m.ready)
 		if network_test_role=="host" and not coop.members.is_empty():
 			coop.set_ready(true)
 			if coop.can_start():

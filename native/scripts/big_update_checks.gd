@@ -125,6 +125,16 @@ static func run(game: Node3D):
 		checks.banish_mutation_gone=game.rules.banished.has("mut:"+banned_mutation) and not game.offers.any(func(i):return i.id=="mut:"+banned_mutation)
 		for i in range(40): checks.banish_mutation_gone=checks.banish_mutation_gone and MutationBook.roll(game,[]).get("id","")!="mut:"+banned_mutation
 	game.rules.banished=banishes;game.hud.close();game.mode="playing"
+	# Internet invite codes round-trip, tolerate retyping, and reject garbage;
+	# carrier-grade and private addresses are recognised as unreachable.
+	var codes_ok=true
+	for case in [["203.0.113.7",29736],["8.8.8.8",29736],["255.255.255.255",65535],["1.2.3.4",1]]:
+		var code=InviteCode.encode(case[0],case[1]);var back=InviteCode.decode(code)
+		codes_ok=codes_ok and code.length()==14 and back.get("address","")==case[0] and back.get("port",0)==case[1]
+		codes_ok=codes_ok and InviteCode.decode(code.to_lower().replace("-"," "))==back
+	codes_ok=codes_ok and InviteCode.decode("WF-HELLO-WORLD").is_empty() and InviteCode.decode("192.168.1.5").is_empty() and InviteCode.encode("300.1.1.1",29736).is_empty()
+	checks.invite_codes=codes_ok
+	checks.unreachable_addresses=["100.64.0.1","100.127.9.9","10.0.0.2","192.168.1.1","172.20.0.1",""].all(func(a):return InviteCode.unreachable(a)) and not InviteCode.unreachable("203.0.113.7") and not InviteCode.unreachable("100.128.0.1")
 	# Effect settings: the real Shake slider (first of the three effect sliders)
 	# changes both the saved setting and the live value.
 	game.hud.settings_menu()

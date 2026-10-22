@@ -7,7 +7,7 @@ var party_seen={}
 
 # Transport-independent authoritative world. Important events are reliable;
 # poses/snapshots use unreliable ordered delivery. Never deserialize objects.
-const PROTOCOL="wildforge-shared-world-10"
+const PROTOCOL="wildforge-shared-world-11"
 # World snapshots carry each enemy as ACTOR_STRIDE floats: id, position(3), hp,
 # maxHp, surface up(3), surface forward(3), ACTOR_STATUS(7), corruption. Static
 # identity (species, size, boss/elite flags) is sent once via actors_info.
@@ -15,6 +15,14 @@ const ACTOR_STRIDE=20
 const ACTOR_STATUS=["fire","poison","freeze","blind","slip_until","windup","contact_windup"]
 const PORT=29736
 const DISCOVERY_PORT=29737
+# Internet hosting: the router opens PORT through UPnP on a worker thread and
+# reports the public address, which becomes the party's invite code.
+var upnp: UPNP
+var upnp_thread: Thread
+var invite=""
+# Peer ids the host transport currently has, from its connect/disconnect
+# signals: asking ENet for an unknown id logs an engine error.
+var linked={}
 var discovery: PacketPeerUDP
 var search: PacketPeerUDP
 var discovered={}
@@ -45,6 +53,7 @@ var saw_force_pulse=false
 var last_snapshot=0.0
 var test_mode=false
 var test_messages={}
+var party_combos_seen=0
 var test_finished_peers={}
 var joined=false
 var saw_pause=false
@@ -160,24 +169,71 @@ func discover_tick(delta: float):
 func host_lan():
 	leave();peer=ENetMultiplayerPeer.new()
 	var error=peer.create_server(PORT,3)
-	if error!=OK: status="Could not open local party port "+str(PORT);peer=null;return
+	if error!=OK: status="Could not open party port "+str(PORT)+". Another copy of the game may be hosting.";peer=null;return
 	transport="lan";active=true;hosting=true;local_id=1;owner_id=1
 	discovery=PacketPeerUDP.new()
 	if discovery.bind(DISCOVERY_PORT,"0.0.0.0")!=OK: discovery=null
 	publish_lobby()
-	peer.peer_disconnected.connect(remove_member);status="Party ready · %s · UDP %d. Friends join before you start." % [", ".join(local_addresses()),PORT]
+	peer.peer_connected.connect(func(id):linked[id]=true)
+	peer.peer_disconnected.connect(func(id):linked.erase(id))
+	peer.peer_disconnected.connect(remove_member);status="Party ready on your network · %s · UDP %d. Friends can also join after the run starts." % [", ".join(local_addresses()),PORT]
+
+# Opens the party to the internet. Only the HOST PARTY button calls this:
+# automated tests never change a router's port mappings.
+func open_internet():
+	if not hosting or upnp_thread!=null or not invite.is_empty(): return
+	upnp_thread=Thread.new();upnp_thread.start(upnp_work)
+	status="Party ready on your network · opening internet access…"
+
+func upnp_work() -> Dictionary:
+	var router=UPNP.new()
+	if router.discover(2000,2,"InternetGatewayDevice")!=UPNP.UPNP_RESULT_SUCCESS or router.get_gateway()==null or not router.get_gateway().is_valid_gateway():
+		return {"error":"no_router"}
+	if router.add_port_mapping(PORT,PORT,"Wildforge co-op","UDP",0)!=UPNP.UPNP_RESULT_SUCCESS: return {"error":"refused"}
+	var external=router.query_external_address()
+	if external.is_empty() or InviteCode.unreachable(external):
+		router.delete_port_mapping(PORT,"UDP");return {"error":"carrier","address":external}
+	return {"router":router,"address":external}
+
+func upnp_finished(result: Dictionary):
+	var lan="Friends on your network: "+", ".join(local_addresses())
+	if not hosting:
+		if result.has("router"): result.router.delete_port_mapping(PORT,"UDP")
+		return
+	match str(result.get("error","")):
+		"no_router","refused":
+			status="Internet hosting unavailable: your router did not allow automatic port opening (UPnP). Turn on UPnP in the router or forward UDP %d to this PC, or let a friend host. %s" % [PORT,lan]
+		"carrier":
+			status="Internet hosting unavailable: your connection is shared behind your provider's network (carrier-grade NAT), so friends cannot reach it. Let a friend host instead. %s" % lan
+		_:
+			upnp=result.router;invite=InviteCode.encode(str(result.address),PORT)
+			DisplayServer.clipboard_set(invite)
+			status="Party open to the internet · invite code %s (copied). Friends paste it into Join. %s" % [invite,lan]
+	game.hud.tell("Invite code copied: "+invite if not invite.is_empty() else "Internet hosting unavailable · see the party panel",5)
+
+func close_internet():
+	if upnp_thread!=null:
+		var result=upnp_thread.wait_to_finish();upnp_thread=null
+		if result is Dictionary and result.has("router"): result.router.delete_port_mapping(PORT,"UDP")
+	if upnp!=null: upnp.delete_port_mapping(PORT,"UDP");upnp=null
+	invite=""
+
+func _exit_tree():
+	close_internet()
 
 func join_lan(address: String):
 	address=address.strip_edges()
+	var code=InviteCode.decode(address)
+	if not code.is_empty(): leave();open_client(code.address,code.port);return
 	if address.is_empty() or address.length()>253 or address.contains(" ") or address.contains("/"):
-		status="Enter the host's IP address or hostname.";return
+		status="Enter an invite code (WF-…) or the host's IP address.";return
 	leave();open_client(address)
 
 # Opens only the client transport. A run rejoin keeps avatars, nameplates and
 # reward progress; leave() is reserved for actually quitting the party.
-func open_client(address: String):
+func open_client(address: String,port: int=PORT):
 	peer=ENetMultiplayerPeer.new()
-	var err=peer.create_client(address,PORT)
+	var err=peer.create_client(address,port)
 	if err!=OK: status="Could not connect to that address.";peer=null;return
 	transport="lan";hosting=false;active=true;owner_id=1;status="Connecting…"
 	connection_clock=0;welcomed=false;joined=false;game.career.data.settings.coopAddress=address;game.career.dirty=true
@@ -192,6 +248,8 @@ func leave():
 	review_packet_queue.clear()
 	local_ready=false;lobby_roster.clear()
 	if peer!=null: peer.close();peer=null
+	linked.clear()
+	close_internet()
 	if discovery!=null: discovery.close();discovery=null
 	for actor in avatars.values(): actor.queue_free()
 	for turret in turret_models.values(): turret.queue_free()
@@ -273,6 +331,7 @@ func broadcast(message: Dictionary,reliable: bool=true):
 func transport_peer_connected(id: int) -> bool:
 	if peer==null or peer.get_connection_status()!=MultiplayerPeer.CONNECTION_CONNECTED: return false
 	if not hosting: return true
+	if not linked.has(id): return false
 	var remote=peer.get_peer(id)
 	return remote!=null and remote.get_state()==ENetPacketPeer.STATE_CONNECTED
 
@@ -337,6 +396,8 @@ func frozen() -> bool:
 	return false
 
 func tick(delta: float):
+	if upnp_thread!=null and not upnp_thread.is_alive():
+		var result=upnp_thread.wait_to_finish();upnp_thread=null;upnp_finished(result)
 	discover_tick(delta)
 	if not active: return
 	if transport=="lan" and peer!=null:
@@ -351,7 +412,7 @@ func tick(delta: float):
 		if not hosting and not welcomed:
 			connection_clock+=delta
 			if connection_clock>12:
-				leave();status="Connection timed out. Check the address and allow UDP 29736 through the host's firewall/router.";return
+				leave();status="Could not reach the party. Check the invite code or address. Over the internet, the host needs the invite code shown when hosting; if their game said internet hosting is unavailable, one of you behind a different connection should host.";return
 		if not hosting and peer.get_connection_status()==MultiplayerPeer.CONNECTION_CONNECTED and not joined:
 			local_id=peer.get_unique_id();send_to(owner_id,{"type":"hello","protocol":PROTOCOL,"token":str(game.career.data.settings.get("coopToken",""))});joined=true
 		for i in range(mini(128,peer.get_available_packet_count())):
@@ -393,11 +454,26 @@ func tick(delta: float):
 				var targeted=int(game.events.get("boss_focus_id",0))==int(id) and float(game.events.get("boss_focus_until",0))>game.elapsed
 				var label: Label3D=node.get_meta("nameplate")
 				var style=cosmetic_style(str(state.get("cosmetic","")))
-				label.text=("⚠ "+player_text+" · TARGET" if targeted else str(style.mark)+player_text+("\nDOWNED · HOLD E / X" if is_downed else ""))
+				var ms=ping_for(int(id),state)
+				var ping_text=(" · %d ms" % ms) if ms>0 else ""
+				label.text=("⚠ "+player_text+" · TARGET" if targeted else str(style.mark)+player_text+ping_text+("\nDOWNED · HOLD E / X" if is_downed else ""))
 				label.font_size=36 if targeted else 26;label.pixel_size=.012 if targeted else .01;label.modulate=Color("ff9675") if targeted else style.color
 			if node.has_meta("down_beacon"): node.get_meta("down_beacon").visible=is_downed
 			update_avatar_vitals(node.get_meta("rig"),state)
 	if is_instance_valid(local_nameplate): sync_local_nameplate()
+
+# Round trip in milliseconds to a peer this machine talks to directly (the host
+# to each player, a player to the host); 0 when unknown.
+func ping_to(id: int) -> int:
+	if transport!="lan" or not transport_peer_connected(id): return 0
+	var link=peer.get_peer(id)
+	return int(link.get_statistic(ENetPacketPeer.PEER_ROUND_TRIP_TIME)) if link!=null else 0
+
+# Shown on nameplates. Players hear about each other through the host, so a
+# player's ping to another player is shown as that player's ping to the host.
+func ping_for(id: int,state: Dictionary) -> int:
+	if hosting or id==owner_id: return ping_to(id)
+	return int(state.get("ping",0))
 
 func update_avatar_vitals(rig,state: Dictionary):
 	var stats=state.get("stats",{})
@@ -455,6 +531,7 @@ func snapshot() -> Dictionary:
 	for id in members:
 		if not members[id].get("disconnected",false): poses[id]=members[id].duplicate(true)
 	poses[local_id]=pose()
+	for id in poses: poses[id].ping=ping_to(int(id)) if int(id)!=local_id else 0
 	for member in poses.values():
 		var stats=member.get("stats",{})
 		member.vitals={"max_hp":stats.get("maxHp",100),"armor":stats.get("armor",0),"shield_capacity":float(stats.get("shield",0))+float(stats.get("jumpShield",0))}
@@ -539,9 +616,8 @@ func receive(sender: int,message):
 				for old_id in members:
 					if members[old_id].get("disconnected",false) and str(members[old_id].get("token",""))==token and Time.get_ticks_msec()/1000.0<=float(members[old_id].get("disconnect_until",0)):
 						resume_id=int(old_id);break
-				if resume_id==0: send_to(sender,{"type":"reject","reason":"This party is already playing. Rejoin with the same player profile within 40 seconds."});return
-			else:
-				if members.size()>=3: send_to(sender,{"type":"reject","reason":"Party is full."});return
+			# Up to four players; a new player may drop into a run in progress.
+			if resume_id==0 and members.values().filter(func(m):return not m.get("disconnected",false)).size()>=3: send_to(sender,{"type":"reject","reason":"Party is full."});return
 			if resume_id>0:
 				var restored=members[resume_id];members.erase(resume_id);restored.erase("disconnected");restored.erase("disconnect_until");restored.last_seen=Time.get_ticks_msec()/1000.0;restored.mode="playing";members[sender]=restored
 				game.update.remap_peer_id(resume_id,sender)
@@ -551,6 +627,13 @@ func receive(sender: int,message):
 				# Everything one-off broadcasts changed while the member was away.
 				var opened=game.chests.filter(func(c):return c is Dictionary and c.get("opened",false) and is_instance_valid(c.get("node"))).map(func(c):return [int(c.node.position.x),int(c.node.position.y),int(c.node.position.z)])
 				send_to(sender,{"type":"welcome","reconnected":true,"realm":game.realm,"opened_chests":opened})
+			elif game.run_active:
+				# Drop-in: the joiner starts the same run and enters the host's realm;
+				# the world pauses ("loading") until they are in.
+				members[sender]={"mode":"loading","player_name":"Player","token":token,"last_seen":Time.get_ticks_msec()/1000.0,"drop_in":true}
+				var opened=game.chests.filter(func(c):return c is Dictionary and c.get("opened",false) and is_instance_valid(c.get("node"))).map(func(c):return [int(c.node.position.x),int(c.node.position.y),int(c.node.position.z)])
+				send_to(sender,{"type":"welcome","reconnected":false,"drop_in":true,"seed":game.seed_value,"realm":game.realm,"opened_chests":opened})
+				status="A player is joining the run · %d / 4." % (members.size()+1);game.hud.tell("A friend is joining…",3)
 			else:
 				members[sender]={"mode":"loading","player_name":"Player","token":token,"last_seen":Time.get_ticks_msec()/1000.0};status="%d / 4 players. Ready to start." % (members.size()+1)
 				send_to(sender,{"type":"welcome","reconnected":false});publish_lobby()
@@ -685,6 +768,13 @@ func receive(sender: int,message):
 				sync_local_nameplate()
 				if test_mode:
 					test_messages["reconnected"]={"mode":game.mode};send_to(owner_id,{"type":"test_shared","phase":"reconnected","data":{"mode":game.mode}})
+			elif bool(message.get("drop_in",false)):
+				reset_actor_sync();game.start_run(int(message.seed))
+				var host_realm=int(message.get("realm",0))
+				if host_realm!=game.realm: game.enter_realm(host_realm)
+				for position in message.get("opened_chests",[]): apply_chest_hide(position)
+				game.hud.close();sync_local_nameplate()
+				status="Joined the run in progress.";game.hud.tell(status,5)
 			else:
 				status="Joined. Choose your hero and mark Ready.";publish_lobby_choice()
 		elif kind=="lobby_state" and not game.run_active: lobby_roster=message.get("players",[])
@@ -697,6 +787,8 @@ func receive(sender: int,message):
 			for actor in message.actors:
 				if actor is Dictionary and actor.has("id"): actor_info[int(actor.id)]=actor
 		elif kind=="force_pulse_fx" and int(message.get("realm",-1))==game.realm: ForcePulse.visual(game,vector(message.position),str(message.key));saw_force_pulse=true
+		elif kind=="party_combo" and int(message.get("realm",-1))==game.realm and str(message.get("kind","")) in ["crossfire","overload"]:
+			PartyCombo.visual(game,str(message.kind),vector(message.get("position",[])));party_combos_seen+=1
 		elif kind=="world": apply_world(message)
 		elif kind=="journey_announcement": game.Journey.announce(game,str(message.title),str(message.detail))
 		elif kind=="shot": show_shot(message)
