@@ -82,7 +82,12 @@ Review and evidence: [alpha exit review](native/docs/alpha-exit-review-2026-10-2
   - The Blender metaball Baron and a generated creature set both read as blobs and were rejected or reverted (`5c53892`). The Python floating Baron is current.
   - Real improvement needs authored art: a licensed or commissioned model (also required for any faithful *Dune*-film Baron likeness), an AI 3D generator account, or CC0 packs (Quaternius, Kenney), which need user approval to download.
 - [ ] Local build `2026-10-21T09-03-39-561Z-build/Wildforge.exe` (source `d58262b`, exported smoke 118). Exported `2026-10-21T09-03-57-992Z-shared-review` passes all 104 checks, and exported `2026-10-21T09-04-16-670Z-release-review` passes; the 1080p HUD was inspected. It still reports 1.1.3 / Build 17 metadata and is not published.
-- [ ] Upgrade overhaul (user direction, October 21): **more than 100 upgrades, mostly rules-changing**, so each run plays very differently. Merge the 738 single-stat entries (94 duplicate names) into a small set of named stat tiers, and add 100+ mechanic upgrades (on-dash, on-kill, projectile behaviour, summons, status interactions, hero-specific twists). No duplicate names in one offer.
+- [x] Upgrade overhaul (user direction, October 21): 102 run-changing mutations (`ff96ca0`). Stat-card names cleaned up October 22:
+  - 94 duplicate names covering 328 cards (twelve "Power", eleven "Health") came from the exporter naming each card after its stat label.
+  - `scripts/export-native-data.mjs` now names each card after its own template plus a stat noun ("Detonator Edge", "Venom Fang", "Red Mist Thirst"). Skill twins of explicitly named cards become "… Drill", or "… Mastery" for weapon-power cards.
+  - All 738 names are unique, and the exporter refuses duplicates. Ids, effects, kinds, families and all other catalog sections are unchanged (285 renamed).
+  - Tier stays the per-offer rarity roll shown on each card; no fixed per-card tier was added, because that would stack a second rarity system and change balance.
+  - Verified: new JS test (17/17 pass), check, smoke, integration and capture-ui; offer and icon-sheet captions inspected.
 - [x] Unified UI theme for menu, HUD and modals; HUD regrouped into three clusters.
   - The menu gained the in-game window frame (`b64f598`).
   - Vitals top-left: one framed plate with the HP orb, HP, shield and armor, a gold/chest row, then buffs and harvest effects.

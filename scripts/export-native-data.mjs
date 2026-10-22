@@ -136,9 +136,56 @@ for(const kind of ['item','skill']) loot.push({id:'banana-'+kind,name:'Banana Bu
 stats.enemyPull=0;stats.enemyPush=0;labels.enemyPull='Attraction Pulse';labels.enemyPush='Repulsion Pulse';
 for(const [id,title,key,amount] of [['attraction-pulse','Attraction Pulse','enemyPull',2],['repulsion-pulse','Repulsion Pulse','enemyPush',3]]) loot.push({id:id+'-skill',name:title,title,family:'Arcane',kind:'skill',effects:[{key,amount,mode:'add'}]});
 const discoveries=[['BEACON','Signal Served','Defend an explored supply beacon.'],['MERCHANT','Window Shopping','Buy a positive upgrade from the wandering merchant.'],['MIMIC','Running Refund','Discover a fleeing mimic and its bonus coins.'],['REACTION','Questionable Chemistry','Trigger an elemental reaction.'],['RESCUE','Helping Hand','Rescue a downed party member.'],['PING','Over There','Send a contextual exploration ping.'],['BANANA','Slippery Business','Slip an enemy with Banana Business.'],['TERRACE','Taking the High Road','Explore a raised biome route.']].map(([key,name,description])=>({id:'WF_'+key.toLowerCase(),name,description,key:'event_'+key,target:1,scope:'total',hidden:false}));
+// Template cards used to be named after their stat ("Power", "Health"), so up to
+// twelve identical names appeared in the pool. Each card is now named after its own
+// template (the id stem: "detonator", "red-mist") plus a noun for its stat, with an
+// alternate noun or numeral if that still collides. Ids and effects are unchanged.
+const STAT_NOUNS={damage:['Edge','Fury'],rate:['Rush','Tempo'],speed:['Stride','Sprint'],maxHp:['Heart','Bulk'],pickup:['Pull','Lure'],
+ size:['Swell','Girth'],range:['Sight','Scope'],projectileSpeed:['Zip','Velocity'],armor:['Plating','Hide'],dodge:['Slip','Feint'],
+ lifesteal:['Thirst','Leech'],regen:['Mend','Renewal'],crit:['Eye','Focus'],critPower:['Strike','Smash'],pierce:['Lance','Spike'],
+ splash:['Blast','Burst'],chain:['Arc','Spark'],burn:['Ember','Flame'],poison:['Fang','Bite'],slow:['Chill','Drag'],knockback:['Shove','Ram'],
+ execute:['Mercy','Reaper'],thorns:['Barbs','Thorns'],explosion:['Bang','Boom'],xpGain:['Lesson','Wisdom'],luck:['Charm','Fortune'],
+ chestBonus:['Find','Trove'],dashCooldown:['Step','Hop'],dashBlast:['Kick','Pop'],turretDamage:['Rig','Crew'],turretRate:['Gears','Motor'],
+ turretRange:['Antenna','Lookout'],repair:['Patch','Fix'],auraDamage:['Halo','Aura'],stun:['Daze','Jolt'],salvage:['Scraps','Salvage'],
+ revive:['Lifeline','Second Wind'],bossDamage:['Bane','Slayer'],ghost:['Phase','Shade'],burrow:['Tunnel','Dig'],blind:['Shroud','Murk'],
+ freeze:['Frost','Rime'],shield:['Ward','Bubble'],berserk:['Rage','Frenzy'],ricochet:['Rebound','Carom'],storm:['Storm','Thunder'],
+ nova:['Nova','Flare'],pools:['Puddle','Mire'],boomerang:['Return','Loop'],multishot:['Spread','Volley'],goldGain:['Greed','Coin'],
+ discount:['Bargain','Haggle'],keyPower:['Key','Pick']};
+const templateCards=new Set([...ITEMS,...PERKS].filter(t=>!t.turret).flatMap(t=>t.effects.map((e,index)=>t.id+'-'+index)));
+const titleCase=text=>text.split(/[-\s]+/).filter(Boolean).map(w=>w[0].toUpperCase()+w.slice(1)).join(' ');
+function nameUpgrades(cards){
+ const taken=new Set(cards.filter(card=>!templateCards.has(card.id)).map(card=>card.name));
+ for(const card of cards){
+  if(!templateCards.has(card.id)) continue;
+  const stem=titleCase(card.id.replace(/-\d+$/,'').replace(/-perk$/,''));
+  const key=card.effects[0].key;const nouns=STAT_NOUNS[key]||[labels[key]||'Boon','Charm'];
+  // Skip a noun the template name already uses ("Storm Storm", "Phase Cloak Phase").
+  const root=word=>word.toLowerCase().replace(/s$/,'');
+  const words=new Set(stem.split(' ').map(root));
+  const fresh=nouns.filter(noun=>!noun.split(' ').some(word=>words.has(root(word))));
+  const usable=fresh.length?fresh:nouns;
+  let name=usable.map(noun=>stem+' '+noun).find(candidate=>!taken.has(candidate))||stem+' '+usable[0];
+  for(let n=2;taken.has(name);n++) name=stem+' '+usable[0]+' '+['','','II','III','IV','V'][n];
+  taken.add(name);card.name=name;card.title=name;
+ }
+ // Explicitly named item/skill pairs ("Jump Boots" twice): the skill version is a
+ // trained technique, "Mastery" for weapon-power cards and "Drill" otherwise.
+ const trained=name=>name.endsWith(' Power')?name.slice(0,-' Power'.length)+' Mastery':name+' Drill';
+ const seen=new Map();
+ for(const card of cards){
+  if(!seen.has(card.name)){seen.set(card.name,card);continue;}
+  const skill=card.kind==='skill'?card:seen.get(card.name);
+  if(skill!==card) seen.set(card.name,card);
+  skill.name=trained(skill.name);skill.title=skill.name;
+ }
+ const counts={};for(const card of cards) counts[card.name]=(counts[card.name]||0)+1;
+ const repeated=Object.entries(counts).filter(([,n])=>n>1);
+ if(repeated.length) throw new Error('Duplicate upgrade names: '+repeated.map(([name,n])=>name+'×'+n).join(', '));
+}
 const bonusBases=new Map();
 for(const item of loot){const effect=item.effects[0];if(!bonusBases.has(effect.key))bonusBases.set(effect.key,{...effect});item.effects=[{...bonusBases.get(effect.key)}];}
 const augments=expandContent(loot,weapons,stats,labels);
+nameUpgrades(loot);
 await mkdir(new URL('../native/data/',import.meta.url),{recursive:true});
 
 await writeFile(new URL('../native/data/catalog.json',import.meta.url),JSON.stringify({version:8,heroes,weapons,weaponCap:WEAPON_CAP,loot,stats,labels,families,augments,chestPrices:CHEST_PRICES,achievements:[...ACHIEVEMENTS,...discoveries]},null,2));

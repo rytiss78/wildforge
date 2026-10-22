@@ -1868,7 +1868,7 @@
   "loot": [
     {
       "id": "needle-0",
-      "title": "Pierce",
+      "title": "Needle Lance",
       "family": "Ballistics",
       "effects": [
         {
@@ -1877,12 +1877,12 @@
           "mode": "add"
         }
       ],
-      "name": "Pierce",
+      "name": "Needle Lance",
       "kind": "item"
     },
     {
       "id": "needle-1",
-      "title": "Fast Shots",
+      "title": "Needle Zip",
       "family": "Ballistics",
       "effects": [
         {
@@ -1891,12 +1891,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Fast Shots",
+      "name": "Needle Zip",
       "kind": "item"
     },
     {
       "id": "scatter-0",
-      "title": "More Shots",
+      "title": "Scatter Spread",
       "family": "Ballistics",
       "effects": [
         {
@@ -1905,12 +1905,12 @@
           "mode": "add"
         }
       ],
-      "name": "More Shots",
+      "name": "Scatter Spread",
       "kind": "item"
     },
     {
       "id": "scatter-1",
-      "title": "Big Shots",
+      "title": "Scatter Swell",
       "family": "Ballistics",
       "effects": [
         {
@@ -1919,12 +1919,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Big Shots",
+      "name": "Scatter Swell",
       "kind": "item"
     },
     {
       "id": "detonator-0",
-      "title": "Blast",
+      "title": "Detonator Blast",
       "family": "Explosives",
       "effects": [
         {
@@ -1933,12 +1933,12 @@
           "mode": "add"
         }
       ],
-      "name": "Blast",
+      "name": "Detonator Blast",
       "kind": "item"
     },
     {
       "id": "detonator-1",
-      "title": "Power",
+      "title": "Detonator Edge",
       "family": "Explosives",
       "effects": [
         {
@@ -1947,12 +1947,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Power",
+      "name": "Detonator Edge",
       "kind": "item"
     },
     {
       "id": "coil-0",
-      "title": "Lightning",
+      "title": "Coil Arc",
       "family": "Electric",
       "effects": [
         {
@@ -1961,12 +1961,12 @@
           "mode": "add"
         }
       ],
-      "name": "Lightning",
+      "name": "Coil Arc",
       "kind": "item"
     },
     {
       "id": "coil-1",
-      "title": "Reach",
+      "title": "Coil Sight",
       "family": "Electric",
       "effects": [
         {
@@ -1975,12 +1975,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Reach",
+      "name": "Coil Sight",
       "kind": "item"
     },
     {
       "id": "cinder-0",
-      "title": "Fire",
+      "title": "Cinder Ember",
       "family": "Fire",
       "effects": [
         {
@@ -1989,12 +1989,12 @@
           "mode": "add"
         }
       ],
-      "name": "Fire",
+      "name": "Cinder Ember",
       "kind": "item"
     },
     {
       "id": "cinder-1",
-      "title": "Speed",
+      "title": "Cinder Rush",
       "family": "Fire",
       "effects": [
         {
@@ -2003,12 +2003,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Speed",
+      "name": "Cinder Rush",
       "kind": "item"
     },
     {
       "id": "venom-0",
-      "title": "Poison",
+      "title": "Venom Fang",
       "family": "Toxic",
       "effects": [
         {
@@ -2017,12 +2017,12 @@
           "mode": "add"
         }
       ],
-      "name": "Poison",
+      "name": "Venom Fang",
       "kind": "item"
     },
     {
       "id": "venom-1",
-      "title": "Power",
+      "title": "Venom Edge",
       "family": "Toxic",
       "effects": [
         {
@@ -2031,12 +2031,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Power",
+      "name": "Venom Edge",
       "kind": "item"
     },
     {
       "id": "ice-0",
-      "title": "Ice",
+      "title": "Ice Chill",
       "family": "Frost",
       "effects": [
         {
@@ -2045,12 +2045,12 @@
           "mode": "add"
         }
       ],
-      "name": "Ice",
+      "name": "Ice Chill",
       "kind": "item"
     },
     {
       "id": "ice-1",
-      "title": "Reach",
+      "title": "Ice Sight",
       "family": "Frost",
       "effects": [
         {
@@ -2059,12 +2059,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Reach",
+      "name": "Ice Sight",
       "kind": "item"
     },
     {
       "id": "hammer-0",
-      "title": "Push",
+      "title": "Hammer Shove",
       "family": "Ballistics",
       "effects": [
         {
@@ -2073,12 +2073,12 @@
           "mode": "add"
         }
       ],
-      "name": "Push",
+      "name": "Hammer Shove",
       "kind": "item"
     },
     {
       "id": "hammer-1",
-      "title": "Big Shots",
+      "title": "Hammer Swell",
       "family": "Ballistics",
       "effects": [
         {
@@ -2087,12 +2087,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Big Shots",
+      "name": "Hammer Swell",
       "kind": "item"
     },
     {
       "id": "guillotine-0",
-      "title": "Finish",
+      "title": "Guillotine Mercy",
       "family": "Assassin",
       "effects": [
         {
@@ -2101,12 +2101,12 @@
           "mode": "add"
         }
       ],
-      "name": "Finish",
+      "name": "Guillotine Mercy",
       "kind": "item"
     },
     {
       "id": "guillotine-1",
-      "title": "Boss Power",
+      "title": "Guillotine Bane",
       "family": "Assassin",
       "effects": [
         {
@@ -2115,12 +2115,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Boss Power",
+      "name": "Guillotine Bane",
       "kind": "item"
     },
     {
       "id": "fang-0",
-      "title": "Vampire",
+      "title": "Fang Thirst",
       "family": "Vampiric",
       "effects": [
         {
@@ -2129,12 +2129,12 @@
           "mode": "add"
         }
       ],
-      "name": "Vampire",
+      "name": "Fang Thirst",
       "kind": "item"
     },
     {
       "id": "fang-1",
-      "title": "Power",
+      "title": "Fang Edge",
       "family": "Vampiric",
       "effects": [
         {
@@ -2143,12 +2143,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Power",
+      "name": "Fang Edge",
       "kind": "item"
     },
     {
       "id": "scope-0",
-      "title": "Critical",
+      "title": "Scope Eye",
       "family": "Precision",
       "effects": [
         {
@@ -2157,12 +2157,12 @@
           "mode": "add"
         }
       ],
-      "name": "Critical",
+      "name": "Scope Eye",
       "kind": "item"
     },
     {
       "id": "scope-1",
-      "title": "Big Critical",
+      "title": "Scope Strike",
       "family": "Precision",
       "effects": [
         {
@@ -2171,12 +2171,12 @@
           "mode": "add"
         }
       ],
-      "name": "Big Critical",
+      "name": "Scope Strike",
       "kind": "item"
     },
     {
       "id": "shrapnel-0",
-      "title": "Boom",
+      "title": "Shrapnel Bang",
       "family": "Explosives",
       "effects": [
         {
@@ -2185,12 +2185,12 @@
           "mode": "add"
         }
       ],
-      "name": "Boom",
+      "name": "Shrapnel Bang",
       "kind": "item"
     },
     {
       "id": "shrapnel-1",
-      "title": "Blast",
+      "title": "Shrapnel Blast",
       "family": "Explosives",
       "effects": [
         {
@@ -2199,12 +2199,12 @@
           "mode": "add"
         }
       ],
-      "name": "Blast",
+      "name": "Shrapnel Blast",
       "kind": "item"
     },
     {
       "id": "stun-0",
-      "title": "Stun",
+      "title": "Stun Daze",
       "family": "Electric",
       "effects": [
         {
@@ -2213,12 +2213,12 @@
           "mode": "add"
         }
       ],
-      "name": "Stun",
+      "name": "Stun Daze",
       "kind": "item"
     },
     {
       "id": "stun-1",
-      "title": "Lightning",
+      "title": "Stun Arc",
       "family": "Electric",
       "effects": [
         {
@@ -2227,12 +2227,12 @@
           "mode": "add"
         }
       ],
-      "name": "Lightning",
+      "name": "Stun Arc",
       "kind": "item"
     },
     {
       "id": "satellite-0",
-      "title": "Orbit",
+      "title": "Satellite Halo",
       "family": "Orbitals",
       "effects": [
         {
@@ -2241,12 +2241,12 @@
           "mode": "add"
         }
       ],
-      "name": "Orbit",
+      "name": "Satellite Halo",
       "kind": "item"
     },
     {
       "id": "satellite-1",
-      "title": "Magnet",
+      "title": "Satellite Pull",
       "family": "Orbitals",
       "effects": [
         {
@@ -2255,12 +2255,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Magnet",
+      "name": "Satellite Pull",
       "kind": "item"
     },
     {
       "id": "cloud-0",
-      "title": "Aura",
+      "title": "Cloud Halo",
       "family": "Aura",
       "effects": [
         {
@@ -2269,12 +2269,12 @@
           "mode": "add"
         }
       ],
-      "name": "Aura",
+      "name": "Cloud Halo",
       "kind": "item"
     },
     {
       "id": "cloud-1",
-      "title": "Poison",
+      "title": "Cloud Fang",
       "family": "Aura",
       "effects": [
         {
@@ -2283,12 +2283,12 @@
           "mode": "add"
         }
       ],
-      "name": "Poison",
+      "name": "Cloud Fang",
       "kind": "item"
     },
     {
       "id": "drone-0",
-      "title": "Drone",
+      "title": "Drone Arc",
       "family": "Engineering",
       "effects": [
         {
@@ -2297,12 +2297,12 @@
           "mode": "add"
         }
       ],
-      "name": "Drone",
+      "name": "Drone Arc",
       "kind": "item"
     },
     {
       "id": "drone-1",
-      "title": "Turret Speed",
+      "title": "Drone Gears",
       "family": "Engineering",
       "effects": [
         {
@@ -2311,12 +2311,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Turret Speed",
+      "name": "Drone Gears",
       "kind": "item"
     },
     {
       "id": "dash-charge-0",
-      "title": "Dash Blast",
+      "title": "Dash Charge Kick",
       "family": "Mobility",
       "effects": [
         {
@@ -2325,12 +2325,12 @@
           "mode": "add"
         }
       ],
-      "name": "Dash Blast",
+      "name": "Dash Charge Kick",
       "kind": "item"
     },
     {
       "id": "dash-charge-1",
-      "title": "Quick Dash",
+      "title": "Dash Charge Step",
       "family": "Mobility",
       "effects": [
         {
@@ -2339,12 +2339,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Quick Dash",
+      "name": "Dash Charge Step",
       "kind": "item"
     },
     {
       "id": "shell-0",
-      "title": "Armor",
+      "title": "Shell Plating",
       "family": "Defense",
       "effects": [
         {
@@ -2353,12 +2353,12 @@
           "mode": "add"
         }
       ],
-      "name": "Armor",
+      "name": "Shell Plating",
       "kind": "item"
     },
     {
       "id": "shell-1",
-      "title": "Health",
+      "title": "Shell Heart",
       "family": "Defense",
       "effects": [
         {
@@ -2367,12 +2367,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Health",
+      "name": "Shell Heart",
       "kind": "item"
     },
     {
       "id": "spring-0",
-      "title": "Dodge",
+      "title": "Spring Slip",
       "family": "Mobility",
       "effects": [
         {
@@ -2381,12 +2381,12 @@
           "mode": "add"
         }
       ],
-      "name": "Dodge",
+      "name": "Spring Slip",
       "kind": "item"
     },
     {
       "id": "spring-1",
-      "title": "Move",
+      "title": "Spring Stride",
       "family": "Mobility",
       "effects": [
         {
@@ -2395,12 +2395,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Move",
+      "name": "Spring Stride",
       "kind": "item"
     },
     {
       "id": "briar-0",
-      "title": "Thorns",
+      "title": "Briar Barbs",
       "family": "Defense",
       "effects": [
         {
@@ -2409,12 +2409,12 @@
           "mode": "add"
         }
       ],
-      "name": "Thorns",
+      "name": "Briar Barbs",
       "kind": "item"
     },
     {
       "id": "briar-1",
-      "title": "Armor",
+      "title": "Briar Plating",
       "family": "Defense",
       "effects": [
         {
@@ -2423,12 +2423,12 @@
           "mode": "add"
         }
       ],
-      "name": "Armor",
+      "name": "Briar Plating",
       "kind": "item"
     },
     {
       "id": "bandage-0",
-      "title": "Heal",
+      "title": "Bandage Mend",
       "family": "Recovery",
       "effects": [
         {
@@ -2437,12 +2437,12 @@
           "mode": "add"
         }
       ],
-      "name": "Heal",
+      "name": "Bandage Mend",
       "kind": "item"
     },
     {
       "id": "bandage-1",
-      "title": "Health",
+      "title": "Bandage Heart",
       "family": "Recovery",
       "effects": [
         {
@@ -2451,12 +2451,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Health",
+      "name": "Bandage Heart",
       "kind": "item"
     },
     {
       "id": "lunch-0",
-      "title": "Health",
+      "title": "Lunch Heart",
       "family": "Recovery",
       "effects": [
         {
@@ -2465,12 +2465,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Health",
+      "name": "Lunch Heart",
       "kind": "item"
     },
     {
       "id": "lunch-1",
-      "title": "Repair",
+      "title": "Lunch Patch",
       "family": "Recovery",
       "effects": [
         {
@@ -2479,12 +2479,12 @@
           "mode": "add"
         }
       ],
-      "name": "Repair",
+      "name": "Lunch Patch",
       "kind": "item"
     },
     {
       "id": "defibrillator-0",
-      "title": "Extra Life",
+      "title": "Defibrillator Lifeline",
       "family": "Recovery",
       "effects": [
         {
@@ -2493,12 +2493,12 @@
           "mode": "add"
         }
       ],
-      "name": "Extra Life",
+      "name": "Defibrillator Lifeline",
       "kind": "item"
     },
     {
       "id": "defibrillator-1",
-      "title": "Heal",
+      "title": "Defibrillator Mend",
       "family": "Recovery",
       "effects": [
         {
@@ -2507,12 +2507,12 @@
           "mode": "add"
         }
       ],
-      "name": "Heal",
+      "name": "Defibrillator Mend",
       "kind": "item"
     },
     {
       "id": "magnet-0",
-      "title": "Magnet",
+      "title": "Magnet Pull",
       "family": "Scavenging",
       "effects": [
         {
@@ -2521,12 +2521,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Magnet",
+      "name": "Magnet Pull",
       "kind": "item"
     },
     {
       "id": "magnet-1",
-      "title": "Magnet",
+      "title": "Magnet Lure",
       "family": "Scavenging",
       "effects": [
         {
@@ -2535,12 +2535,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Magnet",
+      "name": "Magnet Lure",
       "kind": "item"
     },
     {
       "id": "diploma-0",
-      "title": "Learn",
+      "title": "Diploma Lesson",
       "family": "Scavenging",
       "effects": [
         {
@@ -2549,12 +2549,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Learn",
+      "name": "Diploma Lesson",
       "kind": "item"
     },
     {
       "id": "diploma-1",
-      "title": "Reach",
+      "title": "Diploma Sight",
       "family": "Scavenging",
       "effects": [
         {
@@ -2563,12 +2563,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Reach",
+      "name": "Diploma Sight",
       "kind": "item"
     },
     {
       "id": "clover-0",
-      "title": "Lucky",
+      "title": "Clover Charm",
       "family": "Fortune",
       "effects": [
         {
@@ -2577,12 +2577,12 @@
           "mode": "add"
         }
       ],
-      "name": "Lucky",
+      "name": "Clover Charm",
       "kind": "item"
     },
     {
       "id": "clover-1",
-      "title": "Lucky",
+      "title": "Clover Find",
       "family": "Fortune",
       "effects": [
         {
@@ -2591,12 +2591,12 @@
           "mode": "add"
         }
       ],
-      "name": "Lucky",
+      "name": "Clover Find",
       "kind": "item"
     },
     {
       "id": "scrap-0",
-      "title": "Heal",
+      "title": "Scrap Salvage",
       "family": "Engineering",
       "effects": [
         {
@@ -2605,12 +2605,12 @@
           "mode": "add"
         }
       ],
-      "name": "Heal",
+      "name": "Scrap Salvage",
       "kind": "item"
     },
     {
       "id": "scrap-1",
-      "title": "Turret Power",
+      "title": "Scrap Rig",
       "family": "Engineering",
       "effects": [
         {
@@ -2619,12 +2619,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Turret Power",
+      "name": "Scrap Rig",
       "kind": "item"
     },
     {
       "id": "blueprint-0",
-      "title": "Turret Power",
+      "title": "Blueprint Rig",
       "family": "Engineering",
       "effects": [
         {
@@ -2633,12 +2633,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Turret Power",
+      "name": "Blueprint Rig",
       "kind": "item"
     },
     {
       "id": "blueprint-1",
-      "title": "Turret Life",
+      "title": "Blueprint Crew",
       "family": "Engineering",
       "effects": [
         {
@@ -2647,12 +2647,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Turret Life",
+      "name": "Blueprint Crew",
       "kind": "item"
     },
     {
       "id": "servo-0",
-      "title": "Turret Speed",
+      "title": "Servo Gears",
       "family": "Engineering",
       "effects": [
         {
@@ -2661,12 +2661,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Turret Speed",
+      "name": "Servo Gears",
       "kind": "item"
     },
     {
       "id": "servo-1",
-      "title": "Turret Reach",
+      "title": "Servo Antenna",
       "family": "Engineering",
       "effects": [
         {
@@ -2675,12 +2675,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Turret Reach",
+      "name": "Servo Antenna",
       "kind": "item"
     },
     {
       "id": "wrench-0",
-      "title": "Repair",
+      "title": "Wrench Patch",
       "family": "Engineering",
       "effects": [
         {
@@ -2689,12 +2689,12 @@
           "mode": "add"
         }
       ],
-      "name": "Repair",
+      "name": "Wrench Patch",
       "kind": "item"
     },
     {
       "id": "wrench-1",
-      "title": "Turret Life",
+      "title": "Wrench Rig",
       "family": "Engineering",
       "effects": [
         {
@@ -2703,12 +2703,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Turret Life",
+      "name": "Wrench Rig",
       "kind": "item"
     },
     {
       "id": "antenna-0",
-      "title": "Turret Reach",
+      "title": "Antenna Lookout",
       "family": "Engineering",
       "effects": [
         {
@@ -2717,12 +2717,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Turret Reach",
+      "name": "Antenna Lookout",
       "kind": "item"
     },
     {
       "id": "antenna-1",
-      "title": "Turret Power",
+      "title": "Antenna Rig",
       "family": "Engineering",
       "effects": [
         {
@@ -2731,12 +2731,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Turret Power",
+      "name": "Antenna Rig",
       "kind": "item"
     },
     {
       "id": "battery-0",
-      "title": "Turret Power",
+      "title": "Battery Rig",
       "family": "Engineering",
       "effects": [
         {
@@ -2745,12 +2745,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Turret Power",
+      "name": "Battery Rig",
       "kind": "item"
     },
     {
       "id": "battery-1",
-      "title": "Turret Life",
+      "title": "Battery Crew",
       "family": "Engineering",
       "effects": [
         {
@@ -2759,12 +2759,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Turret Life",
+      "name": "Battery Crew",
       "kind": "item"
     },
     {
       "id": "boots-0",
-      "title": "Move",
+      "title": "Boots Stride",
       "family": "Mobility",
       "effects": [
         {
@@ -2773,12 +2773,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Move",
+      "name": "Boots Stride",
       "kind": "item"
     },
     {
       "id": "boots-1",
-      "title": "Quick Dash",
+      "title": "Boots Step",
       "family": "Mobility",
       "effects": [
         {
@@ -2787,12 +2787,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Quick Dash",
+      "name": "Boots Step",
       "kind": "item"
     },
     {
       "id": "barrel-0",
-      "title": "Reach",
+      "title": "Barrel Sight",
       "family": "Ballistics",
       "effects": [
         {
@@ -2801,12 +2801,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Reach",
+      "name": "Barrel Sight",
       "kind": "item"
     },
     {
       "id": "barrel-1",
-      "title": "Fast Shots",
+      "title": "Barrel Zip",
       "family": "Ballistics",
       "effects": [
         {
@@ -2815,12 +2815,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Fast Shots",
+      "name": "Barrel Zip",
       "kind": "item"
     },
     {
       "id": "trigger-0",
-      "title": "Speed",
+      "title": "Trigger Rush",
       "family": "Ballistics",
       "effects": [
         {
@@ -2829,12 +2829,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Speed",
+      "name": "Trigger Rush",
       "kind": "item"
     },
     {
       "id": "trigger-1",
-      "title": "Power",
+      "title": "Trigger Edge",
       "family": "Ballistics",
       "effects": [
         {
@@ -2843,12 +2843,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Power",
+      "name": "Trigger Edge",
       "kind": "item"
     },
     {
       "id": "giant-0",
-      "title": "Big Shots",
+      "title": "Giant Swell",
       "family": "Ballistics",
       "effects": [
         {
@@ -2857,12 +2857,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Big Shots",
+      "name": "Giant Swell",
       "kind": "item"
     },
     {
       "id": "giant-1",
-      "title": "Push",
+      "title": "Giant Shove",
       "family": "Ballistics",
       "effects": [
         {
@@ -2871,12 +2871,12 @@
           "mode": "add"
         }
       ],
-      "name": "Push",
+      "name": "Giant Shove",
       "kind": "item"
     },
     {
       "id": "boss-tax-0",
-      "title": "Boss Power",
+      "title": "Boss Tax Bane",
       "family": "Assassin",
       "effects": [
         {
@@ -2885,12 +2885,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Boss Power",
+      "name": "Boss Tax Bane",
       "kind": "item"
     },
     {
       "id": "boss-tax-1",
-      "title": "Critical",
+      "title": "Boss Tax Eye",
       "family": "Assassin",
       "effects": [
         {
@@ -2899,12 +2899,12 @@
           "mode": "add"
         }
       ],
-      "name": "Critical",
+      "name": "Boss Tax Eye",
       "kind": "item"
     },
     {
       "id": "comet-0",
-      "title": "Fire",
+      "title": "Comet Ember",
       "family": "Explosives",
       "effects": [
         {
@@ -2913,12 +2913,12 @@
           "mode": "add"
         }
       ],
-      "name": "Fire",
+      "name": "Comet Ember",
       "kind": "item"
     },
     {
       "id": "comet-1",
-      "title": "Boom",
+      "title": "Comet Bang",
       "family": "Explosives",
       "effects": [
         {
@@ -2927,12 +2927,12 @@
           "mode": "add"
         }
       ],
-      "name": "Boom",
+      "name": "Comet Bang",
       "kind": "item"
     },
     {
       "id": "snowstorm-0",
-      "title": "Ice",
+      "title": "Snowstorm Chill",
       "family": "Frost",
       "effects": [
         {
@@ -2941,12 +2941,12 @@
           "mode": "add"
         }
       ],
-      "name": "Ice",
+      "name": "Snowstorm Chill",
       "kind": "item"
     },
     {
       "id": "snowstorm-1",
-      "title": "Lightning",
+      "title": "Snowstorm Arc",
       "family": "Frost",
       "effects": [
         {
@@ -2955,12 +2955,12 @@
           "mode": "add"
         }
       ],
-      "name": "Lightning",
+      "name": "Snowstorm Arc",
       "kind": "item"
     },
     {
       "id": "rot-0",
-      "title": "Poison",
+      "title": "Rot Fang",
       "family": "Toxic",
       "effects": [
         {
@@ -2969,12 +2969,12 @@
           "mode": "add"
         }
       ],
-      "name": "Poison",
+      "name": "Rot Fang",
       "kind": "item"
     },
     {
       "id": "rot-1",
-      "title": "Aura",
+      "title": "Rot Halo",
       "family": "Toxic",
       "effects": [
         {
@@ -2983,12 +2983,12 @@
           "mode": "add"
         }
       ],
-      "name": "Aura",
+      "name": "Rot Halo",
       "kind": "item"
     },
     {
       "id": "leech-0",
-      "title": "Vampire",
+      "title": "Leech Thirst",
       "family": "Vampiric",
       "effects": [
         {
@@ -2997,12 +2997,12 @@
           "mode": "add"
         }
       ],
-      "name": "Vampire",
+      "name": "Leech Thirst",
       "kind": "item"
     },
     {
       "id": "leech-1",
-      "title": "Repair",
+      "title": "Leech Patch",
       "family": "Vampiric",
       "effects": [
         {
@@ -3011,12 +3011,12 @@
           "mode": "add"
         }
       ],
-      "name": "Repair",
+      "name": "Leech Patch",
       "kind": "item"
     },
     {
       "id": "phase-cloak-0",
-      "title": "Ghost",
+      "title": "Phase Cloak Shade",
       "family": "Spectral",
       "effects": [
         {
@@ -3025,12 +3025,12 @@
           "mode": "add"
         }
       ],
-      "name": "Ghost",
+      "name": "Phase Cloak Shade",
       "kind": "item"
     },
     {
       "id": "phase-cloak-1",
-      "title": "Dodge",
+      "title": "Phase Cloak Slip",
       "family": "Spectral",
       "effects": [
         {
@@ -3039,12 +3039,12 @@
           "mode": "add"
         }
       ],
-      "name": "Dodge",
+      "name": "Phase Cloak Slip",
       "kind": "item"
     },
     {
       "id": "mole-claws-0",
-      "title": "Mole",
+      "title": "Mole Claws Tunnel",
       "family": "Burrowing",
       "effects": [
         {
@@ -3053,12 +3053,12 @@
           "mode": "add"
         }
       ],
-      "name": "Mole",
+      "name": "Mole Claws Tunnel",
       "kind": "item"
     },
     {
       "id": "mole-claws-1",
-      "title": "Move",
+      "title": "Mole Claws Stride",
       "family": "Burrowing",
       "effects": [
         {
@@ -3067,12 +3067,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Move",
+      "name": "Mole Claws Stride",
       "kind": "item"
     },
     {
       "id": "ink-0",
-      "title": "Blind",
+      "title": "Ink Shroud",
       "family": "Shadow",
       "effects": [
         {
@@ -3081,12 +3081,12 @@
           "mode": "add"
         }
       ],
-      "name": "Blind",
+      "name": "Ink Shroud",
       "kind": "item"
     },
     {
       "id": "ink-1",
-      "title": "Power",
+      "title": "Ink Edge",
       "family": "Shadow",
       "effects": [
         {
@@ -3095,12 +3095,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Power",
+      "name": "Ink Edge",
       "kind": "item"
     },
     {
       "id": "absolute-zero-0",
-      "title": "Freeze",
+      "title": "Absolute Zero Frost",
       "family": "Frost",
       "effects": [
         {
@@ -3109,12 +3109,12 @@
           "mode": "add"
         }
       ],
-      "name": "Freeze",
+      "name": "Absolute Zero Frost",
       "kind": "item"
     },
     {
       "id": "absolute-zero-1",
-      "title": "Ice",
+      "title": "Absolute Zero Chill",
       "family": "Frost",
       "effects": [
         {
@@ -3123,12 +3123,12 @@
           "mode": "add"
         }
       ],
-      "name": "Ice",
+      "name": "Absolute Zero Chill",
       "kind": "item"
     },
     {
       "id": "bubble-0",
-      "title": "Shield",
+      "title": "Bubble Ward",
       "family": "Defense",
       "effects": [
         {
@@ -3137,12 +3137,12 @@
           "mode": "add"
         }
       ],
-      "name": "Shield",
+      "name": "Bubble Ward",
       "kind": "item"
     },
     {
       "id": "bubble-1",
-      "title": "Armor",
+      "title": "Bubble Plating",
       "family": "Defense",
       "effects": [
         {
@@ -3151,12 +3151,12 @@
           "mode": "add"
         }
       ],
-      "name": "Armor",
+      "name": "Bubble Plating",
       "kind": "item"
     },
     {
       "id": "rage-0",
-      "title": "Rage",
+      "title": "Rage Frenzy",
       "family": "Berserker",
       "effects": [
         {
@@ -3165,12 +3165,12 @@
           "mode": "add"
         }
       ],
-      "name": "Rage",
+      "name": "Rage Frenzy",
       "kind": "item"
     },
     {
       "id": "rage-1",
-      "title": "Speed",
+      "title": "Rage Rush",
       "family": "Berserker",
       "effects": [
         {
@@ -3179,12 +3179,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Speed",
+      "name": "Rage Rush",
       "kind": "item"
     },
     {
       "id": "bounce-0",
-      "title": "Bounce",
+      "title": "Bounce Rebound",
       "family": "Ballistics",
       "effects": [
         {
@@ -3193,12 +3193,12 @@
           "mode": "add"
         }
       ],
-      "name": "Bounce",
+      "name": "Bounce Rebound",
       "kind": "item"
     },
     {
       "id": "bounce-1",
-      "title": "Power",
+      "title": "Bounce Edge",
       "family": "Ballistics",
       "effects": [
         {
@@ -3207,12 +3207,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Power",
+      "name": "Bounce Edge",
       "kind": "item"
     },
     {
       "id": "storm-bottle-0",
-      "title": "Storm",
+      "title": "Storm Bottle Thunder",
       "family": "Storm",
       "effects": [
         {
@@ -3221,12 +3221,12 @@
           "mode": "add"
         }
       ],
-      "name": "Storm",
+      "name": "Storm Bottle Thunder",
       "kind": "item"
     },
     {
       "id": "storm-bottle-1",
-      "title": "Lightning",
+      "title": "Storm Bottle Arc",
       "family": "Storm",
       "effects": [
         {
@@ -3235,12 +3235,12 @@
           "mode": "add"
         }
       ],
-      "name": "Lightning",
+      "name": "Storm Bottle Arc",
       "kind": "item"
     },
     {
       "id": "nova-core-0",
-      "title": "Nova",
+      "title": "Nova Core Flare",
       "family": "Arcane",
       "effects": [
         {
@@ -3249,12 +3249,12 @@
           "mode": "add"
         }
       ],
-      "name": "Nova",
+      "name": "Nova Core Flare",
       "kind": "item"
     },
     {
       "id": "nova-core-1",
-      "title": "Reach",
+      "title": "Nova Core Sight",
       "family": "Arcane",
       "effects": [
         {
@@ -3263,12 +3263,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Reach",
+      "name": "Nova Core Sight",
       "kind": "item"
     },
     {
       "id": "mushroom-0",
-      "title": "Poison Cloud",
+      "title": "Mushroom Puddle",
       "family": "Toxic",
       "effects": [
         {
@@ -3277,12 +3277,12 @@
           "mode": "add"
         }
       ],
-      "name": "Poison Cloud",
+      "name": "Mushroom Puddle",
       "kind": "item"
     },
     {
       "id": "mushroom-1",
-      "title": "Poison",
+      "title": "Mushroom Fang",
       "family": "Toxic",
       "effects": [
         {
@@ -3291,12 +3291,12 @@
           "mode": "add"
         }
       ],
-      "name": "Poison",
+      "name": "Mushroom Fang",
       "kind": "item"
     },
     {
       "id": "return-0",
-      "title": "Return",
+      "title": "Return Loop",
       "family": "Ballistics",
       "effects": [
         {
@@ -3305,12 +3305,12 @@
           "mode": "add"
         }
       ],
-      "name": "Return",
+      "name": "Return Loop",
       "kind": "item"
     },
     {
       "id": "return-1",
-      "title": "Pierce",
+      "title": "Return Lance",
       "family": "Ballistics",
       "effects": [
         {
@@ -3319,12 +3319,12 @@
           "mode": "add"
         }
       ],
-      "name": "Pierce",
+      "name": "Return Lance",
       "kind": "item"
     },
     {
       "id": "thorn-crown-0",
-      "title": "Thorns",
+      "title": "Thorn Crown Barbs",
       "family": "Nature",
       "effects": [
         {
@@ -3333,12 +3333,12 @@
           "mode": "add"
         }
       ],
-      "name": "Thorns",
+      "name": "Thorn Crown Barbs",
       "kind": "item"
     },
     {
       "id": "thorn-crown-1",
-      "title": "Aura",
+      "title": "Thorn Crown Halo",
       "family": "Nature",
       "effects": [
         {
@@ -3347,12 +3347,12 @@
           "mode": "add"
         }
       ],
-      "name": "Aura",
+      "name": "Thorn Crown Halo",
       "kind": "item"
     },
     {
       "id": "vampire-heart-0",
-      "title": "Vampire",
+      "title": "Vampire Heart Thirst",
       "family": "Vampiric",
       "effects": [
         {
@@ -3361,12 +3361,12 @@
           "mode": "add"
         }
       ],
-      "name": "Vampire",
+      "name": "Vampire Heart Thirst",
       "kind": "item"
     },
     {
       "id": "vampire-heart-1",
-      "title": "Speed",
+      "title": "Vampire Heart Rush",
       "family": "Vampiric",
       "effects": [
         {
@@ -3375,12 +3375,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Speed",
+      "name": "Vampire Heart Rush",
       "kind": "item"
     },
     {
       "id": "hellfire-0",
-      "title": "Fire",
+      "title": "Hellfire Ember",
       "family": "Fire",
       "effects": [
         {
@@ -3389,12 +3389,12 @@
           "mode": "add"
         }
       ],
-      "name": "Fire",
+      "name": "Hellfire Ember",
       "kind": "item"
     },
     {
       "id": "hellfire-1",
-      "title": "Boom",
+      "title": "Hellfire Bang",
       "family": "Fire",
       "effects": [
         {
@@ -3403,12 +3403,12 @@
           "mode": "add"
         }
       ],
-      "name": "Boom",
+      "name": "Hellfire Bang",
       "kind": "item"
     },
     {
       "id": "tank-shell-0",
-      "title": "Health",
+      "title": "Tank Shell Heart",
       "family": "Defense",
       "effects": [
         {
@@ -3417,12 +3417,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Health",
+      "name": "Tank Shell Heart",
       "kind": "item"
     },
     {
       "id": "tank-shell-1",
-      "title": "Shield",
+      "title": "Tank Shell Ward",
       "family": "Defense",
       "effects": [
         {
@@ -3431,12 +3431,12 @@
           "mode": "add"
         }
       ],
-      "name": "Shield",
+      "name": "Tank Shell Ward",
       "kind": "item"
     },
     {
       "id": "ghost-orb-0",
-      "title": "Ghost",
+      "title": "Ghost Orb Phase",
       "family": "Spectral",
       "effects": [
         {
@@ -3445,12 +3445,12 @@
           "mode": "add"
         }
       ],
-      "name": "Ghost",
+      "name": "Ghost Orb Phase",
       "kind": "item"
     },
     {
       "id": "ghost-orb-1",
-      "title": "Orbit",
+      "title": "Ghost Orb Halo",
       "family": "Spectral",
       "effects": [
         {
@@ -3459,12 +3459,12 @@
           "mode": "add"
         }
       ],
-      "name": "Orbit",
+      "name": "Ghost Orb Halo",
       "kind": "item"
     },
     {
       "id": "mole-drill-0",
-      "title": "Mole",
+      "title": "Mole Drill Tunnel",
       "family": "Burrowing",
       "effects": [
         {
@@ -3473,12 +3473,12 @@
           "mode": "add"
         }
       ],
-      "name": "Mole",
+      "name": "Mole Drill Tunnel",
       "kind": "item"
     },
     {
       "id": "mole-drill-1",
-      "title": "Quick Dash",
+      "title": "Mole Drill Step",
       "family": "Burrowing",
       "effects": [
         {
@@ -3487,12 +3487,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Quick Dash",
+      "name": "Mole Drill Step",
       "kind": "item"
     },
     {
       "id": "blindfold-0",
-      "title": "Blind",
+      "title": "Blindfold Shroud",
       "family": "Shadow",
       "effects": [
         {
@@ -3501,12 +3501,12 @@
           "mode": "add"
         }
       ],
-      "name": "Blind",
+      "name": "Blindfold Shroud",
       "kind": "item"
     },
     {
       "id": "blindfold-1",
-      "title": "Critical",
+      "title": "Blindfold Eye",
       "family": "Shadow",
       "effects": [
         {
@@ -3515,12 +3515,12 @@
           "mode": "add"
         }
       ],
-      "name": "Critical",
+      "name": "Blindfold Eye",
       "kind": "item"
     },
     {
       "id": "chaos-0",
-      "title": "Storm",
+      "title": "Chaos Storm",
       "family": "Chaos",
       "effects": [
         {
@@ -3529,12 +3529,12 @@
           "mode": "add"
         }
       ],
-      "name": "Storm",
+      "name": "Chaos Storm",
       "kind": "item"
     },
     {
       "id": "chaos-1",
-      "title": "Nova",
+      "title": "Chaos Nova",
       "family": "Chaos",
       "effects": [
         {
@@ -3543,12 +3543,12 @@
           "mode": "add"
         }
       ],
-      "name": "Nova",
+      "name": "Chaos Nova",
       "kind": "item"
     },
     {
       "id": "ice-heart-0",
-      "title": "Freeze",
+      "title": "Ice Heart Frost",
       "family": "Frost",
       "effects": [
         {
@@ -3557,12 +3557,12 @@
           "mode": "add"
         }
       ],
-      "name": "Freeze",
+      "name": "Ice Heart Frost",
       "kind": "item"
     },
     {
       "id": "ice-heart-1",
-      "title": "Shield",
+      "title": "Ice Heart Ward",
       "family": "Frost",
       "effects": [
         {
@@ -3571,12 +3571,12 @@
           "mode": "add"
         }
       ],
-      "name": "Shield",
+      "name": "Ice Heart Ward",
       "kind": "item"
     },
     {
       "id": "union-0",
-      "title": "Turret Power",
+      "title": "Union Rig",
       "family": "Engineering",
       "effects": [
         {
@@ -3585,12 +3585,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Turret Power",
+      "name": "Union Rig",
       "kind": "skill"
     },
     {
       "id": "union-1",
-      "title": "Turret Power",
+      "title": "Union Crew",
       "family": "Engineering",
       "effects": [
         {
@@ -3599,12 +3599,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Turret Power",
+      "name": "Union Crew",
       "kind": "skill"
     },
     {
       "id": "overtime-0",
-      "title": "Turret Speed",
+      "title": "Overtime Gears",
       "family": "Engineering",
       "effects": [
         {
@@ -3613,12 +3613,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Turret Speed",
+      "name": "Overtime Gears",
       "kind": "skill"
     },
     {
       "id": "overtime-1",
-      "title": "Turret Life",
+      "title": "Overtime Rig",
       "family": "Engineering",
       "effects": [
         {
@@ -3627,12 +3627,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Turret Life",
+      "name": "Overtime Rig",
       "kind": "skill"
     },
     {
       "id": "remote-0",
-      "title": "Turret Reach",
+      "title": "Remote Antenna",
       "family": "Engineering",
       "effects": [
         {
@@ -3641,12 +3641,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Turret Reach",
+      "name": "Remote Antenna",
       "kind": "skill"
     },
     {
       "id": "remote-1",
-      "title": "Magnet",
+      "title": "Remote Pull",
       "family": "Engineering",
       "effects": [
         {
@@ -3655,12 +3655,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Magnet",
+      "name": "Remote Pull",
       "kind": "skill"
     },
     {
       "id": "warranty-0",
-      "title": "Turret Life",
+      "title": "Warranty Rig",
       "family": "Engineering",
       "effects": [
         {
@@ -3669,12 +3669,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Turret Life",
+      "name": "Warranty Rig",
       "kind": "skill"
     },
     {
       "id": "warranty-1",
-      "title": "Repair",
+      "title": "Warranty Patch",
       "family": "Engineering",
       "effects": [
         {
@@ -3683,12 +3683,12 @@
           "mode": "add"
         }
       ],
-      "name": "Repair",
+      "name": "Warranty Patch",
       "kind": "skill"
     },
     {
       "id": "scrapper-0",
-      "title": "Heal",
+      "title": "Scrapper Scraps",
       "family": "Engineering",
       "effects": [
         {
@@ -3697,12 +3697,12 @@
           "mode": "add"
         }
       ],
-      "name": "Heal",
+      "name": "Scrapper Scraps",
       "kind": "skill"
     },
     {
       "id": "scrapper-1",
-      "title": "Learn",
+      "title": "Scrapper Lesson",
       "family": "Engineering",
       "effects": [
         {
@@ -3711,12 +3711,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Learn",
+      "name": "Scrapper Lesson",
       "kind": "skill"
     },
     {
       "id": "interns-0",
-      "title": "Drone",
+      "title": "Interns Arc",
       "family": "Engineering",
       "effects": [
         {
@@ -3725,12 +3725,12 @@
           "mode": "add"
         }
       ],
-      "name": "Drone",
+      "name": "Interns Arc",
       "kind": "skill"
     },
     {
       "id": "interns-1",
-      "title": "Turret Power",
+      "title": "Interns Rig",
       "family": "Engineering",
       "effects": [
         {
@@ -3739,12 +3739,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Turret Power",
+      "name": "Interns Rig",
       "kind": "skill"
     },
     {
       "id": "field-medic-0",
-      "title": "Repair",
+      "title": "Field Medic Patch",
       "family": "Engineering",
       "effects": [
         {
@@ -3753,12 +3753,12 @@
           "mode": "add"
         }
       ],
-      "name": "Repair",
+      "name": "Field Medic Patch",
       "kind": "skill"
     },
     {
       "id": "field-medic-1",
-      "title": "Heal",
+      "title": "Field Medic Mend",
       "family": "Engineering",
       "effects": [
         {
@@ -3767,12 +3767,12 @@
           "mode": "add"
         }
       ],
-      "name": "Heal",
+      "name": "Field Medic Mend",
       "kind": "skill"
     },
     {
       "id": "automation-0",
-      "title": "Turret Speed",
+      "title": "Automation Gears",
       "family": "Engineering",
       "effects": [
         {
@@ -3781,12 +3781,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Turret Speed",
+      "name": "Automation Gears",
       "kind": "skill"
     },
     {
       "id": "automation-1",
-      "title": "Turret Power",
+      "title": "Automation Rig",
       "family": "Engineering",
       "effects": [
         {
@@ -3795,12 +3795,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Turret Power",
+      "name": "Automation Rig",
       "kind": "skill"
     },
     {
       "id": "blood-0",
-      "title": "Vampire",
+      "title": "Blood Thirst",
       "family": "Vampiric",
       "effects": [
         {
@@ -3809,12 +3809,12 @@
           "mode": "add"
         }
       ],
-      "name": "Vampire",
+      "name": "Blood Thirst",
       "kind": "skill"
     },
     {
       "id": "blood-1",
-      "title": "Health",
+      "title": "Blood Heart",
       "family": "Vampiric",
       "effects": [
         {
@@ -3823,12 +3823,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Health",
+      "name": "Blood Heart",
       "kind": "skill"
     },
     {
       "id": "red-mist-0",
-      "title": "Vampire",
+      "title": "Red Mist Thirst",
       "family": "Vampiric",
       "effects": [
         {
@@ -3837,12 +3837,12 @@
           "mode": "add"
         }
       ],
-      "name": "Vampire",
+      "name": "Red Mist Thirst",
       "kind": "skill"
     },
     {
       "id": "red-mist-1",
-      "title": "Boom",
+      "title": "Red Mist Bang",
       "family": "Vampiric",
       "effects": [
         {
@@ -3851,12 +3851,12 @@
           "mode": "add"
         }
       ],
-      "name": "Boom",
+      "name": "Red Mist Bang",
       "kind": "skill"
     },
     {
       "id": "fast-0",
-      "title": "Move",
+      "title": "Fast Stride",
       "family": "Mobility",
       "effects": [
         {
@@ -3865,12 +3865,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Move",
+      "name": "Fast Stride",
       "kind": "skill"
     },
     {
       "id": "fast-1",
-      "title": "Dodge",
+      "title": "Fast Slip",
       "family": "Mobility",
       "effects": [
         {
@@ -3879,12 +3879,12 @@
           "mode": "add"
         }
       ],
-      "name": "Dodge",
+      "name": "Fast Slip",
       "kind": "skill"
     },
     {
       "id": "blink-0",
-      "title": "Quick Dash",
+      "title": "Blink Step",
       "family": "Mobility",
       "effects": [
         {
@@ -3893,12 +3893,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Quick Dash",
+      "name": "Blink Step",
       "kind": "skill"
     },
     {
       "id": "blink-1",
-      "title": "Dash Blast",
+      "title": "Blink Kick",
       "family": "Mobility",
       "effects": [
         {
@@ -3907,12 +3907,12 @@
           "mode": "add"
         }
       ],
-      "name": "Dash Blast",
+      "name": "Blink Kick",
       "kind": "skill"
     },
     {
       "id": "impact-0",
-      "title": "Dash Blast",
+      "title": "Impact Kick",
       "family": "Mobility",
       "effects": [
         {
@@ -3921,12 +3921,12 @@
           "mode": "add"
         }
       ],
-      "name": "Dash Blast",
+      "name": "Impact Kick",
       "kind": "skill"
     },
     {
       "id": "impact-1",
-      "title": "Push",
+      "title": "Impact Shove",
       "family": "Mobility",
       "effects": [
         {
@@ -3935,12 +3935,12 @@
           "mode": "add"
         }
       ],
-      "name": "Push",
+      "name": "Impact Shove",
       "kind": "skill"
     },
     {
       "id": "slippery-0",
-      "title": "Dodge",
+      "title": "Slippery Slip",
       "family": "Mobility",
       "effects": [
         {
@@ -3949,12 +3949,12 @@
           "mode": "add"
         }
       ],
-      "name": "Dodge",
+      "name": "Slippery Slip",
       "kind": "skill"
     },
     {
       "id": "slippery-1",
-      "title": "Move",
+      "title": "Slippery Stride",
       "family": "Mobility",
       "effects": [
         {
@@ -3963,12 +3963,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Move",
+      "name": "Slippery Stride",
       "kind": "skill"
     },
     {
       "id": "thick-0",
-      "title": "Armor",
+      "title": "Thick Plating",
       "family": "Defense",
       "effects": [
         {
@@ -3977,12 +3977,12 @@
           "mode": "add"
         }
       ],
-      "name": "Armor",
+      "name": "Thick Plating",
       "kind": "skill"
     },
     {
       "id": "thick-1",
-      "title": "Health",
+      "title": "Thick Heart",
       "family": "Defense",
       "effects": [
         {
@@ -3991,12 +3991,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Health",
+      "name": "Thick Heart",
       "kind": "skill"
     },
     {
       "id": "spiky-0",
-      "title": "Thorns",
+      "title": "Spiky Barbs",
       "family": "Defense",
       "effects": [
         {
@@ -4005,12 +4005,12 @@
           "mode": "add"
         }
       ],
-      "name": "Thorns",
+      "name": "Spiky Barbs",
       "kind": "skill"
     },
     {
       "id": "spiky-1",
-      "title": "Armor",
+      "title": "Spiky Plating",
       "family": "Defense",
       "effects": [
         {
@@ -4019,12 +4019,12 @@
           "mode": "add"
         }
       ],
-      "name": "Armor",
+      "name": "Spiky Plating",
       "kind": "skill"
     },
     {
       "id": "lunch-break-0",
-      "title": "Heal",
+      "title": "Lunch Break Mend",
       "family": "Recovery",
       "effects": [
         {
@@ -4033,12 +4033,12 @@
           "mode": "add"
         }
       ],
-      "name": "Heal",
+      "name": "Lunch Break Mend",
       "kind": "skill"
     },
     {
       "id": "lunch-break-1",
-      "title": "Health",
+      "title": "Lunch Break Heart",
       "family": "Recovery",
       "effects": [
         {
@@ -4047,12 +4047,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Health",
+      "name": "Lunch Break Heart",
       "kind": "skill"
     },
     {
       "id": "second-0",
-      "title": "Health",
+      "title": "Second Heart",
       "family": "Recovery",
       "effects": [
         {
@@ -4061,12 +4061,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Health",
+      "name": "Second Heart",
       "kind": "skill"
     },
     {
       "id": "second-1",
-      "title": "Repair",
+      "title": "Second Patch",
       "family": "Recovery",
       "effects": [
         {
@@ -4075,12 +4075,12 @@
           "mode": "add"
         }
       ],
-      "name": "Repair",
+      "name": "Second Patch",
       "kind": "skill"
     },
     {
       "id": "insurance-0",
-      "title": "Extra Life",
+      "title": "Insurance Lifeline",
       "family": "Recovery",
       "effects": [
         {
@@ -4089,12 +4089,12 @@
           "mode": "add"
         }
       ],
-      "name": "Extra Life",
+      "name": "Insurance Lifeline",
       "kind": "skill"
     },
     {
       "id": "insurance-1",
-      "title": "Health",
+      "title": "Insurance Heart",
       "family": "Recovery",
       "effects": [
         {
@@ -4103,12 +4103,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Health",
+      "name": "Insurance Heart",
       "kind": "skill"
     },
     {
       "id": "critical-0",
-      "title": "Critical",
+      "title": "Critical Eye",
       "family": "Precision",
       "effects": [
         {
@@ -4117,12 +4117,12 @@
           "mode": "add"
         }
       ],
-      "name": "Critical",
+      "name": "Critical Eye",
       "kind": "skill"
     },
     {
       "id": "critical-1",
-      "title": "Big Critical",
+      "title": "Critical Strike",
       "family": "Precision",
       "effects": [
         {
@@ -4131,12 +4131,12 @@
           "mode": "add"
         }
       ],
-      "name": "Big Critical",
+      "name": "Critical Strike",
       "kind": "skill"
     },
     {
       "id": "headhunter-0",
-      "title": "Boss Power",
+      "title": "Headhunter Bane",
       "family": "Assassin",
       "effects": [
         {
@@ -4145,12 +4145,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Boss Power",
+      "name": "Headhunter Bane",
       "kind": "skill"
     },
     {
       "id": "headhunter-1",
-      "title": "Finish",
+      "title": "Headhunter Mercy",
       "family": "Assassin",
       "effects": [
         {
@@ -4159,12 +4159,12 @@
           "mode": "add"
         }
       ],
-      "name": "Finish",
+      "name": "Headhunter Mercy",
       "kind": "skill"
     },
     {
       "id": "finish-0",
-      "title": "Finish",
+      "title": "Finish Mercy",
       "family": "Assassin",
       "effects": [
         {
@@ -4173,12 +4173,12 @@
           "mode": "add"
         }
       ],
-      "name": "Finish",
+      "name": "Finish Mercy",
       "kind": "skill"
     },
     {
       "id": "finish-1",
-      "title": "Power",
+      "title": "Finish Edge",
       "family": "Assassin",
       "effects": [
         {
@@ -4187,12 +4187,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Power",
+      "name": "Finish Edge",
       "kind": "skill"
     },
     {
       "id": "rapid-0",
-      "title": "Speed",
+      "title": "Rapid Rush",
       "family": "Ballistics",
       "effects": [
         {
@@ -4201,12 +4201,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Speed",
+      "name": "Rapid Rush",
       "kind": "skill"
     },
     {
       "id": "rapid-1",
-      "title": "Fast Shots",
+      "title": "Rapid Zip",
       "family": "Ballistics",
       "effects": [
         {
@@ -4215,12 +4215,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Fast Shots",
+      "name": "Rapid Zip",
       "kind": "skill"
     },
     {
       "id": "heavy-0",
-      "title": "Power",
+      "title": "Heavy Edge",
       "family": "Ballistics",
       "effects": [
         {
@@ -4229,12 +4229,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Power",
+      "name": "Heavy Edge",
       "kind": "skill"
     },
     {
       "id": "heavy-1",
-      "title": "Push",
+      "title": "Heavy Shove",
       "family": "Ballistics",
       "effects": [
         {
@@ -4243,12 +4243,12 @@
           "mode": "add"
         }
       ],
-      "name": "Push",
+      "name": "Heavy Shove",
       "kind": "skill"
     },
     {
       "id": "fan-0",
-      "title": "More Shots",
+      "title": "Fan Spread",
       "family": "Ballistics",
       "effects": [
         {
@@ -4257,12 +4257,12 @@
           "mode": "add"
         }
       ],
-      "name": "More Shots",
+      "name": "Fan Spread",
       "kind": "skill"
     },
     {
       "id": "fan-1",
-      "title": "Reach",
+      "title": "Fan Sight",
       "family": "Ballistics",
       "effects": [
         {
@@ -4271,12 +4271,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Reach",
+      "name": "Fan Sight",
       "kind": "skill"
     },
     {
       "id": "piercing-0",
-      "title": "Pierce",
+      "title": "Piercing Lance",
       "family": "Ballistics",
       "effects": [
         {
@@ -4285,12 +4285,12 @@
           "mode": "add"
         }
       ],
-      "name": "Pierce",
+      "name": "Piercing Lance",
       "kind": "skill"
     },
     {
       "id": "piercing-1",
-      "title": "Big Shots",
+      "title": "Piercing Swell",
       "family": "Ballistics",
       "effects": [
         {
@@ -4299,12 +4299,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Big Shots",
+      "name": "Piercing Swell",
       "kind": "skill"
     },
     {
       "id": "boom-0",
-      "title": "Blast",
+      "title": "Boom Blast",
       "family": "Explosives",
       "effects": [
         {
@@ -4313,12 +4313,12 @@
           "mode": "add"
         }
       ],
-      "name": "Blast",
+      "name": "Boom Blast",
       "kind": "skill"
     },
     {
       "id": "boom-1",
-      "title": "Boom",
+      "title": "Boom Bang",
       "family": "Explosives",
       "effects": [
         {
@@ -4327,12 +4327,12 @@
           "mode": "add"
         }
       ],
-      "name": "Boom",
+      "name": "Boom Bang",
       "kind": "skill"
     },
     {
       "id": "pyro-0",
-      "title": "Fire",
+      "title": "Pyro Ember",
       "family": "Fire",
       "effects": [
         {
@@ -4341,12 +4341,12 @@
           "mode": "add"
         }
       ],
-      "name": "Fire",
+      "name": "Pyro Ember",
       "kind": "skill"
     },
     {
       "id": "pyro-1",
-      "title": "Power",
+      "title": "Pyro Edge",
       "family": "Fire",
       "effects": [
         {
@@ -4355,12 +4355,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Power",
+      "name": "Pyro Edge",
       "kind": "skill"
     },
     {
       "id": "toxic-0",
-      "title": "Poison",
+      "title": "Toxic Fang",
       "family": "Toxic",
       "effects": [
         {
@@ -4369,12 +4369,12 @@
           "mode": "add"
         }
       ],
-      "name": "Poison",
+      "name": "Toxic Fang",
       "kind": "skill"
     },
     {
       "id": "toxic-1",
-      "title": "Aura",
+      "title": "Toxic Halo",
       "family": "Toxic",
       "effects": [
         {
@@ -4383,12 +4383,12 @@
           "mode": "add"
         }
       ],
-      "name": "Aura",
+      "name": "Toxic Halo",
       "kind": "skill"
     },
     {
       "id": "cool-0",
-      "title": "Ice",
+      "title": "Cool Chill",
       "family": "Frost",
       "effects": [
         {
@@ -4397,12 +4397,12 @@
           "mode": "add"
         }
       ],
-      "name": "Ice",
+      "name": "Cool Chill",
       "kind": "skill"
     },
     {
       "id": "cool-1",
-      "title": "Stun",
+      "title": "Cool Daze",
       "family": "Frost",
       "effects": [
         {
@@ -4411,12 +4411,12 @@
           "mode": "add"
         }
       ],
-      "name": "Stun",
+      "name": "Cool Daze",
       "kind": "skill"
     },
     {
       "id": "electric-0",
-      "title": "Lightning",
+      "title": "Electric Arc",
       "family": "Electric",
       "effects": [
         {
@@ -4425,12 +4425,12 @@
           "mode": "add"
         }
       ],
-      "name": "Lightning",
+      "name": "Electric Arc",
       "kind": "skill"
     },
     {
       "id": "electric-1",
-      "title": "Stun",
+      "title": "Electric Daze",
       "family": "Electric",
       "effects": [
         {
@@ -4439,12 +4439,12 @@
           "mode": "add"
         }
       ],
-      "name": "Stun",
+      "name": "Electric Daze",
       "kind": "skill"
     },
     {
       "id": "orbit-0",
-      "title": "Orbit",
+      "title": "Orbit Halo",
       "family": "Orbitals",
       "effects": [
         {
@@ -4453,12 +4453,12 @@
           "mode": "add"
         }
       ],
-      "name": "Orbit",
+      "name": "Orbit Halo",
       "kind": "skill"
     },
     {
       "id": "orbit-1",
-      "title": "Big Shots",
+      "title": "Orbit Swell",
       "family": "Orbitals",
       "effects": [
         {
@@ -4467,12 +4467,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Big Shots",
+      "name": "Orbit Swell",
       "kind": "skill"
     },
     {
       "id": "aura-0",
-      "title": "Aura",
+      "title": "Aura Halo",
       "family": "Aura",
       "effects": [
         {
@@ -4481,12 +4481,12 @@
           "mode": "add"
         }
       ],
-      "name": "Aura",
+      "name": "Aura Halo",
       "kind": "skill"
     },
     {
       "id": "aura-1",
-      "title": "Ice",
+      "title": "Aura Chill",
       "family": "Aura",
       "effects": [
         {
@@ -4495,12 +4495,12 @@
           "mode": "add"
         }
       ],
-      "name": "Ice",
+      "name": "Aura Chill",
       "kind": "skill"
     },
     {
       "id": "study-0",
-      "title": "Learn",
+      "title": "Study Lesson",
       "family": "Scavenging",
       "effects": [
         {
@@ -4509,12 +4509,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Learn",
+      "name": "Study Lesson",
       "kind": "skill"
     },
     {
       "id": "study-1",
-      "title": "Magnet",
+      "title": "Study Pull",
       "family": "Scavenging",
       "effects": [
         {
@@ -4523,12 +4523,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Magnet",
+      "name": "Study Pull",
       "kind": "skill"
     },
     {
       "id": "vacuum-0",
-      "title": "Magnet",
+      "title": "Vacuum Pull",
       "family": "Scavenging",
       "effects": [
         {
@@ -4537,12 +4537,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Magnet",
+      "name": "Vacuum Pull",
       "kind": "skill"
     },
     {
       "id": "vacuum-1",
-      "title": "Magnet",
+      "title": "Vacuum Lure",
       "family": "Scavenging",
       "effects": [
         {
@@ -4551,12 +4551,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Magnet",
+      "name": "Vacuum Lure",
       "kind": "skill"
     },
     {
       "id": "lucky-0",
-      "title": "Lucky",
+      "title": "Lucky Charm",
       "family": "Fortune",
       "effects": [
         {
@@ -4565,12 +4565,12 @@
           "mode": "add"
         }
       ],
-      "name": "Lucky",
+      "name": "Lucky Charm",
       "kind": "skill"
     },
     {
       "id": "lucky-1",
-      "title": "Lucky",
+      "title": "Lucky Find",
       "family": "Fortune",
       "effects": [
         {
@@ -4579,12 +4579,12 @@
           "mode": "add"
         }
       ],
-      "name": "Lucky",
+      "name": "Lucky Find",
       "kind": "skill"
     },
     {
       "id": "hoard-0",
-      "title": "Lucky",
+      "title": "Hoard Find",
       "family": "Fortune",
       "effects": [
         {
@@ -4593,12 +4593,12 @@
           "mode": "add"
         }
       ],
-      "name": "Lucky",
+      "name": "Hoard Find",
       "kind": "skill"
     },
     {
       "id": "hoard-1",
-      "title": "Learn",
+      "title": "Hoard Lesson",
       "family": "Fortune",
       "effects": [
         {
@@ -4607,12 +4607,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Learn",
+      "name": "Hoard Lesson",
       "kind": "skill"
     },
     {
       "id": "sniper-0",
-      "title": "Reach",
+      "title": "Sniper Sight",
       "family": "Precision",
       "effects": [
         {
@@ -4621,12 +4621,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Reach",
+      "name": "Sniper Sight",
       "kind": "skill"
     },
     {
       "id": "sniper-1",
-      "title": "Critical",
+      "title": "Sniper Eye",
       "family": "Precision",
       "effects": [
         {
@@ -4635,12 +4635,12 @@
           "mode": "add"
         }
       ],
-      "name": "Critical",
+      "name": "Sniper Eye",
       "kind": "skill"
     },
     {
       "id": "meatball-0",
-      "title": "Big Shots",
+      "title": "Meatball Swell",
       "family": "Ballistics",
       "effects": [
         {
@@ -4649,12 +4649,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Big Shots",
+      "name": "Meatball Swell",
       "kind": "skill"
     },
     {
       "id": "meatball-1",
-      "title": "Power",
+      "title": "Meatball Edge",
       "family": "Ballistics",
       "effects": [
         {
@@ -4663,12 +4663,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Power",
+      "name": "Meatball Edge",
       "kind": "skill"
     },
     {
       "id": "combust-0",
-      "title": "Fire",
+      "title": "Combust Ember",
       "family": "Fire",
       "effects": [
         {
@@ -4677,12 +4677,12 @@
           "mode": "add"
         }
       ],
-      "name": "Fire",
+      "name": "Combust Ember",
       "kind": "skill"
     },
     {
       "id": "combust-1",
-      "title": "Boom",
+      "title": "Combust Bang",
       "family": "Fire",
       "effects": [
         {
@@ -4691,12 +4691,12 @@
           "mode": "add"
         }
       ],
-      "name": "Boom",
+      "name": "Combust Bang",
       "kind": "skill"
     },
     {
       "id": "ghost-perk-0",
-      "title": "Ghost",
+      "title": "Ghost Phase",
       "family": "Spectral",
       "effects": [
         {
@@ -4705,12 +4705,12 @@
           "mode": "add"
         }
       ],
-      "name": "Ghost",
+      "name": "Ghost Phase",
       "kind": "skill"
     },
     {
       "id": "ghost-perk-1",
-      "title": "Dodge",
+      "title": "Ghost Slip",
       "family": "Spectral",
       "effects": [
         {
@@ -4719,12 +4719,12 @@
           "mode": "add"
         }
       ],
-      "name": "Dodge",
+      "name": "Ghost Slip",
       "kind": "skill"
     },
     {
       "id": "mole-perk-0",
-      "title": "Mole",
+      "title": "Mole Tunnel",
       "family": "Burrowing",
       "effects": [
         {
@@ -4733,12 +4733,12 @@
           "mode": "add"
         }
       ],
-      "name": "Mole",
+      "name": "Mole Tunnel",
       "kind": "skill"
     },
     {
       "id": "mole-perk-1",
-      "title": "Quick Dash",
+      "title": "Mole Step",
       "family": "Burrowing",
       "effects": [
         {
@@ -4747,12 +4747,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Quick Dash",
+      "name": "Mole Step",
       "kind": "skill"
     },
     {
       "id": "blind-perk-0",
-      "title": "Blind",
+      "title": "Blind Shroud",
       "family": "Shadow",
       "effects": [
         {
@@ -4761,12 +4761,12 @@
           "mode": "add"
         }
       ],
-      "name": "Blind",
+      "name": "Blind Shroud",
       "kind": "skill"
     },
     {
       "id": "blind-perk-1",
-      "title": "Power",
+      "title": "Blind Edge",
       "family": "Shadow",
       "effects": [
         {
@@ -4775,12 +4775,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Power",
+      "name": "Blind Edge",
       "kind": "skill"
     },
     {
       "id": "frozen-perk-0",
-      "title": "Freeze",
+      "title": "Frozen Frost",
       "family": "Frost",
       "effects": [
         {
@@ -4789,12 +4789,12 @@
           "mode": "add"
         }
       ],
-      "name": "Freeze",
+      "name": "Frozen Frost",
       "kind": "skill"
     },
     {
       "id": "frozen-perk-1",
-      "title": "Ice",
+      "title": "Frozen Chill",
       "family": "Frost",
       "effects": [
         {
@@ -4803,12 +4803,12 @@
           "mode": "add"
         }
       ],
-      "name": "Ice",
+      "name": "Frozen Chill",
       "kind": "skill"
     },
     {
       "id": "shield-perk-0",
-      "title": "Shield",
+      "title": "Shield Ward",
       "family": "Defense",
       "effects": [
         {
@@ -4817,12 +4817,12 @@
           "mode": "add"
         }
       ],
-      "name": "Shield",
+      "name": "Shield Ward",
       "kind": "skill"
     },
     {
       "id": "shield-perk-1",
-      "title": "Heal",
+      "title": "Shield Mend",
       "family": "Defense",
       "effects": [
         {
@@ -4831,12 +4831,12 @@
           "mode": "add"
         }
       ],
-      "name": "Heal",
+      "name": "Shield Mend",
       "kind": "skill"
     },
     {
       "id": "berserk-perk-0",
-      "title": "Rage",
+      "title": "Berserk Rage",
       "family": "Berserker",
       "effects": [
         {
@@ -4845,12 +4845,12 @@
           "mode": "add"
         }
       ],
-      "name": "Rage",
+      "name": "Berserk Rage",
       "kind": "skill"
     },
     {
       "id": "berserk-perk-1",
-      "title": "Vampire",
+      "title": "Berserk Thirst",
       "family": "Berserker",
       "effects": [
         {
@@ -4859,12 +4859,12 @@
           "mode": "add"
         }
       ],
-      "name": "Vampire",
+      "name": "Berserk Thirst",
       "kind": "skill"
     },
     {
       "id": "ricochet-perk-0",
-      "title": "Bounce",
+      "title": "Ricochet Rebound",
       "family": "Ballistics",
       "effects": [
         {
@@ -4873,12 +4873,12 @@
           "mode": "add"
         }
       ],
-      "name": "Bounce",
+      "name": "Ricochet Rebound",
       "kind": "skill"
     },
     {
       "id": "ricochet-perk-1",
-      "title": "Fast Shots",
+      "title": "Ricochet Zip",
       "family": "Ballistics",
       "effects": [
         {
@@ -4887,12 +4887,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Fast Shots",
+      "name": "Ricochet Zip",
       "kind": "skill"
     },
     {
       "id": "storm-perk-0",
-      "title": "Storm",
+      "title": "Storm Thunder",
       "family": "Storm",
       "effects": [
         {
@@ -4901,12 +4901,12 @@
           "mode": "add"
         }
       ],
-      "name": "Storm",
+      "name": "Storm Thunder",
       "kind": "skill"
     },
     {
       "id": "storm-perk-1",
-      "title": "Boss Power",
+      "title": "Storm Bane",
       "family": "Storm",
       "effects": [
         {
@@ -4915,12 +4915,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Boss Power",
+      "name": "Storm Bane",
       "kind": "skill"
     },
     {
       "id": "nova-perk-0",
-      "title": "Nova",
+      "title": "Nova Flare",
       "family": "Arcane",
       "effects": [
         {
@@ -4929,12 +4929,12 @@
           "mode": "add"
         }
       ],
-      "name": "Nova",
+      "name": "Nova Flare",
       "kind": "skill"
     },
     {
       "id": "nova-perk-1",
-      "title": "Blast",
+      "title": "Nova Blast",
       "family": "Arcane",
       "effects": [
         {
@@ -4943,12 +4943,12 @@
           "mode": "add"
         }
       ],
-      "name": "Blast",
+      "name": "Nova Blast",
       "kind": "skill"
     },
     {
       "id": "pool-perk-0",
-      "title": "Poison Cloud",
+      "title": "Pool Puddle",
       "family": "Toxic",
       "effects": [
         {
@@ -4957,12 +4957,12 @@
           "mode": "add"
         }
       ],
-      "name": "Poison Cloud",
+      "name": "Pool Puddle",
       "kind": "skill"
     },
     {
       "id": "pool-perk-1",
-      "title": "Poison",
+      "title": "Pool Fang",
       "family": "Toxic",
       "effects": [
         {
@@ -4971,12 +4971,12 @@
           "mode": "add"
         }
       ],
-      "name": "Poison",
+      "name": "Pool Fang",
       "kind": "skill"
     },
     {
       "id": "return-perk-0",
-      "title": "Return",
+      "title": "Return Loop II",
       "family": "Ballistics",
       "effects": [
         {
@@ -4985,12 +4985,12 @@
           "mode": "add"
         }
       ],
-      "name": "Return",
+      "name": "Return Loop II",
       "kind": "skill"
     },
     {
       "id": "return-perk-1",
-      "title": "Power",
+      "title": "Return Edge",
       "family": "Ballistics",
       "effects": [
         {
@@ -4999,12 +4999,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Power",
+      "name": "Return Edge",
       "kind": "skill"
     },
     {
       "id": "thorn-perk-0",
-      "title": "Thorns",
+      "title": "Thorn Barbs",
       "family": "Nature",
       "effects": [
         {
@@ -5013,12 +5013,12 @@
           "mode": "add"
         }
       ],
-      "name": "Thorns",
+      "name": "Thorn Barbs",
       "kind": "skill"
     },
     {
       "id": "thorn-perk-1",
-      "title": "Armor",
+      "title": "Thorn Plating",
       "family": "Nature",
       "effects": [
         {
@@ -5027,12 +5027,12 @@
           "mode": "add"
         }
       ],
-      "name": "Armor",
+      "name": "Thorn Plating",
       "kind": "skill"
     },
     {
       "id": "vampire-perk-0",
-      "title": "Vampire",
+      "title": "Vampire Thirst",
       "family": "Vampiric",
       "effects": [
         {
@@ -5041,12 +5041,12 @@
           "mode": "add"
         }
       ],
-      "name": "Vampire",
+      "name": "Vampire Thirst",
       "kind": "skill"
     },
     {
       "id": "vampire-perk-1",
-      "title": "Health",
+      "title": "Vampire Heart",
       "family": "Vampiric",
       "effects": [
         {
@@ -5055,12 +5055,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Health",
+      "name": "Vampire Heart",
       "kind": "skill"
     },
     {
       "id": "fire-perk-0",
-      "title": "Fire",
+      "title": "Fire Ember",
       "family": "Fire",
       "effects": [
         {
@@ -5069,12 +5069,12 @@
           "mode": "add"
         }
       ],
-      "name": "Fire",
+      "name": "Fire Ember",
       "kind": "skill"
     },
     {
       "id": "fire-perk-1",
-      "title": "Speed",
+      "title": "Fire Rush",
       "family": "Fire",
       "effects": [
         {
@@ -5083,12 +5083,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Speed",
+      "name": "Fire Rush",
       "kind": "skill"
     },
     {
       "id": "tank-perk-0",
-      "title": "Health",
+      "title": "Tank Heart",
       "family": "Defense",
       "effects": [
         {
@@ -5097,12 +5097,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Health",
+      "name": "Tank Heart",
       "kind": "skill"
     },
     {
       "id": "tank-perk-1",
-      "title": "Armor",
+      "title": "Tank Plating",
       "family": "Defense",
       "effects": [
         {
@@ -5111,12 +5111,12 @@
           "mode": "add"
         }
       ],
-      "name": "Armor",
+      "name": "Tank Plating",
       "kind": "skill"
     },
     {
       "id": "ghost-speed-0",
-      "title": "Ghost",
+      "title": "Ghost Speed Phase",
       "family": "Spectral",
       "effects": [
         {
@@ -5125,12 +5125,12 @@
           "mode": "add"
         }
       ],
-      "name": "Ghost",
+      "name": "Ghost Speed Phase",
       "kind": "skill"
     },
     {
       "id": "ghost-speed-1",
-      "title": "Move",
+      "title": "Ghost Speed Stride",
       "family": "Spectral",
       "effects": [
         {
@@ -5139,12 +5139,12 @@
           "mode": "multiply"
         }
       ],
-      "name": "Move",
+      "name": "Ghost Speed Stride",
       "kind": "skill"
     },
     {
       "id": "mole-impact-0",
-      "title": "Mole",
+      "title": "Mole Impact Tunnel",
       "family": "Burrowing",
       "effects": [
         {
@@ -5153,12 +5153,12 @@
           "mode": "add"
         }
       ],
-      "name": "Mole",
+      "name": "Mole Impact Tunnel",
       "kind": "skill"
     },
     {
       "id": "mole-impact-1",
-      "title": "Dash Blast",
+      "title": "Mole Impact Kick",
       "family": "Burrowing",
       "effects": [
         {
@@ -5167,12 +5167,12 @@
           "mode": "add"
         }
       ],
-      "name": "Dash Blast",
+      "name": "Mole Impact Kick",
       "kind": "skill"
     },
     {
       "id": "shadow-crit-0",
-      "title": "Blind",
+      "title": "Shadow Crit Shroud",
       "family": "Shadow",
       "effects": [
         {
@@ -5181,12 +5181,12 @@
           "mode": "add"
         }
       ],
-      "name": "Blind",
+      "name": "Shadow Crit Shroud",
       "kind": "skill"
     },
     {
       "id": "shadow-crit-1",
-      "title": "Critical",
+      "title": "Shadow Crit Eye",
       "family": "Shadow",
       "effects": [
         {
@@ -5195,12 +5195,12 @@
           "mode": "add"
         }
       ],
-      "name": "Critical",
+      "name": "Shadow Crit Eye",
       "kind": "skill"
     },
     {
       "id": "chaos-perk-0",
-      "title": "Nova",
+      "title": "Chaos Flare",
       "family": "Chaos",
       "effects": [
         {
@@ -5209,12 +5209,12 @@
           "mode": "add"
         }
       ],
-      "name": "Nova",
+      "name": "Chaos Flare",
       "kind": "skill"
     },
     {
       "id": "chaos-perk-1",
-      "title": "Storm",
+      "title": "Chaos Thunder",
       "family": "Chaos",
       "effects": [
         {
@@ -5223,12 +5223,12 @@
           "mode": "add"
         }
       ],
-      "name": "Storm",
+      "name": "Chaos Thunder",
       "kind": "skill"
     },
     {
       "id": "freeze-crit-0",
-      "title": "Freeze",
+      "title": "Freeze Crit Frost",
       "family": "Frost",
       "effects": [
         {
@@ -5237,12 +5237,12 @@
           "mode": "add"
         }
       ],
-      "name": "Freeze",
+      "name": "Freeze Crit Frost",
       "kind": "skill"
     },
     {
       "id": "freeze-crit-1",
-      "title": "Big Critical",
+      "title": "Freeze Crit Strike",
       "family": "Frost",
       "effects": [
         {
@@ -5251,7 +5251,7 @@
           "mode": "add"
         }
       ],
-      "name": "Big Critical",
+      "name": "Freeze Crit Strike",
       "kind": "skill"
     },
     {
@@ -5382,8 +5382,8 @@
     },
     {
       "id": "bloom-skill",
-      "name": "Big Bloom",
-      "title": "Big Bloom",
+      "name": "Big Bloom Drill",
+      "title": "Big Bloom Drill",
       "family": "Garden",
       "kind": "skill",
       "effects": [
@@ -5410,8 +5410,8 @@
     },
     {
       "id": "roots-skill",
-      "name": "Roots",
-      "title": "Roots",
+      "name": "Roots Drill",
+      "title": "Roots Drill",
       "family": "Garden",
       "kind": "skill",
       "effects": [
@@ -5438,8 +5438,8 @@
     },
     {
       "id": "pollen-skill",
-      "name": "Pollen",
-      "title": "Pollen",
+      "name": "Pollen Drill",
+      "title": "Pollen Drill",
       "family": "Garden",
       "kind": "skill",
       "effects": [
@@ -5466,8 +5466,8 @@
     },
     {
       "id": "nectar-skill",
-      "name": "Nectar",
-      "title": "Nectar",
+      "name": "Nectar Drill",
+      "title": "Nectar Drill",
       "family": "Garden",
       "kind": "skill",
       "effects": [
@@ -5494,8 +5494,8 @@
     },
     {
       "id": "seed-skill",
-      "name": "Seeds",
-      "title": "Seeds",
+      "name": "Seeds Drill",
+      "title": "Seeds Drill",
       "family": "Garden",
       "kind": "skill",
       "effects": [
@@ -5522,8 +5522,8 @@
     },
     {
       "id": "jump-boots-skill",
-      "name": "Jump Boots",
-      "title": "Jump Boots",
+      "name": "Jump Boots Drill",
+      "title": "Jump Boots Drill",
       "family": "Mobility",
       "kind": "skill",
       "effects": [
@@ -5550,8 +5550,8 @@
     },
     {
       "id": "extra-hop-skill",
-      "name": "Extra Hop",
-      "title": "Extra Hop",
+      "name": "Extra Hop Drill",
+      "title": "Extra Hop Drill",
       "family": "Mobility",
       "kind": "skill",
       "effects": [
@@ -5578,8 +5578,8 @@
     },
     {
       "id": "feather-soles-skill",
-      "name": "Feather Soles",
-      "title": "Feather Soles",
+      "name": "Feather Soles Drill",
+      "title": "Feather Soles Drill",
       "family": "Mobility",
       "kind": "skill",
       "effects": [
@@ -5606,8 +5606,8 @@
     },
     {
       "id": "slam-stone-skill",
-      "name": "Slam Stone",
-      "title": "Slam Stone",
+      "name": "Slam Stone Drill",
+      "title": "Slam Stone Drill",
       "family": "Mobility",
       "kind": "skill",
       "effects": [
@@ -5634,8 +5634,8 @@
     },
     {
       "id": "wide-slam-skill",
-      "name": "Wide Slam",
-      "title": "Wide Slam",
+      "name": "Wide Slam Drill",
+      "title": "Wide Slam Drill",
       "family": "Mobility",
       "kind": "skill",
       "effects": [
@@ -5662,8 +5662,8 @@
     },
     {
       "id": "bounce-pad-skill",
-      "name": "Bounce Pad",
-      "title": "Bounce Pad",
+      "name": "Bounce Pad Drill",
+      "title": "Bounce Pad Drill",
       "family": "Mobility",
       "kind": "skill",
       "effects": [
@@ -5690,8 +5690,8 @@
     },
     {
       "id": "boomerang-power-skill",
-      "name": "Boomerang Power",
-      "title": "Boomerang Power",
+      "name": "Boomerang Mastery",
+      "title": "Boomerang Mastery",
       "family": "Arcane",
       "kind": "skill",
       "effects": [
@@ -5718,8 +5718,8 @@
     },
     {
       "id": "disc-power-skill",
-      "name": "Disc Power",
-      "title": "Disc Power",
+      "name": "Disc Mastery",
+      "title": "Disc Mastery",
       "family": "Arcane",
       "kind": "skill",
       "effects": [
@@ -5746,8 +5746,8 @@
     },
     {
       "id": "harpoon-power-skill",
-      "name": "Harpoon Power",
-      "title": "Harpoon Power",
+      "name": "Harpoon Mastery",
+      "title": "Harpoon Mastery",
       "family": "Arcane",
       "kind": "skill",
       "effects": [
@@ -5774,8 +5774,8 @@
     },
     {
       "id": "gravity-power-skill",
-      "name": "Gravity Jar Power",
-      "title": "Gravity Jar Power",
+      "name": "Gravity Jar Mastery",
+      "title": "Gravity Jar Mastery",
       "family": "Arcane",
       "kind": "skill",
       "effects": [
@@ -5802,8 +5802,8 @@
     },
     {
       "id": "horn-power-skill",
-      "name": "Horn Power",
-      "title": "Horn Power",
+      "name": "Horn Mastery",
+      "title": "Horn Mastery",
       "family": "Arcane",
       "kind": "skill",
       "effects": [
@@ -5830,8 +5830,8 @@
     },
     {
       "id": "bubble-power-skill",
-      "name": "Bubble Gun Power",
-      "title": "Bubble Gun Power",
+      "name": "Bubble Gun Mastery",
+      "title": "Bubble Gun Mastery",
       "family": "Arcane",
       "kind": "skill",
       "effects": [
@@ -5858,8 +5858,8 @@
     },
     {
       "id": "meteor-power-skill",
-      "name": "Meteor Gun Power",
-      "title": "Meteor Gun Power",
+      "name": "Meteor Gun Mastery",
+      "title": "Meteor Gun Mastery",
       "family": "Arcane",
       "kind": "skill",
       "effects": [
@@ -5886,8 +5886,8 @@
     },
     {
       "id": "bomb-power-skill",
-      "name": "Rolling Bomb Power",
-      "title": "Rolling Bomb Power",
+      "name": "Rolling Bomb Mastery",
+      "title": "Rolling Bomb Mastery",
       "family": "Arcane",
       "kind": "skill",
       "effects": [
@@ -5914,8 +5914,8 @@
     },
     {
       "id": "disc-bounce-skill",
-      "name": "Disc Bounce",
-      "title": "Disc Bounce",
+      "name": "Disc Bounce Drill",
+      "title": "Disc Bounce Drill",
       "family": "Arcane",
       "kind": "skill",
       "effects": [
@@ -5942,8 +5942,8 @@
     },
     {
       "id": "blade-pierce-skill",
-      "name": "Blade Pierce",
-      "title": "Blade Pierce",
+      "name": "Blade Pierce Drill",
+      "title": "Blade Pierce Drill",
       "family": "Arcane",
       "kind": "skill",
       "effects": [
@@ -5970,8 +5970,8 @@
     },
     {
       "id": "harpoon-pull-skill",
-      "name": "Strong Hook",
-      "title": "Strong Hook",
+      "name": "Strong Hook Drill",
+      "title": "Strong Hook Drill",
       "family": "Arcane",
       "kind": "skill",
       "effects": [
@@ -5998,8 +5998,8 @@
     },
     {
       "id": "big-well-skill",
-      "name": "Big Well",
-      "title": "Big Well",
+      "name": "Big Well Drill",
+      "title": "Big Well Drill",
       "family": "Arcane",
       "kind": "skill",
       "effects": [
@@ -6026,8 +6026,8 @@
     },
     {
       "id": "loud-horn-skill",
-      "name": "Loud Horn",
-      "title": "Loud Horn",
+      "name": "Loud Horn Drill",
+      "title": "Loud Horn Drill",
       "family": "Arcane",
       "kind": "skill",
       "effects": [
@@ -6054,8 +6054,8 @@
     },
     {
       "id": "long-bubble-skill",
-      "name": "Long Bubble",
-      "title": "Long Bubble",
+      "name": "Long Bubble Drill",
+      "title": "Long Bubble Drill",
       "family": "Arcane",
       "kind": "skill",
       "effects": [
@@ -6082,8 +6082,8 @@
     },
     {
       "id": "meteor-shower-skill",
-      "name": "Meteor Shower",
-      "title": "Meteor Shower",
+      "name": "Meteor Shower Drill",
+      "title": "Meteor Shower Drill",
       "family": "Arcane",
       "kind": "skill",
       "effects": [
@@ -6110,8 +6110,8 @@
     },
     {
       "id": "big-bomb-skill",
-      "name": "Big Bomb",
-      "title": "Big Bomb",
+      "name": "Big Bomb Drill",
+      "title": "Big Bomb Drill",
       "family": "Arcane",
       "kind": "skill",
       "effects": [
@@ -6138,8 +6138,8 @@
     },
     {
       "id": "air-power-skill",
-      "name": "Air Power",
-      "title": "Air Power",
+      "name": "Air Mastery",
+      "title": "Air Mastery",
       "family": "Arcane",
       "kind": "skill",
       "effects": [
@@ -6166,8 +6166,8 @@
     },
     {
       "id": "soft-heal-skill",
-      "name": "Soft Heal",
-      "title": "Soft Heal",
+      "name": "Soft Heal Drill",
+      "title": "Soft Heal Drill",
       "family": "Arcane",
       "kind": "skill",
       "effects": [
@@ -6194,8 +6194,8 @@
     },
     {
       "id": "rebound-gear-skill",
-      "name": "Rebound Gear",
-      "title": "Rebound Gear",
+      "name": "Rebound Gear Drill",
+      "title": "Rebound Gear Drill",
       "family": "Arcane",
       "kind": "skill",
       "effects": [
@@ -6222,8 +6222,8 @@
     },
     {
       "id": "slam-heal-skill",
-      "name": "Slam Heal",
-      "title": "Slam Heal",
+      "name": "Slam Heal Drill",
+      "title": "Slam Heal Drill",
       "family": "Arcane",
       "kind": "skill",
       "effects": [
@@ -6250,8 +6250,8 @@
     },
     {
       "id": "air-steer-skill",
-      "name": "Air Steer",
-      "title": "Air Steer",
+      "name": "Air Steer Drill",
+      "title": "Air Steer Drill",
       "family": "Arcane",
       "kind": "skill",
       "effects": [
@@ -6278,8 +6278,8 @@
     },
     {
       "id": "safe-fall-skill",
-      "name": "Safe Fall",
-      "title": "Safe Fall",
+      "name": "Safe Fall Drill",
+      "title": "Safe Fall Drill",
       "family": "Arcane",
       "kind": "skill",
       "effects": [
@@ -6306,8 +6306,8 @@
     },
     {
       "id": "long-potion-skill",
-      "name": "Long Potion",
-      "title": "Long Potion",
+      "name": "Long Potion Drill",
+      "title": "Long Potion Drill",
       "family": "Fortune",
       "kind": "skill",
       "effects": [
@@ -6334,8 +6334,8 @@
     },
     {
       "id": "strong-potion-skill",
-      "name": "Strong Potion",
-      "title": "Strong Potion",
+      "name": "Strong Potion Drill",
+      "title": "Strong Potion Drill",
       "family": "Fortune",
       "kind": "skill",
       "effects": [
@@ -6362,8 +6362,8 @@
     },
     {
       "id": "potion-luck-skill",
-      "name": "Potion Luck",
-      "title": "Potion Luck",
+      "name": "Potion Luck Drill",
+      "title": "Potion Luck Drill",
       "family": "Fortune",
       "kind": "skill",
       "effects": [
@@ -6390,8 +6390,8 @@
     },
     {
       "id": "jump-shield-skill",
-      "name": "Jump Shield",
-      "title": "Jump Shield",
+      "name": "Jump Shield Drill",
+      "title": "Jump Shield Drill",
       "family": "Arcane",
       "kind": "skill",
       "effects": [
@@ -6418,8 +6418,8 @@
     },
     {
       "id": "jump-blast-skill",
-      "name": "Jump Blast",
-      "title": "Jump Blast",
+      "name": "Jump Blast Drill",
+      "title": "Jump Blast Drill",
       "family": "Arcane",
       "kind": "skill",
       "effects": [
@@ -6446,8 +6446,8 @@
     },
     {
       "id": "slam-fire-skill",
-      "name": "Slam Fire",
-      "title": "Slam Fire",
+      "name": "Slam Fire Drill",
+      "title": "Slam Fire Drill",
       "family": "Arcane",
       "kind": "skill",
       "effects": [
@@ -6474,8 +6474,8 @@
     },
     {
       "id": "slam-poison-skill",
-      "name": "Slam Poison",
-      "title": "Slam Poison",
+      "name": "Slam Poison Drill",
+      "title": "Slam Poison Drill",
       "family": "Arcane",
       "kind": "skill",
       "effects": [
@@ -6502,8 +6502,8 @@
     },
     {
       "id": "coin-heal-skill",
-      "name": "Coin Heal",
-      "title": "Coin Heal",
+      "name": "Coin Heal Drill",
+      "title": "Coin Heal Drill",
       "family": "Arcane",
       "kind": "skill",
       "effects": [
@@ -6530,8 +6530,8 @@
     },
     {
       "id": "chest-heal-skill",
-      "name": "Chest Heal",
-      "title": "Chest Heal",
+      "name": "Chest Heal Drill",
+      "title": "Chest Heal Drill",
       "family": "Arcane",
       "kind": "skill",
       "effects": [
@@ -6558,8 +6558,8 @@
     },
     {
       "id": "banana-skill",
-      "name": "Banana Business",
-      "title": "Banana Business",
+      "name": "Banana Business Drill",
+      "title": "Banana Business Drill",
       "family": "Mobility",
       "kind": "skill",
       "effects": [

@@ -17,6 +17,16 @@ test('every native loot card has one beneficial bonus with a shared rarity basel
  }
  for(const key of ['jumpHeight','airJumps','fallGuard','slamPower','slamRadius','bounceJump'])assert.ok(baselines.has(key),key);
 });
+test('every upgrade card has its own name and title, never just its stat label',()=>{
+ const names=new Map();
+ for(const item of catalog.loot){
+  assert.equal(item.name,item.title,item.id);
+  assert.ok(!names.has(item.name),`${item.id} repeats "${item.name}" from ${names.get(item.name)}`);
+  names.set(item.name,item.id);
+ }
+ // The twelve former "Power" cards are distinct, themed names.
+ assert.ok(!names.has('Power')&&!names.has('Health'));
+});
 test('all stable local achievements have paired valid illustrated 256px icons',()=>{
  const steam=JSON.parse(readFileSync(new URL('community/achievements.json',root),'utf8'));
  assert.equal(steam.achievements.length,catalog.achievements.length);
