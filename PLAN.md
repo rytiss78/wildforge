@@ -196,6 +196,14 @@ Achievement IDs added: `WF_WEAPON_MASTERY`, `WF_FORMATION_BREAKER`, `WF_BIOME_CO
 - [Build 1.0 visual rollout](native/docs/visual-rollout-1.0.0.md)
 - [Older repair audit](native/docs/repair-audit-2026-10-12.md)
 
+## Build 18 public release — October 22, 2026
+
+- [x] Published GitHub Release [`build-18`](https://github.com/rytiss78/wildforge/releases/tag/build-18) at user request: "Wildforge 1.2.0 — Build 18", source commit `1347ca08045ac6092960f274f851898b2b07ce58` (the tag resolves to it).
+  - Assets: `Wildforge-1.2.0-Windows.zip` (81,626,463 bytes) and `SHA256SUMS-1.2.0.txt`. The re-downloaded ZIP matches SHA-256 `ada0ae3d…8b77b01`.
+  - Built in `2026-10-21T09-38-57-882Z-build`; exported smoke passes 118 checks.
+  - Exported shared-review, shared-review-stress, hermes-review and release-review pass.
+- Notes: [build18-release.md](native/docs/build18-release.md). Known limits: mutation balance has not been playtested, and real-fight Baron balance is unverified.
+
 ## Build 17 public release — October 18, 2026
 
 - [x] User approved publication with remaining limits documented.
