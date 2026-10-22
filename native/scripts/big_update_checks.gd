@@ -110,6 +110,31 @@ static func run(game: Node3D):
 	game.rules.banished=game.rules.data.loot.map(func(i):return i.effects[0].key)
 	checks.exhausted_pool=game.rules.offers("skill",0,false,game.stats,game.equipped).size()==5
 	game.rules.banished=banishes;game.hud.close()
+	# Banish through the offer screen's own button on a real level-up offer: the
+	# replacement set keeps its mutations, and a banished mutation never returns.
+	game.mode="playing";game.hp=game.stats.maxHp;game.level=3;game.level_choice_cooldown=0;game.xp=game.xp_target
+	game.level_up();game.level_reveal=0.0;game._process(.016)
+	var mutation_slot=game.offers.map(func(i):return i.kind).find("mutation")
+	var banish_button=game.hud.find_children("*","Button",true,false).filter(func(b):return b.is_visible_in_tree() and b.text.begins_with("Banish selected"))
+	checks.banish_level_offer=game.mode=="offer" and mutation_slot>=0 and not banish_button.is_empty()
+	if checks.banish_level_offer:
+		var banned_mutation=str(game.offers[mutation_slot].id).trim_prefix("mut:")
+		# The replaced panel is freed at the end of the frame; press the newest one.
+		game.update.focused_offer=mutation_slot;banish_button.back().pressed.emit()
+		checks.banish_keeps_mutations=game.offers.filter(func(i):return i.kind=="mutation").size()==3
+		checks.banish_mutation_gone=game.rules.banished.has("mut:"+banned_mutation) and not game.offers.any(func(i):return i.id=="mut:"+banned_mutation)
+		for i in range(40): checks.banish_mutation_gone=checks.banish_mutation_gone and MutationBook.roll(game,[]).get("id","")!="mut:"+banned_mutation
+	game.rules.banished=banishes;game.hud.close();game.mode="playing"
+	# Effect settings: the real Shake slider (first of the three effect sliders)
+	# changes both the saved setting and the live value.
+	game.hud.settings_menu()
+	var effect_sliders=game.hud.find_children("*","HSlider",true,false).filter(func(x):return x.is_visible_in_tree() and x.custom_minimum_size.x==150)
+	checks.effect_sliders=effect_sliders.size()>=3
+	if checks.effect_sliders:
+		effect_sliders[-3].value=0.0
+		checks.effect_sliders=is_zero_approx(float(game.career.data.settings.shake)) and is_zero_approx(EffectDetail.shake)
+	game.career.data.settings.merge({"shake":1.0,"flashes":1.0,"particles":1.0},true);EffectDetail.load_settings(game.career.data.settings)
+	game.hud.close();game.mode="playing"
 	for id in ["gun","shotgun","ice"]:
 		var item=game.rules.data.weapons.filter(func(w):return w.id==id)[0].duplicate(true);item.kind="weapon";item.strength=1;item.tier=0;game.equip_weapon(item)
 	checks.full_slots=game.rules.offers("weapon",0,false,game.stats,game.equipped).size()==5

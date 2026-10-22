@@ -68,7 +68,7 @@ static func resolve(key: String) -> Dictionary:
 	if augments.has(stat): condition=str(augments[stat].condition);stat=str(augments[stat].stat)
 	var weapon=""
 	if WEAPON_STATS.has(stat): weapon=WEAPON_STATS[stat]
-	elif stat.ends_with("Power") and stat.trim_suffix("Power") in ["boomerang","disc","harpoon","gravity","horn","bubble","meteor","bomb"]: weapon=stat.trim_suffix("Power")
+	elif stat.ends_with("Power") and stat.trim_suffix("Power") in ["boomerang","disc","harpoon","gravity","horn","bubble","meteor","bomb"]+SkillBook.KINDS: weapon=stat.trim_suffix("Power")
 	if weapon.is_empty() and not STATS.has(stat): return {}
 	return {"stat":stat,"condition":condition,"weapon":weapon}
 

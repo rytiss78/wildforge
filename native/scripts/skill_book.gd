@@ -74,6 +74,12 @@ static func start(g,kind: String,origin: Vector3,target: Vector3,scale: float,da
 			entry.node=nova(g,ground(g,origin))
 			g.skills.append(entry)
 
+# A pull is a velocity the enemy's own movement step adds once; overlapping
+# pulls combine but never exceed the strongest one.
+static func pull(enemy: Dictionary,velocity: Vector3):
+	var current: Vector3=enemy.get("pull",Vector3.ZERO)
+	enemy.pull=(current+velocity).limit_length(maxf(current.length(),velocity.length()))
+
 static func ground(g,p: Vector3) -> Vector3:
 	return Vector3(p.x,g.world.height_at(p.x,p.z),p.z)
 
@@ -96,7 +102,7 @@ static func tick(g,delta: float):
 					if enemy.dead: continue
 					var offset: Vector3=(p-enemy.node.position)*Vector3(1,0,1)
 					if offset.length()>spell.radius: continue
-					if not spell.visual_only and authority and not enemy.boss and offset.length()>.4: enemy.node.move_and_collide(offset.normalized()*delta*5.0)
+					if not spell.visual_only and authority and not enemy.boss and offset.length()>.4: pull(enemy,offset.normalized()*5.0)
 					if hits: g.hurt_enemy(enemy,spell.damage*.9,"hit",spell.weapon_id)
 				if fresh:
 					var debris=CombatInk.begin(g,p+Vector3.UP*spell.radius*.6,.4,"trail")
@@ -110,7 +116,7 @@ static func tick(g,delta: float):
 					if enemy.dead: continue
 					var offset: Vector3=(center-enemy.node.position)*Vector3(1,0,1)
 					if offset.length()>spell.radius*1.6: continue
-					if not spell.visual_only and authority and not enemy.boss and offset.length()>.6: enemy.node.move_and_collide(offset.normalized()*delta*7.5)
+					if not spell.visual_only and authority and not enemy.boss and offset.length()>.6: pull(enemy,offset.normalized()*7.5)
 					if hits and offset.length()<spell.radius: g.hurt_enemy(enemy,spell.damage*.04,"gravity",spell.weapon_id)
 				if spell.life<=0:
 					var burst=CombatInk.star(g,center+Vector3.UP*1.2,spell.radius*2.0,COLORS.blackhole,10.0,.5)

@@ -241,6 +241,7 @@ func _ready():
 	orb_mesh.rings = 4
 	add_child(sound)
 	sound.setup(career.data.settings)
+	EffectDetail.load_settings(career.data.settings)
 	add_child(hud)
 	hud.setup(self)
 	hud.start_menu()
@@ -722,12 +723,16 @@ func choose_offer(index: int):
 func reroll_price() -> int:
 	return maxi(10,level*4)*int(pow(2,mini(offer_rerolls,16)))
 
+# A fresh set for the open offer, as rolled at its source: level offers carry
+# mutations, chest offers the chest luck bonus. Used by reroll and banish.
+func roll_offers(excluded: Array=[]) -> Array:
+	return MutationBook.mix(self,rules.offers(offer_kind,stats.luck+(stats.chestBonus*.2 if offer_source=="chest" else 0),offer_elite,stats,equipped,excluded),offer_source)
+
 func reroll_offers():
 	if mode!="offer": return
 	var price=reroll_price()
 	if gold<price: return
-	var excluded=offers.map(func(item):return item.id)
-	var new_offers=MutationBook.mix(self,rules.offers(offer_kind,stats.luck+(stats.chestBonus*.2 if offer_source=="chest" else 0),offer_elite,stats,equipped,excluded),offer_source)
+	var new_offers=roll_offers(offers.map(func(item):return item.id))
 	if new_offers.is_empty(): return
 	gold-=price;offer_rerolls+=1;offers=new_offers
 	sound.ui_effect("reroll");hud.show_offers(offers,offer_source)
@@ -977,7 +982,9 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 	world.ensure_ground(p)
 	var node=CharacterBody3D.new()
 	# Keep physical crowd blocking as well as anticipatory separation.
-	node.collision_layer=4;node.collision_mask=7;node.floor_snap_length=1.2;node.floor_max_angle=deg_to_rad(55);node.max_slides=6;node.floor_constant_speed=true
+	# Enemies collide with the world and heroes, not each other: separation steering
+	# spaces them, and body-on-body solving made packed crowds several times slower.
+	node.collision_layer=4;node.collision_mask=3;node.floor_snap_length=1.2;node.floor_max_angle=deg_to_rad(55);node.max_slides=6;node.floor_constant_speed=true
 	var collider=CollisionShape3D.new();var capsule=CylinderShape3D.new()
 	capsule.radius=radius_value;capsule.height=maxf(height,radius_value*2)
 	collider.shape=capsule;collider.position.y=capsule.height*.5;node.add_child(collider)
@@ -1162,9 +1169,28 @@ func slash_fx(origin: Vector3,target: Vector3):
 	var node=MeshInstance3D.new();node.mesh=mesh;node.material_override=paint;node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;add_child(node);node.position=origin
 	effects.append({"node":node,"life":.24,"lifetime":.24,"velocity":Vector3.ZERO,"stationary":true,"mark_paint":paint,"slash":true})
 
+var separation_offsets={}
+
+# Crowd-grid cells around an enemy, nearest first, cached per reach.
+func separation_cells(reach: int) -> Array:
+	if not separation_offsets.has(reach):
+		var cells=[]
+		for x in range(-reach,reach+1):
+			for z in range(-reach,reach+1): cells.append(Vector2i(x,z))
+		cells.sort_custom(func(a,b):return a.length_squared()<b.length_squared())
+		separation_offsets[reach]=cells
+	return separation_offsets[reach]
+
+var blood_frame=-1
+var blood_count=0
+
 func blood_hit(enemy: Dictionary):
 	var now=Time.get_ticks_msec()/1000.0
 	if now-float(enemy.get("blood_time",-100))<.14 or effects.size()>220: return
+	# A spell hitting a whole crowd at once splashes a handful, not every enemy.
+	if Engine.get_physics_frames()!=blood_frame: blood_frame=Engine.get_physics_frames();blood_count=0
+	blood_count+=1
+	if blood_count>6: return
 	enemy.blood_time=now
 	var position_value=melee_contact(enemy,player.position+Vector3.UP*.95)
 	var color=[Color("83b74c"),Color("b88ade"),Color("b1c8e8"),Color("bce8f2"),Color("efa978"),Color("bd98e5")][enemy.biome] if not enemy.boss else Color("df4d48")
@@ -1360,11 +1386,13 @@ func record_damage_number(enemy_id: int, damage: float, cause: String,position_v
 	var show_causes=["hit","lightning","crit","fire","ice","slam","explosion","melee","sonic","thorn","poison","aura","burn","heal","coop"]
 	if cause not in show_causes: return
 	# De-dup: merge damage within 400ms for same enemy+cause to reduce visual noise
-	# A spell hits a whole crowd at once; its numbers merge into one running total
-	# at its weapon slot instead of stacking one per enemy.
-	var spell=weapon_id in SkillBook.KINDS
+	# A spell hits a whole crowd at once, and burn and poison tick on every enemy
+	# they touch; these merge into one running total per cause (at the spell's
+	# weapon slot) instead of one number per enemy, which also keeps big burning
+	# crowds cheap.
+	var merged=weapon_id in SkillBook.KINDS or cause in ["fire","poison"]
 	for entry in damage_numbers:
-		if entry.life>.8 and (entry.enemy_id==enemy_id or spell) and entry.cause==cause and entry.get("weapon_id","")==weapon_id:
+		if entry.life>.8 and (entry.enemy_id==enemy_id or merged) and entry.cause==cause and entry.get("weapon_id","")==weapon_id:
 			entry.amount+=damage
 			entry.value=maxi(1,roundi(entry.amount))
 			entry.life=1.2
@@ -1451,6 +1479,8 @@ func update_status_indicators(enemy: Dictionary):
 		var remaining=clampf(float(effect[1])/4.0,.08,1.0)
 		indicator.scale=Vector3.ONE*lerpf(.6,1.0,remaining)
 		indicator.material_override.set_shader_parameter("strength",lerpf(.55,1.0,remaining))
+		var ratio=snappedf(EffectDetail.status_ratio,.1)
+		if not is_equal_approx(indicator.amount_ratio,ratio): indicator.amount_ratio=ratio
 
 func kill_status_indicator(enemy: Dictionary, name: String):
 	var key="indicator_"+name
@@ -1785,6 +1815,7 @@ func warn_at(p: Vector3,radius_value: float,delay: float,damage_value: float,sty
 	hazards.append({"node":node,"life":delay,"radius":radius_value,"damage":damage_value,"style":style_name,"duration":delay,"visual_only":visual_only})
 
 func update_combat(delta: float):
+	EffectDetail.tick(self,delta)
 	var section_times={"movement":0.0,"visuals":0.0,"steering":0.0} if profile_crowd else {}
 	update_melee(delta)
 	spawn_clock -= delta
@@ -1859,8 +1890,13 @@ func update_combat(delta: float):
 		# Status effect tick: apply DOT and manage floating indicators
 		if enemy.status_time > 0:
 			enemy.status_time -= enemy_delta
-			if enemy.poison>0: hurt_enemy(enemy,enemy.poison*enemy_delta,"poison")
-			if enemy.fire>0: hurt_enemy(enemy,enemy.fire*enemy_delta,"fire")
+			# Burn and poison land four times a second (and once more as the status
+			# ends): the same damage per second, a fraction of the calls in big crowds.
+			enemy.dot_clock=float(enemy.get("dot_clock",0.0))+enemy_delta
+			if enemy.dot_clock>=.25 or enemy.status_time<=0:
+				if enemy.poison>0: hurt_enemy(enemy,enemy.poison*enemy.dot_clock,"poison")
+				if enemy.fire>0: hurt_enemy(enemy,enemy.fire*enemy.dot_clock,"fire")
+				enemy.dot_clock=0.0
 			if enemy.dead: continue
 		if enemy.status_time<=0:
 			enemy.poison=0;enemy.fire=0;enemy.slow=0
@@ -1898,15 +1934,24 @@ func update_combat(delta: float):
 		var cell=Vector2i(floori(enemy.node.position.x/3),floori(enemy.node.position.z/3))
 		var separation=Vector3.ZERO
 		var neighbors=ceili((enemy.radius+1.5)/3.0)
-		for x in range(-neighbors,neighbors+1):
-			for z in range(-neighbors,neighbors+1):
-				for other in crowd.get(cell+Vector2i(x,z),[]):
-					if other.net_id==enemy.net_id or other.dead: continue
-					var away=enemy.node.position-other.node.position;away.y=0
-					var spacing=enemy.radius+other.get("radius",.53)+.2
-					if absf(enemy.node.position.y-other.node.position.y)<minf(enemy.height,other.get("height",1.7)) and away.length_squared()<spacing*spacing:
-						var apart=away.normalized() if away.length_squared()>.00001 else Vector3.RIGHT*(1 if enemy.net_id>other.net_id else -1)
-						separation+=apart*(spacing-away.length())*3
+		# Own cell first, then outward. At most 8 overlapping enemies push and at
+		# most 40 are looked at, so a crowd pulled into one spot stays cheap.
+		# Separation changes slowly: each enemy recomputes it every other update.
+		var checked=0;var pushes=0
+		enemy.separation_turn=not enemy.get("separation_turn",false)
+		if not enemy.separation_turn: separation=enemy.get("separation_cache",Vector3.ZERO);checked=99
+		for offset in separation_cells(neighbors) if checked<=40 else []:
+			if checked>40 or pushes>=8: break
+			for other in crowd.get(cell+offset,[]):
+				if other.net_id==enemy.net_id or other.dead: continue
+				checked+=1
+				if checked>40 or pushes>=8: break
+				var away=enemy.node.position-other.node.position;away.y=0
+				var spacing=enemy.radius+other.get("radius",.53)+.2
+				if absf(enemy.node.position.y-other.node.position.y)<minf(enemy.height,other.get("height",1.7)) and away.length_squared()<spacing*spacing:
+					var apart=away.normalized() if away.length_squared()>.00001 else Vector3.RIGHT*(1 if enemy.net_id>other.net_id else -1)
+					separation+=apart*(spacing-away.length())*3;pushes+=1
+		if enemy.separation_turn: enemy.separation_cache=separation
 		if not enemy.boss and enemy.behavior=="charge":
 			enemy.attack-=enemy_delta
 			aim=preload("res://scripts/combat_tactics.gd").charge_movement(self,enemy,aim,distance,enemy_delta)
@@ -1916,7 +1961,10 @@ func update_combat(delta: float):
 			if enemy.get("recovery",0)>realm_time: aim=Vector3.ZERO
 		if enemy.get("contact_windup",0)>0: aim=Vector3.ZERO
 		var is_stunned=enemy.freeze>0
-		var velocity=(aim*enemy.speed*(2 if enemy.get("charge",0)>0 else 1)*(1-minf(.7,enemy.slow))+separation.limit_length(enemy.speed*.45)) if not is_stunned else Vector3.ZERO
+		var velocity=(aim*enemy.speed*(2 if enemy.get("charge",0)>0 else 1)*(1-minf(.7,enemy.slow))+separation.limit_length(enemy.speed*1.3+1.0)) if not is_stunned else Vector3.ZERO
+		# Spell pulls (SkillBook) ride on this movement step instead of extra physics moves.
+		var pull: Vector3=enemy.get("pull",Vector3.ZERO)
+		if pull!=Vector3.ZERO: velocity+=pull;enemy.pull=Vector3.ZERO
 		var body: CharacterBody3D=enemy.node
 		# Ground probes follow actual tactics rather than climbing toward a hero
 		# while a ranged enemy is retreating or a charge is committed elsewhere.
@@ -2015,7 +2063,11 @@ func update_combat(delta: float):
 					if not target.is_empty(): shot.velocity=(enemy_center(target)-shot.node.position).normalized()*stat("projectileSpeed");shot.bounce-=1;break
 				shot.pierce-=1
 				if shot.pierce<0 and not shot.return: shot.life=0;break
+	var skills_start=Time.get_ticks_usec() if profile_crowd else 0
 	SkillBook.tick(self,delta)
+	if profile_crowd:
+		if not crowd_sections.has("skills"): crowd_sections.skills=[]
+		crowd_sections.skills.append((Time.get_ticks_usec()-skills_start)/1000.0)
 	update_pickups(delta)
 	for pool in pools:
 		pool.life-=delta
@@ -2271,7 +2323,7 @@ func _process(delta: float):
 		camera.position=camera.position.lerp(desired,1-exp(-delta*9))
 		hit_shake=maxf(0,hit_shake-delta)
 		# Screen flash overlay
-		if hit_shake>0: camera.position+=Vector3(sin(hit_shake*140),cos(hit_shake*110),0)*hit_shake*.32
+		if hit_shake>0: camera.position+=Vector3(sin(hit_shake*140),cos(hit_shake*110),0)*hit_shake*.32*EffectDetail.shake
 		# Look at player body (always TPS)
 		camera.look_at(anchor)
 	for effect in effects:

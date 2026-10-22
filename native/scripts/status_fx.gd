@@ -53,6 +53,7 @@ static func make(g: Node3D,enemy: Dictionary,id: String) -> GPUParticles3D:
 		var ice=StandardMaterial3D.new();ice.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED;ice.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA
 		ice.albedo_color=Color(.72,.93,1,.26);ice.rim_enabled=false;ice.cull_mode=BaseMaterial3D.CULL_BACK;ice.no_depth_test=false
 		shell.material_override=ice;shell.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;node.add_child(shell)
+	node.amount_ratio=snappedf(EffectDetail.status_ratio,.1)
 	node.emitting=true
 	return node
 

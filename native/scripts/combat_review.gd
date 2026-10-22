@@ -75,7 +75,14 @@ static func run(game):
 	var file=FileAccess.open("user://combat-review.json",FileAccess.WRITE);file.store_string(JSON.stringify(result,"  "));file.close()
 	# Capture the actual contact entry point with simulation paused mid-warning.
 	game.set_process(false);game.set_physics_process(false);game.clear_entities();game.equipped.clear()
-	game.spawn_enemy(2);var attacker=game.enemies[-1]
+	# The species follows the spawn biome, which varies with the frame count of the
+	# soak above. Flyers hover out of reach and wall-crawlers use another contact
+	# test, so keep spawning until a grounded melee attacker comes up.
+	var attacker={}
+	for attempt in range(30):
+		game.spawn_enemy(2);attacker=game.enemies[-1]
+		if not attacker.get("flying",false) and not attacker.get("surface_attached",false) and attacker.get("behavior","")!="spit": break
+		attacker.node.queue_free();game.enemies.pop_back()
 	attacker.node.position=game.player.position+Vector3.FORWARD;attacker.behavior="chase";attacker.speed=0
 	attacker.freeze=0;attacker.blind=0;attacker.contact=0
 	game.update_combat(.04)
@@ -83,6 +90,7 @@ static func run(game):
 	await game.get_tree().process_frame
 	await game.get_tree().process_frame
 	await RenderingServer.frame_post_draw
+	result.contact_attacker={"model":str(attacker.get("model","")),"behavior":str(attacker.get("behavior","")),"radius":float(attacker.get("radius",0)),"windup":float(attacker.get("contact_windup",0))}
 	result.contact_warning_saved=game.get_viewport().get_texture().get_image().save_png("user://contact-warning.png")==OK and attacker.get("contact_windup",0)>0
 	result.minimap_camera_alignment=true
 	for degrees in [0,90,180,270]:

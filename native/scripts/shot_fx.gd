@@ -65,7 +65,7 @@ static func follow(g: Node3D,shot: Dictionary,velocity: Vector3,delta: float):
 	if not look.has("puff"): return
 	shot.puff_clock=float(shot.get("puff_clock",0))-delta
 	if shot.puff_clock>0: return
-	shot.puff_clock=PUFF_EVERY[look.puff]
+	shot.puff_clock=PUFF_EVERY[look.puff]/EffectDetail.particles
 	puff(g,look.puff,head,velocity)
 
 static func puff(g: Node3D,kind: String,point: Vector3,velocity: Vector3):

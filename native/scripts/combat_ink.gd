@@ -33,7 +33,8 @@ func pigment(shader: Shader,color: Color) -> ShaderMaterial:
 
 func lamp(g: Node3D,color: Color,energy: float,radius: float,offset: Vector3):
 	# Only a few bursts illuminate the scene at once. Particle count cannot spawn lights.
-	if g.effects.filter(func(e):return e.get("ink_fx",false) and is_instance_valid(e.node.flash)).size()>=3: return
+	if EffectDetail.flashes<.05 or g.effects.filter(func(e):return e.get("ink_fx",false) and is_instance_valid(e.node.flash)).size()>=3: return
+	energy*=EffectDetail.flashes
 	flash=OmniLight3D.new();flash.light_color=color;flash.light_energy=energy;flash.omni_range=radius;flash.position=offset;flash.shadow_enabled=false;add_child(flash);flash_energy=energy
 
 static func shard() -> ArrayMesh:
@@ -45,7 +46,7 @@ static func shard() -> ArrayMesh:
 
 func shards(color: Color,count: int,spread: float):
 	var paint=pigment(preload("res://shaders/ink_spark.gdshader"),color)
-	for i in range(count):
+	for i in range(EffectDetail.count(count)):
 		var angle=i*2.39996;var direction=Vector3(cos(angle),.2+float(i%3)*.2,sin(angle)).normalized()
 		var node=mesh_part(shard(),paint);var width=.32+float(i%3)*.13
 		node.scale=Vector3(width,.7+float(i%4)*.3,width)
@@ -65,7 +66,7 @@ static func star(g: Node3D,point: Vector3,size: float,color: Color,points: float
 	if root==null: return null
 	if unit_quad==null: unit_quad=QuadMesh.new()
 	var paint=root.pigment(preload("res://shaders/ink_star.gdshader"),color)
-	paint.set_shader_parameter("points",points);paint.set_shader_parameter("stretch",stretch)
+	paint.set_shader_parameter("points",points);paint.set_shader_parameter("stretch",stretch);paint.set_shader_parameter("flash",EffectDetail.flashes)
 	paint.set_shader_parameter("twist",fmod(absf(point.x*7.1+point.z*3.3),TAU))
 	root.mesh_part(unit_quad,paint).scale=Vector3.ONE*size
 	return root

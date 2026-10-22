@@ -7,6 +7,7 @@ uniform vec4 pigment:source_color=vec4(1.0,.8,.3,1.0);
 uniform float points=6.0;
 uniform float stretch=1.0;
 uniform float twist=0.0;
+uniform float flash=1.0; // the Flashes setting dims the white-hot core
 void vertex(){
  MODELVIEW_MATRIX=VIEW_MATRIX*mat4(INV_VIEW_MATRIX[0]*length(MODEL_MATRIX[0].xyz),INV_VIEW_MATRIX[1]*length(MODEL_MATRIX[1].xyz),INV_VIEW_MATRIX[2]*length(MODEL_MATRIX[2].xyz),MODEL_MATRIX[3]);
 }
@@ -20,7 +21,7 @@ void fragment(){
  float star=r-(.22+.72*spikes)*(1.0-age*.55);
  float coverage=1.0-smoothstep(-.02,.02,star);
  float body=1.0-smoothstep(-.11,-.06,star);
- float core=(1.0-smoothstep(.0,.30,r))*(1.0-smoothstep(.0,.55,age));
+ float core=(1.0-smoothstep(.0,.30,r))*(1.0-smoothstep(.0,.55,age))*flash;
  vec3 color=mix(vec3(.05,.02,.04),pigment.rgb,body);
  color=mix(color,vec3(1.0,.97,.86),core);
  ALBEDO=color;EMISSION=color*(.5+core)*(1.0-age);

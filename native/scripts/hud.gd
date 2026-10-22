@@ -1223,6 +1223,15 @@ func settings_menu():
 	invert.button_pressed=game.career.data.settings.invertLook
 	invert.toggled.connect(func(value): game.career.data.settings.invertLook=value;game.career.dirty=true)
 	box.add_child(invert)
+	# Comfort and performance: one compact row so the menu still fits at 720p.
+	var effects=HBoxContainer.new();effects.add_theme_constant_override("separation",10);box.add_child(effects)
+	effects.add_child(label("Effects",18))
+	for setting in [["shake","Shake",0.0],["flashes","Flashes",0.0],["particles","Particles",.25]]:
+		effects.add_child(label(setting[1],15))
+		var amount=HSlider.new();amount.min_value=setting[2];amount.max_value=1;amount.step=.05
+		amount.value=float(game.career.data.settings.get(setting[0],1.0));amount.custom_minimum_size.x=150;amount.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+		amount.value_changed.connect(func(value): game.career.data.settings[setting[0]]=value;game.career.dirty=true;EffectDetail.load_settings(game.career.data.settings))
+		effects.add_child(amount)
 	box.add_child(button("REMAP KEYBOARD / CONTROLLER",bindings_menu))
 	box.add_child(label("Mouse: look · Escape / Menu: pause or back · Enter / A: select",16))
 	box.add_child(button("←  BACK",func(): game.career.save(); start_menu() if not game.run_active else pause_menu(game.run_recorded),true))

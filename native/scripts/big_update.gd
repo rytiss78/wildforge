@@ -128,7 +128,7 @@ func banish(index: int):
 	var item=game.offers[index]
 	if item.kind=="weapon": game.hud.tell("Choose a bonus card to banish");return
 	var key=item.effects[0].key;game.rules.banished.append(key);banish_charges-=1
-	game.offers=game.rules.offers(game.offer_kind,game.stats.luck,game.offer_elite,game.stats,game.equipped)
+	game.offers=game.roll_offers()
 	game.hud.show_offers(game.offers,game.offer_source,false);game.hud.tell("Banished "+game.rules.data.labels.get(key,key)+" for this run")
 
 func hint() -> String:

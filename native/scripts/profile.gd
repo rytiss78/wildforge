@@ -28,7 +28,7 @@ func _init(catalog: Dictionary, smoke: bool = false):
 	var valid_ids = achievements.map(func(a):return a.id)
 	for id in data.unlocked.keys():
 		if not valid_ids.has(id): data.unlocked.erase(id)
-	data.settings.merge({"sfx":0.65,"music":0.45,"voice":0.8,"rumble":true,"genre":"metal","name":"Local hero","lookSensitivity":1.0,"invertLook":false,"cosmetic":""},false)
+	data.settings.merge({"sfx":0.65,"music":0.45,"voice":0.8,"rumble":true,"genre":"metal","name":"Local hero","lookSensitivity":1.0,"invertLook":false,"cosmetic":"","shake":1.0,"flashes":1.0,"particles":1.0},false)
 	if str(data.settings.get("coopToken","")).is_empty():
 		var token_rng=RandomNumberGenerator.new();token_rng.randomize()
 		data.settings.coopToken="%08x-%08x-%08x-%08x" % [token_rng.randi(),token_rng.randi(),token_rng.randi(),token_rng.randi()]

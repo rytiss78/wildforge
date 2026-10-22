@@ -87,7 +87,7 @@ export function assertCommittedBuild(cwd) {
 }
 
 async function main(action) {
-  if (!['balance-review', 'mutation-balance', 'shared-review', 'shared-review-stress', 'hermes-review', 'playfeel-review', 'red-moon-review', 'fresh-import', 'biome-review', 'release-review', 'roster-review', 'bake-roster', 'style-review', 'fx-review', 'boss-review', 'forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
+  if (!['balance-review', 'mutation-balance', 'shared-review', 'shared-review-stress', 'hermes-review', 'playfeel-review', 'red-moon-review', 'fresh-import', 'biome-review', 'release-review', 'roster-review', 'bake-roster', 'style-review', 'fx-review', 'boss-review', 'forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'crowd-spells', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
     console.error('Usage: node scripts/agent-workflow.mjs check|smoke|capture|capture-ui|combat-review|pace-review|soak|integration|build|status'); return 2;
   }
   const git = (...args) => spawnSync('git', ['-C', root, ...args], {encoding:'utf8', windowsHide:true}).stdout?.trim() ?? '';
@@ -398,8 +398,8 @@ async function main(action) {
       if(Object.values(report.fields).some(v=>v===false)) throw new Error('Field checks failed.');
       report.capture=assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge/field-review.png'),started);
     }
-    if (action === 'crowd-review' || action === 'crowd-eclipse' || action === 'crowd-surface') {
-      const output=await step('crowd-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--crowd-review',...(action==='crowd-eclipse'?['--eclipse-crowd']:action==='crowd-surface'?['--surface-crowd']:[])],90000);
+    if (action === 'crowd-review' || action === 'crowd-eclipse' || action === 'crowd-surface' || action === 'crowd-spells') {
+      const output=await step('crowd-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--crowd-review',...(action==='crowd-spells'?['--spells-crowd']:action==='crowd-eclipse'?['--eclipse-crowd']:action==='crowd-surface'?['--surface-crowd']:[])],90000);
       const line=output.split(/\r?\n/).findLast(x=>x.startsWith('CROWD_REVIEW '));
       if(!line) throw new Error('Missing crowd measurements.');
       report.crowd=JSON.parse(line.slice(13));
