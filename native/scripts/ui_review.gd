@@ -168,6 +168,23 @@ static func run(game):
 	game.hud.update(0)
 	okay=expect(await capture(game,"mutation-hud"),"mutation HUD capture") and okay
 	game.mutations.clear();game.owned=game.owned.filter(func(item):return item.kind!="mutation")
+	# Every upgrade draws a stat medallion; a contact sheet shows one per stat and condition.
+	okay=expect(game.rules.data.loot.all(func(item):return not StatGlyphs.resolve(str(item.id)).is_empty()),"every upgrade has a stat medallion") and okay
+	var sheet_keys=[];var shown={}
+	for item in game.rules.data.loot:
+		var info=StatGlyphs.resolve(str(item.id))
+		# One card per stat, plus one per condition badge.
+		var slot="if:"+info.condition if not info.condition.is_empty() else "stat:"+info.stat
+		if shown.has(slot): continue
+		shown[slot]=true;sheet_keys.append(item)
+	var sheet=game.hud.open("UPGRADE ICON REVIEW","Colour = what it affects · symbol = stat · corner badge = condition")
+	var icon_grid=GridContainer.new();icon_grid.columns=14;icon_grid.add_theme_constant_override("h_separation",6);icon_grid.add_theme_constant_override("v_separation",4);sheet.add_child(icon_grid)
+	for item in sheet_keys.slice(0,126):
+		var cell=VBoxContainer.new();cell.custom_minimum_size=Vector2(118,0);icon_grid.add_child(cell)
+		var icon=PowerIcon.new();icon.key=str(item.id);icon.custom_minimum_size=Vector2(64,64);cell.add_child(icon)
+		var caption=game.hud.label(str(item.name).left(16),10);caption.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;cell.add_child(caption)
+	okay=expect(await capture(game,"upgrade-icons"),"upgrade icon sheet capture") and okay
+	game.hud.close()
 	okay=expect(await capture(game,"focus"),"ui assertion 85") and okay
 	var fit_offers=[]
 	for key in ["turretDamage","flowerHeal","damage","pierce","augment-air-rate"]:
