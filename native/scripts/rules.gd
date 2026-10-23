@@ -166,4 +166,5 @@ func describe(effect: Dictionary) -> String:
 	var percent=effect.get("mode","add")=="multiply" or effect.key in ["crit","dodge","lifesteal","discount","freeze","blind","slow","stun","execute","salvage","fallGuard","bounceJump","interest","chestBonus","banana","berserk"]
 	if effect.key=="keyPower": return "Free chest chance +%s%%" % snappedf(amount*100,.01)
 	if effect.key=="ghost": return "Ghost dash +%s s" % snappedf(amount,.01)
-	return name+" +"+str(snappedf(amount*100 if percent else amount,.01))+("%" if percent else "")
+	# Hero drawbacks are negative (Tank Potato moves 18% slower): show the real sign.
+	return name+(" +" if amount>=0 else " −")+str(snappedf(absf(amount)*100 if percent else absf(amount),.01))+("%" if percent else "")
