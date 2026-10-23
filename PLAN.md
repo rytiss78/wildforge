@@ -44,7 +44,20 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
   - **Damage numbers:** non-gun numbers use the full screen width, fade out, and crits shake.
   - **Minimap:** the leftover landmark flags are removed.
   - **Evidence:** `hunt-review`, `island-review`, `capture-ui` and the full two-process `coop` route (`2026-10-23T10-20-21-186Z-coop`) pass.
-- [ ] **Build 20:** the version is still 1.2.1 in `package.json`, `native/project.godot` and `native/export_presets.cfg`. Bump all of them together, run `build`, and run the exported reviews before any release. Publishing only happens at the user's request.
+- [x] Hero stat drawbacks show their real sign ("Move faster −18.0%", was "+-18.0%") (`1789d63`).
+- [x] **Build 20 (1.3.0), local, not published.** The user skipped the planned friend test of internet hosting (October 23).
+  - Version bumped in `package.json` (version and buildNumber), `native/project.godot` and `native/export_presets.cfg` (`790fde9`, `5eee44d`).
+  - Build `.build-staging/agent-workflow/2026-10-23T11-13-11-943Z-build/Wildforge.exe` from source `1789d63`. The exported smoke passes and reports 1.3.0 / Build 20.
+  - Exported reviews against that exe pass with 0 script errors:
+    - shared-review `2026-10-23T11-13-32-006Z`;
+    - shared-review-stress `11-13-46-887Z`;
+    - coop-dropin (invite-code join) `11-14-09-588Z`;
+    - hermes-review `11-14-18-464Z`;
+    - release-review `11-14-31-069Z`. Its 720p and 1080p menu, HUD and co-op renders were inspected.
+  - Packaged as `dist/Wildforge-1.3.0-Windows.zip` (81,875,888 bytes, SHA-256 `01f88715…ff5744566`).
+  - Notes: [build20-release.md](native/docs/build20-release.md).
+  - A first build attempt (`11-07-40-071Z-build`) was rejected by the build guard because `package.json` buildNumber was still 19. That build is invalid.
+- [ ] **Publish Build 20** as GitHub release `build-20` and point the README at it, when the user asks.
 
 ## Next: Phase D — run depth
 
