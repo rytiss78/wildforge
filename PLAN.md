@@ -271,4 +271,4 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
 
 ## Deferred
 
-- A hosted relay or matchmaking server. The user chose port opening only (October 22).
+- A hosted relay or matchmaking server. The user chose port opening only (October 22). On October 24 a relay plan was offered: (A) an own relay on a small rented server, (B) A plus direct connection first, (C) Epic Online Services, (D) Steam, (E) NodeTunnel. The user declined it for now: they test over the MoleTun tunnel, where friends join by the host's tunnel address.
