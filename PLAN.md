@@ -254,7 +254,12 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
     - a permanent mapping first, then a timed one;
     - alternate outside ports 29746 and 29756 on a mapping conflict, with the invite code carrying the port that worked.
   - **Diagnostics:** the panel now names the failing step and the router's own answer, and every attempt is logged to `coop-upnp.log`. The no-router message points at Windows Firewall, which drops the router's answer when Wildforge is not allowed. `coop.md` explains the firewall, the log and manual forwarding.
-  - **Verified:** integration `upnp_outcomes` and `upnp_result_names`. **Not verified on the real router;** the user's `coop-upnp.log` will show which step fails.
+  - **Verified:** integration `upnp_outcomes` and `upnp_result_names`.
+  - **Root cause found on the user's network** (October 24; read-only probes, no mapping changed):
+    - The firewall allows the downloaded Build 21 on the Private network.
+    - The modem is a Huawei EchoLife at 192.168.101.1. It answers UPnP, and its WAN service reports **Connected**, but with outside address **10.254.50.76**: a private address, meaning the provider's carrier-grade NAT. The engine labels such a gateway status 5 ("disconnected") and refuses to use it.
+    - No port mapping on this connection can be reached from the internet. Fix: a friend with a public address hosts, or the user asks the provider for a public IP.
+  - **Game fix:** a modem answering with status 5 is now reported as carrier-grade NAT, with that advice, instead of "router did not allow". Verified against the real modem: the game's `upnp_work` returns `carrier` on it. Integration check `upnp_provider_nat`.
 - **Snapshot size:** at 100 enemies, snapshots exceed the 1,392-byte MTU (about 9 fragments). This has not been measured under real packet loss.
 - **Early co-op desync:** the original symptom was never described in detail. The pause-input fix and the passing full `coop` route do not prove it is gone, so the issue stays open until a matching report or reproduction exists.
 - **Rejoin:** a chest or level-up reward offered while a player was disconnected is not offered again.

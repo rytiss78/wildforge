@@ -197,6 +197,13 @@ const UPNP_RESULTS=["success","not authorized","mapping not found","inconsistent
 static func upnp_result(code: int) -> String:
 	return UPNP_RESULTS[code] if code>=0 and code<UPNP_RESULTS.size() else "error %d" % code
 
+# A modem that answers but whose own outside address is private (status 5,
+# "disconnected" in the engine's naming) sits behind the provider's shared
+# network: no mapping on it can be reached from the internet. Seen on a Huawei
+# EchoLife reporting "Connected" with outside address 10.254.50.76.
+static func provider_nat(statuses: Array) -> bool:
+	return statuses.has(UPNPDevice.IGD_STATUS_DISCONNECTED)
+
 static func gateways(router: UPNP) -> Array:
 	var found=[]
 	for i in range(router.get_device_count()):
@@ -214,8 +221,14 @@ func upnp_work() -> Dictionary:
 		var code=router.discover(search[0],search[1],search[2])
 		devices=gateways(router)
 		log.append("search '%s': %s, %d devices, %d gateways" % [search[2] if search[2]!="" else "all",upnp_result(code),router.get_device_count(),devices.size()])
-		if not devices.is_empty(): break
-	if devices.is_empty(): return {"error":"no_router","log":log}
+		if not devices.is_empty() or router.get_device_count()>0: break
+	if devices.is_empty():
+		var statuses=[]
+		for i in range(router.get_device_count()):
+			var device=router.get_device(i);statuses.append(device.igd_status)
+			log.append("device %s: status %d" % [device.description_url,device.igd_status])
+		if provider_nat(statuses): return {"error":"carrier","address":"","log":log}
+		return {"error":"no_router","log":log}
 	var last=""
 	for device in devices:
 		log.append("gateway %s via %s" % [device.description_url,device.igd_our_addr])
@@ -249,7 +262,7 @@ func upnp_finished(result: Dictionary):
 		"refused":
 			status="Internet hosting unavailable: the router answered but refused to open UDP %d (router said: %s). Forward UDP %d to this PC by hand and give friends your public IP, or let a friend host. %s" % [PORT,str(result.get("reason","")),PORT,lan]
 		"carrier":
-			status="Internet hosting unavailable: your connection is shared behind your provider's network (carrier-grade NAT), so friends cannot reach it. Let a friend host instead. %s" % lan
+			status="Internet hosting unavailable: your modem answered, but its own outside address is private. Your internet provider shares one public address between customers (carrier-grade NAT), so friends cannot reach this PC, whatever the router settings. Let a friend host, or ask your provider for a public IP address. %s" % lan
 		_:
 			upnp=result.router;upnp_port=int(result.port);invite=InviteCode.encode(str(result.address),upnp_port)
 			DisplayServer.clipboard_set(invite)

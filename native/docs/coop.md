@@ -16,7 +16,7 @@ If the party panel says internet hosting is unavailable, it names the step that 
   - Check that UPnP is on in the router.
   - Check that Windows Firewall allows Wildforge: Windows Security → Firewall & network protection → Allow an app through firewall → tick Wildforge for Private and Public. The router's answer reaches the game only when it is allowed. Windows normally asks the first time you press Host Party, and cancelling that prompt blocks it.
 - **The router refused:** the panel shows the router's own reason. If the main port is taken, the game tries outside ports 29746 and 29756 itself; a code from that still works.
-- **Carrier-grade NAT:** the host's provider shares one public address between customers, so nobody can reach it from outside. Let a friend host.
+- **Carrier-grade NAT** ("its own outside address is private"): the modem works, but the provider shares one public address between customers, so nobody can reach the PC from outside, and no router setting changes that. Let a friend whose connection has a public address host, or ask the provider for a public IP address.
 - **Manual forwarding** works in every case except carrier-grade NAT:
   1. Forward UDP 29736 in the router to the host PC's local address, which the panel shows.
   2. Look up the host's public IP address, for example by searching "what is my IP".
