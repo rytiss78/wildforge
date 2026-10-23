@@ -161,7 +161,19 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
 
 ## Then: Phase E — look and feel (Hades direction)
 
-- [ ] **Art bible and per-biome pass:** palette, lighting and ink weight per biome. Start from [art-direction.md](native/docs/art-direction.md) and the [Hades study](native/docs/hades-style-research-1.0.0.md).
+- [x] **Art bible and per-biome pass** (October 23).
+  - **Art bible:** [art-direction.md](native/docs/art-direction.md) is rewritten as version 1.0. It covers the pillars, a value hierarchy, a per-biome table (ground, key, fill, fog, ink, accents), the colour language, ink rules, model rules, the readability checks and how to verify a look change. The old 0.1 storybook baseline predated the Hades direction.
+  - **Per-biome pass:** the new `biome_look.gd` gives each biome its own key light (colour, strength, angle), ambient fill, fog reach and ink colour, thickness, strength and vignette. Values ease across borders, islands 2 and 3 blend 60% of their grade on top, and the Red Moon keeps its original lighting.
+  - **Ground and horizons:** ground bases and horizons for Puffcap Marsh, Moon Craters, Cloudwilds, Candy Hell and Starfall Space are darker, so the ground stays the quietest layer.
+  - **Results:**
+    - Candy Hell's lava now outshines its ground.
+    - Moon Craters went from washed-out blue-grey to dark navy with pale crystals and long shadows. A first try with a blue key light turned the whole biome saturated blue, so the key is now near-neutral.
+    - Cloudwilds' ground moved from pale cream (about 165) to a mid grey-green (about 125).
+  - **Verified:**
+    - before/after sheet `.build-staging/agent-workflow/biome-pass-before-after.png` (before `16-13-27-590Z`, after `16-31-19-144Z-biome-review`);
+    - island sheet `16-31-38-940Z-island-review`;
+    - check, smoke, integration, the Red Moon and style reviews pass with 0 errors.
+  - **Not yet accepted by the user.** The October 16 refreshed views had been accepted, so this pass needs their look.
 - [x] **Enemy death animations** (`death_fx.gd`, October 23). The killing blow picks the style:
   - **Ink dissolve** (most kills): the painted enemy shader has a new `dissolve` uniform. The body erodes top-down with a dark ink edge and sinks into a soft round ink blot while wisps rise. The outline pass is dropped so no ghost remains. Bosses take 1.4 s.
   - **Shatter** (frost, crits, explosions, slams, meteors, or a frozen enemy): the body bursts into tumbling shards in its own colour; frost shards are pale ice.

@@ -19,11 +19,11 @@ varying vec3 p;
 void vertex(){p=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz;}
 vec3 biome_paint(float b,vec2 uv) {
  vec3 paint;vec3 base;
- if(b>4.5){paint=texture(t5,uv).rgb;base=vec3(.13,.075,.22);}
- else if(b>3.5){paint=texture(t4,uv).rgb;base=vec3(.27,.105,.065);}
- else if(b>2.5){paint=texture(t3,uv).rgb;base=vec3(.28,.36,.40);}
- else if(b>1.5){paint=texture(t2,uv).rgb;base=vec3(.12,.19,.29);}
- else if(b>.5){paint=texture(t1,uv).rgb;base=vec3(.09,.17,.12);}
+ if(b>4.5){paint=texture(t5,uv).rgb;base=vec3(.075,.045,.13);}
+ else if(b>3.5){paint=texture(t4,uv).rgb;base=vec3(.13,.05,.04);}
+ else if(b>2.5){paint=texture(t3,uv).rgb;base=vec3(.15,.20,.21);}
+ else if(b>1.5){paint=texture(t2,uv).rgb;base=vec3(.06,.075,.11);}
+ else if(b>.5){paint=texture(t1,uv).rgb;base=vec3(.07,.14,.10);}
  else {
    vec3 stone=texture(t0,p.xz*.15).rgb;
    // Keep shadows legible while letting the painted stone and moss read at gameplay distance.

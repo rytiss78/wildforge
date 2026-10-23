@@ -43,6 +43,7 @@ var sky_horizon=Color("293b48")
 var environment: Environment
 var weather: GPUParticles3D
 var active_biome=-1
+var sun_light: DirectionalLight3D
 var region_blend=0.0
 var clouds=[]
 var stars: MultiMeshInstance3D
@@ -55,7 +56,9 @@ var eclipse=false
 var island_air: GPUParticles3D
 static var prop_meshes={}
 const SKY_TOP=[Color("111a2b"),Color("151b28"),Color("18234d"),Color("254459"),Color("301824"),Color("16132d")]
-const SKY_HORIZON=[Color("293b48"),Color("405149"),Color("536683"),Color("8aa8a8"),Color("944436"),Color("534577")]
+# Horizons (and so fog) for biomes 2-5 were darkened in the October 23 per-biome pass:
+# pale horizons washed the ground out through the fog.
+const SKY_HORIZON=[Color("293b48"),Color("405149"),Color("34405e"),Color("5f8288"),Color("6a2a24"),Color("392c5a")]
 
 static func coast_radius(angle: float,world_seed: int,world_realm: int) -> float:
 	if world_realm==3: return 72.0
@@ -103,13 +106,10 @@ func weather_tick(delta: float,p: Vector3):
 	for pair in [["moon_strength",biome==2],["space_strength",biome==5],["fire_strength",biome==4]]:
 		var parameter=sky_paint.get_shader_parameter(pair[0]);var previous=float(parameter) if parameter!=null else 0.0;sky_paint.set_shader_parameter(pair[0],lerpf(previous,1.0 if pair[1] else 0.0,1-exp(-delta*.6)))
 	environment.fog_light_color=sky_horizon
-	environment.ambient_light_color=grade.ambient if grade.has("ambient") else Color("a4b8ed") if biome==0 else Color("e6efff")
-	environment.ambient_light_energy=float(grade.ambient_energy) if grade.has("ambient_energy") else .28 if biome==0 else .36
+	BiomeLook.apply(self,biome,grade,1-exp(-delta*.6))
 	if is_instance_valid(island_air):
 		island_air.position=p+Vector3.UP*6
 		if island_air.has_meta("embers"): island_air.get_meta("embers").position=p+Vector3.DOWN*1.0
-	environment.fog_depth_begin=lerpf(environment.fog_depth_begin,35.0 if biome in [1,3] else 45.0,1-exp(-delta*.6))
-	environment.fog_depth_end=lerpf(environment.fog_depth_end,140.0 if biome in [1,3] else 165.0,1-exp(-delta*.6))
 	edge_near=false
 	var radius=Vector2(p.x,p.z).length();var coast=shore_radius(p)
 	for index in range(border_steam.size()):
@@ -396,7 +396,7 @@ func make_environment():
 	weather=GPUParticles3D.new();weather.amount=180;weather.lifetime=4;weather.visibility_aabb=AABB(Vector3(-40,-55,-40),Vector3(80,85,80));add_child(weather)
 	var particles=ParticleProcessMaterial.new();particles.emission_shape=ParticleProcessMaterial.EMISSION_SHAPE_BOX;particles.emission_box_extents=Vector3(14,4,14);particles.direction=Vector3.DOWN;particles.spread=35;weather.process_material=particles
 	make_low_mist()
-	var sun=DirectionalLight3D.new();sun.rotation_degrees=Vector3(-42,-35,0);sun.light_energy=1.2;sun.light_color=Color("ffe0ad");sun.shadow_enabled=true;sun.directional_shadow_max_distance=38;add_child(sun)
+	var sun=DirectionalLight3D.new();sun.rotation_degrees=Vector3(-42,-35,0);sun.light_energy=1.2;sun.light_color=Color("ffe0ad");sun.shadow_enabled=true;sun.directional_shadow_max_distance=38;add_child(sun);sun_light=sun
 	var grade: Dictionary=GRADE[realm]
 	if grade.has("sun"): sun.light_color=grade.sun;sun.light_energy=float(grade.sun_energy);sun.rotation_degrees.x=-30.0 if realm==1 else -24.0
 	if grade.has("air"): make_island_air(grade)

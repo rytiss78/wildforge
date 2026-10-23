@@ -1,149 +1,92 @@
-# Wildforge Art Direction
+# Wildforge art bible
 
-Version: 0.1 (Phase 0 baseline) — describes the style as shipped in the current
-native build, so new assets and UI work can be checked against it. Verified
-values are cited from code; proposed values are marked **proposed** and need
-a render check before being treated as canonical.
+Version 1.0 · October 23, 2026. This replaces the 0.1 "storybook diorama" baseline, which predates the Hades direction (see [the Hades study](hades-style-research-1.0.0.md); the old text is in git history). Values marked *(code)* are the shipped values and live in the named file; change them there and here together.
 
-## 1. Overall style
+## 1. Pillars
 
-Warm, whimsical storybook diorama: a small rounded world on a sheet of paper.
+1. **Dark, quiet ground; loud action.** The floor and scenery sit in low values and moderate saturation. Heroes, enemies, loot and effects carry the brightest values and the strongest colour.
+2. **Ink holds the world together.** Screen-space ink outlines (`ink_overlay.gdshader`) and painted textures give every surface a drawn edge. Each biome has its own ink colour and weight.
+3. **One meaning per colour.** Gameplay colours never change meaning between biomes (section 4).
+4. **Readable first, pretty second.** Any change must keep the hero, threats and loot readable at the normal camera in a 40-enemy fight (section 7).
 
-- Low-poly toon primitives (spheres, cylinders, boxes, prisms) with flat
-  cel-style colors, no per-pixel shading noise. Built in `toon_art.gd`.
-- Everything sits on illustrated paper: terrain is tiled from `terrain-0..5.png`
-  (256×256 paper tiles, one per biome), and the world edges fade into fog and a
-  "deadly sea" paper border rather than a horizon line.
-- Ink is the organizing principle: dark indigo ink reads as the outline,
-  pupil, and text color across models, portraits, and UI.
-- Props may be either hand-illustrated paper sprites (`assets/illustrated/`,
-  billboarded with alpha cutout) or baked GLB props (`assets/style3d/`, 11
-  props: wooden sign, stone shrine, wooden gate, stone gate, lantern,
-  stone lantern, stone pillar, wooden bench, stone well, wooden crate,
-  stone crate) — both families share the same paper palette.
-- Silhouette first: every actor and enemy must be identifiable by outline
-  alone, at game distance, before color or detail is considered.
+## 2. Value hierarchy
 
-## 2. Core palette
+From darkest to brightest in a normal frame:
 
-Five core hex values used everywhere (verified in code):
+| Layer | Target | How it is kept there |
+|---|---|---|
+| Ground | darkest large area | terrain base colours *(code: `terrain.gdshader` `biome_paint`)* stay below about 0.17 linear |
+| Scenery | dark-to-mid, biome hue | scenery tint per island *(code: `world.gd` `GRADE.scenery`)* |
+| Enemies | mid, warm or cool against the ground | painted batch shader, ink outline |
+| Hero | brightest character; red cape and gold marker | never tinted by biome grade |
+| Loot, telegraphs, effects | brightest values, emissive | glow above HDR 1.05 *(code: `world.gd` environment)* |
 
-| Role            | Hex       | Source / use |
-|-----------------|-----------|--------------|
-| Ink             | `#17293D` | outline/eye ink in `toon_art.gd`; use for UI text and icon strokes |
-| Paper cream     | `#FFF8DE` | warm off-white for highlights, faces, HUD paper |
-| Warm light      | `#FFF2DE` | cloud color, key-light tint; the "afternoon sun" note |
-| Star gold       | `#FFF1C8` | accent gold for stars, pickups, reward glints |
-| Earth terracotta| `#B67552` | trunks, crates, warm mid-tones in most biomes |
+The global grade is saturation ×1.22 and contrast ×1.1 *(code: `world.gd make_environment`)*. That boost amplifies any coloured key light, so key lights stay close to neutral. A blue moon key turned Moon Craters entirely blue during the October 23 pass.
 
-Supporting tones (verified): sky ambient `#E6EFFF` (cool, used only in
-environment so the world stays warm), sun light `#FFF8EF` at 0.85 energy,
-stone cool grays `#847D70` / `#849EB1` / `#9BB4B9`, parchment steam
-`rgba(232,226,212,0.12)`.
+## 3. Biomes
 
-Biome accents (verified from `world.gd` scenery):
+*(code: `biome_look.gd` `LOOK`, `world.gd` `SKY_HORIZON`, `terrain.gdshader`)*
 
-| Biome | Accents |
-|-------|---------|
-| 0 Verdant | leaf `#9FBE8C`, pine `#51B899`, island orange `#ECAB8A` |
-| 1 Rose dunes | petal `#BB8CA7`, blossom `#F5E9C9`, sand trunk `#E6D7BA` |
-| 2 Meadow | sage `#9CAF76`, fruit `#E5AC95` |
-| 3 Snow | ice `#8AB5B6`, snow `#E9F0E2`, moon glow `#FFF2DB` |
-| 4 Ember dusk | rock `#947F7D`, ember `#E5A578`, bark `#B9886B` |
-| 5 Prism (wildcard) | `COLORS[biome]` darkened variants — **proposed**: keep to desaturated jewel tones, no neon |
+| Biome | Mood | Ground base (linear) | Key light | Fill | Fog (m) | Ink colour · thickness · strength | Accents |
+|---|---|---|---|---|---|---|---|
+| Clover Woods | warm late afternoon; the reference | slate and moss, painted | `#ffe0ad` 1.2 at −42° | `#a4b8ed` .28 | 45–165 | near-black blue · 1.25 · .9 | emerald canopy, pink flowers, cyan sap |
+| Puffcap Marsh | damp, close | `(.07,.14,.10)` | `#e8f0c4` 1.05 at −40° | `#a8d8c4` .30 | 35–140 | green-black · 1.35 · .95 | pink and violet caps, yellow gill glow |
+| Moon Craters | cold, still, long shadows | `(.06,.075,.11)` | `#eef1f7` 1.3 at −26° | `#8e98b0` .20 | 60–190 | navy · 1.55 · 1.0 | pale crystals, cyan veins |
+| Cloudwilds | high bright daylight | `(.15,.20,.21)` | `#fff0d8` 1.2 at −48° | `#d8e6ef` .26 | 40–150 | slate · 1.3 · .95 | teal parasol trees, lilac blossoms |
+| Candy Hell | heat; the lava owns the light | `(.13,.05,.04)` | `#ff9466` 1.15 at −34° | `#f0a48a` .22 | 45–160 | maroon-black · 1.45 · 1.0 | molten rivers, ember fruit |
+| Starfall Space | cool starlight | `(.075,.045,.13)` | `#d8c4ff` 1.15 at −38° | `#b9a8f0` .24 | 50–175 | violet-black · 1.45 · 1.0 | pink crystal coral |
 
-Rules:
+- **Islands 2 and 3** (Blighted Highlands, Ashen Reach) blend their own grade 60% over the biome look: sun, fill and sun angle *(code: `GRADE`)*. Ground corruption and veins mark them as harder.
+- **The Red Moon** keeps its own fixed lighting *(code: `BiomeLook.RED_MOON`)*.
+- Crossing a biome border eases every value over about two seconds.
 
-- One warm color may dominate a frame; cool tones (sky, ice, stone) are
-  contrast only, never the hero of a shot.
-- New asset colors must come from this table (or a darkened/lightened
-  variant of one of them). No pure white, no pure black, no saturated neon.
-- Global grade: saturation ×1.04, contrast ×1.03 (`world.gd` environment) —
-  restrained terrain contrast keeps characters readable.
+## 4. Colour language
 
-## 3. Typography
+These meanings hold in every biome:
 
-**Proposed** (HUD fonts not yet audited — verify against `hud.gd` before
-treating as canonical):
+| Colour | Meaning | Where |
+|---|---|---|
+| Danger red `#ff4a2e` | an enemy attack will land here | every enemy ground mark's ink, bite rings, charge lanes *(code: `DangerMark.DANGER`)* |
+| White flash | impact now | the last 0.25 s of every warning |
+| Gold `#ffd35a` / `#ffd36b` | yours, or valuable | the hero's own strikes, chests, event beams, evolved weapons |
+| Pale caution blue `#bfe6ff` | a harmless hazard: watch your footing | ice floors, wind gusts |
+| Fire orange, toxic lime, frost cyan, storm blue, ghost violet | status and element | shot trails, status flames and bubbles, strain colours *(code: `shot_fx.gd`, `MutationBook.STRAINS`)* |
+| Ink `#16121f` | death | the dissolve and ink blots *(code: `death_fx.gd`)* |
 
-- Rounded humanist sans for all body text; no serifs, no condensed faces.
-  **Proposed** fallback stack: "Baloo 2" / "Nunito" / system rounded.
-- Body text minimum 16px equivalent at 1080p; numbers (gold, HP) at least
-  20px so combat reads at a glance.
-- Ink `#17293D` on paper `#FFF8DE` for all primary text; never paper-on-ink
-  for long text, only for short labels on dark cards.
-- One typeface per screen, max two weights (regular + bold). No italic, no
-  all-caps body text. Titles may be bold, not decorated.
-- Card and button labels ≤ 2 words where possible; secondary detail on a
-  smaller second line.
+- An attack's own colour may appear only as the inner fill of its warning, never as its rim.
+- Biome zone edges use the zone's colour lightened, or a dark crust for lava.
 
-## 4. Shapes
+## 5. Ink
 
-- Rounded everywhere: box props use small bevels or inset panels, UI cards
-  use rounded rectangles (radius ≈ 8–12px at 1080p, **proposed**), no sharp
-  corners on player-facing surfaces.
-- Actors are built from balls and tubes (see `toon_art.gd`): head bigger
-  than body, limbs stubby — the "plush toy" ratio. Keep new models in that
-  proportion; a heroic silhouette is allowed to stretch, a toy is not.
-- Eyes follow the shared `eyes()` helper: cream sclera, ink iris, white
-  glint. Any new creature without eyes must still read friendly via shape.
-- Paper edges (fog, sea, borders) are soft and matte; hard edges are reserved
-  for ink outlines and UI strokes.
+- Silhouettes come from depth steps and creases from normal bends. Ink fades out between 22 and 70 m.
+- Ink thickness ranges from 1.25 (Clover Woods) to 1.55 (Moon Craters). Use heavier ink where scenery is pale or crystalline, so shapes stay separate.
+- Ink colour is a very dark version of the biome's shadow hue, never pure black.
+- Vignette strength is .42–.52, darker in the harsher biomes.
 
-## 5. Lighting
+## 6. Characters, creatures and models
 
-- Single warm sun: `#FFF8EF`, 0.85 energy, fixed angle (−42°, −35°),
-  shadows capped at 38m — one shadow direction per frame, never moving.
-- Cool ambient `#E6EFFF` at 0.36 energy lifts shadows without killing the
-  warm key.
-- Fog: depth fog `#E6EFFF`-tinted, begins 35m, ends 155m; the world recedes
-  into paper, not darkness. New biomes keep the same fog distances.
-- Emissive accents are rare and gold-tinted (`#FFF1C8`): stars, moon glow,
-  lanterns. Max one glow source per screen area of gameplay.
+- **Proportions:** plush-toy proportions. The head is large and the limbs short, and the silhouette must be readable by outline alone. Bosses may break scale (the Baron stands 42 m tall); ordinary enemies stay 1.2–2.5 m.
+- **Materials:** painted vertex colour with a paper, bark or stone grain *(code: `painted_batch.gd`)*. Deaths use the same shader's `dissolve`.
+- **New models:** made in-house, never bought or downloaded. They must beat the current model side by side at the gameplay camera before replacing it (see the model pilot in [PLAN.md](../../PLAN.md)).
 
-## 6. Particles and weather
+## 7. Readability checks
 
-Restrained by design:
+Kept from 0.1, still binding:
 
-- Weather: one 180-particle system per world (currently light rain), low
-  alpha, no wind gusts.
-- Border steam: 32 particles per side, only near the world edges.
-- Combat feedback: short-lived (≤ 0.6s), small count (≤ 20 per event),
-  from the core palette (ink, paper, gold, terracotta). **Proposed** rule:
-  never more than 3 simultaneous particle emitters in the camera frustum.
-- No particle trails on projectiles; use color flash + scale pop instead.
+1. **Contrast:** HUD text against its plate is at least 4.5:1.
+2. **Silhouette:** an enemy is identifiable from a flat single-colour render at 4 m.
+3. **Distinctness:** two enemies that share a screen differ in at least two of shape, base colour and accent.
+4. **Distance:** everything actionable is visible within 35 m; nothing required lies beyond 60 m.
+5. **Screen share:** an ordinary enemy stays under 25% of viewport height at combat range, and the hero stays above 10% at rest. The fight zoom may pull back up to 35%, so the hero must still read at that zoom.
+6. **Motion:** feedback reads at 1× speed. Nothing important lasts under 100 ms or relies on flicker alone; the white warning flash is backed by the closing sweep.
 
-## 7. Readability criteria (measurable)
+## 8. How to check
 
-A new model, enemy, or UI change is acceptable only if it passes all:
+| What | Workflow action | Look at |
+|---|---|---|
+| Biomes and mechanics | `biome-review` | `biome-N.png`, `biome-mechanic-N.png` |
+| Islands | `island-review` | `island-sheet.png` |
+| Weapons, statuses, spells, synergies, deaths, zoom, telegraphs | `fx-review` | `fx-*.png` |
+| HUD and menus | `capture-ui` | `ui-*.png`, at 1280×720 and 1920×1080 through `release-review` |
 
-1. **Contrast**: primary UI text ink `#17293D` on paper `#FFF8DE` measures
-   ≥ 4.5:1 (actual ≈ 13:1); HP bars use ink fill on paper track, not
-   red/green pairs alone (colorblind-safe: also differ in shape/position).
-2. **Silhouette**: enemy identifiable by outline alone in a 50% gray flat
-   render at 4m screen distance (test: render the model with a single
-   unlit color and check the PNG).
-3. **Color distinctness**: any two enemies that can share a screen differ
-   by at least 2 palette roles (e.g. different base + different accent).
-4. **Distance**: player and enemies stay fully visible within 35m (fog
-   start); no required gameplay element depends on anything beyond 60m.
-5. **Screen share**: a single enemy never exceeds 25% of viewport height
-   at combat range; the hero never drops below 10% at standstill.
-6. **Frame**: with camera at the standard combat position (hero + 3 enemies
-   + 1 chest), every actionable element has ≥ 2 palette roles of contrast
-   against everything behind it (checked in the golden-scene screenshot).
-7. **Motion**: combat feedback readable at 1× speed on a 60Hz display;
-   nothing important lasts < 100ms or is conveyed by flicker alone.
-
-## 8. Asset status
-
-- Verified in repo: `assets/illustrated/` paper textures, hero/creature
-  PNGs, `assets/style3d/` 11 GLB props (see `style-lab.md`), terrain tiles,
-  `paper.png`.
-- **Proposed / unverified**: UI font choice, exact card corner radii, the
-  Prism biome palette, and any new hero models — each needs a rendered
-  check against §7 before it becomes canonical.
-
-## Gameplay-camera checkpoint (2026-10-07)
-
-The actual combat camera now starts 8m behind and 9.5m above its target. Ordinary creature base heights are 1.2–2.5m; bosses retain their large scale. Baked meshes are normalized by their actual height. A small gold player marker remains readable through crowded fights. Terrain uses 19% painted detail over muted biome colors, with scenery visible to 105m. This is a gameplay readability pass; the older golden-scene image is not the acceptance capture. See PROGRESS.md for actual combat captures and measured frame times.
+Compare against the previous run's images before accepting a look change.
