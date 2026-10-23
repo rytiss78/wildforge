@@ -176,6 +176,20 @@ static func run(game: Node3D):
 	codes_ok=codes_ok and InviteCode.decode("WF-HELLO-WORLD").is_empty() and InviteCode.decode("192.168.1.5").is_empty() and InviteCode.encode("300.1.1.1",29736).is_empty()
 	checks.invite_codes=codes_ok
 	checks.unreachable_addresses=["100.64.0.1","100.127.9.9","10.0.0.2","192.168.1.1","172.20.0.1",""].all(func(a):return InviteCode.unreachable(a)) and not InviteCode.unreachable("203.0.113.7") and not InviteCode.unreachable("100.128.0.1")
+	# Port opening outcomes through the real result handler (no router is touched):
+	# a refusal names the router's answer, no router mentions the firewall, a
+	# mapping on the alternate outside port puts that port in the invite code, and
+	# the attempt log is written for reporting.
+	var was_hosting=game.coop.hosting;var was_status=game.coop.status;game.coop.hosting=true
+	game.coop.upnp_finished({"error":"refused","reason":"conflict with another mapping","log":["search 'InternetGatewayDevice': success, 1 devices, 1 gateways"]})
+	var refused=game.coop.status.contains("refused to open") and game.coop.status.contains("conflict with another mapping")
+	game.coop.upnp_finished({"error":"no_router","log":[]})
+	var missing=game.coop.status.contains("Windows Firewall")
+	game.coop.upnp_finished({"router":UPNPDevice.new(),"port":29746,"address":"203.0.113.7","log":["map UDP 29746 -> 29736 lease 0: success"]})
+	var mapped=InviteCode.decode(game.coop.invite).get("port",0)==29746 and game.coop.upnp_port==29746
+	checks.upnp_outcomes=refused and missing and mapped and FileAccess.get_file_as_string("user://coop-upnp.log").contains("29746")
+	checks.upnp_result_names=CoopSession.upnp_result(UPNP.UPNP_RESULT_ONLY_PERMANENT_LEASE_SUPPORTED)=="only permanent leases supported" and CoopSession.upnp_result(UPNP.UPNP_RESULT_UNKNOWN_ERROR)=="unknown error"
+	game.coop.upnp=null;game.coop.invite="";game.coop.upnp_port=CoopSession.PORT;game.coop.hosting=was_hosting;game.coop.status=was_status
 	# Effect settings: the real Shake slider (first of the three effect sliders)
 	# changes both the saved setting and the live value.
 	game.hud.settings_menu()

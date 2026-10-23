@@ -247,7 +247,14 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
 
 ## Open issues and limits
 
-- **Internet co-op on a real router is untested.** Automated tests never touch router port mappings. The user is testing HOST PARTY with a friend.
+- **Internet port opening failed on the user's router** (October 23): the "router did not allow automatic port opening" message appeared. UPnP was on in the modem, but no mapping was created. That message covered both "no router answered" and "router refused".
+  - **Reworked** (`coop.gd upnp_work`):
+    - three search styles with longer waits;
+    - every gateway found is tried, not only the first;
+    - a permanent mapping first, then a timed one;
+    - alternate outside ports 29746 and 29756 on a mapping conflict, with the invite code carrying the port that worked.
+  - **Diagnostics:** the panel now names the failing step and the router's own answer, and every attempt is logged to `coop-upnp.log`. The no-router message points at Windows Firewall, which drops the router's answer when Wildforge is not allowed. `coop.md` explains the firewall, the log and manual forwarding.
+  - **Verified:** integration `upnp_outcomes` and `upnp_result_names`. **Not verified on the real router;** the user's `coop-upnp.log` will show which step fails.
 - **Snapshot size:** at 100 enemies, snapshots exceed the 1,392-byte MTU (about 9 fragments). This has not been measured under real packet loss.
 - **Early co-op desync:** the original symptom was never described in detail. The pause-input fix and the passing full `coop` route do not prove it is gone, so the issue stays open until a matching report or reproduction exists.
 - **Rejoin:** a chest or level-up reward offered while a player was disconnected is not offered again.

@@ -19,7 +19,9 @@ const PORT=29736
 const DISCOVERY_PORT=29737
 # Internet hosting: the router opens PORT through UPnP on a worker thread and
 # reports the public address, which becomes the party's invite code.
-var upnp: UPNP
+# The gateway device that holds our mapping, and the outside port it opened.
+var upnp: UPNPDevice
+var upnp_port=PORT
 var upnp_thread: Thread
 var invite=""
 # Peer ids the host transport currently has, from its connect/disconnect
@@ -189,28 +191,67 @@ func open_internet():
 	upnp_thread=Thread.new();upnp_thread.start(upnp_work)
 	status="Party ready on your network · opening internet access…"
 
+# Router result names (UPNP.UPNP_RESULT_*), for messages players can report back.
+const UPNP_RESULTS=["success","not authorized","mapping not found","inconsistent parameters","no such entry","action failed","source IP wildcard not permitted","external port wildcard not permitted","internal port wildcard not permitted","remote host must be wildcard","external port must be wildcard","no port maps available","conflict with another mechanism","conflict with another mapping","same port values required","only permanent leases supported","invalid gateway","invalid port","invalid protocol","invalid duration","invalid arguments","invalid response","invalid parameter","HTTP error","socket error","out of memory","no gateway","no devices","unknown error"]
+
+static func upnp_result(code: int) -> String:
+	return UPNP_RESULTS[code] if code>=0 and code<UPNP_RESULTS.size() else "error %d" % code
+
+static func gateways(router: UPNP) -> Array:
+	var found=[]
+	for i in range(router.get_device_count()):
+		var device=router.get_device(i)
+		if device!=null and device.is_valid_gateway(): found.append(device)
+	return found
+
+# Runs on a worker thread. Some routers only answer one style of search, some
+# refuse permanent (or only accept permanent) mappings, and another device may
+# already hold the port, so each is tried in turn. Every step is logged so a
+# failure can say exactly what the router answered.
 func upnp_work() -> Dictionary:
-	var router=UPNP.new()
-	if router.discover(2000,2,"InternetGatewayDevice")!=UPNP.UPNP_RESULT_SUCCESS or router.get_gateway()==null or not router.get_gateway().is_valid_gateway():
-		return {"error":"no_router"}
-	if router.add_port_mapping(PORT,PORT,"Wildforge co-op","UDP",0)!=UPNP.UPNP_RESULT_SUCCESS: return {"error":"refused"}
-	var external=router.query_external_address()
-	if external.is_empty() or InviteCode.unreachable(external):
-		router.delete_port_mapping(PORT,"UDP");return {"error":"carrier","address":external}
-	return {"router":router,"address":external}
+	var log=[];var router=UPNP.new();var devices=[]
+	for search in [[2500,2,"InternetGatewayDevice"],[3500,4,"WANIPConnection"],[3500,4,""]]:
+		var code=router.discover(search[0],search[1],search[2])
+		devices=gateways(router)
+		log.append("search '%s': %s, %d devices, %d gateways" % [search[2] if search[2]!="" else "all",upnp_result(code),router.get_device_count(),devices.size()])
+		if not devices.is_empty(): break
+	if devices.is_empty(): return {"error":"no_router","log":log}
+	var last=""
+	for device in devices:
+		log.append("gateway %s via %s" % [device.description_url,device.igd_our_addr])
+		for external_port in [PORT,PORT+10,PORT+20]:
+			var conflict=false
+			for lease in [0,7200]:
+				var code=device.add_port_mapping(external_port,PORT,"Wildforge co-op","UDP",lease)
+				last=upnp_result(code)
+				log.append("  map UDP %d -> %d lease %d: %s" % [external_port,PORT,lease,last])
+				if code==UPNP.UPNP_RESULT_SUCCESS:
+					var external=device.query_external_address()
+					log.append("  public address: %s" % (external if external!="" else "none"))
+					if external.is_empty() or InviteCode.unreachable(external):
+						device.delete_port_mapping(external_port,"UDP");return {"error":"carrier","address":external,"log":log}
+					return {"router":device,"port":external_port,"address":external,"log":log}
+				if code==UPNP.UPNP_RESULT_CONFLICT_WITH_OTHER_MAPPING: conflict=true;break
+			if not conflict: break
+	return {"error":"refused","reason":last,"log":log}
 
 func upnp_finished(result: Dictionary):
 	var lan="Friends on your network: "+", ".join(local_addresses())
+	# The full attempt log, for reporting what the router answered.
+	var file=FileAccess.open("user://coop-upnp.log",FileAccess.WRITE)
+	if file!=null: file.store_string("\n".join(result.get("log",[])));file.close()
 	if not hosting:
-		if result.has("router"): result.router.delete_port_mapping(PORT,"UDP")
+		if result.has("router"): result.router.delete_port_mapping(int(result.port),"UDP")
 		return
 	match str(result.get("error","")):
-		"no_router","refused":
-			status="Internet hosting unavailable: your router did not allow automatic port opening (UPnP). Turn on UPnP in the router or forward UDP %d to this PC, or let a friend host. %s" % [PORT,lan]
+		"no_router":
+			status="Internet hosting unavailable: no router answered the automatic port-opening request (UPnP). Check that UPnP is on in the router and that Windows Firewall allows Wildforge (Windows Security · Firewall · Allow an app). Or forward UDP %d to this PC by hand and give friends your public IP. %s" % [PORT,lan]
+		"refused":
+			status="Internet hosting unavailable: the router answered but refused to open UDP %d (router said: %s). Forward UDP %d to this PC by hand and give friends your public IP, or let a friend host. %s" % [PORT,str(result.get("reason","")),PORT,lan]
 		"carrier":
 			status="Internet hosting unavailable: your connection is shared behind your provider's network (carrier-grade NAT), so friends cannot reach it. Let a friend host instead. %s" % lan
 		_:
-			upnp=result.router;invite=InviteCode.encode(str(result.address),PORT)
+			upnp=result.router;upnp_port=int(result.port);invite=InviteCode.encode(str(result.address),upnp_port)
 			DisplayServer.clipboard_set(invite)
 			status="Party open to the internet · invite code %s (copied). Friends paste it into Join. %s" % [invite,lan]
 	game.hud.tell("Invite code copied: "+invite if not invite.is_empty() else "Internet hosting unavailable · see the party panel",5)
@@ -218,8 +259,8 @@ func upnp_finished(result: Dictionary):
 func close_internet():
 	if upnp_thread!=null:
 		var result=upnp_thread.wait_to_finish();upnp_thread=null
-		if result is Dictionary and result.has("router"): result.router.delete_port_mapping(PORT,"UDP")
-	if upnp!=null: upnp.delete_port_mapping(PORT,"UDP");upnp=null
+		if result is Dictionary and result.has("router"): result.router.delete_port_mapping(int(result.port),"UDP")
+	if upnp!=null: upnp.delete_port_mapping(upnp_port,"UDP");upnp=null
 	invite=""
 
 func _exit_tree():

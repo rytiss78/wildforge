@@ -10,10 +10,19 @@ Everyone needs the same Wildforge build. No store account, VPN or extra app is r
 
 Friends can also join a run that is already in progress; they arrive next to the party.
 
-If the party panel says internet hosting is unavailable:
+If the party panel says internet hosting is unavailable, it names the step that failed:
 
-- **Router did not allow automatic port opening:** turn on UPnP in the router, or forward UDP 29736 to the host PC by hand and join with the host's public IP. Alternatively, let a friend host.
+- **No router answered:**
+  - Check that UPnP is on in the router.
+  - Check that Windows Firewall allows Wildforge: Windows Security → Firewall & network protection → Allow an app through firewall → tick Wildforge for Private and Public. The router's answer reaches the game only when it is allowed. Windows normally asks the first time you press Host Party, and cancelling that prompt blocks it.
+- **The router refused:** the panel shows the router's own reason. If the main port is taken, the game tries outside ports 29746 and 29756 itself; a code from that still works.
 - **Carrier-grade NAT:** the host's provider shares one public address between customers, so nobody can reach it from outside. Let a friend host.
+- **Manual forwarding** works in every case except carrier-grade NAT:
+  1. Forward UDP 29736 in the router to the host PC's local address, which the panel shows.
+  2. Look up the host's public IP address, for example by searching "what is my IP".
+  3. Friends type that address into Join instead of a code.
+
+Every attempt is logged in `%APPDATA%/Godot/app_userdata/Wildforge/coop-upnp.log`. Send that file when reporting a port-opening problem.
 
 The router mapping is removed when the host closes the party or quits.
 
