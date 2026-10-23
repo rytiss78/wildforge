@@ -126,7 +126,7 @@ func recap() -> String:
 func banish(index: int):
 	if game.mode!="offer" or banish_charges<=0 or index<0 or index>=game.offers.size(): return
 	var item=game.offers[index]
-	if item.kind=="weapon": game.hud.tell("Choose a bonus card to banish");return
+	if item.kind in ["weapon","evolution"]: game.hud.tell("Choose a bonus card to banish");return
 	var key=item.effects[0].key;game.rules.banished.append(key);banish_charges-=1
 	game.offers=game.roll_offers()
 	game.hud.show_offers(game.offers,game.offer_source,false);game.hud.tell("Banished "+game.rules.data.labels.get(key,key)+" for this run")

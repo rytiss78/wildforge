@@ -9,7 +9,9 @@ var last_tick=-1
 func setup(offers: Array):
 	mouse_filter=Control.MOUSE_FILTER_IGNORE;items=offers
 	# Mutations have drawn medallions rather than texture files.
-	for item in items: textures.append(null if item.kind=="mutation" or item.kind!="weapon" and not StatGlyphs.resolve(item.id).is_empty() else IllustratedIcons.texture(item.id,item.kind=="weapon"))
+	for item in items:
+		if item.kind=="evolution": textures.append(IllustratedIcons.texture(str(item.weapon_id),true));continue
+		textures.append(null if item.kind=="mutation" or item.kind!="weapon" and not StatGlyphs.resolve(item.id).is_empty() else IllustratedIcons.texture(item.id,item.kind=="weapon"))
 func animate(value: float):
 	progress=value
 	var locked=clampi(int(floor((progress-.48)/.095))+1,0,5)

@@ -484,7 +484,7 @@ func update_avatar_vitals(rig,state: Dictionary):
 func pose() -> Dictionary:
 	var weapons=[]
 	for weapon in game.equipped:
-		var state={"id":weapon.id,"rank":weapon.rank}
+		var state={"id":weapon.id,"rank":weapon.rank,"evolved":weapon.get("evolved",false)}
 		if weapon.turret and is_instance_valid(weapon.get("node")): state.placement=array(weapon.node.position)
 		weapons.append(state)
 	var effective=game.stats.duplicate()

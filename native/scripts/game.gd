@@ -654,7 +654,7 @@ func buy_chest(chest: Dictionary,payer: int=-1):
 	career.bump("chests")
 	career.best("chestRewards",3)
 	offer_event=chest.get("event",false)
-	offers = MutationBook.mix(self,rules.offers("item",float(payer_stats.get("luck",0))+float(payer_stats.get("chestBonus",0))*.2,chest.elite,stats,equipped,[],"",EventLoot.MIN_TIER if offer_event else -1),"chest",offer_event)
+	offers = WeaponEvolution.inject(self,MutationBook.mix(self,rules.offers("item",float(payer_stats.get("luck",0))+float(payer_stats.get("chestBonus",0))*.2,chest.elite,stats,equipped,[],"",EventLoot.MIN_TIER if offer_event else -1),"chest",offer_event),"chest")
 	offer_kind="item";offer_elite=chest.elite;offer_rerolls=0
 	if local_payer: heal(stats.chestHeal)
 	offer_source = "chest"
@@ -690,7 +690,7 @@ func level_up():
 	var kind = "weapon" if level == 2 or level%3 == 0 else "skill"
 	offer_kind=kind;offer_elite=false;offer_rerolls=0
 	party_reward_id=run_id+":level:"+str(realm)+":"+str(level)
-	offers = MutationBook.mix(self,rules.offers(kind,stats.luck,false,stats,equipped),"level")
+	offers = WeaponEvolution.inject(self,MutationBook.mix(self,rules.offers(kind,stats.luck,false,stats,equipped),"level"),"level")
 	offer_source = "level"
 	mode = "level_reveal"
 	level_reveal = .95
@@ -715,6 +715,8 @@ func choose_offer(index: int):
 			mode="replace";hud.replace_menu(item)
 			return
 		equip_weapon(item)
+	elif item.kind == "evolution":
+		if not WeaponEvolution.apply(self,item): return
 	elif item.kind == "mutation":
 		MutationBook.take(self,item)
 		owned.append(item)
@@ -744,7 +746,7 @@ func reroll_price() -> int:
 # mutations, chest offers the chest luck bonus. Used by reroll and banish.
 func roll_offers(excluded: Array=[]) -> Array:
 	var event=offer_event and offer_source=="chest"
-	return MutationBook.mix(self,rules.offers(offer_kind,stats.luck+(stats.chestBonus*.2 if offer_source=="chest" else 0),offer_elite,stats,equipped,excluded,"",EventLoot.MIN_TIER if event else -1),offer_source,event)
+	return WeaponEvolution.inject(self,MutationBook.mix(self,rules.offers(offer_kind,stats.luck+(stats.chestBonus*.2 if offer_source=="chest" else 0),offer_elite,stats,equipped,excluded,"",EventLoot.MIN_TIER if event else -1),offer_source,event),offer_source)
 
 func reroll_offers():
 	if mode!="offer": return
@@ -797,7 +799,7 @@ func deploy_turret(weapon: Dictionary):
 	node.position = player.position+Vector3(1.6,0,0)
 	node.position.y = world.height_at(node.position.x,node.position.z)
 	add_child(node)
-	var model=WeaponModel.new();model.setup(weapon.id);model.rank=weapon.rank;model.scale=Vector3.ONE*1.7;model.position.y=.75;node.add_child(model);node.set_meta("model",model)
+	var model=WeaponModel.new();model.setup(weapon.id);model.rank=weapon.rank;model.evolved=weapon.get("evolved",false);model.scale=Vector3.ONE*1.7;model.position.y=.75;node.add_child(model);node.set_meta("model",model)
 	node.scale=Vector3.ONE*.05
 	create_tween().tween_property(node,"scale",Vector3.ONE,.25).set_trans(Tween.TRANS_BACK)
 	weapon.node = node
@@ -951,7 +953,7 @@ func open_shared_offer(pool: Array, kind: String, elite: bool, source: String, r
 		if item.kind == "weapon" and not rules.can_weapon(equipped,item.id): continue
 		shown.append(item)
 	if shown.is_empty(): shown = pool.duplicate(true)
-	offers = shown
+	offers = WeaponEvolution.inject(self,shown,source)
 	offer_kind = kind;offer_elite = elite;offer_rerolls = 0
 	hud.show_offers(offers,source)
 
@@ -1261,6 +1263,7 @@ func fire(weapon: Dictionary, origin: Vector3):
 		if victim.is_empty(): return
 		var contact=melee_contact(victim,origin);var duration=clampf(.8/(weapon.rate*stat("rate")),.07,.44)
 		avatar.begin_melee(weapon.id,contact,duration);sound.effect("slash",origin);coop.shot(weapon.id,origin,contact,duration)
+		if weapon.get("evolved",false): WeaponEvolution.flare(self,contact)
 		melee_attacks.append({"origin":origin,"target":contact,"aim":(contact-origin).normalized(),"reach":reach,"damage":stat("damage")*weapon.damage*float(weapon.get("power",1.0))*(1+stats.get("airDamage",0.0) if not player.is_on_floor() else 1.0),"delay":duration*.5,"weapon_id":weapon.id,"payload":mods.get("payload",""),"sweep_dot":mods.get("sweepDot",.45)})
 		return
 	var effective_range=weapon.range*stat("range")/18.0*(stat("turretRange") if weapon.turret else 1.0)
@@ -1279,6 +1282,7 @@ func fire(weapon: Dictionary, origin: Vector3):
 	var shot_count = (3 if kind == "shotgun" else 1)+int(mods.get("extraShots",0))+mini(7,int(stats.multishot))
 	var aim = ((melee_contact(target,origin) if kind=="horn" else enemy_center(target))-origin).normalized()
 	var base_damage=stat("damage")*weapon.damage*float(weapon.get("power",1.0))*stats.get(kind+"Power",1.0)*(1+stats.get("airDamage",0.0) if not player.is_on_floor() else 1.0)
+	if weapon.get("evolved",false) and (kind in SkillBook.KINDS or kind in ["horn","gravity","meteor"]): WeaponEvolution.flare(self,enemy_center(target))
 	if SkillBook.cast(self,weapon,kind,origin,target,base_damage): return
 	if kind=="horn":
 		for enemy in enemies:
@@ -1320,6 +1324,7 @@ func fire(weapon: Dictionary, origin: Vector3):
 		var rage = 1+stats.berserk*(1-hp/stats.maxHp)
 		var damage = base_damage*(stat("turretDamage") if weapon.turret else 1.0)*rage*(stat("critPower") if critical else 1.0)
 		projectiles.append({"node":node,"velocity":aim.rotated(Vector3.UP,spread)*stat("projectileSpeed"),"damage":damage,"critical":critical,"life":2.0 if kind=="boomerang" else float(mods.get("fuse",1)) if kind=="bomb" else effective_range/stat("projectileSpeed")+0.25,"kind":kind,"weapon_id":weapon.id,"payload":mods.get("payload",""),"area_scale":mods.get("areaScale",1),"hit":[],"hit_radius":.1*minf(2.5,stat("size"))*float(mods.get("shotScale",1)),"pierce":int(stats.pierce)+int(mods.get("extraPierce",0))+(8 if kind=="rail" else 3 if kind=="harpoon" else 2+int(stats.boomerangPierce) if kind=="boomerang" else 0),"bounce":int(stats.ricochet)+int(mods.get("extraBounce",0))+(3+int(stats.discBounces) if kind=="disc" else 0),"return":stats.boomerang>0 or kind=="boomerang" or mods.get("returning",false),"return_clock":.55})
+		projectiles[-1].evolved=weapon.get("evolved",false)
 		ShotFx.launch(projectiles[-1],kind,critical)
 	if projectiles.size() > 140:
 		for i in range(projectiles.size()-140): projectiles[0].node.queue_free();projectiles.pop_front()
@@ -2097,7 +2102,7 @@ func update_combat(delta: float):
 			if closest.distance_squared_to(center) < pow(enemy_hit+shot.get("hit_radius",.1),2):
 				shot.hit.append(enemy.net_id)
 				hit_enemy(enemy,shot)
-				ShotFx.impact(self,closest,shot.kind,shot.get("critical",false),shot.velocity)
+				ShotFx.impact(self,closest,shot.kind,shot.get("critical",false),shot.velocity,shot.get("evolved",false))
 				hit_shake=maxf(hit_shake,.04)
 				if shot.bounce>0:
 					var target=nearest_enemy(shot.node.position,12,shot.hit)

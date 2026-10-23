@@ -92,7 +92,7 @@ static func run(g):
 	realm_entry.left=g.elapsed;realm_entry.level_out=g.level;report.realms.append(realm_entry)
 	report.minutes=snappedf(g.elapsed/60.0,.01);report.level=g.level;report.kills=g.kills;report.reached_realm=g.realm
 	report.damage_taken=roundi(hits_taken);report.wall_seconds=snappedf((Time.get_ticks_msec()-started)/1000.0,.1)
-	report.weapons=g.equipped.map(func(w):return str(w.id)+":"+str(w.rank));report.mutations=g.mutations.size()
+	report.weapons=g.equipped.map(func(w):return str(w.id)+":"+str(w.rank)+("*" if w.get("evolved",false) else ""));report.evolutions=g.equipped.filter(func(w):return w.get("evolved",false)).map(func(w):return {"name":str(w.name),"minute":snappedf(float(w.get("evolved_at",0))/60.0,.1)});report.mutations=g.mutations.size()
 	report.capped=g.elapsed>=cap;report.timeline=timeline;report.last_hits=hits
 	print("RUN_BOT "+JSON.stringify(report))
 	g.get_tree().quit(0)
@@ -191,6 +191,8 @@ static func pick(g,style: String) -> int:
 			# A full loadout never swaps weapons (that needs the replace screen).
 			score+=4.0 if owned else (3.5 if g.equipped.size()<RunRules.WEAPON_CAP else -9.0)
 		elif item.kind=="mutation": score+=2.6
+		elif item.kind=="evolution": score+=8.0
+		elif item.has("catalyst_for"): score+=5.0
 		else:
 			var key=str(item.effects[0].key)
 			if g.rules.data.augments.has(key): key=str(g.rules.data.augments[key].stat)

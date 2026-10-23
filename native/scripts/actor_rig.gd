@@ -91,7 +91,7 @@ func add_arm(side: int):
 
 func sync_equipment(weapons: Array):
 	var signature=""
-	for weapon in weapons: signature+=weapon.id+str(weapon.rank)+";"
+	for weapon in weapons: signature+=weapon.id+str(weapon.rank)+("*" if weapon.get("evolved",false) else "")+";"
 	if signature==equipment_signature: return
 	var previous_third_rank=held[2].rank if held.size()==3 else 0
 	finish_melee()
@@ -104,7 +104,7 @@ func sync_equipment(weapons: Array):
 		create_tween().tween_property(extra,"scale",Vector3.ONE,.5).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	if arms.size()>2: arms[2].visible=weapons.size()==3
 	for i in range(weapons.size()):
-		var weapon=WeaponModel.new();weapon.setup(weapons[i].id);weapon.rank=int(weapons[i].rank)
+		var weapon=WeaponModel.new();weapon.setup(weapons[i].id);weapon.rank=int(weapons[i].rank);weapon.evolved=bool(weapons[i].get("evolved",false))
 		weapon.position.y=.18
 		arms[i].get_meta("hand").add_child(weapon)
 		held.append(weapon)

@@ -325,7 +325,7 @@ func effect(id: String,position: Vector3=Vector3.ZERO):
 	if not cache.has(key):
 		var audio=AudioStreamWAV.new();audio.mix_rate=22050;audio.format=AudioStreamWAV.FORMAT_16_BITS
 		var bass=id in ["shotgun","rocket","turret-rocket","land","blast","saw","meteor","bomb","horn"]
-		var duration=1.4 if id=="hunt_win" else 1.3 if id=="hunt_fail" else .9 if id=="teleport" else 1.2 if id=="steam" else .6 if id=="level" else .32 if id=="sneeze" else .3 if id.ends_with("bump") or id=="squish" else .26 if bass else .14
+		var duration=1.6 if id=="evolve" else 1.4 if id=="hunt_win" else 1.3 if id=="hunt_fail" else .9 if id=="teleport" else 1.2 if id=="steam" else .6 if id=="level" else .32 if id=="sneeze" else .3 if id.ends_with("bump") or id=="squish" else .26 if bass else .14
 		var frequencies={"gun":170.0,"shotgun":70.0,"rail":1250.0,"rocket":85.0,"flame":230.0,"fire":230.0,"poison":320.0,"ice":1600.0,"saw":100.0,"turret":430.0,"fire-turret":210.0,"turret-flame":210.0,"lightning":980.0,"lightning-turret":980.0,"turret-tesla":980.0,"rocket-turret":80.0,"turret-rocket":80.0,"coin":1100.0,"dash":370.0,"hit":90.0,"jump":650.0,"land":80.0,"drink":900.0,"level":523.25}
 		var frequency=float(frequencies.get(id,520.0))
 		if id in ["boomerang","disc","harpoon","gravity","horn","bubble","meteor","bomb","steam"]:
@@ -362,6 +362,14 @@ func effect(id: String,position: Vector3=Vector3.ZERO):
 				# A falling low toll: the hunt slipped away.
 				var tone=146.83*pow(.5,t/duration)
 				sample=(sin(TAU*tone*t)*.2+sin(TAU*tone*1.5*t)*.06+local_rng.randf_range(-.04,.04))*exp(-t*2.4)*minf(1,t*30.0)
+			if id=="evolve":
+				# Weapon evolution: a heavy thump, a rising shimmer, then a bright A-major chord.
+				var sweep=220.0*pow(4.0,minf(t,.5)/.5);phase+=TAU*sweep/22050.0
+				var rise=(sin(phase)*.09+sin(phase*2.0)*.04)*minf(1,t*20.0)*maxf(0,1-t/.55)
+				var chord=0.0
+				for note in [440.0,554.37,659.25,880.0]: chord+=sin(TAU*note*t)+.3*sin(TAU*note*2.0*t)
+				chord*=.035*smoothstep(.45,.6,t)*exp(-maxf(0,t-.6)*2.4)
+				sample=sin(TAU*60.0*t*(1-t))*.3*exp(-t*14.0)+rise+chord
 			if id=="teleport":
 				# Island travel: a rising shimmer sweep, swelling then fading.
 				var sweep=180.0*pow(8.0,t/duration);phase+=TAU*sweep/22050.0

@@ -168,6 +168,32 @@ static func run(game):
 	game.hud.update(0)
 	okay=expect(await capture(game,"mutation-hud"),"mutation HUD capture") and okay
 	game.mutations.clear();game.owned=game.owned.filter(func(item):return item.kind!="mutation")
+	# Weapon evolution: a chest offer led by the gold EVOLVE card, then the evolved
+	# weapon's gilded slot, held halo and shots in play.
+	var evolving=game.equipped[0];evolving.rank=WeaponEvolution.RANK
+	var catalyst=WeaponEvolution.form(evolving.id).catalyst
+	game.owned=game.owned.filter(func(i):return not (i.effects[0].key==catalyst or game.rules.data.augments.has(i.effects[0].key) and game.rules.data.augments[i.effects[0].key].stat==catalyst))
+	var key_offers=WeaponEvolution.inject(game,game.rules.offers("item",0,false,game.stats,game.equipped),"chest")
+	game.offers=key_offers;game.mode="offer";game.offer_kind="item";game.offer_source="chest"
+	game.hud.show_offers(key_offers,"chest",false);game.hud.cards[-1].grab_focus()
+	okay=expect(await capture(game,"evolution-key"),"evolution key capture") and okay
+	okay=expect(key_offers[-1].has("catalyst_for"),"a full-rank weapon without its catalyst is offered the key card") and okay
+	game.hud.close()
+	game.owned.append(game.rules.data.loot.filter(func(i):return i.effects[0].key==catalyst or game.rules.data.augments.has(i.effects[0].key) and game.rules.data.augments[i.effects[0].key].stat==catalyst)[0].duplicate(true))
+	var evolution_offers=WeaponEvolution.inject(game,game.rules.offers("item",0,false,game.stats,game.equipped),"chest")
+	game.offers=evolution_offers;game.mode="offer";game.offer_kind="item";game.offer_source="chest"
+	game.hud.show_offers(evolution_offers,"chest",false)
+	okay=expect(await capture(game,"evolution-offer"),"evolution offer capture") and okay
+	okay=expect(evolution_offers[0].kind=="evolution" and game.hud.cards[0].find_children("*","PowerIcon",true,false).size()==1,"evolution card leads the chest offer with the weapon icon") and okay
+	game.hud.cards[0].pressed.emit()
+	okay=expect(evolving.get("evolved",false) and game.mode=="playing","evolution card evolves the weapon") and okay
+	for i in range(4):
+		game.spawn_enemy(8);game.enemies[-1].node.position=game.player.position+Vector3(-3+i*2,0,-7-i)
+	for volley in range(3):
+		game.fire(evolving,game.player.position+Vector3.UP)
+		for frame in range(4): await game.get_tree().process_frame
+	game.hud.update(0)
+	okay=expect(await capture(game,"evolution-hud"),"evolved weapon HUD capture") and okay
 	# Every upgrade draws a stat medallion; a contact sheet shows one per stat and condition.
 	okay=expect(game.rules.data.loot.all(func(item):return not StatGlyphs.resolve(str(item.id)).is_empty()),"every upgrade has a stat medallion") and okay
 	var sheet_keys=[];var shown={}

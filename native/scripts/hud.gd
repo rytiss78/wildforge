@@ -880,7 +880,7 @@ func pause_menu(ended: bool = false, win: bool = false):
 		if control is Button and not control.disabled: control.grab_focus();break
 
 func icon_key(item: Dictionary) -> String:
-	return item.id
+	return str(item.weapon_id) if item.kind=="evolution" else item.id
 
 func offer_card(item: Dictionary, index: int, select: Callable) -> Button:
 	var card=button("",select,false,"large")
@@ -904,7 +904,7 @@ func offer_card(item: Dictionary, index: int, select: Callable) -> Button:
 	column.offset_left=10 if compact else 21;column.offset_right=-10 if compact else -21;column.offset_top=12 if compact else 18;column.offset_bottom=-12 if compact else -18
 	column.mouse_filter=Control.MOUSE_FILTER_IGNORE;column.add_theme_constant_override("separation",5 if compact else 8)
 	# Rarity bar with glow
-	var rarity=label(RunRules.RARITIES[item.tier].to_upper()+"   ·   #"+str(index+1),12,accent.darkened(.4))
+	var rarity=label(("WEAPON EVOLUTION" if item.kind=="evolution" else ("EVOLUTION KEY · " if item.has("catalyst_for") else "")+RunRules.RARITIES[item.tier].to_upper())+"   ·   #"+str(index+1),12,accent.darkened(.4))
 	rarity.add_theme_color_override("font_outline_color",accent);rarity.add_theme_color_override("font_outline_color",accent)
 	rarity.add_theme_font_size_override("font_size",12)
 	rarity.add_theme_color_override("font_color",accent.lightened(.3))
@@ -916,7 +916,7 @@ func offer_card(item: Dictionary, index: int, select: Callable) -> Button:
 	var radius=StyleBoxFlat.new();radius.bg_color=Color(accent,.12);radius.set_corner_radius_all(8);radius.set_border_width_all(1);radius.border_color=accent.darkened(.3)
 	icon_bg.add_theme_stylebox_override("normal",radius)
 	column.add_child(icon_bg)
-	var icon=PowerIcon.new();icon.key=icon_key(item);icon.weapon_icon=item.kind=="weapon"
+	var icon=PowerIcon.new();icon.key=icon_key(item);icon.weapon_icon=item.kind in ["weapon","evolution"]
 	icon_bg.add_child(icon)
 	icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	icon.offset_left=10;icon.offset_top=10;icon.offset_right=-10;icon.offset_bottom=-10
@@ -925,7 +925,7 @@ func offer_card(item: Dictionary, index: int, select: Callable) -> Button:
 	column.add_child(title)
 	var effect_desc=""
 	if item.kind!="weapon" and item.has("effects") and item.effects.size()>0: effect_desc=game.rules.describe(item.effects[0])
-	var text=WeaponDetails.describe(item.id) if item.kind=="weapon" else effect_desc
+	var text=WeaponDetails.describe(item.id) if item.kind=="weapon" else str(item.text) if item.kind=="evolution" else effect_desc
 	var description=label(text,11 if compact else 14);description.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;description.max_lines_visible=4;description.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS;card.tooltip_text=text;description.size_flags_vertical=Control.SIZE_EXPAND_FILL
 	column.add_child(description)
 	var note=item.kind.capitalize()+" · "+str(item.get("family","Weapon"))
@@ -938,8 +938,13 @@ func offer_card(item: Dictionary, index: int, select: Callable) -> Button:
 		else:
 			note="New weapon — fills empty slot"
 	var useful=true
-	if item.kind!="weapon":
+	if item.kind=="evolution":
+		var owned=game.equipped.filter(func(w):return w.id==item.weapon_id)
+		note="Rank %d %s + %s card ✓ · evolves once" % [owned[0].rank if not owned.is_empty() else WeaponEvolution.RANK,owned[0].name if not owned.is_empty() else "",WeaponEvolution.form(item.weapon_id).get("catalyst_text","")]
+	elif item.kind!="weapon":
 		var fit=UpgradeFit.describe(game,item);note=fit.text;useful=fit.useful
+		var unlocks=game.equipped.filter(func(w):return w.id==item.get("catalyst_for",""))
+		if not unlocks.is_empty(): note="EVOLUTION KEY · lets %s evolve into %s" % [unlocks[0].name,WeaponEvolution.evolved_name(unlocks[0])];useful=true
 	var footer=label(note,12 if compact else 15,Color("8ee4b3") if useful else Color("973426"))
 	footer.name="LoadoutBenefit";footer.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;footer.custom_minimum_size.y=48 if compact else 68
 	footer.max_lines_visible=4;footer.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS
@@ -970,6 +975,10 @@ func preview_offer(item: Dictionary):
 		var before=float(owned[0].power) if not owned.is_empty() else 0.0
 		var after=before+item.strength*.3 if before>0 else item.strength
 		comparison="Weapon power %.2f → %.2f  ·  " % [before,after]+("Upgrades your equipped weapon" if before>0 else "Uses one of three weapon slots")+"  ·  "+WeaponDetails.describe(item.id)
+	elif item.kind=="evolution":
+		var owned=game.equipped.filter(func(w):return w.id==item.weapon_id)
+		var before=float(owned[0].power) if not owned.is_empty() else 0.0
+		comparison="Weapon power %.2f → %.2f  ·  %s  ·  Keeps its rank and slot" % [before,before*float(WeaponEvolution.form(item.weapon_id).get("power",1)),item.text]
 	else:
 		var candidate=game.stats.duplicate(true);game.rules.apply_effects(candidate,item.get("effects",[]))
 		var effects=item.get("effects",[])
@@ -1091,6 +1100,9 @@ func build_menu(return_to_pause: bool=false,detailed: bool=false):
 		if detailed: rows.add_child(label("Power %.1f · Rate %.2f/s · Reach %.1fm" % [power,rate,reach],16))
 		if detailed:
 			var detail=label(WeaponDetails.describe(weapon.id),14);detail.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;rows.add_child(detail)
+		var recipe=WeaponEvolution.recipe(game,weapon)
+		if not recipe.is_empty():
+			var evolution=label(recipe,14,WeaponEvolution.GOLD);evolution.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;rows.add_child(evolution)
 	rows.add_child(label("OWNED ITEMS & SKILLS",18))
 	for item in game.owned:
 		icon_text_row(rows,icon_key(item),false,item.name+(" · "+game.rules.describe(item.effects[0]) if detailed else ""))

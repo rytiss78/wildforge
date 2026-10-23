@@ -14,6 +14,9 @@ var rank_parts=Node3D.new()
 var shown_rank=0
 var variant_base: Node3D
 var recoil=0.05
+# Evolved weapons wear a slowly turning gold halo with three orbiting sparks.
+var evolved=false
+var halo: Node3D
 
 func block(parent: Node3D,color: Color,pos: Vector3,dimensions: Vector3):
 	var mesh=BoxMesh.new();mesh.size=dimensions
@@ -76,9 +79,24 @@ func transform_rank():
 		var ring=ToonArt.tube(rank_parts,Color("edbf56"),Vector3(0,.14,-.35),.10,.10,.06);ring.rotation.x=PI*.5
 	if stage>2: ToonArt.ball(rank_parts,PowerIcon.color_for(id),Vector3(0,.34,0),Vector3(.18,.18,.18))
 
+func build_halo():
+	halo=Node3D.new();halo.name="EvolvedHalo";base.add_child(halo);halo.position=Vector3(0,.14,-.25)
+	var paint=StandardMaterial3D.new();paint.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED;paint.blend_mode=BaseMaterial3D.BLEND_MODE_ADD
+	paint.albedo_color=Color(1,.86,.45,1.0);paint.cull_mode=BaseMaterial3D.CULL_DISABLED
+	var hoop=TorusMesh.new();hoop.inner_radius=.40;hoop.outer_radius=.47;hoop.rings=24;hoop.ring_segments=6
+	var ring=MeshInstance3D.new();ring.mesh=hoop;ring.material_override=paint;ring.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;ring.rotation.x=PI*.5;halo.add_child(ring)
+	var gem=SphereMesh.new();gem.radius=.08;gem.height=.16;gem.radial_segments=8;gem.rings=4
+	for i in range(3):
+		var spark=MeshInstance3D.new();spark.mesh=gem;spark.material_override=paint;spark.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		spark.position=Vector3(cos(i*TAU/3),sin(i*TAU/3),0)*.44;halo.add_child(spark)
+
 func tick(delta: float):
 	if variant_base!=null: variant_base.tick(delta)
 	transform_rank()
+	if evolved and halo==null: build_halo()
+	if halo!=null:
+		halo.visible=evolved;halo.rotation.z+=delta*1.6
+		halo.scale=Vector3.ONE*(1.0+sin(Time.get_ticks_msec()*.005)*.06)
 	kick=maxf(0,kick-delta*9)
 	base.position.z=kick*(.2 if id in ["shotgun","rocket"] else .1)
 	base.rotation.x=kick*.14

@@ -21,7 +21,7 @@ const STYLE={
 	"disc":{"color":Color("fff0d2"),"length":1.2,"width":.22,"impact":"slash"},
 	"bomb":{"color":Color("ffcf6a"),"length":0.0,"width":0.0,"impact":"none","puff":"fuse"},
 }
-const PUFF_EVERY={"ember":.045,"drip":.07,"frost":.08,"smoke":.035,"wisp":.06,"fuse":.07}
+const PUFF_EVERY={"glint":.035,"ember":.045,"drip":.07,"frost":.08,"smoke":.035,"wisp":.06,"fuse":.07}
 static var tracer_quad: QuadMesh
 static var tracer_paints={}
 
@@ -46,7 +46,9 @@ static func launch(shot: Dictionary,kind: String,critical: bool=false):
 	var trail=MeshInstance3D.new();trail.mesh=tracer_quad;trail.top_level=true
 	trail.material_override=tracer_paint(Color("ffd35a") if critical else look.color)
 	trail.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;trail.visible=false
-	shot.node.add_child(trail);shot.trail=trail;shot.trail_width=look.width*(1.5 if critical else 1.0)
+	# Evolved weapons fire gilded shots: a wider trail tinted toward gold.
+	if shot.get("evolved",false): trail.material_override=tracer_paint((Color("ffd35a") if critical else look.color).lerp(Color("ffe9a0"),.55))
+	shot.node.add_child(trail);shot.trail=trail;shot.trail_width=look.width*(1.5 if critical else 1.0)*(2.0 if shot.get("evolved",false) else 1.0)
 
 # Called every frame after the shot moved.
 static func follow(g: Node3D,shot: Dictionary,velocity: Vector3,delta: float):
@@ -62,11 +64,13 @@ static func follow(g: Node3D,shot: Dictionary,velocity: Vector3,delta: float):
 			if side.length_squared()<.001: side=Vector3.RIGHT
 			side=side.normalized()
 			trail.global_transform=Transform3D(Basis(side*shot.trail_width,direction*length,side.cross(direction).normalized()*shot.trail_width),head-direction*length*.5)
-	if not look.has("puff"): return
+	var kind=str(look.get("puff","glint" if shot.get("evolved",false) else ""))
+	if kind.is_empty(): return
 	shot.puff_clock=float(shot.get("puff_clock",0))-delta
 	if shot.puff_clock>0: return
-	shot.puff_clock=PUFF_EVERY[look.puff]/EffectDetail.particles
-	puff(g,look.puff,head,velocity)
+	shot.puff_clock=PUFF_EVERY[kind]/EffectDetail.particles
+	puff(g,kind,head,velocity)
+	if shot.get("evolved",false) and kind!="glint": puff(g,"glint",head,velocity)
 
 static func puff(g: Node3D,kind: String,point: Vector3,velocity: Vector3):
 	var drift=-velocity.normalized()*.6
@@ -86,6 +90,9 @@ static func puff(g: Node3D,kind: String,point: Vector3,velocity: Vector3):
 		"wisp":
 			var root=CombatInk.star(g,point,.6,Color("a77cff"),3.0,.4,1.8,"trail")
 			if root!=null: root.fall=-1.5
+		"glint":
+			var root=CombatInk.star(g,point,.6,Color("ffe28a"),4.0,.34,1.0,"trail")
+			if root!=null: root.fall=-1.0
 		"fuse":
 			var root=CombatInk.star(g,point+Vector3.UP*.55,.4,Color("ffd25a"),6.0,.16,1.0,"trail")
 			if root!=null: root.shards(Color("ffe08a"),2,1.8)
@@ -99,8 +106,11 @@ static func muzzle(g: Node3D,origin: Vector3,aim: Vector3,kind: String):
 		root.shards(look.color,3,3.0)
 		for part in root.parts: part.velocity=(aim*2.5+part.velocity*.4)
 
-static func impact(g: Node3D,point: Vector3,kind: String,critical: bool,direction: Vector3=Vector3.ZERO):
+static func impact(g: Node3D,point: Vector3,kind: String,critical: bool,direction: Vector3=Vector3.ZERO,evolved: bool=false):
 	var look=style(kind)
+	if evolved:
+		var ring=CombatInk.star(g,point,1.5,Color("ffd36b"),8.0,.26)
+		if ring!=null: ring.shards(Color("fff2b8"),3,3.2)
 	var scale=1.45 if critical else 1.0
 	match look.impact:
 		"spark":

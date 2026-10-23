@@ -65,7 +65,29 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
 
 ## Next: Phase D — run depth
 
-- [ ] **Weapon evolutions.** A max-rank weapon plus a matching card evolves into a stronger form with its own look.
+- [x] **Weapon evolutions** (`weapon_evolution.gd`, October 23).
+  - **Rule:** a weapon at rank 5 that has its catalyst card can evolve once. For example, Gun needs a Critical hit card and Rail needs Piercing.
+  - **Offers:** the next chest, or weapon level-up, offers a gold "WEAPON EVOLUTION" card. Choosing it renames the weapon and multiplies its power (×1.4–2.0; spells ×2.25, which is 1.5× damage). It also adds the form's own modifiers: more shots, pierce, bounces, area or stun.
+  - **Coverage:** every one of the 73 weapons has a form. The 25 base kinds have their own names (Hand Cannon, Star Lance, Event Horizon, Sun Halo…). Themed variants keep their name with the form's adjective, for example "Gilded Popcorn Repeater".
+  - **Evolution key:** a full-rank weapon still missing its catalyst gets that card offered in chests and skill level-ups, marked "EVOLUTION KEY". Without this, an 8-run bot batch had 0 evolutions; with it, 4 evolutions in the 3 strongest runs, at minutes 15–26.
+  - **Look:**
+    - shots get a wider, gold-tinted trail, gold glints and a gold ring on impact;
+    - melee, horn, wells, meteors and spells get a gold flare where they land;
+    - the held weapon (and turret) wears a turning gold halo;
+    - the HUD slot gets a gold frame with "EVOLVED", or a thinner one with "EVOLVE READY";
+    - the build menu and slot tooltip show the recipe;
+    - evolving plays a new sound with a WEAPON EVOLVED card, a sky beam, a ring and a star burst.
+  - **Co-op:** each player gets only their own evolution and key cards from a shared chest pool. The evolved flag travels in the pose, so teammates see the halo.
+  - **Verified:**
+    - 23 integration checks (`2026-10-23T11-44-39-573Z-integration`). They cover the real chest purchase and reveal, a press of the EVOLVE card button, the catalyst and key-card path, banish refusal, one evolution per weapon, the evolved shots' pierce and trail, variant names, modifier merging and the co-op pool filter.
+    - Disabling the offer injection makes 10 of them fail.
+    - Rendered `capture-ui` (`2026-10-23T11-55-16-999Z`): `ui-evolution-key`, `ui-evolution-offer` and `ui-evolution-hud` inspected. The `fx-evolved` sheet (`2026-10-23T11-32-31-274Z-fx-review`) shows plain and evolved shots side by side for gun, rail, flame and rocket, plus the halo close-up.
+    - Bot batch: `2026-10-23T11-45-15-376Z-bot-playtest`.
+    - Also passing with 0 errors: check, smoke, shared-review, coop-dropin, combat, hunt, journey and playfeel reviews, and the full `coop` route (`2026-10-23T11-57-50-797Z`).
+  - **Limits:**
+    - Remote co-op shot visuals are not gilded; teammates see the halo only.
+    - The evolved damage was not measured separately with the damage-dummy harness; the bot batch is too small to say whether it changes win rates (3 of 8 reached the Baron, against 1 of 8 before, on the same seeds).
+    - Not playtested by a person.
 - [ ] **Spell–mutation synergies.** Mutation triggers react to spells (for example, Ember igniting inside Inferno Halo).
 - [ ] **Biome mechanics in fights.** One per biome, for example ice floors, spreading lava or toxic fog.
 

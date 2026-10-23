@@ -14,7 +14,7 @@ func refresh():
 	var turrets=game.equipped.filter(func(w):return w.turret)
 	var selected=turrets[game.selected_turret%turrets.size()] if not turrets.is_empty() else {}
 	var next = str(selected.get("id",""))+":"+str(ceili(selected.get("deploy_clock",0)))+":"
-	for weapon in game.equipped: next += weapon.id+str(weapon.rank)+";"
+	for weapon in game.equipped: next += weapon.id+str(weapon.rank)+("*" if weapon.get("evolved",false) else "!" if WeaponEvolution.ready(game,weapon) else "")+";"
 	if next==signature and get_child_count()==3: return
 	# Track which slots are newly filled for entrance animation
 	var new_slots: Array[int]=[]
@@ -47,6 +47,14 @@ func refresh():
 				panel.add_theme_stylebox_override("panel",selected_style);panel.set_meta("selected_turret",true)
 				var selected_label=game.hud.label("SELECTED",11,ThemeTokens.STAR_GOLD);selected_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;column.add_child(selected_label)
 			panel.tooltip_text = weapon.name+" · Level "+str(weapon.rank)+"\n"+WeaponDetails.describe(weapon.id)
+			var recipe=WeaponEvolution.recipe(game,weapon)
+			if not recipe.is_empty(): panel.tooltip_text+="\n"+recipe
+			# Evolved: a thick gold frame. Ready to evolve: a thin one until a chest offers it.
+			var evolved=weapon.get("evolved",false)
+			if evolved or WeaponEvolution.ready(game,weapon):
+				var gilded=game.hud.style(ThemeTokens.PAPER_RUNTIME,WeaponEvolution.GOLD,12);gilded.set_border_width_all(3 if evolved else 2)
+				gilded.shadow_color=Color(WeaponEvolution.GOLD,.45);gilded.shadow_size=8 if evolved else 4
+				panel.add_theme_stylebox_override("panel",gilded)
 			var icon = PowerIcon.new()
 			icon.key = weapon.id
 			icon.weapon_icon = true
@@ -56,7 +64,11 @@ func refresh():
 			var badge = game.hud.label("Lv. %d" % weapon.rank,13,ThemeTokens.STAR_GOLD)
 			badge.position=Vector2(65,0)
 			icon.add_child(badge)
-			var name_label = game.hud.label(weapon.name,12)
+			if evolved or WeaponEvolution.ready(game,weapon):
+				var tag=game.hud.label("EVOLVED" if evolved else "EVOLVE READY",10,WeaponEvolution.GOLD);tag.name="EvolveTag"
+				tag.add_theme_color_override("font_outline_color",ThemeTokens.INK);tag.add_theme_constant_override("outline_size",4)
+				tag.position=Vector2(0,0);icon.add_child(tag)
+			var name_label = game.hud.label(weapon.name,12 if weapon.name.length()<16 else 10)
 			name_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 			column.add_child(name_label)
 		else:

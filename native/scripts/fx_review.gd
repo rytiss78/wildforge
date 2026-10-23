@@ -81,6 +81,32 @@ static func run(g: Node3D):
 		while total_hp(g)>=before and waited<90: await step(g,1);waited+=1
 		await step(g,2);impacts.append(await frame(g))
 		checks[kind+"_hit"]=total_hp(g)<before
+	# Evolved shots beside the plain ones (pairs: plain, evolved), then the held
+	# evolved weapon's halo up close.
+	var evolved=[]
+	for kind in ["gun","rail","flame","rocket"]:
+		for evolve in [false,true]:
+			for weapon in g.equipped:
+				if is_instance_valid(weapon.get("node")): weapon.node.queue_free()
+			g.equipped.clear()
+			var item=weapons[kind].duplicate(true);item.kind="weapon";item.strength=1.0;g.equip_weapon(item)
+			var weapon=g.equipped[-1];weapon.clock=1e9
+			if evolve: weapon.rank=WeaponEvolution.RANK;WeaponEvolution.apply(g,{"weapon_id":kind});g.events.announcement_until=0.0
+			clear_effects(g);await step(g,12)
+			g.fire(weapon,g.player.position+Vector3.UP*.9)
+			var flown=0
+			while flown<24 and not g.projectiles.any(func(p):return Vector2(p.node.position.x-g.player.position.x,p.node.position.z-g.player.position.z).length()>3.6):
+				await step(g,1);flown+=1
+			evolved.append(await frame(g))
+			checks["evolved_"+kind]=not evolve or g.projectiles.all(func(p):return p.get("evolved",false))
+	for i in range(40):
+		for model in g.avatar.held: model.tick(1.0/60.0)
+		await step(g,1)
+	checks.evolved_halo=not g.avatar.held.is_empty() and g.avatar.held[0].halo!=null and g.avatar.held[0].halo.visible
+	var close=g.get_viewport().get_texture().get_image();var size=Vector2(close.get_size())
+	await RenderingServer.frame_post_draw;close=g.get_viewport().get_texture().get_image()
+	close=close.get_region(Rect2i(Vector2i(size*Vector2(.40,.38)),Vector2i(size*Vector2(.2,.2))));close.resize(CELL.x,CELL.y,Image.INTERPOLATE_LANCZOS);evolved.append(close)
+	checks.evolved_sheet=sheet(evolved,"evolved")
 	for weapon in g.equipped:
 		if is_instance_valid(weapon.get("node")): weapon.node.queue_free()
 	g.equipped.clear()
