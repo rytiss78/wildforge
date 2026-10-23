@@ -255,6 +255,38 @@ static func run(g: Node3D):
 	await step(g,150)
 	checks.death_cleanup=g.death_fx.is_empty()
 	checks.death_sheet=sheet(deaths,"deaths")
+	# Fight zoom: the same spot with a calm field, then with a 40-enemy crowd.
+	var zoom_cells=[];g.fight_zoom=1.0;g.fight_zoom_target=1.0
+	await step(g,30);zoom_cells.append(await frame(g,true))
+	for i in range(40):
+		g.spawn_enemy(8);var enemy=g.enemies[-1];var p=g.player.position+forward.rotated(Vector3.UP,i*.7)*(3.0+i*.22);p.y=g.world.height_at(p.x,p.z)
+		enemy.node.position=p;enemy.speed=0.0;enemy.attack=1e9;enemy.contact=1e9;enemy.damage=0.0;enemy.hp=1e6;enemy.maxHp=1e6
+	await step(g,240);zoom_cells.append(await frame(g,true))
+	checks.fight_zoom_out=g.fight_zoom>1.15
+	checks.zoom_sheet=sheet(zoom_cells,"zoom")
+	# Telegraphs: four attack styles share the danger red (their own colour stays as
+	# the fill), mid-countdown and in the final flash; a charge lane; a bite windup.
+	for enemy in g.enemies:
+		if is_instance_valid(enemy.node): enemy.node.queue_free()
+	g.enemies.clear();g.fight_zoom=1.0;g.fight_zoom_target=1.0;clear_effects(g);await step(g,40)
+	var telegraphs=[]
+	var styles=["toxic","lava","void","storm"]
+	for i in range(4): g.warn_at(g.player.position+forward*6.0+side*(float(i)-1.5)*3.2,1.4,1.6,0.0,styles[i],true)
+	await step(g,40);telegraphs.append(await frame(g,true))
+	await step(g,44);telegraphs.append(await frame(g,true))
+	checks.telegraph_flash=g.hazards.all(func(h):return float(h.node.material_override.get_shader_parameter("progress"))>float(h.node.material_override.get_shader_parameter("flash_from")))
+	checks.telegraph_danger_ink=g.hazards.all(func(h):return h.node.material_override.get_shader_parameter("ink").is_equal_approx(DangerMark.DANGER))
+	await step(g,30)
+	g.spawn_enemy(8);var charger=g.enemies[-1];var c=g.player.position+forward*9.0;c.y=g.world.height_at(c.x,c.z)
+	charger.node.position=c;charger.speed=0.0;charger.hp=1e6;charger.maxHp=1e6;charger.windup=.8;charger.charge_direction=(g.player.position-c).normalized();charger.charge_length=10.0;charger.attack=99.0
+	for i in range(20): preload("res://scripts/combat_tactics.gd").charge_movement(g,charger,charger.charge_direction,9.0,1.0/60.0);await step(g,1)
+	telegraphs.append(await frame(g,true))
+	checks.telegraph_charge_lane=is_instance_valid(charger.get("charge_lane"))
+	charger.windup=0.0;preload("res://scripts/combat_tactics.gd").charge_movement(g,charger,charger.charge_direction,9.0,1.0/60.0)
+	checks.telegraph_lane_cleared=not charger.has("charge_lane")
+	charger.contact_windup=.4;preload("res://scripts/combat_tactics.gd").contact_warning(charger);charger.node.position=g.player.position+forward*3.0
+	await step(g,2);telegraphs.append(await frame(g,true))
+	checks.telegraph_sheet=sheet(telegraphs,"telegraphs")
 	for weapon in g.equipped:
 		if is_instance_valid(weapon.get("node")): weapon.node.queue_free()
 	g.equipped.clear()

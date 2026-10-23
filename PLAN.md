@@ -186,8 +186,19 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
   - Twisters and orbs carry seamless 3D loops (wind; a deep hum) that fade with the spell.
   - Before this, the spells borrowed the dash, gravity, lightning and nova sounds.
   - **Verified:** integration checks confirm each spell uses its own sound, every sound peaks between 0.15 and 0.96 (audible, unclipped) and both loops loop (`2026-10-23T16-02-24-064Z-integration`); fx-review casts all spells with 0 errors. Not yet heard by a person.
-- [ ] **Camera zoom** when spells or crowds fill the screen.
-- [ ] **Telegraph consistency:** one warning language (shape, colour, timing) for every enemy attack.
+- [x] **Camera zoom** (October 23). A `fight_zoom` factor on top of the player's own camera distance eases out by up to 35%:
+  - for a crowd within 16 m (more than 10 enemies, full effect at 50);
+  - for active screen-filling spells;
+  - for a nearby boss (not in the Red Moon arena, which has its own camera).
+  - It eases in again more slowly, counts four times a second, and resets with each run and island. The player's distance setting and the reviews' camera checks are untouched.
+  - **Verified:** an integration check (40-enemy crowd zooms out past 1.15, back below 1.03 once they are gone; `2026-10-23T16-10-57-897Z-integration`) and the `fx-zoom` before/after sheet (`16-09-35-247Z-fx-review`).
+- [x] **Telegraph consistency** (October 23). One warning language:
+  - **Colour:** every enemy attack's ground mark now has a danger-red ink (`DangerMark.DANGER`), with the attack's own colour kept only as the inner fill. The hero's own strikes stay gold; harmless hazards (ice floors, wind gusts) are pale blue.
+  - **Timing:** every ground warning lasts at least 0.8 s, and the sweep closes in. The last 0.25 s flashes white ("impact now"), for marks, the melee bite ring (now the same red) and the new charge lanes.
+  - **Charge lanes:** charges used to show only angry eyebrows during their 0.8 s windup. They now paint their lane on the ground in danger red. The review found lanes left behind when a freeze or blind interrupted the windup, or the charger died; lanes now clear on every path.
+  - **Verified:** the `fx-telegraphs` sheet (`2026-10-23T16-09-35-247Z-fx-review`) shows four styles in red with their own fills, the final flash, a charge lane and a bite ring, all inspected. Review checks cover the red ink, flash timing, lane creation and lane clean-up.
+  - **Regression runs:** check, smoke, integration, the boss, Red Moon, style, combat, playfeel and biome reviews, and coop-dropin pass with 0 errors.
+  - **Known flaky:** `shared-review` failed once (`16-12-59-888Z`). After the island-change reconnect the guest got 4 of the required 5 snapshots within 5 s; three re-runs passed with 5. This is timing under load and has not been changed by this work. Left open, not loosened.
 
 ## Open issues and limits
 

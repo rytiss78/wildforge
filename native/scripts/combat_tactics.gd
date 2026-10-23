@@ -21,16 +21,19 @@ static func charge_movement(g,enemy: Dictionary,aim: Vector3,distance: float,del
 	# A rush commits when the warning starts. Dodging sideways then matters.
 	if enemy.freeze>0 or enemy.blind>0:
 		enemy.windup=0.0;enemy.charge=0.0
+		charge_lane(g,enemy)
 		return aim
+	charge_lane(g,enemy)
 	if enemy.get("windup",0)>0:
 		enemy.windup=maxf(0,enemy.windup-delta);g.update.eyebrows(enemy)
+		charge_lane(g,enemy)
 		if enemy.windup<=0: enemy.charge=.65
 		return Vector3.ZERO
 	if enemy.get("charge",0)>0:
 		enemy.charge=maxf(0,enemy.charge-delta)
 		return enemy.get("charge_direction",aim)
 	if enemy.attack<=0 and distance>2 and distance<13:
-		enemy.windup=.8;enemy.attack=5.0;enemy.charge_direction=aim.normalized()
+		enemy.windup=.8;enemy.attack=5.0;enemy.charge_direction=aim.normalized();enemy.charge_length=clampf(distance+3.0,4.0,14.0)
 		enemy.node.get_meta("rig").attack=.8;g.update.eyebrows(enemy)
 		return Vector3.ZERO
 	return aim
@@ -75,6 +78,30 @@ static func contact_tick(g,enemy: Dictionary,target: Dictionary,touching: bool,d
 
 static var contact_mesh: TorusMesh
 static var contact_paint: StandardMaterial3D
+static var flash_paint: StandardMaterial3D
+static var lane_mesh: QuadMesh
+static var lane_paint: StandardMaterial3D
+
+# A charge paints its lane on the ground during the windup, in danger red, and
+# flashes white just before it commits; the lane is gone once the rush starts.
+static func charge_lane(g,enemy: Dictionary):
+	var lane=enemy.get("charge_lane")
+	if float(enemy.get("windup",0))<=0 or enemy.dead:
+		if is_instance_valid(lane): lane.queue_free()
+		enemy.erase("charge_lane");return
+	if not is_instance_valid(lane):
+		if lane_mesh==null:
+			lane_mesh=QuadMesh.new();lane_mesh.size=Vector2(1.0,1.0);lane_mesh.orientation=PlaneMesh.FACE_Y
+			lane_paint=StandardMaterial3D.new();lane_paint.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED;lane_paint.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA
+			lane_paint.albedo_color=Color(DangerMark.DANGER,.42);lane_paint.cull_mode=BaseMaterial3D.CULL_DISABLED
+		lane=MeshInstance3D.new();lane.mesh=lane_mesh;lane.material_override=lane_paint;lane.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		g.add_child(lane);enemy.charge_lane=lane
+	var direction: Vector3=enemy.get("charge_direction",Vector3.FORWARD);direction.y=0;direction=direction.normalized()
+	var length=float(enemy.get("charge_length",8.0))*clampf(1.0-enemy.windup/.8+.35,0,1)
+	var start: Vector3=enemy.node.position;var middle=start+direction*length*.5
+	lane.position=Vector3(middle.x,g.world.height_at(middle.x,middle.z)+.1,middle.z)
+	lane.basis=Basis(Vector3.UP,atan2(direction.x,direction.z));lane.scale=Vector3(float(enemy.get("radius",.7))*2.2,1,length)
+	lane.transparency=0.0 if enemy.windup>.2 or int(Time.get_ticks_msec()/45)%2==0 else .7
 
 static func contact_warning(enemy: Dictionary):
 	var remaining=float(enemy.get("contact_windup",0))
@@ -83,7 +110,8 @@ static func contact_warning(enemy: Dictionary):
 			contact_mesh=TorusMesh.new();contact_mesh.inner_radius=.90;contact_mesh.outer_radius=1.0
 			contact_mesh.rings=24;contact_mesh.ring_segments=6
 			contact_paint=StandardMaterial3D.new();contact_paint.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED
-			contact_paint.albedo_color=Color("ff674a")
+			contact_paint.albedo_color=Color("ff4a2e")
+			flash_paint=contact_paint.duplicate();flash_paint.albedo_color=Color("fff4e0")
 		var ring=MeshInstance3D.new();ring.mesh=contact_mesh;ring.material_override=contact_paint
 		ring.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 		enemy.node.add_child(ring);enemy.contact_ring=ring
@@ -91,3 +119,5 @@ static func contact_warning(enemy: Dictionary):
 		var ring=enemy.contact_ring;ring.visible=remaining>0
 		var radius=(enemy.radius+.85)*lerpf(.75,1.0,1-clampf(remaining/.45,0,1))
 		ring.position.y=.12;ring.scale=Vector3(radius,.3,radius)
+		# Same language as ground marks: the last 0.2 s before the bite flashes white.
+		ring.material_override=flash_paint if remaining>0 and remaining<.2 and int(Time.get_ticks_msec()/45)%2==0 else contact_paint

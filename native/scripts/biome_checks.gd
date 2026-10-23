@@ -69,5 +69,13 @@ static func run(game: Node3D) -> Dictionary:
 	checks.biome_other_realm=game.biome_zones.size()==count
 	game.clear_entities();checks.biome_cleared=game.biome_zones.is_empty()
 	var realm=game.realm;game.realm=3;checks.biome_not_red_moon=not BiomeMechanics.active(game);game.realm=realm
+	# Fight zoom: a big crowd eases the camera out; it comes back once the crowd is gone.
+	setup(game);var base_distance=game.camera_distance
+	for i in range(40): dummy(game,Vector3.FORWARD.rotated(Vector3.UP,i*.7)*(3.0+i*.25))
+	for i in range(240): game.update_fight_zoom(1.0/60.0)
+	var zoomed=game.fight_zoom
+	for enemy in game.enemies: enemy.dead=true
+	for i in range(600): game.update_fight_zoom(1.0/60.0)
+	checks.fight_zoom=zoomed>1.15 and zoomed<=1.35 and game.fight_zoom<1.03 and game.camera_distance==base_distance
 	setup(game);game.hp=game.stats.maxHp
 	return checks

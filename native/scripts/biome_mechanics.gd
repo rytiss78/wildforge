@@ -60,7 +60,8 @@ static func spawn(g,event: Dictionary):
 	var biome=int(event.biome);var info=KINDS[biome]
 	var at=Vector3(float(event.pos[0]),0,float(event.pos[1]));at.y=g.world.height_at(at.x,at.z)
 	var zone={"kind":info.id,"biome":biome,"pos":at,"dir":Vector3(float(event.dir[0]),0,float(event.dir[1])).normalized(),"age":0.0,"warn":float(info.warn),"life":float(info.warn)+float(info.life),"radius":float(info.radius),"fx":0.0}
-	if zone.warn>0: zone.mark=preload("res://scripts/danger_mark.gd").make(g,at,zone.radius,{"spores":"toxic","ice":"storm","gust":"storm","lava":"lava","rift":"void"}.get(zone.kind,"ally"))
+	if zone.warn>0: zone.mark=preload("res://scripts/danger_mark.gd").make(g,at,zone.radius,{"spores":"toxic","ice":"caution","gust":"caution","lava":"lava","rift":"void"}.get(zone.kind,"ally"))
+	if zone.has("mark"): zone.mark.material_override.set_shader_parameter("flash_from",clampf(1.0-.25/maxf(.3,zone.warn),0,1))
 	if zone.kind=="lava": zone.built=1.0
 	zone.node=disc(g,at,1.0 if zone.kind=="lava" else zone.radius,info.color,biome)
 	g.biome_zones.append(zone)

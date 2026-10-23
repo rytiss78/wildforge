@@ -58,6 +58,10 @@ var burrow_time = 0.0
 var yaw = 0.0
 var pitch = 0.0
 var camera_distance = 12.0
+# Big fights ease the camera out (up to 35%) on top of the player's own distance.
+var fight_zoom = 1.0
+var fight_zoom_target = 1.0
+var fight_zoom_clock = 0.0
 var camera_locked=false
 var walking_gold = 0.0
 var spawn_clock = 0.0
@@ -388,7 +392,7 @@ func select_hero(item: Dictionary):
 
 func clear_entities():
 	coop.clear_flower_visuals();flower_serial=0
-	BiomeMechanics.clear(self);DeathFx.clear(self)
+	BiomeMechanics.clear(self);DeathFx.clear(self);fight_zoom=1.0;fight_zoom_target=1.0
 	damage_feedback_time=0;last_damage_taken=0
 	eclipse_run_velocity=Vector3.ZERO;pickup_merge_clock=0;enemy_step=0;crowd.clear();damage_numbers.clear()
 	melee_attacks.clear()
@@ -1585,6 +1589,7 @@ func kill_enemy(enemy: Dictionary, cause: String):
 	enemy.hp=0;enemy.node.get_meta("rig").set_health(0,enemy.boss or enemy.health>=1.8)
 	coop.died(enemy,cause)
 	enemy.dead = true
+	if is_instance_valid(enemy.get("charge_lane")): enemy.charge_lane.queue_free()
 	StatusFx.death(self,enemy)
 	if enemy.has("modifier"): EliteMods.died(self,enemy)
 	Hunt.defeated(self,enemy)
@@ -1854,9 +1859,29 @@ func telegraph(enemy: Dictionary):
 	BossBook.attack(self,enemy)
 
 func warn_at(p: Vector3,radius_value: float,delay: float,damage_value: float,style_name: String,visual_only: bool=false):
+	# Every ground warning gives at least 0.8 s, and flashes white for its last 0.25 s.
+	if not visual_only: delay=maxf(.8,delay)
 	p.y=world.height_at(p.x,p.z)
 	var node=preload("res://scripts/danger_mark.gd").make(self,p,radius_value,style_name)
+	node.material_override.set_shader_parameter("flash_from",clampf(1.0-.25/maxf(.3,delay),0,1))
 	hazards.append({"node":node,"life":delay,"radius":radius_value,"damage":damage_value,"style":style_name,"duration":delay,"visual_only":visual_only})
+
+# Crowds within 16 m, screen-filling spells and a nearby boss pull the camera
+# back so the fight stays readable; it eases in again as the fight thins out.
+func update_fight_zoom(delta: float):
+	fight_zoom_clock-=delta
+	if fight_zoom_clock<=0:
+		fight_zoom_clock=.25
+		var crowd=0;var boss_near=false
+		for enemy in enemies:
+			if enemy.dead: continue
+			var d=enemy.node.position.distance_squared_to(player.position)
+			if d<256.0: crowd+=1
+			if enemy.boss and d<900.0: boss_near=true
+		var spells=skills.any(func(spell):return not spell.get("visual_only",false) and float(spell.get("radius",0))>6.0)
+		fight_zoom_target=1.0+clampf((crowd-10)/40.0,0,1)*.22+(.08 if spells else 0.0)+(.1 if boss_near and realm<3 else 0.0)
+		fight_zoom_target=minf(1.35,fight_zoom_target) if mode=="playing" else 1.0
+	fight_zoom=lerpf(fight_zoom,fight_zoom_target,1.0-exp(-delta*(1.2 if fight_zoom_target>fight_zoom else .6)))
 
 func update_combat(delta: float):
 	EffectDetail.tick(self,delta)
@@ -2366,9 +2391,10 @@ func _process(delta: float):
 	damage_numbers=damage_numbers.filter(func(dn):return dn.life>0)
 	if not camera_locked:
 		var anchor=player.position+Vector3.UP*1.2
+		update_fight_zoom(delta)
 		# TPS camera: spherical coords around player
-		var cos_p=cos(pitch)
-		var offset=Vector3(sin(yaw)*cos_p*camera_distance,sin(pitch)*camera_distance,cos(yaw)*cos_p*camera_distance)
+		var cos_p=cos(pitch);var distance_value=camera_distance*fight_zoom
+		var offset=Vector3(sin(yaw)*cos_p*distance_value,sin(pitch)*distance_value,cos(yaw)*cos_p*distance_value)
 		var desired=anchor+offset
 		var ray=PhysicsRayQueryParameters3D.create(anchor,desired)
 		ray.collision_mask=1
