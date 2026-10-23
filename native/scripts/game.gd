@@ -85,6 +85,8 @@ var harvestables = []
 var harvest_buffs={}
 var pools = []
 var skills = [] # active SkillBook casts
+var biome_zones = [] # BiomeMechanics events near heroes
+var biome_clocks = {}
 var effects = []
 var melee_attacks = []
 var hazards = []
@@ -385,6 +387,7 @@ func select_hero(item: Dictionary):
 
 func clear_entities():
 	coop.clear_flower_visuals();flower_serial=0
+	BiomeMechanics.clear(self)
 	damage_feedback_time=0;last_damage_taken=0
 	eclipse_run_velocity=Vector3.ZERO;pickup_merge_clock=0;enemy_step=0;crowd.clear();damage_numbers.clear()
 	melee_attacks.clear()
@@ -2111,6 +2114,7 @@ func update_combat(delta: float):
 				if shot.pierce<0 and not shot.return: shot.life=0;break
 	var skills_start=Time.get_ticks_usec() if profile_crowd else 0
 	SkillBook.tick(self,delta)
+	BiomeMechanics.tick(self,delta)
 	if profile_crowd:
 		if not crowd_sections.has("skills"): crowd_sections.skills=[]
 		crowd_sections.skills.append((Time.get_ticks_usec()-skills_start)/1000.0)
@@ -2258,7 +2262,7 @@ func _physics_process(delta: float):
 			trail.scale=Vector3(.08,.08,.08)
 			effects.append({"node":trail,"life":.25,"velocity":Vector3.ZERO,"stationary":true,"trail":true})
 	else:
-		var running=eclipse_running(wish,delta,player.is_on_floor())
+		var running=BiomeMechanics.steer(self,eclipse_running(wish,delta,player.is_on_floor()),player.velocity,delta)
 		player.velocity.x=running.x;player.velocity.z=running.z
 	if player_chill>0: player.velocity.x*=.7;player.velocity.z*=.7
 	player.velocity.x+=knock_velocity.x;player.velocity.z+=knock_velocity.z

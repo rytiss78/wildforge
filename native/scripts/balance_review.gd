@@ -57,7 +57,7 @@ static func run(g):
 				if tick%60==0: await g.get_tree().process_frame
 			var damage=initial-boss.hp;var dps=damage/30
 			checks[build+str(tier)]=dps>0
-			rows.append({"build":build,"offensive_cards":12*(tier+1),"weapon_rank":[1,3,6][tier],"damage_30s":damage,"dps":dps,"ideal_solo_seconds":360000/maxf(.001,dps),"ideal_two_equal_players_seconds":594000/maxf(.001,dps*2),"ideal_four_equal_players_seconds":1062000/maxf(.001,dps*4)})
+			rows.append({"build":build,"offensive_cards":12*(tier+1),"weapon_rank":[1,3,6][tier],"damage_30s":damage,"dps":dps,"ideal_solo_seconds":(preload("res://scripts/final_arena.gd").TARGET_SECONDS*preload("res://scripts/final_arena.gd").REFERENCE_DPS*preload("res://scripts/final_arena.gd").HEALTH_MULTIPLIER)/maxf(.001,dps),"ideal_two_equal_players_seconds":(preload("res://scripts/final_arena.gd").TARGET_SECONDS*preload("res://scripts/final_arena.gd").REFERENCE_DPS*preload("res://scripts/final_arena.gd").HEALTH_MULTIPLIER)*1.65/maxf(.001,dps*2),"ideal_four_equal_players_seconds":(preload("res://scripts/final_arena.gd").TARGET_SECONDS*preload("res://scripts/final_arena.gd").REFERENCE_DPS*preload("res://scripts/final_arena.gd").HEALTH_MULTIPLIER)*2.95/maxf(.001,dps*4)})
 			print("BALANCE_SAMPLE "+JSON.stringify(rows[-1]))
 	print("BALANCE_REVIEW "+JSON.stringify({"checks":checks,"samples":rows,"note":"Stationary invulnerable target and perfect attack uptime; estimates exclude dodging, travel, planting and deaths. Offensive cards only; not a claim about typical level or win rates."}))
 	g.clear_entities()

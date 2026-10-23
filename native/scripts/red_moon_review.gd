@@ -62,7 +62,7 @@ static func run(g):
 	g.interact();checks.hidden_portal_no_travel=g.realm==3
 	g.player.position=arena_spawn
 	var boss=g.enemies[0]
-	checks.final_identity=boss.boss_id==8 and boss.height==42 and boss.speed<=.22 and boss.maxHp==360000
+	checks.final_identity=boss.boss_id==8 and boss.height==42 and boss.speed<=.22 and is_equal_approx(boss.maxHp,(preload("res://scripts/final_arena.gd").TARGET_SECONDS*preload("res://scripts/final_arena.gd").REFERENCE_DPS*preload("res://scripts/final_arena.gd").HEALTH_MULTIPLIER))
 	checks.arena_cracks=g.events.final_cracks.size()==32 and g.events.final_cracks.all(func(crack):return is_instance_valid(crack) and crack.mesh is BoxMesh and crack.is_inside_tree())
 	checks.entrance_darkened=is_equal_approx(g.world.environment.ambient_light_energy,.12) and is_equal_approx(g.world.environment.adjustment_brightness,.68) and boss.node.scale.x<.1
 	for frame in range(20):
@@ -159,5 +159,5 @@ static func run(g):
 	g.Journey.activate(g);checks.no_exit=g.realm==3 and g.mode=="playing"
 	for i in range(90):g._process(.016)
 	g.hud.update(0);checks.eclipse=await capture(g,"eclipse")
-	print("RED_MOON_REVIEW "+JSON.stringify({"checks":checks,"attack_counts":counts,"authored_size":CoopSession.array(maximum-minimum),"reference_seconds":360000.0/1200.0,"timing_note":"Requested fourfold boss HP: five minutes requires 1200 applied DPS; representative builds still need playtesting."}))
+	print("RED_MOON_REVIEW "+JSON.stringify({"checks":checks,"attack_counts":counts,"authored_size":CoopSession.array(maximum-minimum),"reference_seconds":(preload("res://scripts/final_arena.gd").TARGET_SECONDS*preload("res://scripts/final_arena.gd").REFERENCE_DPS*preload("res://scripts/final_arena.gd").HEALTH_MULTIPLIER)/1200.0,"timing_note":"Solo Baron HP = 300 s x 300 dps x HEALTH_MULTIPLIER (6 since Phase D; 4 was the requested fourfold). Representative builds still need playtesting."}))
 	g.get_tree().quit(0 if not checks.values().has(false) else 1)

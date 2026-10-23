@@ -48,7 +48,7 @@ static func run(game: Node3D) -> Dictionary:
 		var card_button=game.hud.cards[0]
 		checks.evolution_card_text=card_button.tooltip_text.contains("Hand Cannon")
 		card_button.pressed.emit()
-	checks.evolution_applied=weapon.get("evolved",false) and weapon.name=="Hand Cannon" and is_equal_approx(float(weapon.power),power*1.5)
+	checks.evolution_applied=weapon.get("evolved",false) and weapon.name=="Hand Cannon" and is_equal_approx(float(weapon.power),power*float(WeaponEvolution.form("gun").power))
 	checks.evolution_modifiers=int(weapon.get("modifiers",{}).get("extraPierce",0))==2 and is_equal_approx(float(weapon.get("modifiers",{}).get("shotScale",1)),1.5)
 	checks.evolution_announced=str(game.events.get("announcement",""))=="WEAPON EVOLVED"
 	checks.evolution_held_halo=not game.avatar.held.is_empty() and game.avatar.held[0].evolved

@@ -834,6 +834,7 @@ func receive(sender: int,message):
 		elif kind=="chest_rejected": game.pending_chest=false;game.hud.tell("Chest unavailable or not enough coins")
 		elif kind=="chest_open" and int(message.get("realm",-1))==game.realm:
 			game.open_shared_offer(message.get("offers",[]),str(message.get("kind","item")),bool(message.get("elite",false)),"chest",str(message.get("reward_id","")))
+		elif kind=="biome_event": BiomeMechanics.spawn(game,message)
 		elif kind=="chest_hide" and int(message.get("realm",-1))==game.realm:
 			apply_chest_hide(message.get("pos",[]))
 

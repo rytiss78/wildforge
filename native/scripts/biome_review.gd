@@ -27,4 +27,20 @@ static func run(g: Node3D):
 		g.damage_area(p+Vector3(2,0,-5),3,5,"explosion");g._process(.04)
 		await RenderingServer.frame_post_draw
 		checks.captures=g.get_viewport().get_texture().get_image().save_png("user://biome-fx-"+str(biome)+".png")==OK and checks.captures
+		# The biome's fight mechanic in front of the hero, with a few enemies in it,
+		# captured while it is live (lava once it has spread, the gust mid-shove).
+		var forward=-g.camera.global_basis.z;forward.y=0;forward=forward.normalized()
+		var at=p+forward*7.0
+		for i in range(4):
+			g.spawn_enemy(6);var enemy=g.enemies[-1];var spot=at+forward.rotated(Vector3.UP,i*1.6)*2.0;spot.y=g.world.height_at(spot.x,spot.z)
+			enemy.node.position=spot;enemy.speed=0.0;enemy.attack=1e9;enemy.contact=1e9;enemy.damage=0.0;enemy.hp=1e6;enemy.maxHp=1e6;enemy.behavior="chase";enemy.home=spot
+		g.mode="playing";BiomeMechanics.spawn(g,{"type":"biome_event","realm":g.realm,"biome":biome,"pos":[at.x,at.z],"dir":[forward.cross(Vector3.UP).x,forward.cross(Vector3.UP).z]})
+		var zone=g.biome_zones[-1];var wait=zone.warn+{0:1.5,1:1.5,2:1.2,3:.6,4:3.5,5:1.6}[biome]
+		var t=0.0
+		while t<wait:
+			g.realm_time=0.0;g.update_combat(1.0/60.0);g._process(1.0/60.0);t+=1.0/60.0
+			await g.get_tree().process_frame
+		await RenderingServer.frame_post_draw
+		checks["mechanic_"+str(biome)]=BiomeMechanics.live(zone) and g.get_viewport().get_texture().get_image().save_png("user://biome-mechanic-"+str(biome)+".png")==OK
+		g.clear_entities()
 	print("BIOME_REVIEW "+JSON.stringify({"checks":checks}));g.get_tree().quit(0 if not checks.values().has(false) else 1)

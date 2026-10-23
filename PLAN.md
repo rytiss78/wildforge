@@ -130,7 +130,34 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
     - Supercell's forks and Phoenix Ring's healing are subtle on screen.
     - Frame cost with a full mutation kit in a 125-enemy crowd was not measured.
     - Not playtested by a person.
-- [ ] **Biome mechanics in fights.** One per biome, for example ice floors, spreading lava or toxic fog.
+- [x] **Biome mechanics in fights** (`biome_mechanics.gd`, October 23). One per biome. Each appears near the hero after an island's first 40 s, is telegraphed, and affects enemies too:
+  - **Clover Woods · clover rings:** stand inside to heal and shed burn and poison.
+  - **Puffcap Marsh · spore fog:** a drifting cloud that poisons heroes and enemies inside.
+  - **Moon Craters · ice floors:** heroes slide (momentum kept, slow grip); enemies are slowed and slip.
+  - **Cloudwilds · wind gusts:** a streak-telegraphed gust shoves heroes and enemies.
+  - **Candy Hell · lava vents:** erupt into a pool that spreads from 1 m to 4.5 m and burns everyone. The pool is a bright yellow with a dark crust, apart from the orange rivers.
+  - **Starfall Space · gravity rifts:** pull everything in, then implode on enemies; the centre hurts the hero.
+  - **Presentation:** each zone has a bright edge ring. The first event of each kind in a run explains itself.
+  - **Co-op:** the host rolls events near every member and broadcasts them (`biome_event`). Each player applies the effect to their own hero; only the host moves, statuses and damages enemies.
+  - **Bot:** the playtest bot walks out of spore fog and lava pools.
+  - **Not on the Red Moon.**
+  - **Verified:**
+    - 10 integration checks (`2026-10-23T15-25-44-236Z-integration`): each mechanic through the real tick and the hero's real movement step against a control outside the zone, plus scheduling, other-realm events, clearing and Red Moon exclusion. Switching off the tick and movement hook fails 7 of them.
+    - The rendered `biome-review` (`2026-10-23T13-56-24-726Z`) adds one `biome-mechanic-N` capture per biome. All six were inspected. The first version's clover ring, gust streaks and lava pool did not read, and were made bolder. The lava pool was also sinking into slopes because it was scaled; it is now rebuilt as it spreads.
+    - Also passing with 0 errors: check, smoke, capture-ui, the Red Moon, feature, journey and island reviews, shared-review, coop-dropin, crowd-review and the full `coop` route (`2026-10-23T15-28-03-562Z`).
+- [x] **Phase D difficulty retune** (12-bot batches on the Phase C seeds 801–812):
+  - **With evolutions, synergies and biome mechanics** (`2026-10-23T13-57-53-807Z`): 67% clear island 1, 42% reach the Baron, 25% beat him. The Phase C baseline was 58 / 17 / 8.
+  - **Biome mechanics off** (`14-13-05-735Z`): 83 / 33 / 25. The mechanics make island 1 harder; the easier late game comes from evolutions.
+  - **Changes:**
+    - Evolution power bonuses are cut by 30% (Gun +50% → +35%, spells ×2.25 → ×1.96).
+    - The Baron's health multiplier goes from 4 to 6 (360,000 → 540,000 solo). Evolved builds had killed him in 2–12 minutes, against 17 before.
+    - A tougher island step (+0.36) was tried and reverted: 75 / 8 / 0 (`14-33-38-680Z`).
+  - **Final** (`2026-10-23T15-03-41-146Z`): 75 / 42 / 25, with Baron fights of 6–8 minutes.
+  - **Open:**
+    - The late game is still easier than the target (about 70 / 25 / 10).
+    - Batch-to-batch noise is large: reaching the Baron moved 42 → 8 → 33 → 42% across similar settings.
+    - The next retune should use larger batches (24+ runs) before changing numbers again.
+  - The reviews that hard-coded 360,000 now use the arena's formula.
 
 ## Then: Phase E — look and feel (Hades direction)
 

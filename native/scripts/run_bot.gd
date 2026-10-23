@@ -139,6 +139,10 @@ static func steer(g,goal: Vector3,wander: Vector3) -> Vector3:
 			var soon=1.5-clampf(float(hazard.life),0,1.5)
 			push+=(away/d if d>.05 else Vector3.RIGHT.rotated(Vector3.UP,float(hazard.node.position.x)))*(5.0+4.0*soon)*(r-d)/r;danger+=4
 			urgent=urgent or (d<r-1.2 and float(hazard.life)<.6)
+	# Hurtful biome zones (spore fog, lava pools): walk out, without the panic of a blast.
+	for zone in BiomeMechanics.harmful(g):
+		var away: Vector3=(p-zone.pos)*Vector3(1,0,1);var d=away.length();var r=BiomeMechanics.zone_radius(zone)+1.0
+		if d<r: push+=(away/d if d>.05 else Vector3.RIGHT)*3.0*(r-d)/r;danger+=2
 	g.set_meta("bot_trapped",urgent)
 	var toward=Vector3.ZERO
 	var edge=RealmWorld.coast_radius(atan2(p.z,p.x),g.seed_value,g.realm)
