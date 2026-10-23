@@ -4,9 +4,9 @@
 
 A vivid 3D survival game where a duck, a loaf of bread and an angry granny are perfectly reasonable hero choices. Explore strange places, grab unpredictable upgrades and become outrageously overpowered before the monsters catch you.
 
-**[Download Build 20 for Windows](https://github.com/rytiss78/wildforge/releases/tag/build-20)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
+**[Download Build 21 for Windows](https://github.com/rytiss78/wildforge/releases/tag/build-21)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
 
-**Build 20 (1.3.0) is now available as an alpha release.** Play with friends over the internet using an invite code, no extra apps needed, and join a run already in progress. Four new screen-filling spells, elite enemies with modifiers, and islands 2 and 3 that look and fight tougher. Hunts have their own totem and music, and boss and hunt chests glow with a beam into the sky. The game is harder, tuned with automated full-run playtests. [Build 20 notes and limits](native/docs/build20-release.md) · [Build 19 notes](native/docs/build19-release.md).
+**Build 21 (1.4.0) is now available as an alpha release.** Weapons evolve into gilded new forms, spells and mutations combine into named synergies, and every biome has its own fight mechanic: clover rings, spore fog, ice floors, wind gusts, lava vents and gravity rifts. Enemies dissolve into ink or shatter, every attack warning speaks one danger-red language, and each biome has its own light and ink. [Build 21 notes and limits](native/docs/build21-release.md) · [Build 20 notes](native/docs/build20-release.md).
 
 The third map leads to the Red Moon, where an immense, slow Baron waits with four visible steam vents and deadly, telegraphed attacks. He is a stylized original fallback, not a photorealistic or officially licensed film model. Defeat him to begin an endless Eclipse. **Known limits:** internet hosting has not yet been tried on a real router. Balance comes from automated playtests rather than people, especially the Baron fight. The early co-op desync reported in older builds has never been reproduced and is not claimed fixed.
 
@@ -54,11 +54,11 @@ For Windows packaging, place the console editor at `tools/godot/Godot_v4.7.2-sta
 ```powershell
 node scripts/native.mjs
 ./scripts/package-native.ps1
-./scripts/package-release.ps1 -BuildNumber 20 -BuildDirectory <staged build directory> -SourceCommit HEAD
+./scripts/package-release.ps1 -BuildNumber 21 -BuildDirectory <staged build directory> -SourceCommit HEAD
 ./scripts/test-coop.ps1 -Packaged -RenderedClient
 ```
 
-Published downloads use sequential build numbers. This release is `Wildforge 1.3.0 — Build 20`, tag `build-20`, archive `Wildforge-1.3.0-Windows.zip`. The game remains a development alpha. Packaging includes `build-info.json` and a version-specific SHA-256 checksum. Pass `-BuildDirectory` and its exact `-SourceCommit` when packaging a verified staging directory.
+Published downloads use sequential build numbers. This release is `Wildforge 1.4.0 — Build 21`, tag `build-21`, archive `Wildforge-1.4.0-Windows.zip`. The game remains a development alpha. Packaging includes `build-info.json` and a version-specific SHA-256 checksum. Pass `-BuildDirectory` and its exact `-SourceCommit` when packaging a verified staging directory.
 
 WASD / left stick moves; mouse / right stick looks; Space / A jumps; Shift / RT dashes; Ctrl / B slams; E / X interacts; B / Y opens your build; Escape / Menu pauses. Weapons attack automatically. Florist plants while moving.
 

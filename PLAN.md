@@ -1,6 +1,6 @@
 # Wildforge — plan
 
-October 23, 2026 · main branch · **Build 20 (1.3.0) is the latest public release.** Everything under "Since Build 19" is in it.
+October 23, 2026 · main branch · **Build 21 (1.4.0) is the latest public release** ([build-21](https://github.com/rytiss78/wildforge/releases/tag/build-21), source `3d51f3c`, zip SHA-256 `8605ba40…58cfafd`). It contains everything under "Since Build 19" and the Phase D and E items checked below (the model pilot is not in it).
 
 Rules: [AGENTS.md](AGENTS.md) and the [Godot workflow](native/docs/godot-workflow.md). A checked item means the real entry point was exercised and the evidence is recorded. The full history up to this rewrite, with every evidence path, is in [plan-history-through-build19.md](native/docs/archive/plan-history-through-build19.md).
 
