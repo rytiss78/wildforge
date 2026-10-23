@@ -584,7 +584,7 @@ func update(delta: float):
 	if game.Hunt.state(game)=="active":
 		for enemy in game.enemies:
 			if not enemy.dead and enemy.net_id in game.events.get("hunt_ids",[]): map_view.interactables.append({"position":enemy.node.position,"kind":"hunt_target"})
-	for landmark in game.world.landmarks: map_view.interactables.append({"position":landmark,"kind":"landmark"})
+	# Landmark groves are scenery now (the old ruins had rewards); they get no map flag.
 	for pot in game.pots:
 		if is_instance_valid(pot.node): map_view.interactables.append({"position":pot.node.position,"kind":"pot"})
 	for drop in game.consumables:
@@ -652,7 +652,12 @@ func update(delta: float):
 				var drawn=label.size.max(label_size)
 				label.position=Vector2(top.x-drawn.x*.5+spread,top.y-drawn.y-rise)
 
-			label.modulate.a = clampf(life_ratio * 2.0, 0.0, 1.0)
+			# Numbers pop in at full strength and fade out smoothly; crits shake briefly.
+			label.modulate.a = smoothstep(0.0,.45,life_ratio)
+			if dn.cause=="crit":
+				var shake=clampf((life_ratio-.55)/.45,0.0,1.0)
+				var t=Time.get_ticks_msec()*.001
+				label.position+=Vector2(sin(t*71.0+index)*5.0,cos(t*53.0+index)*3.0)*shake
 
 	if blast_time > 0:
 		blast_time -= delta

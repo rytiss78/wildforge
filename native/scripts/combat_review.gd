@@ -9,12 +9,14 @@ static func run(game):
 	for i in range(500): game.record_damage_number(1,0.25,"poison")
 	var aggregated=game.damage_numbers.size()==1 and game.damage_numbers[0].value==125
 	# October 21 spec: ordinary hits show numbers; the pool stays bounded and crits
-	# still get through when it is full of ordinary hits.
+	# still get through when it is full of ordinary hits. October 23: numbers that
+	# make room fade out, so up to DAMAGE_FADE_SLACK extra may be fading.
 	for i in range(500): game.record_damage_number(i+2,2,"hit")
 	var regular_hits_shown=game.damage_numbers.size()==game.MAX_DAMAGE_NUMBERS and game.damage_numbers.any(func(n):return n.cause=="hit")
 	for i in range(500): game.record_damage_number(i+2,2,"crit")
 	game.hud.update(0)
-	var bounded=game.damage_numbers.size()==game.MAX_DAMAGE_NUMBERS and game.hud.damage_labels.size()==game.MAX_DAMAGE_NUMBERS and game.damage_numbers.any(func(n):return n.cause=="crit")
+	var cap=game.MAX_DAMAGE_NUMBERS+game.DAMAGE_FADE_SLACK
+	var bounded=game.damage_numbers.size()<=cap and game.damage_numbers.filter(func(n):return not n.get("leaving",false)).size()==game.MAX_DAMAGE_NUMBERS and game.hud.damage_labels.size()<=cap and game.damage_numbers.any(func(n):return n.cause=="crit")
 	var label_id=game.hud.damage_labels[0].get_instance_id()
 	game.damage_numbers.clear();game.hud.update(0)
 	var cleared=game.hud.damage_labels.all(func(n):return not n.visible)

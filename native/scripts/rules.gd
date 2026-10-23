@@ -75,15 +75,17 @@ func roll(kind: String, luck: float = 0.0, minimum: int = 0) -> Dictionary:
 	if result.family in ["Economy","Mobility"]: result.name = result.title
 	return result
 
-func offers(kind: String, luck: float, elite: bool = false, current_stats: Dictionary = {}, equipped: Array = [],excluded_ids: Array=[],filtered_weapon: String="") -> Array:
+# minimum: lowest rarity tier to roll (-1: uncommon for elite chests, else common).
+func offers(kind: String, luck: float, elite: bool = false, current_stats: Dictionary = {}, equipped: Array = [],excluded_ids: Array=[],filtered_weapon: String="",minimum: int=-1) -> Array:
+	var floor_tier=minimum if minimum>=0 else (1 if elite else 0)
 	var result = []
 	var attempts = 0
 	if kind=="weapon" and equipped.size()>=WEAPON_CAP:
 		var item=equipped[rng.randi_range(0,equipped.size()-1)].duplicate(true)
-		item.tier=maxi(1 if elite else 0,rarity(luck));item.strength=[1.0,2.0,3.5,5.5][item.tier];item.kind="weapon"
+		item.tier=maxi(floor_tier,rarity(luck));item.strength=[1.0,2.0,3.5,5.5][item.tier];item.kind="weapon"
 		result.append(item)
 	while result.size() < OFFER_COUNT and attempts<1000:
-		var item = roll(kind, luck, 1 if elite else 0)
+		var item = roll(kind, luck, floor_tier)
 		attempts += 1
 		# Item 5: when a specific equipped weapon is given, keep only cards that
 		# apply to that weapon (weapon upgrades and +Power boosts), plus the weapon

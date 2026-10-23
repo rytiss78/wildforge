@@ -56,7 +56,6 @@ func _draw():
 			"supply":
 				draw_colored_polygon(PackedVector2Array([p+Vector2(0,-6),p+Vector2(5,0),p+Vector2(0,6),p+Vector2(-5,0)]),Color("36d7e2"))
 				draw_circle(p,2,Color("ffffff"))
-			"landmark": draw_line(p+Vector2(0,4),p+Vector2(0,-4),Color("6b4d87"),2);draw_rect(Rect2(p+Vector2(0,-4),Vector2(5,3)),Color("a65ed4"))
 			"pot": draw_circle(p,2,Color("a2693f"))
 			"potion": draw_rect(Rect2(p-Vector2(2,3),Vector2(4,6)),Color("f04aa5"))
 			"magnet":

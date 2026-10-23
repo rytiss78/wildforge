@@ -27,7 +27,7 @@ static func run(game: Node3D):
 		checks.minimap_no_fog=checks.minimap_no_fog and color.a==1 and color.get_luminance()>.025
 		map_colors[color.to_html()]=true
 	checks.minimap_biome_palette=map_colors.size()==6
-	checks.minimap_interactions=minimap.interactables.any(func(i):return i.kind=="merchant") and minimap.interactables.any(func(i):return i.kind=="supply") and minimap.interactables.filter(func(i):return i.kind=="landmark").size()==6
+	checks.minimap_interactions=minimap.interactables.any(func(i):return i.kind=="merchant") and minimap.interactables.any(func(i):return i.kind=="supply") and not minimap.interactables.any(func(i):return i.kind=="landmark")
 	checks.rare_boxes=game.rules.chest_price(0)==30 and RunRules.WEAPON_CAP==3
 	checks.achievements=game.career.achievements.size()==117 and game.career.achievements.map(func(a):return a.id).size()==117
 	game.clear_entities();game.spawn_formation()

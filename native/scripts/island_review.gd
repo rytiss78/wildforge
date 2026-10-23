@@ -18,6 +18,12 @@ static func run(g: Node3D):
 	for realm in [0,1,2]:
 		g.enter_realm(realm,false);g.clear_entities();g.spawn_clock=1e9
 		for i in range(30): g._process(.016);await g.get_tree().process_frame
+		if realm==2:
+			# The arrival itself, mid-flash: beam, ring and the fading white-out.
+			g.set_meta("review_flash",true);PortalFx.arrive(g)
+			for i in range(8): g._process(.016);await g.get_tree().process_frame
+			cells.append(await frame(g));g.remove_meta("review_flash")
+			for i in range(70): g._process(.016);await g.get_tree().process_frame
 		if realm==1:
 			# The arrival card, shown as a player sees it on landing.
 			g.Journey.announce(g,"ISLAND 2 · "+RealmWorld.NAMES[1].to_upper(),RealmWorld.GRADE[1].title+" · enemies +28% health and damage")
@@ -34,5 +40,5 @@ static func run(g: Node3D):
 	for i in range(cells.size()):
 		var image: Image=cells[i];image.convert(Image.FORMAT_RGBA8);board.blit_rect(image,Rect2i(Vector2i.ZERO,CELL),Vector2i(i%4*CELL.x,i/4*CELL.y))
 	checks.sheet=board.save_png("user://island-sheet.png")==OK
-	print("ISLAND_REVIEW "+JSON.stringify({"checks":checks,"cells":["island 1: biome 0,2,4","arrival card island 2","island 2: biome 0,2,4","island 3: biome 0,2,4"]}))
+	print("ISLAND_REVIEW "+JSON.stringify({"checks":checks,"cells":["island 1: biome 0,2,4","arrival card island 2","island 2: biome 0,2,4","arrival flash island 3","island 3: biome 0,2,4"]}))
 	g.get_tree().quit(0 if not checks.values().has(false) else 1)

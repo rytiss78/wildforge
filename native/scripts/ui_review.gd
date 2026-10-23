@@ -225,8 +225,9 @@ static func run(game):
 	game.harvest_buffs={1:18.0,4:14.0};game.hud.update(0)
 	okay=expect(await capture(game,"harvest-buffs"),"ui assertion 123") and okay
 	game.harvest_buffs.clear();game.damage_numbers.clear()
-	for i in range(4):
-		game.record_damage_number(10000+i,[42,128,12,85][i],["melee","crit","heal","fire"][i],game.player.position+Vector3((i-1.5)*1.1,1.5,0))
+	# Twelve non-weapon numbers: they should spread across the whole screen width.
+	for i in range(12):
+		game.record_damage_number(10000+i,[42,128,12,85,31,66,240,18,57,9,144,73][i],["melee","crit","heal","fire","poison","explosion","crit","ice","lightning","heal","slam","sonic"][i],game.player.position+Vector3((i-5.5)*.6,1.5,0))
 	game.hud.update(.2)
 	okay=expect(await capture(game,"damage-text"),"ui assertion 128") and okay
 	game.damage_numbers.clear()

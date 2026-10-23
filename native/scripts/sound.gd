@@ -11,6 +11,9 @@ var synth = AudioStreamPlayer.new()
 var boss_melody = AudioStreamPlayer.new()
 var atmosphere = AudioStreamPlayer.new()
 var eclipse_music=AudioStreamPlayer.new()
+# The hunt has its own driving loop; it replaces the island music while active.
+var hunt_player=AudioStreamPlayer.new()
+var hunt_active=false
 var eclipse_active=false
 # Procedural hero movement cues; no external sounds or licensing required.
 var step_player=AudioStreamPlayer3D.new()
@@ -64,7 +67,7 @@ func setup(options: Dictionary):
 		var reverb=AudioEffectReverb.new();reverb.room_size=.82;reverb.damping=.65;reverb.wet=.24;reverb.dry=.90;reverb.spread=.85;reverb.predelay_msec=65
 		AudioServer.add_bus_effect(sky_bus,reverb)
 	voice.bus="SkyVoice";voice.attenuation_model=AudioStreamPlayer3D.ATTENUATION_DISABLED;voice.max_distance=120;voice.panning_strength=.65
-	for player in [voice,drums,rhythm,lead,synth,boss_melody,atmosphere,eclipse_music]: add_child(player)
+	for player in [voice,drums,rhythm,lead,synth,boss_melody,atmosphere,eclipse_music,hunt_player]: add_child(player)
 	boss_melody.stream=make_boss_motif()
 	for channel in [step_player,engine_player]:
 		channel.unit_size=5;channel.max_distance=32;add_child(channel)
@@ -107,6 +110,7 @@ func start(seed_value: int):
 	active = true
 	boss_voice_last=-100;boss_voice.stop();last_hurt=-100;hurt_voice.stop();hurt_source=null;pending_biome=""
 	theme_realm=-1;atmosphere.stop();eclipse_music.stop();eclipse_active=false;boss=false;boss_melody.stop()
+	hunt_player.stop();hunt_active=false
 	step_clock=0;step_player.stop();engine_player.stop()
 	play_phrase()
 
@@ -133,6 +137,46 @@ func play_phrase():
 	boss_melody.volume_db=linear_to_db(maxf(.0001,volume))-9
 	if boss and not eclipse_active: boss_melody.play()
 	else: boss_melody.stop()
+
+# remaining: seconds left in an active hunt, or a negative number when none.
+# The loop speeds up through the last 20 seconds, up to 1.3x.
+func hunt_music(remaining: float):
+	var wanted=remaining>=0.0 and active
+	if wanted!=hunt_active:
+		hunt_active=wanted
+		if hunt_active:
+			if hunt_player.stream==null: hunt_player.stream=make_hunt_loop()
+			hunt_player.pitch_scale=1.0;hunt_player.play()
+		else: hunt_player.stop()
+	if not hunt_active: return
+	hunt_player.volume_db=linear_to_db(maxf(.0001,float(settings.music)))-4
+	hunt_player.pitch_scale=1.0+clampf((20.0-remaining)/20.0,0.0,1.0)*.3
+
+# Two bars at 140 BPM: low toms and a kick on a tribal pattern, a shaker, and a
+# brass horn call in E minor over the second bar.
+static func make_hunt_loop() -> AudioStreamWAV:
+	var audio=AudioStreamWAV.new();audio.mix_rate=22050;audio.format=AudioStreamWAV.FORMAT_16_BITS
+	var beat=60.0/140.0;var duration=beat*8.0;var samples=int(duration*audio.mix_rate)
+	var bytes=PackedByteArray();bytes.resize(samples*2)
+	var noise=RandomNumberGenerator.new();noise.seed=4141
+	var drums=[[0.0,55.0,1.0],[1.5,82.0,.7],[2.0,55.0,1.0],[3.0,98.0,.8],[3.5,82.0,.6],[4.0,55.0,1.0],[5.5,82.0,.7],[6.0,55.0,1.0],[6.5,98.0,.7],[7.0,110.0,.8],[7.5,123.0,.8]]
+	var horn=[[4.0,164.81,1.0],[5.0,196.0,.5],[5.5,246.94,1.0],[6.5,220.0,.5],[7.0,164.81,1.0]]
+	for i in range(samples):
+		var t=float(i)/audio.mix_rate;var sample=0.0
+		for hit in drums:
+			var age=t-hit[0]*beat
+			if age>=0 and age<.45: sample+=sin(TAU*hit[1]*age*(1.0-age*.8))*exp(-age*9.0)*.42*hit[2]
+		var shake=fposmod(t,beat*.5)
+		sample+=noise.randf_range(-1,1)*exp(-shake*38.0)*.05
+		for note in horn:
+			var age=t-note[0]*beat;var length=note[2]*beat
+			if age>=0 and age<length:
+				var swell=minf(1.0,age*18.0)*pow(maxf(0.0,1.0-age/length),.6)
+				var f: float=note[1]
+				sample+=(sin(TAU*f*age)+.5*sin(TAU*f*2.0*age)+.3*sin(TAU*f*3.0*age)+.15*sin(TAU*f*4.0*age))*.07*swell
+		bytes.encode_s16(i*2,int(clampf(sample,-.9,.9)*32767))
+	audio.data=bytes;audio.loop_mode=AudioStreamWAV.LOOP_FORWARD;audio.loop_begin=0;audio.loop_end=samples
+	return audio
 
 static func make_boss_motif() -> AudioStreamWAV:
 	var audio=AudioStreamWAV.new();audio.mix_rate=22050;audio.format=AudioStreamWAV.FORMAT_16_BITS
@@ -168,7 +212,9 @@ func tick(delta: float, playing: bool, has_boss: bool):
 	eclipse_music.stream_paused=not playing
 	eclipse_music.volume_db=linear_to_db(maxf(.0001,float(settings.music)))-8
 	for channel in [drums,rhythm,lead,synth,boss_melody]:
-		if eclipse_active: channel.volume_db=-80
+		if eclipse_active or hunt_active: channel.volume_db=-80
+	if eclipse_active and hunt_active: eclipse_music.volume_db=-80
+	hunt_player.stream_paused=not playing
 	if boss!=has_boss and active:
 		boss=has_boss;clock=0;play_phrase()
 	boss = has_boss
@@ -187,7 +233,7 @@ func tick(delta: float, playing: bool, has_boss: bool):
 		var theme=stream("phonk_air_"+str(realm_index)).duplicate() as AudioStreamWAV
 		theme.loop_mode=AudioStreamWAV.LOOP_FORWARD;theme.loop_begin=0;theme.loop_end=roundi(theme.get_length()*theme.mix_rate)
 		atmosphere.stream=theme;atmosphere.play();atmosphere.stream_paused=not playing
-	atmosphere.volume_db=-80 if eclipse_active or boss else linear_to_db(maxf(.0001,float(settings.music)))-(24 if boss else 18)
+	atmosphere.volume_db=-80 if eclipse_active or boss or hunt_active else linear_to_db(maxf(.0001,float(settings.music)))-(24 if boss else 18)
 	voice.volume_db = linear_to_db(maxf(.0001, float(settings.voice)))
 	if not playing or not active: return
 	if genre != settings.get("genre", "metal"):
@@ -279,7 +325,7 @@ func effect(id: String,position: Vector3=Vector3.ZERO):
 	if not cache.has(key):
 		var audio=AudioStreamWAV.new();audio.mix_rate=22050;audio.format=AudioStreamWAV.FORMAT_16_BITS
 		var bass=id in ["shotgun","rocket","turret-rocket","land","blast","saw","meteor","bomb","horn"]
-		var duration=1.2 if id=="steam" else .6 if id=="level" else .32 if id=="sneeze" else .3 if id.ends_with("bump") or id=="squish" else .26 if bass else .14
+		var duration=1.4 if id=="hunt_win" else 1.3 if id=="hunt_fail" else .9 if id=="teleport" else 1.2 if id=="steam" else .6 if id=="level" else .32 if id=="sneeze" else .3 if id.ends_with("bump") or id=="squish" else .26 if bass else .14
 		var frequencies={"gun":170.0,"shotgun":70.0,"rail":1250.0,"rocket":85.0,"flame":230.0,"fire":230.0,"poison":320.0,"ice":1600.0,"saw":100.0,"turret":430.0,"fire-turret":210.0,"turret-flame":210.0,"lightning":980.0,"lightning-turret":980.0,"turret-tesla":980.0,"rocket-turret":80.0,"turret-rocket":80.0,"coin":1100.0,"dash":370.0,"hit":90.0,"jump":650.0,"land":80.0,"drink":900.0,"level":523.25}
 		var frequency=float(frequencies.get(id,520.0))
 		if id in ["boomerang","disc","harpoon","gravity","horn","bubble","meteor","bomb","steam"]:
@@ -287,6 +333,7 @@ func effect(id: String,position: Vector3=Vector3.ZERO):
 		if id.ends_with("bump") or id=="squish": frequency={"shell_bump":190.0,"wing_bump":730.0,"stone_bump":58.0,"wet_bump":125.0,"buzz_bump":360.0,"roar_bump":42.0,"squish":220.0}.get(id,90.0)
 		var bytes=PackedByteArray();bytes.resize(int(duration*22050)*2)
 		var local_rng=RandomNumberGenerator.new();local_rng.seed=id.hash()
+		var phase=0.0
 		for i in range(bytes.size()/2):
 			var t=float(i)/22050
 			var envelope=exp(-t*(12 if bass else 22))
@@ -306,6 +353,19 @@ func effect(id: String,position: Vector3=Vector3.ZERO):
 			if id=="melee_hit": sample=(sin(TAU*75*t*(1-t*2))*.34+local_rng.randf_range(-.23,.23))*exp(-t*26)
 			if id=="steam": sample=(local_rng.randf_range(-.06,.06)+sin(TAU*frequency*t)*.025)*(.7+.3*sin(t*50))
 			if id=="sneeze": sample=local_rng.randf_range(-.32,.32)*pow(sin(PI*t/duration),3)+sin(TAU*110*t*(1+t))*.12*envelope
+			if id=="hunt_win":
+				# Rising E-major fanfare: three quick notes, then a held fifth.
+				var notes=[329.63,415.3,493.88,659.25];var index=mini(3,int(t/.16))
+				var age=t-index*.16
+				sample=(sin(TAU*notes[index]*age)+.45*sin(TAU*notes[index]*2.0*age)+.2*sin(TAU*notes[index]*3.0*age))*.13*minf(1,age*40.0)*(exp(-age*2.2) if index==3 else exp(-age*7.0))
+			if id=="hunt_fail":
+				# A falling low toll: the hunt slipped away.
+				var tone=146.83*pow(.5,t/duration)
+				sample=(sin(TAU*tone*t)*.2+sin(TAU*tone*1.5*t)*.06+local_rng.randf_range(-.04,.04))*exp(-t*2.4)*minf(1,t*30.0)
+			if id=="teleport":
+				# Island travel: a rising shimmer sweep, swelling then fading.
+				var sweep=180.0*pow(8.0,t/duration);phase+=TAU*sweep/22050.0
+				sample=(sin(phase)*.15+sin(phase*1.5)*.06+sin(phase*2.01)*.04+local_rng.randf_range(-.03,.03))*pow(sin(PI*t/duration),.7)
 			if id=="level":
 				var note=[523.25,659.25,783.99,1046.50][mini(3,int(t/.15))]
 				sample=(sin(TAU*note*t)*.12+sin(TAU*note*2*t)*.035)*minf(1,t*80)*minf(1,(duration-t)*30)

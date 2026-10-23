@@ -102,6 +102,7 @@ var offer_source = ""
 var offer_kind="skill"
 var offer_elite=false
 var offer_rerolls=0
+var offer_event=false # the open chest came from a boss or hunt (EventLoot)
 var families = {}
 var events = {}
 var reveal_clock = 0.0
@@ -158,6 +159,8 @@ var damage_feedback_source=Vector3.ZERO
 var last_damage_taken=0.0
 var hit_stop=0.0
 const MAX_DAMAGE_NUMBERS=48
+# Numbers making room fade out briefly; at most this many extra are on screen.
+const DAMAGE_FADE_SLACK=8
 var damage_numbers=[]
 var force_clocks={}
 var damage_sources={}
@@ -518,6 +521,7 @@ func enter_realm(index: int,broadcast_transition: bool=true):
 		# Later islands announce themselves and how much harder they are.
 		var tougher=roundi((realm_difficulty/(1.08)-1.0)*100)
 		Journey.announce(self,"ISLAND %d · %s" % [realm+1,RealmWorld.NAMES[realm].to_upper()],"%s · enemies +%d%% health and damage" % [RealmWorld.GRADE[realm].title,tougher])
+	PortalFx.arrive(self)
 	if realm > 0: sound.say("realm",0)
 	if broadcast_transition: coop.realm_changed()
 	if broadcast_transition and realm==3 and coop.active and coop.hosting: preload("res://scripts/final_arena.gd").broadcast_intro(self)
@@ -535,11 +539,13 @@ func make_chests():
 			p.y=world.height_at(p.x,p.z)
 			make_chest(p,false)
 
-func make_chest(p: Vector3, elite: bool):
+# event: a warden, guardian or hunt reward (EventLoot: beacon, better cards).
+func make_chest(p: Vector3, elite: bool, event: bool=false):
 	var node = preload("res://scripts/treasure_chest.gd").create(elite)
 	node.position = p
 	add_child(node)
-	chests.append({"node":node,"opened":false,"elite":elite,"discovered":elite,"free":elite,"rolled_free":false})
+	chests.append({"node":node,"opened":false,"elite":elite,"discovered":elite,"free":elite,"rolled_free":false,"event":event})
+	if event: EventLoot.beacon(self,chests[-1])
 
 func make_harvestables():
 	HarvestBook.spawn(self)
@@ -647,7 +653,8 @@ func buy_chest(chest: Dictionary,payer: int=-1):
 	party_reward_id=run_id+":chest:"+str(realm)+":"+str(run_chests)
 	career.bump("chests")
 	career.best("chestRewards",3)
-	offers = MutationBook.mix(self,rules.offers("item",float(payer_stats.get("luck",0))+float(payer_stats.get("chestBonus",0))*.2,chest.elite,stats,equipped),"chest")
+	offer_event=chest.get("event",false)
+	offers = MutationBook.mix(self,rules.offers("item",float(payer_stats.get("luck",0))+float(payer_stats.get("chestBonus",0))*.2,chest.elite,stats,equipped,[],"",EventLoot.MIN_TIER if offer_event else -1),"chest",offer_event)
 	offer_kind="item";offer_elite=chest.elite;offer_rerolls=0
 	if local_payer: heal(stats.chestHeal)
 	offer_source = "chest"
@@ -736,7 +743,8 @@ func reroll_price() -> int:
 # A fresh set for the open offer, as rolled at its source: level offers carry
 # mutations, chest offers the chest luck bonus. Used by reroll and banish.
 func roll_offers(excluded: Array=[]) -> Array:
-	return MutationBook.mix(self,rules.offers(offer_kind,stats.luck+(stats.chestBonus*.2 if offer_source=="chest" else 0),offer_elite,stats,equipped,excluded),offer_source)
+	var event=offer_event and offer_source=="chest"
+	return MutationBook.mix(self,rules.offers(offer_kind,stats.luck+(stats.chestBonus*.2 if offer_source=="chest" else 0),offer_elite,stats,equipped,excluded,"",EventLoot.MIN_TIER if event else -1),offer_source,event)
 
 func reroll_offers():
 	if mode!="offer": return
@@ -1408,18 +1416,23 @@ func record_damage_number(enemy_id: int, damage: float, cause: String,position_v
 	# crowds cheap.
 	var merged=weapon_id in SkillBook.KINDS or cause in ["fire","poison"]
 	for entry in damage_numbers:
-		if entry.life>.8 and (entry.enemy_id==enemy_id or merged) and entry.cause==cause and entry.get("weapon_id","")==weapon_id:
+		if entry.life>.8 and not entry.get("leaving",false) and (entry.enemy_id==enemy_id or merged) and entry.cause==cause and entry.get("weapon_id","")==weapon_id:
 			entry.amount+=damage
 			entry.value=maxi(1,roundi(entry.amount))
 			entry.life=1.2
 			return
-	if damage_numbers.size()>=MAX_DAMAGE_NUMBERS:
-		# Frequent ordinary hits give way to crits and bigger effects.
+	var live=damage_numbers.filter(func(entry):return not entry.get("leaving",false)).size()
+	if live>=MAX_DAMAGE_NUMBERS:
+		# Frequent ordinary hits give way to crits and bigger effects. The one
+		# making room fades out quickly instead of vanishing.
 		var oldest_plain=-1
 		for i in range(damage_numbers.size()):
-			if damage_numbers[i].cause in ["hit","lightning"]: oldest_plain=i;break
+			if damage_numbers[i].cause in ["hit","lightning"] and not damage_numbers[i].get("leaving",false): oldest_plain=i;break
 		if cause in ["hit","lightning"] or oldest_plain<0: return
-		damage_numbers.remove_at(oldest_plain)
+		damage_numbers[oldest_plain].leaving=true;damage_numbers[oldest_plain].life=minf(damage_numbers[oldest_plain].life,.3)
+		if damage_numbers.size()>=MAX_DAMAGE_NUMBERS+DAMAGE_FADE_SLACK:
+			for i in range(damage_numbers.size()):
+				if damage_numbers[i].get("leaving",false): damage_numbers.remove_at(i);break
 	# Stable free lanes keep simultaneous hits legible without tying them to actors.
 	var lane=0
 	while damage_numbers.any(func(entry):return int(entry.get("lane",-1))==lane): lane+=1
@@ -1468,7 +1481,7 @@ func record_damage_number(enemy_id: int, damage: float, cause: String,position_v
 		fly_speed=0.5
 	else:
 		dmg_color=Color("ffffff")  # White fallback
-	damage_numbers.append({"enemy_id":enemy_id,"amount":damage,"value":maxi(1,roundi(damage)),"world_position":position_value,"lane":lane,"screen_x":.2+float(lane%8)*.6/7.0,"life":1.2,"maxLife":1.2,"cause":cause,"weapon_id":weapon_id,"color":dmg_color,"fly_speed":fly_speed,"size_boost":size_boost,"flash_timer":1.2 if cause in ["crit","heal"] else 0})
+	damage_numbers.append({"enemy_id":enemy_id,"amount":damage,"value":maxi(1,roundi(damage)),"world_position":position_value,"lane":lane,"screen_x":.06+fposmod(float(lane)*.618034+.13,1.0)*.88,"life":1.2,"maxLife":1.2,"cause":cause,"weapon_id":weapon_id,"color":dmg_color,"fly_speed":fly_speed,"size_boost":size_boost,"flash_timer":1.2 if cause in ["crit","heal"] else 0})
 
 func create_status_indicator(enemy: Dictionary, color: Color, name: String) -> Node3D:
 	if not enemy.node.has_meta("status_fx"): enemy.node.set_meta("status_fx",{})
@@ -1601,7 +1614,7 @@ func kill_enemy(enemy: Dictionary, cause: String):
 		run_bosses += 1
 		if not enemy.get("guardian",false): realm_bosses += 1
 		career.bump("bosses")
-		make_chest(p,true)
+		make_chest(p,true,true)
 		Journey.defeated(self,enemy)
 	if stats.explosion > 0 and cause != "explosion": damage_area(p,3.0,stats.explosion,"explosion",enemy)
 	if stats.pools > 0:
@@ -2138,6 +2151,7 @@ func update_combat(delta: float):
 			pot.dead=true
 	for chest in chests:
 		if player.position.distance_to(chest.node.position)<26: chest.discovered=true
+		if chest.has("beacon"): EventLoot.tick(chest,delta)
 	enemies = enemies.filter(func(enemy):return not enemy.dead)
 	for shot in projectiles:
 		if shot.life<=0: shot.node.queue_free()
