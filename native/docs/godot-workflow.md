@@ -89,7 +89,7 @@ Prefix every action below with `node scripts/agent-workflow.mjs`.
 
 Run networking checks sequentially. `capture-ui` also hosts a party; running it during `coop` causes an ENet port error. Ports are UDP 29736 (game) and 29737 (discovery). Do not terminate an unrelated player's game to free them.
 
-The [repair audit](repair-audit-2026-10-12.md) records the October 12 baseline. Eclipse settlement expectations were reconciled with the planned drift and checked at 30/144 Hz in the [1.0.0 rollout](visual-rollout-1.0.0.md). The earlier co-op wraparound/teardown failures are repaired in the [boss checkpoint](visual-bosses-1.0.0.md), with the complete route verified on both peers. Known failures must remain visible in the report, not silently excluded.
+The [repair audit](repair-audit-2026-10-12.md) records the October 12 baseline. Eclipse settlement expectations were reconciled with the planned drift and checked at 30/144 Hz in the [1.0.0 rollout](archive/visual-rollout-1.0.0.md). The earlier co-op wraparound/teardown failures are repaired in the [boss checkpoint](archive/visual-bosses-1.0.0.md), with the complete route verified on both peers. Known failures must remain visible in the report, not silently excluded.
 
 ## Read evidence and screenshots
 

@@ -4,7 +4,7 @@ Historical build: superseded by 0.8.9, which uses a modern Series X-inspired ban
 
 The achievement popup now resembles an Xbox 360 notification: a dark rounded capsule, green trophy medallion, white title, description and animated entrance/exit. It appears above the weapon slots for five seconds. Unlocks queue instead of replacing one another and wait while menus are open.
 
-Each banner plays its chime on a dedicated audio channel. Menu clicks cannot interrupt it; SFX volume and mute apply. The old generic ping and spoken achievement announcement were removed from this callback. This local build includes the original Xbox 360 recording as an optional personal-use asset; clean checkouts use an original synthesized fallback. See [sound provenance and export restrictions](../assets/audio/achievement-sound.md).
+Each banner plays its chime on a dedicated audio channel. Menu clicks cannot interrupt it; SFX volume and mute apply. The old generic ping and spoken achievement announcement were removed from this callback. This local build includes the original Xbox 360 recording as an optional personal-use asset; clean checkouts use an original synthesized fallback. See [sound provenance and export restrictions](../../assets/audio/achievement-sound.md).
 
 ## Build
 
@@ -24,4 +24,4 @@ Each banner plays its chime on a dedicated audio channel. Menu clicks cannot int
 
 The exported headless smoke test still reports shutdown cleanup diagnostics after passing its assertions: 20 ObjectDB instances leaked and five resources still in use. The previous 0.8.7 build also reported this class of diagnostic (18 instances, five resources). Neither rendered exported review reports these diagnostics or script errors. The cleanup issue remains open; the smoke log is not claimed to be clean.
 
-Other incomplete plan items and the known long co-op/Eclipse checks remain as recorded in the [repair audit](repair-audit-2026-10-12.md). This achievement change does not certify those features. Existing staged work was preserved; these changes were not committed into the mixed index.
+Other incomplete plan items and the known long co-op/Eclipse checks remain as recorded in the [repair audit](../repair-audit-2026-10-12.md). This achievement change does not certify those features. Existing staged work was preserved; these changes were not committed into the mixed index.

@@ -1,16 +1,30 @@
 # Play with friends
 
-Give everyone the same complete Wildforge build folder. No store account or purchase is required. Up to four players join before the host starts a run.
+Everyone needs the same Wildforge build. No store account, VPN or extra app is required. Up to four players can play together.
 
-On the same Wi-Fi/LAN:
-1. Host: choose Play with friends, then Host Party.
-2. Friends: select the host under Same-network parties. If discovery is blocked, enter the host's displayed address instead.
-3. Everyone chooses a hero. The host returns to hero selection and starts.
+## Over the internet
 
-For remote friends, use a shared VPN's host address, or forward UDP 29736 on the host's router to their PC and join using the host's public IP. Copy Host Address copies a local interface address; it does not find the public IP. Hosts with several adapters can select the appropriate address displayed in party status.
+1. Host: choose **Play with friends**, then **Host Party**. Wildforge asks the host's router to open UDP 29736 automatically (UPnP) and shows an invite code such as `WF-…`. The code is copied to the clipboard; **Copy Invite Code** copies it again.
+2. Friends: paste the invite code into **Join**.
+3. Everyone chooses a hero. The host starts the run.
 
-Allow Wildforge through the host firewall. Discovery uses UDP 29737. Guest networks may isolate devices; public-IP connections may be unavailable behind carrier-grade NAT, requiring a shared VPN. The game does not change router or firewall settings.
+Friends can also join a run that is already in progress; they arrive next to the party.
 
-Running and full parties reject new guests. Choices pause the party together. If the host leaves, guests end the run and can create a new party. Achievements and scores save on each player's PC.
+If the party panel says internet hosting is unavailable:
 
-Surface-climbing builds use protocol `wildforge-0.8.2-direct-6`. All players must use the same build; enemy surface orientation is authoritative on the host and replicated to clients.
+- **Router did not allow automatic port opening:** turn on UPnP in the router, or forward UDP 29736 to the host PC by hand and join with the host's public IP. Alternatively, let a friend host.
+- **Carrier-grade NAT:** the host's provider shares one public address between customers, so nobody can reach it from outside. Let a friend host.
+
+The router mapping is removed when the host closes the party or quits.
+
+## On the same network
+
+Host a party as above. Friends pick it from the nearby-party list (discovery uses UDP 29737), or type the host's local address if discovery is blocked. Guest Wi-Fi networks may isolate devices from each other.
+
+## Good to know
+
+- Allow Wildforge through the host's firewall when Windows asks.
+- Choices (level-ups, chests) pause the party together. Each player picks their own upgrades.
+- If the host leaves, the run ends for everyone.
+- Achievements and scores save on each player's own PC.
+- All players must run the same build. The network protocol is `wildforge-shared-world-12`.

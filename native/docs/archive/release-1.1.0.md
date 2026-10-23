@@ -9,7 +9,7 @@ October 13, 2026. [Windows download](https://github.com/rytiss78/wildforge/relea
 - Directional dash snapshots movement input. Slam and head-stomp share a 4.5-second recovery; no baseline instant kills. Rebound Gear, jumps, bounce and elemental upgrades build toward slam chains. More dangerous ranged enemies retain locked warnings and dodge windows.
 - Compact HUD; health orbs replace boss bars/nameplates. Selected turret and current deployment/switch bindings are visible. Stronger damage feedback, bright slam/dash/nova/heal effects and twelve new synthesized effect sounds. Main menu and About read v1.1.0 / Build 12 from project metadata.
 - Denser scenery, localized glow/shadows, restrained ground and bright celestial objects. Six massive, traversable biome buildings replace the feel of only trees/towers.
-- Original simpler phonk stems for ordinary play. Eclipse uses an EQ-adjusted version of the existing synthesized PARANOIA-derived arrangement, 5 dB quieter; original file preserved. This is not a new original composition. See [asset provenance](../assets/README.md).
+- Original simpler phonk stems for ordinary play. Eclipse uses an EQ-adjusted version of the existing synthesized PARANOIA-derived arrangement, 5 dB quieter; original file preserved. This is not a new original composition. See [asset provenance](../../assets/README.md).
 - Quick hero/weapon/item/drop balance pass: 69 weapons, 738 upgrades including 400 conditional augments, and 108 achievements. Innate luck now affects potion drops; capped legendary scaling is less extreme. [Calculations and limits](balance-1.1.0.md).
 
 ## Executable and evidence
@@ -59,6 +59,6 @@ The Git checkpoint excludes incoming local edits to blood rain/Eclipse contact d
 - Earlier bake/import and review-harness failures are preserved: `08-42-59-796Z-bake-roster`, `08-44-53-127Z-red-moon-review`, `09-18-56-643Z-playfeel-review` (all October 13). Fixes were import ordering, exercising the real selector entry, and advancing the actual effect cleanup callback; no assertions were relaxed. The first building capture location was outside the coast in two biomes; later captures moved inland and added actual walkthroughs.
 - No new performance improvement is claimed; large-scene frame costs need comparable measurements.
 
-![Main-menu version](../../docs/screenshots/red-moon-1.1.0/ui-menu.png)
-![The Red Observatory](../../docs/screenshots/red-moon-1.1.0/red-moon-silhouette.png)
-![Deadly lance impact](../../docs/screenshots/red-moon-1.1.0/red-moon-lance-impact.png)
+![Main-menu version](../../../docs/screenshots/red-moon-1.1.0/ui-menu.png)
+![The Red Observatory](../../../docs/screenshots/red-moon-1.1.0/red-moon-silhouette.png)
+![Deadly lance impact](../../../docs/screenshots/red-moon-1.1.0/red-moon-lance-impact.png)

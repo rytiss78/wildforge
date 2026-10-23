@@ -27,4 +27,4 @@ When released, unzip `Wildforge-1.1.3-Windows.zip` and keep the executable, pack
 
 This is an alpha checkpoint, not completion of the active plan. Full-fight build balance and survival rates, ground/color acceptance, late-Eclipse performance, semantic UI art review, and human gamepad/audio checks remain open. The required early-game co-op desynchronization investigation stays last. NodeTunnel remains deferred.
 
-See [the active plan](../../PLAN.md), [Build 17 work and evidence](build17-work.md), and [Baron model provenance](baron-model.md).
+See [the active plan](../../../PLAN.md), [Build 17 work and evidence](build17-work.md), and [Baron model provenance](baron-model.md).

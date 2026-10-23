@@ -47,12 +47,12 @@ Source head at export: `63d60d9efcd55229758a87dc245de4dd61f4a854`; working-tree 
 
 ### Exported screenshots
 
-![Combat effect against quiet terrain](../../docs/screenshots/forge-1.0.0/release-combat.png)
-![Boss warning at the existing camera](../../docs/screenshots/forge-1.0.0/release-boss.png)
+![Combat effect against quiet terrain](../../../docs/screenshots/forge-1.0.0/release-combat.png)
+![Boss warning at the existing camera](../../../docs/screenshots/forge-1.0.0/release-boss.png)
 
 Source milestones are on `main` (`dee8240`, `63d60d9`, followed by the final metadata/evidence checkpoint). GitHub Build 4 remains the public download. One repeated exported 720p UI review (`2026-10-13T08-01-54-716Z-release-review`) returned an aggregate assertion failure despite saving every capture; the harness did not identify the individual assertion. Previous runs passed. The final rerun outcome is recorded above; this intermittent harness failure still needs per-assertion diagnostics and remains a limitation.
 
-The eight newly requested October 13 tasks are open in [PLAN.md](../../PLAN.md), including removing boss screen indicators, further UI/orb redesign, denser lighting, directional dash, harder ranged enemies, a final arena, creepy biome enemies and a celestial sky.
+The eight newly requested October 13 tasks are open in [PLAN.md](../../../PLAN.md), including removing boss screen indicators, further UI/orb redesign, denser lighting, directional dash, harder ranged enemies, a final arena, creepy biome enemies and a celestial sky.
 
 
 ## Limits

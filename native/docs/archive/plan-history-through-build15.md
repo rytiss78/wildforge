@@ -6,13 +6,13 @@ Archived October 15. Completion claims below were not reliable. See [Build 16 re
 
 Updated October 15, 2026. Source integration status: **Batches 1–3 merged as source candidates; Build 13 validated and published.** Published: **1.1.1 · Build 13** (`build/red-moon-1.1.1-build13/Wildforge.exe`). Local development: **1.1.1 · Build 13** (published; next work continues on main).
 
-Work directly, one agent. Do easy, useful fixes first; group validation and exports. Preserve incoming edits, saves, artwork, logs and old builds. Follow [AGENTS.md](AGENTS.md) and the [Godot workflow](native/docs/godot-workflow.md).
+Work directly, one agent. Do easy, useful fixes first; group validation and exports. Preserve incoming edits, saves, artwork, logs and old builds. Follow [AGENTS.md](../../../AGENTS.md) and the [Godot workflow](../godot-workflow.md).
 
 ## In progress
 
 1. **Final boss and build balance.** Fixed body-edge hits for slam, horn, flowers and aura; real attack regressions pass. Continue checking damage against the 42 m boss before tuning health. Verify close-range, area, status and turret builds, then measure weak/typical/strong late-game loadouts and solo/party duration. Aim for roughly five minutes for a typical build; strong builds should earn faster kills. The current 90,000 HP / 300 DPS calculation is only a reference. Keep slow movement, deadly readable attacks and permanent Eclipse after death.
 2. **Enemy encounter variety.** Six new original creepy species and size/HP/speed variation are implemented. Finish creepypasta reference research, distinct biome behavior and encounter spacing; check that fast/slow enemies create different threats instead of one clump.
-3. **Progression and rewards.** Validate long-run hero/weapon/item combinations, including slam chains, against actual combat. Initial tuning and drop fixes are in [balance notes](native/docs/balance-1.1.0.md); equal win rates are not established.
+3. **Progression and rewards.** Validate long-run hero/weapon/item combinations, including slam chains, against actual combat. Initial tuning and drop fixes are in [balance notes](balance-1.1.0.md); equal win rates are not established.
 4. **shared exp and level in co-op** — DONE (Oct 13). Single host-authoritative system: host applies XP to shared pool and triggers `level_up()`; member sends credit with unique `pickup_id="xp_"+seq` (deduped via `credit_ids` set), never advances own level. Gold is per-player (local only, no broadcast). Chest open shared via `open_shared_offer()` on host; hide broadcast removes chest from all maps. Level/XP/xp_target mirrored on member via pose key list + `apply_world` mirror. `credit_ids` cleared on leave() and run_started() to prevent cross-run collision. Check/smoke: 118 checks pass.
 
 ## Source changes merged — validation still required
@@ -55,7 +55,7 @@ These items have candidate implementations in merged Batches 1–2, but are **no
 - **Controller feel:** physical gamepad checks for directional dash, turret switching/deployment and menu navigation. Automated input-action checks already pass.
 - **Intermittent 720p review:** retain the unexplained failure at `.build-staging/agent-workflow/2026-10-13T08-01-54-716Z-release-review`. Per-assertion reporting is added and current exported 720p/1080p checks pass; fix the cause if it reproduces, without weakening assertions.
 - **Performance:** compare the same scene/build conditions for dense scenery, huge buildings and late Eclipse crowds before claiming improvements.
-- **Older audit leftovers:** reconcile pause-menu history/death statistics, realm damage scaling and number-display policy with current behavior. Recheck semantic icon readability rather than treating unique hashes as proof. See the [repair audit](native/docs/repair-audit-2026-10-12.md) and [later gameplay repairs](native/docs/gameplay-repair-0.8.10.md).
+- **Older audit leftovers:** reconcile pause-menu history/death statistics, realm damage scaling and number-display policy with current behavior. Recheck semantic icon readability rather than treating unique hashes as proof. See the [repair audit](../repair-audit-2026-10-12.md) and [later gameplay repairs](gameplay-repair-0.8.10.md).
 
 ## Deferred
 
@@ -83,10 +83,10 @@ These items have candidate implementations in merged Batches 1–2, but are **no
 
 ## Completed checkpoints
 
-- [Build 12: Red Moon](native/docs/release-1.1.0.md): giant final boss/arena; Ninja, Smoker, Alcoholic and White Supra; class weapons and physical profiles; directional dash; progression-gated slam; stronger ranged enemies; compact HUD and version/build label; turret and damage feedback; dense scenery, six large buildings, celestial sky, effects and audio.
-- [1.0.0 visual overhaul](native/docs/release-1.0.0.md): angular artwork, saturated effects, quiet ground, engraved UI and eight rotating bosses.
-- [0.8.10 repairs](native/docs/gameplay-repair-0.8.10.md): enemy traversal, XP pace, card compatibility, co-op selection, damage accounting and harvestables.
-- [Archived plan](native/docs/plan-history-through-build12.md): removed duplicate/completed entries and original historical claims. Release reports supersede stale completion marks.
+- [Build 12: Red Moon](release-1.1.0.md): giant final boss/arena; Ninja, Smoker, Alcoholic and White Supra; class weapons and physical profiles; directional dash; progression-gated slam; stronger ranged enemies; compact HUD and version/build label; turret and damage feedback; dense scenery, six large buildings, celestial sky, effects and audio.
+- [1.0.0 visual overhaul](release-1.0.0.md): angular artwork, saturated effects, quiet ground, engraved UI and eight rotating bosses.
+- [0.8.10 repairs](gameplay-repair-0.8.10.md): enemy traversal, XP pace, card compatibility, co-op selection, damage accounting and harvestables.
+- [Archived plan](plan-history-through-build12.md): removed duplicate/completed entries and original historical claims. Release reports supersede stale completion marks.
 
 ## Build 13 validation (Oct 15)
 

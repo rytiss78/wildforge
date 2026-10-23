@@ -2,7 +2,7 @@
 
 Work in progress. Version remains 0.8.10; the full visual overhaul is not released.
 
-**Subsequent user review:** the ground in this checkpoint is too bright. The technical checks below remain valid, but the palette is not an accepted visual target. Follow the [Hades reference study and corrected direction](hades-style-research-1.0.0.md): quieter ground, saturated effects and deliberately placed lighting.
+**Subsequent user review:** the ground in this checkpoint is too bright. The technical checks below remain valid, but the palette is not an accepted visual target. Follow the [Hades reference study and corrected direction](../hades-style-research-1.0.0.md): quieter ground, saturated effects and deliberately placed lighting.
 
 Eight original modeled bosses now enter normal warden and portal-guardian encounters. Host selection uses a seeded, biome/realm-weighted shuffle bag: all eight appear before reuse, with no consecutive repeat at a bag boundary. Snapshots and kill messages carry the selected identity; clients never roll their own boss. Each model has an exposed health vessel, slow articulated motion, distinct silhouette and attack layout. Phase two increases damage and cadence without removing dodge time.
 
@@ -60,8 +60,8 @@ Executable: `G:/game/.build-staging/agent-workflow/2026-10-12T19-06-05-385Z-buil
 
 Both `--boss-review` and `--forge-review` pass on this exact executable at 1280×720, 1440×810 and 1920×1080, using isolated profiles. All six result files and logs are under `.build-staging/visual-overhaul-1.0.0/vivid-{boss,forge}-{resolution}/`; no script/runtime errors or warnings were found. Exported scene, low/remote health and warning screenshots were visually inspected at those resolutions.
 
-![Brighter scene](../../docs/screenshots/forge-1.0.0/vivid-scene.png)
-![Receiver attack warning at 720p](../../docs/screenshots/forge-1.0.0/receiver-warning.png)
-![Remote half-health orb at 1080p](../../docs/screenshots/forge-1.0.0/remote-orb.png)
+![Brighter scene](../../../docs/screenshots/forge-1.0.0/vivid-scene.png)
+![Receiver attack warning at 720p](../../../docs/screenshots/forge-1.0.0/receiver-warning.png)
+![Remote half-health orb at 1080p](../../../docs/screenshots/forge-1.0.0/remote-orb.png)
 
 Commit and push recorded in the roadmap ledger. The remaining UI, heroes, weapons, biome art, asset deletion audit and 1.0.0 release work stay open.

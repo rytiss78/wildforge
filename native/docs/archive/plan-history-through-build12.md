@@ -1,12 +1,12 @@
 # Archived plan through Build 12
 
-Historical record copied before the October 13 cleanup. Entries may be superseded or contradicted; use [the active plan](../../PLAN.md) and linked release evidence. Links below are adjusted for the archive location.
+Historical record copied before the October 13 cleanup. Entries may be superseded or contradicted; use [the active plan](../../../PLAN.md) and linked release evidence. Links below are adjusted for the archive location.
 
 # Wildforge — Development Plan
 
-> **Active release: 1.1.0 — Build 12.** The October 13 Red Moon checkpoint adds the final arena, four heroes, combat/build progression, environment and UI changes. See [release evidence and remaining work](../../native/docs/release-1.1.0.md) and [balance notes](../../native/docs/balance-1.1.0.md). The older [1.0.0 overhaul](../../native/docs/release-1.0.0.md) remains historical evidence.
+> **Active release: 1.1.0 — Build 12.** The October 13 Red Moon checkpoint adds the final arena, four heroes, combat/build progression, environment and UI changes. See [release evidence and remaining work](release-1.1.0.md) and [balance notes](balance-1.1.0.md). The older [1.0.0 overhaul](release-1.0.0.md) remains historical evidence.
 
-> **October 12 audit:** historical `[x done]` marks below overstate completion. The [original audit](../../native/docs/repair-audit-2026-10-12.md) records the baseline; the [0.8.10 gameplay repair](../../native/docs/gameplay-repair-0.8.10.md) supersedes its hill traversal, XP, compatibility, co-op specialty, damage readability and harvestable findings. Pause history, HP-bar removal, difficulty scaling, icon distinctness and performance claims remain partial or unverified.
+> **October 12 audit:** historical `[x done]` marks below overstate completion. The [original audit](../repair-audit-2026-10-12.md) records the baseline; the [0.8.10 gameplay repair](gameplay-repair-0.8.10.md) supersedes its hill traversal, XP, compatibility, co-op specialty, damage readability and harvestable findings. Pause history, HP-bar removal, difficulty scaling, icon distinctness and performance claims remain partial or unverified.
 
 **One developer. Streamlined process.** No multi-agent orchestration, no heavy rules. Direct edits, commit after each meaningful step, group exports after several milestones (Rytis prefers less-frequent uploads).
 
@@ -28,7 +28,7 @@ Historical record copied before the October 13 cleanup. Entries may be supersede
 
 ### October 13 follow-up — next gameplay and visual pass
 
-Implementation and evidence are recorded in [the 1.1.0 checkpoint](../../native/docs/release-1.1.0.md). Completed implementation does not imply finished long-run balancing or a measured performance improvement.
+Implementation and evidence are recorded in [the 1.1.0 checkpoint](release-1.1.0.md). Completed implementation does not imply finished long-run balancing or a measured performance improvement.
 
 1. **Boss indicators and health orbs — `[x done]`:** Remove boss HP indicators and nameplates from the screen. Enemy/boss health orbs are sufficient; restyle the orbs to match the new visual design while preserving readable health states and co-op synchronization.
 2. **Denser environments and lighting — `[x done]`:** Populate maps with more biome-appropriate objects, localized glow and cast shadows, using Hades as the reference. Keep the ground restrained and preserve clear movement and combat visibility.
@@ -71,7 +71,7 @@ Balance calculations and drop fixes are implemented; long-run balance remains op
 - Damage numbers: bold 34/42-point text with outline/shadow, world-position projection, stable gold crits and green healing; repaired missing critical-shot marker. Existing ordinary-hit suppression remains.
 - Harvestables: six distinct models in their correct biomes, readable descriptions/effects, flat clear placement, timed bonuses with refresh/expiry, active HUD timers, healing accounting and harvest coins for pot-economy upgrades.
 
-[Build, exact verification evidence and remaining limitations](../../native/docs/gameplay-repair-0.8.10.md). The historical entries below describe earlier implementations and are not the current specification for these six areas. Existing staged work is preserved, so no mixed-index commit or remote publication is made.
+[Build, exact verification evidence and remaining limitations](gameplay-repair-0.8.10.md). The historical entries below describe earlier implementations and are not the current specification for these six areas. Existing staged work is preserved, so no mixed-index commit or remote publication is made.
 
 |||### 0. hud.gd line 573 — portrait out of scope in coop_menu — `[x done]`
 |||Portrait was declared as a local variable inside start_menu() but referenced from coop_menu(). Promoted to class-level variable `var portrait: HeroPortrait` (line 42) so both menus share the same instance.
@@ -111,7 +111,7 @@ All 10 chest card icons replaced with detailed 2D SVG artwork. Economy cards (ch
 Damage numbers now only appear on critical hits (`cause=="crit"`). Regular hits no longer spawn floating damage numbers, eliminating screen clutter.
 
 ### 8. Modern Series X-style achievement notifications and original chime — `[x done]`
-User revision for 0.8.9: flat green rounded banner, original white trophy/laurel artwork, icon-first expansion and text reveal. Replaces the 360 medallion and recording. The new 1.85-second synthesized chime uses an air sweep, soft impact and bright resolving tones; no Xbox audio is loaded or exported. Queuing, menu deferral and SFX controls remain. Verified by 93 smoke checks and source/exported UI reviews at 720p, 810p and 1080p; [build, previews and evidence](../../native/docs/achievement-ui-0.8.9.md), [sound design](../../native/assets/audio/achievement-sound.md).
+User revision for 0.8.9: flat green rounded banner, original white trophy/laurel artwork, icon-first expansion and text reveal. Replaces the 360 medallion and recording. The new 1.85-second synthesized chime uses an air sweep, soft impact and bright resolving tones; no Xbox audio is loaded or exported. Queuing, menu deferral and SFX controls remain. Verified by 93 smoke checks and source/exported UI reviews at 720p, 810p and 1080p; [build, previews and evidence](achievement-ui-0.8.9.md), [sound design](../../assets/audio/achievement-sound.md).
 
 ||### 9. Portal maps scale difficulty — `[x done]`
 |Added `realm_difficulty` variable (1.0 + realm*0.25, capping at 1.75 for realm 2) applied to: enemy HP, enemy attack damage, hazard telegraph/guardian damage, and Eclipse time-scaling damage. Initial spawn count increased from 9 to 9+realm enemies per realm.
@@ -170,7 +170,7 @@ Replaced simple blue beam with `lightning_bolt()`: 6-segment jagged zigzag using
 
 ## Validation (how to prove each change)
 
-Read [AGENTS.md](../../AGENTS.md) and the [Godot workflow guide](../../native/docs/godot-workflow.md) for exact commands, diagnostics, visual checks and known baseline failures. Hermes can start from [HERMES.md](../../HERMES.md).
+Read [AGENTS.md](../../../AGENTS.md) and the [Godot workflow guide](../godot-workflow.md) for exact commands, diagnostics, visual checks and known baseline failures. Hermes can start from [HERMES.md](../../../HERMES.md).
 
 - After edits: `node scripts/agent-workflow.mjs check` (JS + Godot import/parse) then `integration`.
 - Feature-specific: `pace-review` (XP/level pace), `capture-ui` / `controls-review` (menus, camera, HUD), `coop` / `coop-feedback` (co-op), `combat-review` (combat).
@@ -179,4 +179,4 @@ Read [AGENTS.md](../../AGENTS.md) and the [Godot workflow guide](../../native/do
 - Preserve history, saves, logs; delete old builds only with explicit authorization.
 - Update plan.md: version, newest build, done tasks moved to do "## Done".
 
-Visual overhaul scene checkpoint: [models, orb replication, evidence and remaining work](../../native/docs/visual-scene-1.0.0.md). Version remains 0.8.10; full 1.0.0 roadmap stays open.
+Visual overhaul scene checkpoint: [models, orb replication, evidence and remaining work](visual-scene-1.0.0.md). Version remains 0.8.10; full 1.0.0 roadmap stays open.

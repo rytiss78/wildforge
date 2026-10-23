@@ -45,7 +45,7 @@ The earlier cleanup preserved 5,189,399,996 bytes under `C:\Users\rytis\Wildforg
 
 ## Limits still open
 
-The requested fourfold final-boss HP means five minutes requires approximately 1,200 applied solo DPS; no representative-build balance claim is made. Broad art/biome polish, Internet latency and dense-scene performance need further work. Controller feel and full-combat audio audition remain human checks. Eclipse music is still a PARANOIA-derived arrangement; this release does not claim it is original. These remain explicit in [PLAN.md](../../PLAN.md).
+The requested fourfold final-boss HP means five minutes requires approximately 1,200 applied solo DPS; no representative-build balance claim is made. Broad art/biome polish, Internet latency and dense-scene performance need further work. Controller feel and full-combat audio audition remain human checks. Eclipse music is still a PARANOIA-derived arrangement; this release does not claim it is original. These remain explicit in [PLAN.md](../../../PLAN.md).
 
 ## Further development before publication
 

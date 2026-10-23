@@ -2,7 +2,7 @@
 
 User revision: use a modern Series X-inspired notification and a distinct original chime. The 360-style medallion, dark capsule and original recording have been replaced.
 
-The trophy and laurel appear first in a compact green tile. The tile expands into a flat green rounded banner, then reveals the achievement text. It collapses and fades at expiry. Multiple unlocks queue; menus defer their display. The original synthesized 1.85-second sound combines a soft sweep/impact with glassy resolving tones, on a dedicated channel governed by SFX volume. [Sound design](../assets/audio/achievement-sound.md).
+The trophy and laurel appear first in a compact green tile. The tile expands into a flat green rounded banner, then reveals the achievement text. It collapses and fades at expiry. Multiple unlocks queue; menus defer their display. The original synthesized 1.85-second sound combines a soft sweep/impact with glassy resolving tones, on a dedicated channel governed by SFX volume. [Sound design](../../assets/audio/achievement-sound.md).
 
 ## Build and previews
 
@@ -22,4 +22,4 @@ No Xbox audio recording is used. The legacy local audio directory is explicitly 
 
 ## Remaining
 
-The existing exported headless shutdown cleanup issue remains: this run reports 14 ObjectDB instances and five resources still in use after all assertions pass. Rendered exported reviews have no script errors or these cleanup diagnostics. Other unfinished gameplay and co-op/Eclipse items remain documented in the [repair audit](repair-audit-2026-10-12.md). Existing staged work was preserved; no mixed-index commit was made.
+The existing exported headless shutdown cleanup issue remains: this run reports 14 ObjectDB instances and five resources still in use after all assertions pass. Rendered exported reviews have no script errors or these cleanup diagnostics. Other unfinished gameplay and co-op/Eclipse items remain documented in the [repair audit](../repair-audit-2026-10-12.md). Existing staged work was preserved; no mixed-index commit was made.

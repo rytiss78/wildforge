@@ -21,4 +21,4 @@ Build 17 is a Windows alpha release from source commit `2ccdb333d689d5e00f58bf49
 - The client lobby-ready synchronization assertion failed in the exported route and needs follow-up.
 - The originally reported early-game co-op desynchronization symptom was not described, so Build 17 does not claim that issue is fully resolved.
 
-Unzip the download and keep `Wildforge.exe` and `Wildforge.pck` together. `build-info.json` inside the archive records the source commit and artifact hashes. See the [current plan](../../PLAN.md) and [Build 17 work log](build17-work.md).
+Unzip the download and keep `Wildforge.exe` and `Wildforge.pck` together. `build-info.json` inside the archive records the source commit and artifact hashes. See the [current plan](../../../PLAN.md) and [Build 17 work log](build17-work.md).

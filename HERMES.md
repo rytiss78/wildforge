@@ -10,10 +10,8 @@ node scripts/agent-workflow.mjs check
 node scripts/agent-workflow.mjs smoke
 ```
 
-Run each command to completion and inspect its result before proceeding. Then choose the feature-specific check from the workflow guide. Do not run the full suite blindly for every edit.
+Run each command to completion and inspect its `result.json` and logs before proceeding. Then choose the feature-specific review from the workflow guide; do not run the full suite blindly for every edit.
 
-Current priorities and known gaps are in [PLAN.md](PLAN.md) and the [October 12 repair audit](native/docs/repair-audit-2026-10-12.md). Read the audit before trusting old completion marks.
-
-The current playable release is `build/red-moon-1.1.1-build13/Wildforge.exe`; local development builds and priorities are listed in [PLAN.md](PLAN.md). Use `Play-Wildforge.cmd` for the latest verified local build. Archived old executables can be restored using [workspace cleanup notes](native/docs/workspace-cleanup-2026-10-13.md). Read [the gameplay repair report](native/docs/gameplay-repair-0.8.10.md) for the current XP design, weapon-compatibility rules, harvestable effects and exact passing/failing evidence. Preserve these regressions when continuing the plan: `gameplay_repair_checks.gd` runs with `smoke`; small-step/gentle-hill checks run with `surface-review`; `capture-ui` exercises co-op hero buttons and records all six harvestables. `pace-review` is an invulnerable, accelerated 120-second cadence measurement, not a survival-balance test.
+Current state, priorities and known gaps are in [PLAN.md](PLAN.md). The latest published release is Build 19 ([notes](native/docs/build19-release.md)). `Play-Wildforge.cmd` opens the most recent local build made by the workflow. Historical plans, build notes and review reports are in [native/docs/archive](native/docs/archive/).
 
 If your agent does not automatically load repository instructions, explicitly read `AGENTS.md` at the beginning of the session. This file is a navigation aid; the shared rules live in `AGENTS.md`.

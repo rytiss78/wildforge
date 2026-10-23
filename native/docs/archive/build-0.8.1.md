@@ -18,7 +18,7 @@ The 360 new single-positive-bonus cards combine 18 activation conditions with 20
 
 The 40 new weapons extend 20 existing attack archetypes with actual firing differences: extra projectiles/piercing/bounces, returning shots, fire/poison/ice/bubble payloads, wider melee/cone attacks, larger or longer gravity wells, stronger stun, additional meteors and different bomb fuses/areas. Examples include Venom Candle, Frost Cleaver, Marble Rain, Needle Driver and Toaster Sentry. They are behavioral variants, rather than 40 entirely new attack engines. Mechanics are described before selection.
 
-See [the 400-entry content list](content-expansion-0.8.1.csv) and [artwork manifest](../assets/illustrated/content/manifest.json). Art is original code-authored vector geometry with stable recipes, not downloaded art or AI-generated raster images. The editable art exporter is `scripts/create-content-art.mjs`; catalog recipes are `scripts/data/expansion.js`. The native packaging script regenerates both.
+See [the 400-entry content list](content-expansion-0.8.1.csv) and [artwork manifest](../../assets/illustrated/content/manifest.json). Art is original code-authored vector geometry with stable recipes, not downloaded art or AI-generated raster images. The editable art exporter is `scripts/create-content-art.mjs`; catalog recipes are `scripts/data/expansion.js`. The native packaging script regenerates both.
 
 ## Balance implications
 

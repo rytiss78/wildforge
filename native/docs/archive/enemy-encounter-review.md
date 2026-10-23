@@ -16,4 +16,4 @@ The October 16 integration adds four focused checks to the actual tactics helper
 
 ## Limits
 
-This closes the reference survey, original roster review, biome-specific ranged behaviors and existing asset replacement review. It does not establish full-run encounter pacing or build win rates; those remain in the real-fight balance item in [PLAN.md](../../PLAN.md). The crowded performance captures are stress scenes and are not used as visual acceptance.
+This closes the reference survey, original roster review, biome-specific ranged behaviors and existing asset replacement review. It does not establish full-run encounter pacing or build win rates; those remain in the real-fight balance item in [PLAN.md](../../../PLAN.md). The crowded performance captures are stress scenes and are not used as visual acceptance.

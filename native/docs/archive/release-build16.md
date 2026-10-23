@@ -38,4 +38,4 @@ This is an alpha checkpoint, not completion of PLAN.md. The photorealistic Baron
 
 Boss timings are ideal sustained-DPS estimates, not proof of enjoyable five-minute survival fights. Status, weapon, turret, slam and garden builds differ substantially. Dense Eclipse crowds still show frame-time stalls; do not read the new probe cache as a completed performance fix. Physical gamepad feel and full-battle audio audition still need human feedback. NodeTunnel remains deferred.
 
-See [continuation measurements](build16-continuation.md), [ground-art research](ground-art-research.md), and [the active plan](../../PLAN.md).
+See [continuation measurements](build16-continuation.md), [ground-art research](ground-art-research.md), and [the active plan](../../../PLAN.md).

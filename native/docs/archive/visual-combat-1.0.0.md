@@ -1,6 +1,6 @@
 # Ground, lighting and combat-art development checkpoint
 
-October 12, 2026. Source development on `main`; version remains 0.8.10. This applies the [corrected Hades direction](hades-style-research-1.0.0.md), following the user's request to prioritize development and leave full testing to the end.
+October 12, 2026. Source development on `main`; version remains 0.8.10. This applies the [corrected Hades direction](../hades-style-research-1.0.0.md), following the user's request to prioritize development and leave full testing to the end.
 
 Clover Woods paving now uses a quiet slate value range with no terrain emission or pervasive gold/green highlights. Lower ambient light and a darker sky support pools of green light cast by visible inset column lamps. Camera controls and terrain/collision geometry are unchanged.
 
@@ -15,9 +15,9 @@ Shared combat effects now use sharp mesh fragments, tapered melee crescents, two
 
 Fresh source captures:
 
-![Quiet ground and focused lamps](../../docs/screenshots/forge-1.0.0/slate-scene.png)
+![Quiet ground and focused lamps](../../../docs/screenshots/forge-1.0.0/slate-scene.png)
 
-![Blue-white lightning at the unchanged gameplay camera](../../docs/screenshots/forge-1.0.0/ink-lightning.png)
+![Blue-white lightning at the unchanged gameplay camera](../../../docs/screenshots/forge-1.0.0/ink-lightning.png)
 
 ## Remaining work
 

@@ -1,6 +1,6 @@
 # Wildforge 1.0.0 — complete visual overhaul
 
-Requested October 12, 2026. The original overhaul is implemented and validated as local build **1.0.0**. [Final executable and evidence](release-1.0.0.md). GitHub Build 4 remains the public download. The user subsequently requested merging and continuing on `main`. New October 13 follow-up requirements are open in [PLAN.md](../../PLAN.md).
+Requested October 12, 2026. The original overhaul is implemented and validated as local build **1.0.0**. [Final executable and evidence](release-1.0.0.md). GitHub Build 4 remains the public download. The user subsequently requested merging and continuing on `main`. New October 13 follow-up requirements are open in [PLAN.md](../../../PLAN.md).
 
 ## User requirements and fixed constraints
 
@@ -88,7 +88,7 @@ Mark a milestone complete only after its listed behavior and visual checks pass.
 
 - October 12 user update: prioritize implementation with light checks and focused visual captures during development. Defer the full regression/co-op/multiple-resolution/export suite to the end of the overhaul; intermediate source checkpoints are not release certifications.
 - Commit and push after each tested milestone or substantial validated sub-batch. Keep baseline, UI, character art, environments, bosses, cleanup and release-documentation changes reviewable.
-- Run commands from the repository root through `node scripts/agent-workflow.mjs`; follow [the workflow](godot-workflow.md). Inspect logs as well as exit codes and visually inspect screenshots. Do not run party-hosting tests together.
+- Run commands from the repository root through `node scripts/agent-workflow.mjs`; follow [the workflow](../godot-workflow.md). Inspect logs as well as exit codes and visually inspect screenshots. Do not run party-hosting tests together.
 - Keep a short ledger row containing scope, acceptance result, evidence path, commit, remote push result and next work. If push fails, preserve the local commit, report the actual error without secrets, and continue independent work.
 - User approval is not required at every step: this request authorizes the overhaul and regular pushes. Ask only when an unresolved choice materially changes scope or requires a destructive operation beyond replacing obsolete assets.
 
@@ -100,10 +100,10 @@ Mark a milestone complete only after its listed behavior and visual checks pass.
 | 0 — audited source baseline | Complete; final orb coverage passed | `4ffec33`; [audit/inventory](visual-baseline-1.0.0.md); original mixed index preserved |
 | 1a — UI foundation + bottom damage | Validated development sub-batch | [Evidence/build/screenshots](visual-foundation-1.0.0.md); `46ace7c`, pushed |
 | 1b — Clover Woods models + orb replication | Validated development sub-batch | [Scene evidence/build](visual-scene-1.0.0.md); `be0a086`, pushed |
-| 1c + 5 — vivid palette and eight-boss rotation | Technical checkpoint passed; ground palette rejected by user | `37e9df1`, pushed; [boss/network/build evidence](visual-bosses-1.0.0.md); [corrected Hades direction](hades-style-research-1.0.0.md) governs further visual work |
+| 1c + 5 — vivid palette and eight-boss rotation | Technical checkpoint passed; ground palette rejected by user | `37e9df1`, pushed; [boss/network/build evidence](visual-bosses-1.0.0.md); [corrected Hades direction](../hades-style-research-1.0.0.md) governs further visual work |
 | 1d + 3 — quiet ground, focused lamps, ink combat effects | Light source checks and rendered review passed; full testing deferred by user | [Changes, captures and evidence](visual-combat-1.0.0.md); development checkpoint on main |
 | 2–4 — UI, rosters and biomes | Implemented and reviewed | `dee8240`, `63d60d9`, pushed; [rollout](visual-rollout-1.0.0.md) |
 | 6 — obsolete assets | Archived, removed; fresh import/export passed | `63d60d9`, pushed; [manifest](visual-cleanup-1.0.0.json) |
 | 7 — local release | Local artifact verified; one intermittent UI review needs diagnosis; public download unchanged | [Executable, hashes and evidence](release-1.0.0.md); final source/docs checkpoint follows |
 
-Baseline context: [0.8.10 repair](gameplay-repair-0.8.10.md), [earlier audit](repair-audit-2026-10-12.md), [project rules](../../AGENTS.md).
+Baseline context: [0.8.10 repair](gameplay-repair-0.8.10.md), [earlier audit](../repair-audit-2026-10-12.md), [project rules](../../../AGENTS.md).

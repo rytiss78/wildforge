@@ -30,7 +30,7 @@ The original unmodified pacing bot died at 12.38 seconds, before leveling. That 
 
 ## Verification
 
-All commands use [the Godot workflow](godot-workflow.md), the bundled engine and isolated profiles. Dated reports are under `.build-staging/agent-workflow/`:
+All commands use [the Godot workflow](../godot-workflow.md), the bundled engine and isolated profiles. Dated reports are under `.build-staging/agent-workflow/`:
 
 | Check | Result | Evidence directory |
 | --- | --- | --- |
@@ -57,4 +57,4 @@ SHA-256:
 
 The integration process still reports 18 ObjectDB instances and 5 resources in use at shutdown; its gameplay assertions pass and there are no script errors. Source smoke, UI, combat and export logs contain no such diagnostics in the final runs. This cleanup warning is not silently treated as a clean log.
 
-The earlier co-op realm-wraparound/teardown test failures and Eclipse handling expectation mismatch remain open; this batch does not claim the long network soak or Eclipse review passes. See the [original audit](repair-audit-2026-10-12.md) for pause history, enemy health-bar, difficulty-scaling, icon and performance limitations. The existing 728 staged changes were preserved; no mixed-index commit or publication was performed.
+The earlier co-op realm-wraparound/teardown test failures and Eclipse handling expectation mismatch remain open; this batch does not claim the long network soak or Eclipse review passes. See the [original audit](../repair-audit-2026-10-12.md) for pause history, enemy health-bar, difficulty-scaling, icon and performance limitations. The existing 728 staged changes were preserved; no mixed-index commit or publication was performed.

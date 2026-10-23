@@ -8,7 +8,7 @@ Before editing, saved 5,564 tracked/untracked working files with SHA-256 hashes,
 
 Incoming index: 728 paths, including 696 content illustrations, one orphan import sidecar, source changes, marketing material and root executables. The baseline checkpoint explicitly selects source/repair files and their dependencies. Root executables (including a temporary pack), community documents, old marketing screenshots and `icon-template.svg.import` remain staged and untouched; they are not certified release assets. The source checkpoint includes prior 0.8.7–0.8.10 repairs and the 1.0.0 roadmap, not new overhaul artwork. Selected text files were scanned for credential-bearing URLs, common GitHub tokens and private keys; no candidates were found. Git remote URLs must never be printed.
 
-The [machine-readable inventory](visual-asset-manifest.json) lists each asset's hash, runtime owner/generator, replacement and deletion state. `node scripts/visual-asset-inventory.mjs` regenerates the baseline inventory; do not regenerate over curated replacement/deletion decisions. Dynamic roots remain live until their call sites are replaced and exports are tested. Embedded geometry/shader/drawing references are included. No old asset has yet been approved for deletion.
+The [machine-readable inventory](../visual-asset-manifest.json) lists each asset's hash, runtime owner/generator, replacement and deletion state. `node scripts/visual-asset-inventory.mjs` regenerates the baseline inventory; do not regenerate over curated replacement/deletion decisions. Dynamic roots remain live until their call sites are replaced and exports are tested. Embedded geometry/shader/drawing references are included. No old asset has yet been approved for deletion.
 
 ## Camera invariants
 
@@ -31,7 +31,7 @@ All evidence roots below are `.build-staging/agent-workflow/`.
 
 Combat at 1440×810 on AMD Radeon RX 9060 XT: p50 17.461 ms, p95 35.024 ms, 657 measured frames, peak 4,694 nodes, final 1,309 draw calls, 66 enemies / 8 kills. This is one stochastic combat sample, not a precise benchmark or optimization claim. Memory was not recorded by this baseline review. HP orbs are visible on the enemies; dedicated full/half/low/shield/remote orb coverage remains open.
 
-Verified pre-overhaul executable: `build/gameplay-0.8.10/Wildforge.exe`; hashes and exported UI evidence are in [the repair report](gameplay-repair-0.8.10.md). The source baseline reproduces its check results. Known co-op wraparound/teardown and Eclipse handling acceptance failures remain open; see [the audit](repair-audit-2026-10-12.md).
+Verified pre-overhaul executable: `build/gameplay-0.8.10/Wildforge.exe`; hashes and exported UI evidence are in [the repair report](gameplay-repair-0.8.10.md). The source baseline reproduces its check results. Known co-op wraparound/teardown and Eclipse handling acceptance failures remain open; see [the audit](../repair-audit-2026-10-12.md).
 
 ## Next
 

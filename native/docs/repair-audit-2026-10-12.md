@@ -1,8 +1,8 @@
 # October 12 repair and PLAN.md audit
 
-Follow-up: achievement visuals/audio were subsequently replaced in [local build 0.8.9](achievement-ui-0.8.9.md), using modern Series X-inspired visuals and original synthesized audio. The audit below preserves the earlier 0.8.7 repair evidence.
+Follow-up: achievement visuals/audio were subsequently replaced in [local build 0.8.9](archive/achievement-ui-0.8.9.md), using modern Series X-inspired visuals and original synthesized audio. The audit below preserves the earlier 0.8.7 repair evidence.
 
-The [0.8.10 gameplay repair](gameplay-repair-0.8.10.md) subsequently addresses small hills, inconsistent XP, current-loadout compatibility, co-op specialties, damage readability and harvestables. Its report supersedes those baseline findings below; unrelated open issues remain open.
+The [0.8.10 gameplay repair](archive/gameplay-repair-0.8.10.md) subsequently addresses small hills, inconsistent XP, current-loadout compatibility, co-op specialties, damage readability and harvestables. Its report supersedes those baseline findings below; unrelated open issues remain open.
 
 The incoming working tree did not launch. The completion marks in PLAN.md were not reliable. This audit covers the active list, including its duplicate item numbers; the older unnumbered history is not a new feature certification.
 
