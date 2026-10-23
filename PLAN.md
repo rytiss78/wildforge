@@ -1,6 +1,6 @@
 # Wildforge — plan
 
-October 23, 2026 · main branch · **Build 19 (1.2.1) is the latest public release.** Everything under "Since Build 19" is committed but not yet in a published build.
+October 23, 2026 · main branch · **Build 20 (1.3.0) is the latest public release.** Everything under "Since Build 19" is in it.
 
 Rules: [AGENTS.md](AGENTS.md) and the [Godot workflow](native/docs/godot-workflow.md). A checked item means the real entry point was exercised and the evidence is recorded. The full history up to this rewrite, with every evidence path, is in [plan-history-through-build19.md](native/docs/archive/plan-history-through-build19.md).
 
@@ -14,7 +14,7 @@ Evidence folders are under `.build-staging/agent-workflow/`. Run folders older t
 - **Difficulty:** tuned with the playtest bot. The last 12-run batch had 58% clear island 1, 17% reach the Baron and 8% beat him (`2026-10-23T09-40-56-088Z-bot-playtest`). The target was about 70 / 25 / 10, kept deliberately hard.
 - **Tooling:** `node scripts/agent-workflow.mjs` covers check, smoke, integration, about 30 rendered and two-process reviews, `bot-playtest` and `build`.
 
-## Since Build 19 (unreleased)
+## Since Build 19 (released as Build 20)
 
 Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan history.
 
@@ -45,7 +45,7 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
   - **Minimap:** the leftover landmark flags are removed.
   - **Evidence:** `hunt-review`, `island-review`, `capture-ui` and the full two-process `coop` route (`2026-10-23T10-20-21-186Z-coop`) pass.
 - [x] Hero stat drawbacks show their real sign ("Move faster −18.0%", was "+-18.0%") (`1789d63`).
-- [x] **Build 20 (1.3.0), local, not published.** The user skipped the planned friend test of internet hosting (October 23).
+- [x] **Build 20 (1.3.0).** Built locally after the user skipped the planned friend test of internet hosting (October 23).
   - Version bumped in `package.json` (version and buildNumber), `native/project.godot` and `native/export_presets.cfg` (`790fde9`, `5eee44d`).
   - Build `.build-staging/agent-workflow/2026-10-23T11-13-11-943Z-build/Wildforge.exe` from source `1789d63`. The exported smoke passes and reports 1.3.0 / Build 20.
   - Exported reviews against that exe pass with 0 script errors:
@@ -57,7 +57,11 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
   - Packaged as `dist/Wildforge-1.3.0-Windows.zip` (81,875,888 bytes, SHA-256 `01f88715…ff5744566`).
   - Notes: [build20-release.md](native/docs/build20-release.md).
   - A first build attempt (`11-07-40-071Z-build`) was rejected by the build guard because `package.json` buildNumber was still 19. That build is invalid.
-- [ ] **Publish Build 20** as GitHub release `build-20` and point the README at it, when the user asks.
+- [x] **Published** GitHub release [`build-20`](https://github.com/rytiss78/wildforge/releases/tag/build-20) at the user's request: "Wildforge 1.3.0 — Build 20", marked Latest.
+  - The annotated tag resolves to source commit `1789d63d38c972fc81aeb943ea1906ddb24a7f20`.
+  - Assets: `Wildforge-1.3.0-Windows.zip` (81,875,888 bytes) and `SHA256SUMS-1.3.0.txt`.
+  - The re-downloaded ZIP matches SHA-256 `01f88715…ff5744566`, and its `build-info.json` reports 1.3.0 / Build 20 from `1789d63`.
+  - README, README.txt and HERMES.md now point at Build 20.
 
 ## Next: Phase D — run depth
 

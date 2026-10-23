@@ -1,6 +1,6 @@
 WILDFORGE
 
-Latest Windows download: https://github.com/rytiss78/wildforge/releases/tag/build-19
+Latest Windows download: https://github.com/rytiss78/wildforge/releases/tag/build-20
 Extract the whole download, then run Wildforge.exe.
 
 Play the current source: node scripts/native.mjs
