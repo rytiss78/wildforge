@@ -224,6 +224,27 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
   - **Regression runs:** check, smoke, integration, the boss, Red Moon, style, combat, playfeel and biome reviews, and coop-dropin pass with 0 errors.
   - **Known flaky:** `shared-review` failed once (`16-12-59-888Z`). After the island-change reconnect the guest got 4 of the required 5 snapshots within 5 s; three re-runs passed with 5. This is timing under load and has not been changed by this work. Left open, not loosened.
 
+## Co-op big-fight desync (user report, October 23, Build 21)
+
+- **Report:** in big fights over the internet the guest took damage but saw no enemies, the host saw the guest frozen in a crowd, they sometimes recovered, the guest sometimes had to be revived, and once a revive produced a second copy of the guest.
+- **Measured** (`net_size_checks.gd`; 125 enemies, 300 XP orbs, a full build):
+  - The world snapshot was **48,916 bytes**, near the 60,000-byte drop limit and about 35 network fragments, so over a lossy link most snapshots were lost. XP orbs, sent as dictionaries, took 36,008 of those bytes.
+  - The guest's pose was **3,596 bytes** (stats took 2,948). That is over the 1,000-byte unreliable limit, so it went out reliably ten times a second and stalled behind resends.
+- **Fixes** (protocol `wildforge-shared-world-13`):
+  - XP orbs travel packed (six floats each), at most the 200 nearest any hero. The client matches them through an index instead of a search per orb.
+  - Stats travel apart from the pose, as reliable changed values only, at most every 0.5 s, and in full after a welcome.
+  - Poses, like world snapshots, stay unreliable at any size.
+  - **Duplicate copies of a player:**
+    - A returning player is matched by profile token even while the host still believes the old connection is alive; the stale connection and its avatar are dropped.
+    - Late poses from a dropped connection no longer rebuild its avatar. Under lag, such poses left ghost avatars; the stress run found two.
+  - **Engine errors after a dead link:** the client's link checks and ping read the actual connection state, which removes the errors after a silent drop.
+- **Results:** snapshot **17,716 bytes**, pose **632 bytes**.
+- **Verified:**
+  - integration (`net_world_size`, `net_pose_unreliable`);
+  - shared-review with a new silent-drop rejoin (the guest's link dies without notice) and `reconnect_no_duplicate`;
+  - shared-review-stress, coop-dropin and the full `coop` route (`2026-10-23T20-37-43-363Z`), all with 0 errors.
+- **Not verified:** a real internet session with packet loss; the tests run on one machine. Snapshots still fragment into about 13 pieces at this size. If loss stays visible, the next step is splitting the snapshot into independent packets.
+
 ## Open issues and limits
 
 - **Internet co-op on a real router is untested.** Automated tests never touch router port mappings. The user is testing HOST PARTY with a friend.

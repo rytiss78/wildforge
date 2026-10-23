@@ -185,10 +185,15 @@ static func run(g,host: bool):
 		checks.remote_baron=await wait_for(g,func():return g.coop.test_messages.has("baron_seen"))
 		checks.remote_baron_model=g.coop.test_messages.get("baron_seen",{}).get("model",false)
 		var reconnect_id=int(g.coop.members.keys()[0]);var reconnect_token=str(g.coop.members[reconnect_id].get("token",""))
-		g.coop.test_messages.erase("reconnected");send(g,"reconnect_force")
+		# A silent drop: the guest's connection dies without notice and it rejoins
+		# while this side still sees the old connection. It must take back its own
+		# slot, not join as a second copy of itself (October 23 user report).
+		g.coop.test_messages.erase("reconnected");send(g,"reconnect_force",{"silent":true})
 		checks.reconnect_host=await wait_for(g,func():return g.coop.test_messages.has("reconnected"),42)
 		var restored=g.coop.members.values().filter(func(member):return str(member.get("token",""))==reconnect_token and not member.get("disconnected",false))
 		checks.reconnect_state=not reconnect_token.is_empty() and restored.size()==1 and restored[0].get("mode","")=="playing"
+		checks.reconnect_no_duplicate=g.coop.members.size()==1 and g.coop.avatars.size()<=1
+		trace.append({"phase":"duplicate_probe","members":g.coop.members.keys().map(func(k):return [k,str(g.coop.members[k].get("token","")).left(6),g.coop.members[k].get("disconnected",false),g.coop.members[k].get("mode","")]),"avatars":g.coop.avatars.keys()})
 		trace.append({"phase":"reconnect","host_mode":g.mode,"restored":restored.map(func(m):return {"mode":m.get("mode",""),"hp":m.get("hp",-1)})})
 		send(g,"reconnect_host_confirm",{"restored":checks.reconnect_state})
 		send(g,"finish",checks)

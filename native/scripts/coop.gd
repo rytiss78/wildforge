@@ -7,7 +7,9 @@ var party_seen={}
 
 # Transport-independent authoritative world. Important events are reliable;
 # poses/snapshots use unreliable ordered delivery. Never deserialize objects.
-const PROTOCOL="wildforge-shared-world-12"
+const PROTOCOL="wildforge-shared-world-13"
+# Big fights: only this many XP orbs (nearest any hero) travel in a world packet.
+const XP_SYNC_LIMIT=200
 # World snapshots carry each enemy as ACTOR_STRIDE floats: id, position(3), hp,
 # maxHp, surface up(3), surface forward(3), ACTOR_STATUS(8), corruption. Static
 # identity (species, size, boss/elite flags) is sent once via actors_info.
@@ -63,6 +65,8 @@ var last_remote_reward_level=1
 var review_lag_ms=0
 var review_packet_queue=[]
 var reconnecting=false
+var stats_sent={}
+var stats_clock=0.0
 var reconnect_attempting=false
 var disconnect_started=0.0
 var snapshot_seq=0
@@ -319,9 +323,9 @@ func send_to(id: int,message: Dictionary,reliable: bool=true):
 	if bytes.size()>60000: push_warning("Co-op %s message dropped: %d bytes" % [str(message.get("type","")),bytes.size()]);return
 	if hosting and members.has(id) and members[id].get("disconnected",false): return
 	if transport=="lan" and transport_peer_connected(id):
-		# World snapshots stay unreliable at any size: a newer one supersedes a
-		# lost one, and reliable delivery would stall events behind stale state.
-		var unreliable=not reliable and (bytes.size()<=1000 or message.get("type","")=="world")
+		# World snapshots and poses stay unreliable at any size: a newer one supersedes
+		# a lost one, and reliable delivery would stall events behind stale state.
+		var unreliable=not reliable and (bytes.size()<=1000 or message.get("type","") in ["world","pose"])
 		peer.set_target_peer(id);peer.transfer_mode=MultiplayerPeer.TRANSFER_MODE_UNRELIABLE_ORDERED if unreliable else MultiplayerPeer.TRANSFER_MODE_RELIABLE;peer.put_packet(bytes)
 
 func broadcast(message: Dictionary,reliable: bool=true):
@@ -330,7 +334,11 @@ func broadcast(message: Dictionary,reliable: bool=true):
 
 func transport_peer_connected(id: int) -> bool:
 	if peer==null or peer.get_connection_status()!=MultiplayerPeer.CONNECTION_CONNECTED: return false
-	if not hosting: return true
+	# A client checks its actual link to the host: after a connection dies without
+	# notice the transport still reports connected for a moment.
+	if not hosting:
+		var host=peer.get_peer(1)
+		return host!=null and host.get_state()==ENetPacketPeer.STATE_CONNECTED
 	if not linked.has(id): return false
 	var remote=peer.get_peer(id)
 	return remote!=null and remote.get_state()==ENetPacketPeer.STATE_CONNECTED
@@ -433,7 +441,10 @@ func tick(delta: float):
 		else:
 			# Before the host's welcome a rejoining client still reports its
 			# disconnected "paused" mode, which would freeze the host's run.
-			if welcomed: send_to(owner_id,pose(),false)
+			if welcomed:
+				send_to(owner_id,pose(),false)
+				stats_clock-=.10
+				if stats_clock<=0: stats_clock=.5;send_stats()
 			if game.run_active and last_snapshot>0 and Time.get_ticks_msec()/1000.0-last_snapshot>12: connection_lost()
 	if hosting:
 		var now=Time.get_ticks_msec()/1000.0
@@ -467,7 +478,8 @@ func tick(delta: float):
 func ping_to(id: int) -> int:
 	if transport!="lan" or not transport_peer_connected(id): return 0
 	var link=peer.get_peer(id)
-	return int(link.get_statistic(ENetPacketPeer.PEER_ROUND_TRIP_TIME)) if link!=null else 0
+	# A connection that died without notice still has a peer object but no link.
+	return int(link.get_statistic(ENetPacketPeer.PEER_ROUND_TRIP_TIME)) if link!=null and link.get_state()==ENetPacketPeer.STATE_CONNECTED else 0
 
 # Shown on nameplates. Players hear about each other through the host, so a
 # player's ping to another player is shown as that player's ping to the host.
@@ -481,21 +493,36 @@ func update_avatar_vitals(rig,state: Dictionary):
 	if state.has("hp"): rig.set_health(float(state.hp)/maxf(1,float(vitals.get("max_hp",100))))
 	rig.set_defense(float(vitals.get("armor",0)),float(state.get("shield_hp",0)),float(vitals.get("shield_capacity",0)))
 
+# The stats the host needs from this player (chest luck, XP gain, damage caps).
+# Consumable and conditional XP modifiers are computed by stat(), outside the
+# permanent stats dictionary, so the host gets the live values.
+func effective_stats() -> Dictionary:
+	var effective=game.stats.duplicate()
+	effective.xpGain=game.stat("xpGain")
+	for key in effective.keys():
+		if str(key).begins_with("augment-"): effective.erase(key)
+	for key in game.conditional_bonuses: effective[key]=game.stat(key)
+	return effective
+
+# Stats travel apart from the 10-per-second pose, reliably and only as changed
+# values: with them the pose was 3.6 KB, over the unreliable limit, and a
+# reliable pose stalls behind resends over the internet (a frozen teammate).
+func send_stats(force: bool=false):
+	var current=effective_stats();var changes={}
+	for key in current:
+		if force or not stats_sent.has(key) or stats_sent[key]!=current[key]: changes[key]=current[key]
+	if changes.is_empty(): return
+	stats_sent.merge(changes,true)
+	send_to(owner_id,{"type":"stats","changes":changes})
+
 func pose() -> Dictionary:
 	var weapons=[]
 	for weapon in game.equipped:
 		var state={"id":weapon.id,"rank":weapon.rank,"evolved":weapon.get("evolved",false)}
 		if weapon.turret and is_instance_valid(weapon.get("node")): state.placement=array(weapon.node.position)
 		weapons.append(state)
-	var effective=game.stats.duplicate()
-	# Consumable and conditional XP modifiers are computed by stat(), outside the
-	# permanent stats dictionary. The host needs the collector's live value.
-	effective.xpGain=game.stat("xpGain")
-	for key in effective.keys():
-		if str(key).begins_with("augment-"): effective.erase(key)
-	for key in game.conditional_bonuses: effective[key]=game.stat(key)
 	var build={"weapons":weapons,"skills":game.owned.filter(func(item):return item.kind in ["skill","mutation"]).map(func(item):return str(item.name).left(48))}
-	return {"type":"pose","flower_realm":game.realm,"flowers":flower_state(),"position":array(game.player.position),"yaw":game.avatar.rotation.y,"model":game.hero.model,"name":player_name(),"cosmetic":str(game.career.data.settings.get("cosmetic","")),"mode":"ended" if game.run_recorded else game.mode,"weapons":weapons,"build":build,"hp":game.hp,"shield_hp":game.shield_hp,"stats":effective,"gold":game.gold,"rescue_hold":game.update.rescue_hold}
+	return {"type":"pose","flower_realm":game.realm,"flowers":flower_state(),"position":array(game.player.position),"yaw":game.avatar.rotation.y,"model":game.hero.model,"name":player_name(),"cosmetic":str(game.career.data.settings.get("cosmetic","")),"mode":"ended" if game.run_recorded else game.mode,"weapons":weapons,"build":build,"hp":game.hp,"shield_hp":game.shield_hp,"gold":game.gold,"rescue_hold":game.update.rescue_hold}
 
 # Everything a client needs to construct a replica of a host enemy.
 func actor_descriptor(enemy: Dictionary) -> Dictionary:
@@ -530,13 +557,30 @@ func snapshot() -> Dictionary:
 	var poses={}
 	for id in members:
 		if not members[id].get("disconnected",false): poses[id]=members[id].duplicate(true)
-	poses[local_id]=pose()
+	poses[local_id]=pose();poses[local_id].stats=game.stats
 	for id in poses: poses[id].ping=ping_to(int(id)) if int(id)!=local_id else 0
 	for member in poses.values():
 		var stats=member.get("stats",{})
 		member.vitals={"max_hp":stats.get("maxHp",100),"armor":stats.get("armor",0),"shield_capacity":float(stats.get("shield",0))+float(stats.get("jumpShield",0))}
 		member.erase("stats");member.erase("last_seen")
-	return {"type":"world","seq":snapshot_seq,"actors":actors,"players":poses,"seconds":game.realm_time,"elapsed":game.elapsed,"realm":game.realm,"journey":game.events,"wardens":game.realm_bosses,"level":game.level,"xp":game.xp,"xp_target":game.xp_target,"run_xp":game.update.run_xp,"pause":frozen() or game.mode not in ["playing","ended"],"big_update":game.update.world_state(),"xp_drops":game.pickups.filter(func(p):return p.kind=="xp" and p.age>=0).map(func(p):return {"id":p.net_id,"position":array(p.node.position),"value":p.value,"heap":p.get("magnet_heap",false)})}
+	return {"type":"world","seq":snapshot_seq,"actors":actors,"players":poses,"seconds":game.realm_time,"elapsed":game.elapsed,"realm":game.realm,"journey":game.events,"wardens":game.realm_bosses,"level":game.level,"xp":game.xp,"xp_target":game.xp_target,"run_xp":game.update.run_xp,"pause":frozen() or game.mode not in ["playing","ended"],"big_update":game.update.world_state(),"xp_orbs":xp_state()}
+
+# XP orbs as packed numbers (id, position, value, heap flag), nearest to any hero
+# first. As dictionaries 300 orbs took 36 KB and pushed the world packet toward
+# the 60 KB drop limit in big fights.
+func xp_state() -> PackedFloat32Array:
+	var heroes=[game.player.position]
+	for id in members:
+		if not members[id].get("disconnected",false): heroes.append(vector(members[id].get("position",[])))
+	var orbs=game.pickups.filter(func(p):return p.kind=="xp" and p.age>=0)
+	if orbs.size()>XP_SYNC_LIMIT:
+		var keyed=orbs.map(func(p):return [heroes.map(func(h):return p.node.position.distance_squared_to(h)).min(),p])
+		keyed.sort_custom(func(a,b):return a[0]<b[0]);orbs=keyed.slice(0,XP_SYNC_LIMIT).map(func(item):return item[1])
+	var packed=PackedFloat32Array()
+	for p in orbs:
+		var at: Vector3=p.node.position
+		packed.append_array(PackedFloat32Array([p.net_id,at.x,at.y,at.z,p.value,1.0 if p.get("magnet_heap",false) else 0.0]))
+	return packed
 
 static func array(v: Vector3) -> Array: return [v.x,v.y,v.z]
 static func vector(v) -> Vector3:
@@ -603,6 +647,9 @@ func receive(sender: int,message):
 			if not hosting and phase=="reconnect_force":
 				# A test drop may stay away briefly so the host observes the absence.
 				test_reconnect_hold=clampf(float(message.get("data",{}).get("hold",0)),0,5)
+				# "silent": the connection dies without telling the host, as over the
+				# internet, so the host still believes the old connection is alive.
+				if bool(message.get("data",{}).get("silent",false)) and peer!=null and peer.get_peer(1)!=null: peer.get_peer(1).reset()
 				connection_lost.call_deferred()
 		return
 	if kind=="test_done":
@@ -614,8 +661,20 @@ func receive(sender: int,message):
 			var token=str(message.get("token","")).left(64);var resume_id=0
 			if game.run_active:
 				for old_id in members:
-					if members[old_id].get("disconnected",false) and str(members[old_id].get("token",""))==token and Time.get_ticks_msec()/1000.0<=float(members[old_id].get("disconnect_until",0)):
-						resume_id=int(old_id);break
+					if token.is_empty() or str(members[old_id].get("token",""))!=token: continue
+					if members[old_id].get("disconnected",false) and Time.get_ticks_msec()/1000.0>float(members[old_id].get("disconnect_until",0)): continue
+					# The player's game gave up first (12 s without world packets) while this
+					# side still thinks the old connection is alive: the same profile is
+					# returning, not a new player. Drop the stale connection and its avatar,
+					# or the party ends up with two of them.
+					# The old id's avatar and turrets always go, whichever way it dropped.
+					if avatars.has(old_id): avatars[old_id].queue_free();avatars.erase(old_id)
+					for key in turret_models.keys():
+						if key.begins_with(str(old_id)+":"): turret_models[key].queue_free();turret_models.erase(key)
+					if not members[old_id].get("disconnected",false):
+						linked.erase(old_id)
+						if peer!=null and peer.get_peer(old_id)!=null: peer.disconnect_peer(old_id,true)
+					resume_id=int(old_id);break
 			# Up to four players; a new player may drop into a run in progress.
 			if resume_id==0 and members.values().filter(func(m):return not m.get("disconnected",false)).size()>=3: send_to(sender,{"type":"reject","reason":"Party is full."});return
 			if resume_id>0:
@@ -649,7 +708,13 @@ func receive(sender: int,message):
 			publish_lobby()
 		elif kind=="need_actors" and game.run_active and int(message.get("realm",-1))==game.realm:
 			send_actor_descriptors(sender,message.get("ids",[]))
+		elif kind=="stats":
+			var known: Dictionary=members[sender].get("stats",{})
+			known.merge(message.get("changes",{}),true);members[sender].stats=known
 		elif kind=="pose":
+			# A late pose from a connection that already dropped would rebuild that
+			# player's avatar; after they rejoin under a new id it stays as a ghost copy.
+			if members[sender].get("disconnected",false): return
 			var p=vector(message.get("position",[]))
 			if not p.is_finite() or maxf(absf(p.x),absf(p.z))>RealmWorld.EXTENT+10: return
 			for key in ["position","yaw","model","name","cosmetic","mode","weapons","build","hp","shield_hp","stats","gold","rescue_hold","flower_realm","flowers"]:
@@ -759,7 +824,7 @@ func receive(sender: int,message):
 		last_snapshot=Time.get_ticks_msec()/1000.0
 		if kind=="reject": leave();status=str(message.reason);game.hud.tell(status,8)
 		elif kind=="welcome":
-			welcomed=true;reset_actor_sync()
+			welcomed=true;reset_actor_sync();stats_sent.clear();stats_clock=0.0
 			if bool(message.get("reconnected",false)):
 				var host_realm=int(message.get("realm",game.realm))
 				if host_realm!=game.realm: game.enter_realm(host_realm)
@@ -901,16 +966,20 @@ func apply_world(message: Dictionary):
 	game.xp=int(message.get("xp",game.xp))
 	game.xp_target=int(message.get("xp_target",game.xp_target))
 	game.update.run_xp=int(message.get("run_xp",game.update.run_xp))
-	var drop_ids={}
-	for drop in message.get("xp_drops",[]):
-		var drop_id=int(drop.id);drop_ids[drop_id]=true
-		var matches=game.pickups.filter(func(p):return p.kind=="xp" and p.net_id==drop_id)
-		var pickup={}
-		if matches.is_empty():
-			game.spawn_pickup(vector(drop.position),"xp",float(drop.value),true)
+	# Index the client's orbs once: a search per orb cost 90,000 comparisons a
+	# packet in a 300-orb fight.
+	var drop_ids={};var by_id={}
+	for pickup in game.pickups:
+		if pickup.kind=="xp": by_id[int(pickup.net_id)]=pickup
+	var orbs=message.get("xp_orbs",PackedFloat32Array())
+	if not orbs is PackedFloat32Array: orbs=PackedFloat32Array()
+	for i in range(0,orbs.size()-5,6):
+		var drop_id=int(orbs[i]);drop_ids[drop_id]=true;var at=Vector3(orbs[i+1],orbs[i+2],orbs[i+3])
+		var pickup=by_id.get(drop_id,{})
+		if pickup.is_empty():
+			game.spawn_pickup(at,"xp",orbs[i+4],true)
 			pickup=game.pickups[-1];pickup.net_id=drop_id
-		else: pickup=matches[0]
-		pickup.value=float(drop.value);pickup.target_position=vector(drop.position);pickup.magnet_heap=bool(drop.get("heap",false));game.resize_xp(pickup,true)
+		pickup.value=orbs[i+4];pickup.target_position=at;pickup.magnet_heap=orbs[i+5]>.5;game.resize_xp(pickup,true)
 	for pickup in game.pickups:
 		if pickup.kind=="xp" and not drop_ids.has(pickup.net_id): pickup.age=-1;pickup.node.queue_free()
 	game.pickups=game.pickups.filter(func(p):return p.age>=0)
