@@ -16,5 +16,5 @@
     "agent:build": "node scripts/agent-workflow.mjs build",
     "agent:status": "node scripts/agent-workflow.mjs status"
   },
-  "buildNumber": 19
+  "buildNumber": 20
 }
