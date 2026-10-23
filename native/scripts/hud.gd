@@ -638,11 +638,12 @@ func update(delta: float):
 			label.add_theme_color_override("font_shadow_color",Color(0,0,0,.8))
 			label.add_theme_constant_override("shadow_offset_y",3)
 			label.mouse_filter = Control.MOUSE_FILTER_IGNORE
-			# Emit above the occupied lower HUD, independent of actor/camera position.
+			# Non-weapon numbers start on the XP bar at the bottom edge and rise across
+			# the full screen width, independent of actor/camera position.
 			var screen_size=get_viewport().get_visible_rect().size
 			var label_size=label.get_combined_minimum_size()
-			var band_bottom=screen_size.y-210.0-floorf(float(dn.get("lane",0))/8.0)*56.0
-			var rise=(1.0-life_ratio)*190.0*float(dn.get("fly_speed",1.0))
+			var band_bottom=screen_size.y-12.0-floorf(float(dn.get("lane",0))/8.0)*30.0
+			var rise=(1.0-life_ratio)*260.0*float(dn.get("fly_speed",1.0))
 			label.position=Vector2(clampf(screen_size.x*dn.screen_x-label_size.x*.5,32,screen_size.x-label_size.x-32),band_bottom-label_size.y-rise)
 			# A weapon's own hits rise from its slot icon; all other damage keeps the band above.
 			var slot=weapons.slot_rect(str(dn.get("weapon_id",""))) if not str(dn.get("weapon_id","")).is_empty() else Rect2()

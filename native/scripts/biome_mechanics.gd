@@ -34,7 +34,8 @@ static func clear(g):
 # first 40 s on an island stay clear so arrivals are not ambushed.
 static func schedule(g,delta: float):
 	if g.coop.active and not g.coop.hosting: return
-	if g.realm_time<40.0: return
+	# Reviews switch ambient spawns off with a huge spawn clock; biome events follow it.
+	if g.realm_time<40.0 or g.spawn_clock>=1e8: return
 	var heroes={str(g.coop.local_id):g.player.position}
 	if g.coop.active:
 		for id in g.coop.members:

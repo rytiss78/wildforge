@@ -11,7 +11,7 @@ class_name SkillBook
 # Active casts live in g.skills. A spell from a co-op teammate is visual only.
 const KINDS=["tornado","blackhole","thunderstorm","inferno"]
 const COLORS={"tornado":Color("b8ece0"),"blackhole":Color("a77cff"),"thunderstorm":Color("79c6ff"),"inferno":Color("ff7424")}
-const SOUNDS={"tornado":"dash","blackhole":"gravity","thunderstorm":"lightning","inferno":"nova"}
+const SOUNDS={"tornado":"spell_tornado","blackhole":"spell_blackhole","thunderstorm":"spell_thunderstorm","inferno":"spell_inferno"}
 const MAX_SCALE=4.0
 static var funnel_mesh: CylinderMesh
 static var wall_mesh: CylinderMesh
@@ -52,10 +52,12 @@ static func start(g,kind: String,origin: Vector3,target: Vector3,scale: float,da
 				var entry=spell.duplicate();entry.life=3.6;entry.radius=1.7*scale
 				entry.velocity=heading.rotated(Vector3.UP,twist)*6.5;entry.curl=1.1 if i%2==0 else -1.1
 				entry.node=funnel(g,ground(g,origin+heading.rotated(Vector3.UP,twist)*(2.0+scale)),scale)
+				if i==0: entry.voice=SpellAudio.attach_loop(g,entry.node,"tornado")
 				g.skills.append(entry)
 		"blackhole":
 			var entry=spell.duplicate();entry.life=2.6;entry.radius=4.0*scale
 			entry.node=vortex(g,ground(g,target),entry.radius)
+			entry.voice=SpellAudio.attach_loop(g,entry.node,"blackhole")
 			CombatInk.wave(g,ground(g,target),entry.radius*1.6,COLORS.blackhole)
 			g.skills.append(entry)
 		"thunderstorm":
@@ -99,6 +101,8 @@ static func tick(g,delta: float):
 	var authority=not g.coop.active or g.coop.hosting
 	for spell in g.skills:
 		spell.age+=delta;spell.life-=delta;spell.tick-=delta
+		# Loops fade out over the spell's last half second.
+		if is_instance_valid(spell.get("voice")): spell.voice.volume_db=linear_to_db(maxf(.0001,float(g.sound.settings.sfx)*clampf(spell.life/.5,0,1)))-6.0
 		# Damage ticks four times a second; visuals tick with them for debris.
 		var fresh=spell.tick<=0
 		var hits=fresh and not spell.visual_only
@@ -133,7 +137,7 @@ static func tick(g,delta: float):
 				if spell.life<=0:
 					var burst=CombatInk.star(g,center+Vector3.UP*1.2,spell.radius*2.0,COLORS.blackhole,10.0,.5)
 					if burst!=null: burst.shards(Color("e3d2ff"),12,spell.radius*1.8);burst.lamp(g,COLORS.blackhole,5.0,spell.radius*2.5,Vector3.UP)
-					CombatInk.wave(g,center,spell.radius*1.5,COLORS.blackhole);g.sound.effect("blast",center)
+					CombatInk.wave(g,center,spell.radius*1.5,COLORS.blackhole);g.sound.effect("spell_collapse",center)
 					g.hit_shake=maxf(g.hit_shake,.25)
 					if not spell.visual_only:
 						var blast=spell.radius*1.2*SpellSynergy.collapse_scale(g)
@@ -146,7 +150,7 @@ static func tick(g,delta: float):
 					CombatInk.beam(g,point+Vector3(1.5,22,0),point+Vector3.UP*.3,COLORS.thunderstorm,true,1.8)
 					CombatInk.star(g,point+Vector3.UP*.6,spell.radius*1.3,Color("d8f0ff"),8.0,.26)
 					CombatInk.wave(g,point,spell.radius,COLORS.thunderstorm)
-					if spell.next%3==1: g.sound.effect("lightning",point)
+					if spell.next%3==1: g.sound.effect("spell_strike",point)
 					if not spell.visual_only:
 						for enemy in g.enemies.duplicate():
 							if not enemy.dead and point.distance_to(g.melee_contact(enemy,point))<spell.radius: strike(g,spell,enemy,spell.damage*.6,"lightning")

@@ -81,4 +81,16 @@ static func run(game: Node3D) -> Dictionary:
 	game.hud.close();game.equip_weapon(inferno);game.hud.build_menu(true)
 	checks.synergy_build_menu=game.hud.find_children("*","Label",true,false).any(func(l):return l.text.begins_with("Firestorm · Inferno Halo + Ember"))
 	game.hud.close();game.mode="playing";game.equipped.clear();MutationBook.reset(game);game.clear_entities();game.invulnerable=0.0
+	# Spell sounds: each spell casts its own sound (not a borrowed generic one),
+	# every sound is audible without clipping, and the two loops loop.
+	var audible=true
+	for id in ["spell_tornado","spell_blackhole","spell_collapse","spell_thunderstorm","spell_strike","spell_inferno"]:
+		var audio=SpellAudio.cast(id);var peak=0.0
+		for i in range(0,audio.data.size()/2,7): peak=maxf(peak,absf(audio.data.decode_s16(i*2))/32767.0)
+		audible=audible and audio.data.size()>RATE_BYTES*.3 and peak>.15 and peak<.96
+	checks.spell_sounds_audible=audible
+	checks.spell_sounds_own=SkillBook.KINDS.all(func(kind):return SkillBook.sound(kind)=="spell_"+kind)
+	checks.spell_loops=["tornado","blackhole"].all(func(kind):return SpellAudio.loop(kind).loop_mode==AudioStreamWAV.LOOP_FORWARD and SpellAudio.loop(kind).loop_end>SpellAudio.RATE)
 	return checks
+
+const RATE_BYTES=SpellAudio.RATE*2

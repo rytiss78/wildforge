@@ -60,8 +60,8 @@ static func run(game: Node3D) -> Dictionary:
 	checks.biome_rift=nearer<far-1.0 and pulled.hp<1e6 and game.biome_zones.is_empty()
 	# The scheduler rolls the hero's own biome after the opening 40 s, and says what it is.
 	setup(game);var biome=game.world.biome_at(game.player.position)
-	game.realm_time=60.0;game.biome_clocks[str(game.coop.local_id)]=0.0;game.remove_meta("biome_seen_mechanics")
-	BiomeMechanics.tick(game,1.0/60.0)
+	game.realm_time=60.0;game.spawn_clock=0.0;game.biome_clocks[str(game.coop.local_id)]=0.0;game.remove_meta("biome_seen_mechanics")
+	BiomeMechanics.tick(game,1.0/60.0);game.spawn_clock=1e9
 	checks.biome_scheduled=game.biome_zones.size()==1 and game.biome_zones[0].kind==BiomeMechanics.KINDS[biome].id and game.get_meta("biome_seen_mechanics",{}).has(game.biome_zones[0].kind)
 	# An event for another island is ignored; clearing a realm removes zones; none on the Red Moon.
 	var count=game.biome_zones.size()

@@ -25,12 +25,14 @@ static func run(game):
 	if not (aggregated and regular_hits_shown and bounded and cleared and reused):
 		push_error("Damage feedback burst/reuse contract failed");game.get_tree().quit(1);return
 	game.damage_numbers.clear()
-	# Behind-camera actors must still emit feedback above the lower HUD.
+	# Behind-camera actors still emit feedback. Spec change (user, October 23): non-weapon
+	# numbers start on the XP bar at the bottom edge (was: 200 px above the lower HUD).
 	game.record_damage_number(10001,128,"crit",game.camera.position+game.camera.global_basis.z*20)
 	game.damage_numbers[0].screen_x=.5
 	game.hud.update(0)
 	var start_rect=game.hud.damage_labels[0].get_global_rect()
-	var band_clear=start_rect.end.y<=game.get_viewport().get_visible_rect().size.y-200 and game.hud.damage_labels[0].visible
+	var screen_bottom=game.get_viewport().get_visible_rect().size.y
+	var band_clear=start_rect.end.y>=screen_bottom-60 and start_rect.end.y<=screen_bottom and game.hud.damage_labels[0].visible
 	game.damage_numbers[0].life=.5;game.hud.update(0)
 	var rises=game.hud.damage_labels[0].position.y<start_rect.position.y-50
 	var fades=game.hud.damage_labels[0].modulate.a<1

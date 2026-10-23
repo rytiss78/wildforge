@@ -322,6 +322,7 @@ func effect(id: String,position: Vector3=Vector3.ZERO):
 	var key="effect_"+id
 	if effect_samples.has(id): cache[key]=effect_samples[id]
 	elif weapon_samples.has(id): cache[key]=weapon_samples[id]
+	elif id.begins_with("spell_") and not cache.has(key): cache[key]=SpellAudio.cast(id)
 	if not cache.has(key):
 		var audio=AudioStreamWAV.new();audio.mix_rate=22050;audio.format=AudioStreamWAV.FORMAT_16_BITS
 		var bass=id in ["shotgun","rocket","turret-rocket","land","blast","saw","meteor","bomb","horn"]

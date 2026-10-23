@@ -224,6 +224,37 @@ static func run(g: Node3D):
 			await step(g,60)
 	MutationBook.reset(g)
 	checks.synergy_sheet=sheet(synergies,"synergies")
+	# Deaths: ink dissolve (plain hit, poison) and shatter (frost, crit), each
+	# early and late in the effect; then everything must clean up.
+	var deaths=[];var dissolving=false
+	for enemy in g.enemies:
+		if is_instance_valid(enemy.node): enemy.node.queue_free()
+	g.enemies.clear();g.skills.clear();clear_effects(g);await step(g,20)
+	var victims=[]
+	for i in range(4):
+		g.spawn_enemy(12);var enemy=g.enemies[-1]
+		var p=g.player.position+forward*6.0+side*(float(i)-1.5)*2.6;p.y=g.world.height_at(p.x,p.z)
+		enemy.node.position=p;enemy.speed=0.0;enemy.attack=1e9;enemy.contact=1e9;enemy.damage=0.0;enemy.hp=1e6;enemy.maxHp=1e6;enemy.fire=0.0;enemy.poison=0.0;enemy.freeze=0.0;enemy.status_time=0.0
+		enemy.node.look_at(Vector3(g.player.position.x,p.y,g.player.position.z));victims.append(enemy)
+	await step(g,20)
+	var causes=["hit","poison","ice","crit"]
+	for i in range(4):
+		var victim=victims[i];var cause=causes[i];var spot: Vector3=victim.node.position+Vector3.UP*.8
+		g.kill_enemy(victim,cause)
+		for moment in [8,16]:
+			await step(g,moment)
+			await RenderingServer.frame_post_draw
+			var image=g.get_viewport().get_texture().get_image();var shot_size=Vector2(image.get_size())
+			# The camera projects in viewport units; the captured image may be smaller.
+			var at=g.camera.unproject_position(spot)*shot_size/g.get_viewport().get_visible_rect().size-Vector2(shot_size.x*.14,shot_size.y*.17)
+			at=at.clamp(Vector2.ZERO,shot_size*.72);image=image.get_region(Rect2i(Vector2i(at),Vector2i(shot_size*Vector2(.28,.34))));image.resize(CELL.x,CELL.y,Image.INTERPOLATE_LANCZOS);deaths.append(image)
+			if moment==8:
+				dissolving=dissolving or g.death_fx.any(func(e):return e.kind=="ink" and e.paint!=null and float(e.paint.get_shader_parameter("dissolve"))>0.1)
+				checks["death_"+cause]=g.death_fx.any(func(e):return e.kind==("shard" if cause in ["ice","crit"] else "ink"))
+	checks.death_dissolve_shader=dissolving
+	await step(g,150)
+	checks.death_cleanup=g.death_fx.is_empty()
+	checks.death_sheet=sheet(deaths,"deaths")
 	for weapon in g.equipped:
 		if is_instance_valid(weapon.get("node")): weapon.node.queue_free()
 	g.equipped.clear()

@@ -162,9 +162,30 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
 ## Then: Phase E — look and feel (Hades direction)
 
 - [ ] **Art bible and per-biome pass:** palette, lighting and ink weight per biome. Start from [art-direction.md](native/docs/art-direction.md) and the [Hades study](native/docs/hades-style-research-1.0.0.md).
-- [ ] **Enemy death animations:** ink dissolve or shatter.
+- [x] **Enemy death animations** (`death_fx.gd`, October 23). The killing blow picks the style:
+  - **Ink dissolve** (most kills): the painted enemy shader has a new `dissolve` uniform. The body erodes top-down with a dark ink edge and sinks into a soft round ink blot while wisps rise. The outline pass is dropped so no ghost remains. Bosses take 1.4 s.
+  - **Shatter** (frost, crits, explosions, slams, meteors, or a frozen enemy): the body bursts into tumbling shards in its own colour; frost shards are pale ice.
+  - Visual only, shard count capped, and it follows the Particles setting. Co-op clients use the same path.
+  - **Verified:**
+    - the `fx-deaths` sheet (`2026-10-23T15-57-06-714Z-fx-review`) shows hit, poison, frost and crit kills, early and late, cropped on the victim;
+    - review checks confirm each style, the shader dissolve and full clean-up;
+    - `crowd-review` median 11.7 / p95 15.9 ms (Phase A: 14.0 / 18.5).
+  - **The review needed fixes before it showed anything:**
+    - the victims were still burning from the synergy section;
+    - the crop used viewport units on a smaller image;
+    - the first blot was a hard square;
+    - the first frost shards rendered brown.
+- [x] **Damage numbers at the XP bar** (user report, October 23: "dmage numer still dont rise from the exp bar"). Non-gun numbers started 210 px above the bottom; they now start on the XP bar at the bottom edge and rise 260 px, across the full width. Gun numbers still rise from their weapon's slot. The combat-review contract changed with it (start within the bottom 60 px; the spec change is noted in the test). Verified in `2026-10-23T16-01-21-533Z-capture-ui` (`ui-damage-text`) and `16-01-36-427Z-combat-review`.
+- [x] **Biome events stay out of reviews:** automated reviews switch ambient spawns off with a huge spawn clock, and biome events now follow it. A clover ring had appeared in an effects capture.
 - [ ] **Better hero and creature models**, made in-house. Earlier procedural and Blender metaball rebuilds read as blobs and were rejected. Pilot one hero and one creature with a slower, hand-directed Blender pipeline (blocked silhouette, subdivision, painted texture, ink outline). Compare them side by side with the current models before any wider rollout.
-- [ ] **Spell sounds:** their own casts and loops for the four spells.
+- [x] **Spell sounds** (`spell_audio.gd`, October 23). Synthesized, no samples. Each spell has its own cast:
+  - Twister Totem: a rising whoosh.
+  - Void Orb: descending suction, plus a boom on collapse.
+  - Storm Crown: a thunder crack and rolling rumble, plus a crack per strike.
+  - Inferno Halo: a fire whoomp with roar and crackle.
+  - Twisters and orbs carry seamless 3D loops (wind; a deep hum) that fade with the spell.
+  - Before this, the spells borrowed the dash, gravity, lightning and nova sounds.
+  - **Verified:** integration checks confirm each spell uses its own sound, every sound peaks between 0.15 and 0.96 (audible, unclipped) and both loops loop (`2026-10-23T16-02-24-064Z-integration`); fx-review casts all spells with 0 errors. Not yet heard by a person.
 - [ ] **Camera zoom** when spells or crowds fill the screen.
 - [ ] **Telegraph consistency:** one warning language (shape, colour, timing) for every enemy attack.
 

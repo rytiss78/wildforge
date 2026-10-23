@@ -86,6 +86,7 @@ var harvest_buffs={}
 var pools = []
 var skills = [] # active SkillBook casts
 var biome_zones = [] # BiomeMechanics events near heroes
+var death_fx = [] # DeathFx dissolves, shards and ink blots
 var biome_clocks = {}
 var effects = []
 var melee_attacks = []
@@ -387,7 +388,7 @@ func select_hero(item: Dictionary):
 
 func clear_entities():
 	coop.clear_flower_visuals();flower_serial=0
-	BiomeMechanics.clear(self)
+	BiomeMechanics.clear(self);DeathFx.clear(self)
 	damage_feedback_time=0;last_damage_taken=0
 	eclipse_run_velocity=Vector3.ZERO;pickup_merge_clock=0;enemy_step=0;crowd.clear();damage_numbers.clear()
 	melee_attacks.clear()
@@ -1637,10 +1638,7 @@ func kill_enemy(enemy: Dictionary, cause: String):
 	var landing=enemy.node.position
 	var ground_y=world.height_at(landing.x,landing.z)
 	if landing.y>ground_y+maxf(1.2,float(enemy.get("height",1.7))*.45): landing.y=ground_y+.2
-	var death=create_tween()
-	death.tween_property(enemy.node,"position",landing,.34).set_trans(Tween.TRANS_QUAD).set_ease(Tween.EASE_IN)
-	death.parallel().tween_property(enemy.node,"scale",Vector3(.9,.08,.9),.34)
-	death.tween_callback(enemy.node.queue_free)
+	DeathFx.start(self,enemy,cause,landing)
 
 func damage_area(origin: Vector3,radius: float,damage: float,cause: String,excluded: Dictionary = {},source: String=""):
 	for enemy in enemies.duplicate():
@@ -2115,6 +2113,7 @@ func update_combat(delta: float):
 	var skills_start=Time.get_ticks_usec() if profile_crowd else 0
 	SkillBook.tick(self,delta)
 	BiomeMechanics.tick(self,delta)
+	DeathFx.tick(self,delta)
 	if profile_crowd:
 		if not crowd_sections.has("skills"): crowd_sections.skills=[]
 		crowd_sections.skills.append((Time.get_ticks_usec()-skills_start)/1000.0)
