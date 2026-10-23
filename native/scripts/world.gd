@@ -5,7 +5,17 @@ const EXTENT=400.0
 const SPAWN_EXTENT=EXTENT-30.0
 const DANGER_EXTENT=EXTENT-25.0
 const CHUNK=64.0
-const NAMES=["Sunlit Frontier","Wild Highlands","Skyward Reach","The Red Moon"]
+const NAMES=["Sunlit Frontier","Blighted Highlands","Ashen Reach","The Red Moon"]
+# Each island looks harsher than the last: a different coastline, a darker sky
+# tint, corrupted ground with glowing veins, and its own drifting air.
+#   shape: coastline 4-lobe / 6-lobe amplitude and radius shift (also in the
+#   terrain and sea shaders); mix: how strongly the island tint overrides biome skies.
+const GRADE=[
+	{"shape":Vector3.ZERO,"mix":0.0,"corruption":0.0},
+	{"shape":Vector3(18,0,-12),"mix":.5,"corruption":.55,"top":Color("2b1642"),"horizon":Color("9a5a86"),"ambient":Color("d8b4ef"),"ambient_energy":.31,"sun":Color("ffb487"),"sun_energy":1.05,"vein":Color("c34dff"),"tint":Color("7a5a96"),"scenery":Vector3(.84,.72,.98),"air":Color("e7a0ff"),"air_rises":true,"title":"The Blight spreads · enemies are tougher"},
+	{"shape":Vector3(8,22,-22),"mix":.68,"corruption":1.0,"top":Color("240806"),"horizon":Color("b2401f"),"ambient":Color("f3a888"),"ambient_energy":.27,"sun":Color("ff7448"),"sun_energy":.95,"vein":Color("ff5a14"),"tint":Color("4e3a34"),"scenery":Vector3(.7,.56,.5),"air":Color("b9aea6"),"air_rises":false,"title":"Ash and fire · the hardest island"},
+	{"shape":Vector3.ZERO,"mix":0.0,"corruption":0.0},
+]
 const BIOMES=["Clover Woods","Puffcap Marsh","Moon Craters","Cloudwilds","Candy Hell","Starfall Space"]
 const CREATURES=["acorn","toad","crab","penguin","lizard","beetle"]
 const COLORS=[Color("326849"),Color("91b3ab"),Color("b4c5df"),Color("d9eaed"),Color("e69479"),Color("ab96c5")]
@@ -42,6 +52,7 @@ var border_patches=[]
 var low_mist=[]
 var edge_near=false
 var eclipse=false
+var island_air: GPUParticles3D
 static var prop_meshes={}
 const SKY_TOP=[Color("111a2b"),Color("151b28"),Color("18234d"),Color("254459"),Color("301824"),Color("16132d")]
 const SKY_HORIZON=[Color("293b48"),Color("405149"),Color("536683"),Color("8aa8a8"),Color("944436"),Color("534577")]
@@ -49,7 +60,8 @@ const SKY_HORIZON=[Color("293b48"),Color("405149"),Color("536683"),Color("8aa8a8
 static func coast_radius(angle: float,world_seed: int,world_realm: int) -> float:
 	if world_realm==3: return 72.0
 	var phase=float(world_seed%23)*.03+world_realm*.4
-	return 344+24*sin(3*(angle+phase))+14*sin(5*(angle-phase))+8*cos(7*(angle+phase*.5))
+	var shape: Vector3=GRADE[world_realm].shape
+	return 344+24*sin(3*(angle+phase))+14*sin(5*(angle-phase))+8*cos(7*(angle+phase*.5))+shape.x*sin(4*(angle-phase*1.3))+shape.y*sin(6*(angle+phase))+shape.z
 
 func shore_radius(p: Vector3) -> float:
 	return coast_radius(atan2(p.z,p.x),seed_value,realm)
@@ -85,12 +97,17 @@ func weather_tick(delta: float,p: Vector3):
 		var site=p+Vector3(-14 if i==0 else 14,0,-12)
 		mist.position=Vector3(site.x,height_at(site.x,site.z)+.18,site.z)
 	sky_top=sky_top.lerp(Color("21192f") if eclipse else SKY_TOP[biome],1-exp(-delta*.6));sky_horizon=sky_horizon.lerp(Color("77556c") if eclipse else SKY_HORIZON[biome],1-exp(-delta*.6))
+	var grade: Dictionary=GRADE[realm]
+	if grade.mix>0 and not eclipse: sky_top=sky_top.lerp(grade.top,grade.mix*(1-exp(-delta*.6))*4.0);sky_horizon=sky_horizon.lerp(grade.horizon,grade.mix*(1-exp(-delta*.6))*4.0)
 	sky_paint.set_shader_parameter("top_color",sky_top);sky_paint.set_shader_parameter("horizon_color",sky_horizon)
 	for pair in [["moon_strength",biome==2],["space_strength",biome==5],["fire_strength",biome==4]]:
 		var parameter=sky_paint.get_shader_parameter(pair[0]);var previous=float(parameter) if parameter!=null else 0.0;sky_paint.set_shader_parameter(pair[0],lerpf(previous,1.0 if pair[1] else 0.0,1-exp(-delta*.6)))
 	environment.fog_light_color=sky_horizon
-	environment.ambient_light_color=Color("a4b8ed") if biome==0 else Color("e6efff")
-	environment.ambient_light_energy=.28 if biome==0 else .36
+	environment.ambient_light_color=grade.ambient if grade.has("ambient") else Color("a4b8ed") if biome==0 else Color("e6efff")
+	environment.ambient_light_energy=float(grade.ambient_energy) if grade.has("ambient_energy") else .28 if biome==0 else .36
+	if is_instance_valid(island_air):
+		island_air.position=p+Vector3.UP*6
+		if island_air.has_meta("embers"): island_air.get_meta("embers").position=p+Vector3.DOWN*1.0
 	environment.fog_depth_begin=lerpf(environment.fog_depth_begin,35.0 if biome in [1,3] else 45.0,1-exp(-delta*.6))
 	environment.fog_depth_end=lerpf(environment.fog_depth_end,140.0 if biome in [1,3] else 165.0,1-exp(-delta*.6))
 	edge_near=false
@@ -203,8 +220,12 @@ func make_material():
 	var shader=load("res://shaders/terrain.gdshader")
 	terrain_material=ShaderMaterial.new();terrain_material.shader=shader;terrain_material.set_shader_parameter("phase",float(seed_value%23)*.03+realm*.4)
 	terrain_material.set_shader_parameter("red_moon",realm==3)
+	var grade: Dictionary=GRADE[realm]
+	terrain_material.set_shader_parameter("shape",grade.shape);terrain_material.set_shader_parameter("corruption",grade.corruption)
+	if grade.has("vein"): terrain_material.set_shader_parameter("vein_color",grade.vein);terrain_material.set_shader_parameter("blight_tint",grade.tint)
 	for i in range(6): terrain_material.set_shader_parameter("t"+str(i),load("res://assets/illustrated/forge-basalt-moss.png" if i==0 else "res://assets/illustrated/terrain-moss-v2.png" if i==1 else "res://assets/illustrated/terrain-stone-v2.png"))
 	scenery_material=PaintedBatch.material()
+	if GRADE[realm].has("scenery"): scenery_material.set_shader_parameter("tint",GRADE[realm].scenery)
 	scenery_material.set_shader_parameter("fade_near",true)
 	scenery_material.next_pass.set_shader_parameter("fade_near",true)
 
@@ -347,7 +368,7 @@ func ensure_ground(p: Vector3):
 func make_boundaries():
 	var ocean=MeshInstance3D.new();ocean.name="DeadlySea"
 	var sea_plane=PlaneMesh.new();sea_plane.size=Vector2(2800,2800);ocean.mesh=sea_plane
-	var water=ShaderMaterial.new();water.shader=load("res://shaders/deadly_sea.gdshader");water.set_shader_parameter("red_moon",realm==3);water.set_shader_parameter("phase",float(seed_value%23)*.03+realm*.4);ocean.material_override=water;add_child(ocean)
+	var water=ShaderMaterial.new();water.shader=load("res://shaders/deadly_sea.gdshader");water.set_shader_parameter("red_moon",realm==3);water.set_shader_parameter("phase",float(seed_value%23)*.03+realm*.4);water.set_shader_parameter("shape",GRADE[realm].shape);ocean.material_override=water;add_child(ocean)
 	for side in [-1,1]:
 		for axis in [0,2]:
 			var mesh=BoxMesh.new();mesh.size=Vector3(16,100,EXTENT*2+24) if axis==0 else Vector3(EXTENT*2+24,100,16)
@@ -376,6 +397,9 @@ func make_environment():
 	var particles=ParticleProcessMaterial.new();particles.emission_shape=ParticleProcessMaterial.EMISSION_SHAPE_BOX;particles.emission_box_extents=Vector3(14,4,14);particles.direction=Vector3.DOWN;particles.spread=35;weather.process_material=particles
 	make_low_mist()
 	var sun=DirectionalLight3D.new();sun.rotation_degrees=Vector3(-42,-35,0);sun.light_energy=1.2;sun.light_color=Color("ffe0ad");sun.shadow_enabled=true;sun.directional_shadow_max_distance=38;add_child(sun)
+	var grade: Dictionary=GRADE[realm]
+	if grade.has("sun"): sun.light_color=grade.sun;sun.light_energy=float(grade.sun_energy);sun.rotation_degrees.x=-30.0 if realm==1 else -24.0
+	if grade.has("air"): make_island_air(grade)
 	for i in range(16):
 		var cloud=Node3D.new();cloud.position=Vector3(cos(i*TAU/16)*370,60+sin(i)*15,sin(i*TAU/16)*370);add_child(cloud);clouds.append(cloud)
 		for j in range(3): ToonArt.ball(cloud,Color("fff2de"),Vector3(j*6,0,0),Vector3(20,9,12))
@@ -383,6 +407,35 @@ func make_environment():
 	for i in range(180): constellation.set_instance_transform(i,Transform3D(Basis.IDENTITY,Vector3(cos(i*2.4)*390,80+rng.randf()*180,sin(i*2.4)*390)))
 	stars.multimesh=constellation;var starlight=StandardMaterial3D.new();starlight.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED;starlight.albedo_color=Color("fff1c8");stars.material_override=starlight;add_child(stars)
 	moon=MeshInstance3D.new();var sphere=SphereMesh.new();sphere.radius=24;sphere.height=48;moon.mesh=sphere;moon.position=Vector3(220,110,-280);var paint=StandardMaterial3D.new();paint.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED;paint.albedo_texture=load("res://assets/illustrated/terrain-2.png");moon.material_override=paint;add_child(moon)
+
+# Drifting air of the later islands around the hero: rising blight motes on the
+# second, falling ash with a few embers on the third.
+func make_island_air(grade: Dictionary):
+	island_air=GPUParticles3D.new();island_air.amount=160;island_air.lifetime=5.0;island_air.local_coords=false
+	island_air.visibility_aabb=AABB(Vector3(-40,-20,-40),Vector3(80,50,80))
+	var process=ParticleProcessMaterial.new();process.emission_shape=ParticleProcessMaterial.EMISSION_SHAPE_BOX;process.emission_box_extents=Vector3(26,7,26)
+	process.direction=Vector3.UP if grade.air_rises else Vector3.DOWN;process.spread=25.0
+	process.initial_velocity_min=.4;process.initial_velocity_max=1.4
+	process.gravity=Vector3(.6,.5,.2) if grade.air_rises else Vector3(.9,-1.2,.3)
+	process.scale_min=.6;process.scale_max=1.4
+	var ramp=Gradient.new();ramp.offsets=PackedFloat32Array([0,.2,.8,1])
+	var air: Color=grade.air;ramp.colors=PackedColorArray([Color(air,0),Color(air,.9),Color(air,.7),Color(air,0)])
+	var ramp_texture=GradientTexture1D.new();ramp_texture.gradient=ramp;process.color_ramp=ramp_texture
+	island_air.process_material=process
+	var mote=QuadMesh.new();mote.size=Vector2(.12,.12) if grade.air_rises else Vector2(.16,.1)
+	var paint=StandardMaterial3D.new();paint.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED;paint.vertex_color_use_as_albedo=true
+	paint.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA;paint.billboard_mode=BaseMaterial3D.BILLBOARD_PARTICLES
+	paint.emission_enabled=grade.air_rises;paint.emission=air
+	mote.material=paint;island_air.draw_pass_1=mote;island_air.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	add_child(island_air);island_air.emitting=true
+	if not grade.air_rises:
+		# A few rising embers among the ash.
+		var embers=island_air.duplicate();embers.amount=40;add_child(embers)
+		var hot: ParticleProcessMaterial=process.duplicate();hot.direction=Vector3.UP;hot.gravity=Vector3(.4,1.2,0)
+		var hot_ramp=Gradient.new();hot_ramp.offsets=PackedFloat32Array([0,.2,1]);hot_ramp.colors=PackedColorArray([Color(1,.6,.2,0),Color(1,.55,.15,1),Color(1,.2,.05,0)])
+		var hot_texture=GradientTexture1D.new();hot_texture.gradient=hot_ramp;hot.color_ramp=hot_texture;embers.process_material=hot
+		var spark=QuadMesh.new();spark.size=Vector2(.09,.09);var spark_paint=paint.duplicate();spark_paint.emission_enabled=true;spark_paint.emission=Color("ff8a3a");spark.material=spark_paint;embers.draw_pass_1=spark
+		island_air.set_meta("embers",embers)
 
 func make_landmarks():
 	if realm==3:

@@ -7,12 +7,12 @@ var party_seen={}
 
 # Transport-independent authoritative world. Important events are reliable;
 # poses/snapshots use unreliable ordered delivery. Never deserialize objects.
-const PROTOCOL="wildforge-shared-world-11"
+const PROTOCOL="wildforge-shared-world-12"
 # World snapshots carry each enemy as ACTOR_STRIDE floats: id, position(3), hp,
-# maxHp, surface up(3), surface forward(3), ACTOR_STATUS(7), corruption. Static
+# maxHp, surface up(3), surface forward(3), ACTOR_STATUS(8), corruption. Static
 # identity (species, size, boss/elite flags) is sent once via actors_info.
-const ACTOR_STRIDE=20
-const ACTOR_STATUS=["fire","poison","freeze","blind","slip_until","windup","contact_windup"]
+const ACTOR_STRIDE=21
+const ACTOR_STATUS=["fire","poison","freeze","blind","slip_until","windup","contact_windup","elite_shield"]
 const PORT=29736
 const DISCOVERY_PORT=29737
 # Internet hosting: the router opens PORT through UPnP on a worker thread and
@@ -499,7 +499,7 @@ func pose() -> Dictionary:
 
 # Everything a client needs to construct a replica of a host enemy.
 func actor_descriptor(enemy: Dictionary) -> Dictionary:
-	return {"id":enemy.net_id,"position":array(enemy.node.position),"biome":enemy.biome,"species":enemy.species,"height":enemy.height,"radius":enemy.radius,"hp":enemy.hp,"maxHp":enemy.maxHp,"xp_reward":enemy.xp_reward,"boss":enemy.boss,"boss_id":enemy.get("boss_id",-1),"guardian":enemy.get("guardian",false),"magnet_guard":enemy.get("magnet_guard",false),"title":enemy.get("title",""),"elite":enemy.elite,"corruption":enemy.get("corruption",0),"surface_up":array(enemy.node.basis.y),"surface_forward":array(-enemy.node.basis.z),"fire":enemy.fire,"poison":enemy.poison,"freeze":enemy.freeze,"blind":enemy.blind,"slip_until":enemy.get("slip_until",0),"windup":enemy.get("windup",0),"contact_windup":enemy.get("contact_windup",0)}
+	return {"id":enemy.net_id,"position":array(enemy.node.position),"biome":enemy.biome,"species":enemy.species,"height":enemy.height,"radius":enemy.radius,"hp":enemy.hp,"maxHp":enemy.maxHp,"xp_reward":enemy.xp_reward,"boss":enemy.boss,"boss_id":enemy.get("boss_id",-1),"guardian":enemy.get("guardian",false),"magnet_guard":enemy.get("magnet_guard",false),"title":enemy.get("title",""),"modifier":enemy.get("modifier",""),"elite":enemy.elite,"corruption":enemy.get("corruption",0),"surface_up":array(enemy.node.basis.y),"surface_forward":array(-enemy.node.basis.z),"fire":enemy.fire,"poison":enemy.poison,"freeze":enemy.freeze,"blind":enemy.blind,"slip_until":enemy.get("slip_until",0),"windup":enemy.get("windup",0),"contact_windup":enemy.get("contact_windup",0)}
 
 func request_actors(ids: Array):
 	var now=Time.get_ticks_msec()
@@ -525,7 +525,7 @@ func snapshot() -> Dictionary:
 	for enemy in game.enemies:
 		if enemy.dead: continue
 		var p=enemy.node.position;var up=enemy.node.basis.y;var forward=-enemy.node.basis.z
-		actors.append_array(PackedFloat32Array([enemy.net_id,p.x,p.y,p.z,enemy.hp,enemy.maxHp,up.x,up.y,up.z,forward.x,forward.y,forward.z,enemy.fire,enemy.poison,enemy.freeze,enemy.blind,enemy.get("slip_until",0),enemy.get("windup",0),enemy.get("contact_windup",0),enemy.get("corruption",0)]))
+		actors.append_array(PackedFloat32Array([enemy.net_id,p.x,p.y,p.z,enemy.hp,enemy.maxHp,up.x,up.y,up.z,forward.x,forward.y,forward.z,enemy.fire,enemy.poison,enemy.freeze,enemy.blind,enemy.get("slip_until",0),enemy.get("windup",0),enemy.get("contact_windup",0),enemy.get("elite_shield",0),enemy.get("corruption",0)]))
 	snapshot_seq+=1
 	var poses={}
 	for id in members:
@@ -942,9 +942,10 @@ func apply_world(message: Dictionary):
 			found=game.spawn_network_enemy(actor_info[id]);actor_info.erase(id);known[id]=found
 		if found.is_empty() or found.dead: continue
 		EnemySurface.replicate(found,Vector3(packed[base+6],packed[base+7],packed[base+8]),Vector3(packed[base+9],packed[base+10],packed[base+11]))
-		EclipseCorruption.apply(found,int(packed[base+19]))
+		EclipseCorruption.apply(found,int(packed[base+12+ACTOR_STATUS.size()]))
 		found.hp=packed[base+4];found.maxHp=packed[base+5];found.target_position=Vector3(packed[base+1],packed[base+2],packed[base+3])
 		for i in range(ACTOR_STATUS.size()): found[ACTOR_STATUS[i]]=packed[base+12+i]
+		EliteMods.replicate(found)
 	request_actors(missing)
 	for enemy in game.enemies:
 		if not ids.has(enemy.net_id) and not enemy.dead: enemy.dead=true;enemy.node.queue_free()

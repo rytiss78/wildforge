@@ -138,6 +138,10 @@ static func run(g: Node3D):
 	for kind in ["crossfire","overload"]:
 		clear_effects(g);await step(g,20)
 		PartyCombo.visual(g,kind,g.enemies[1].node.position);await step(g,4);skills.append(await frame(g))
+	# Elite modifier badges (and the shield bubble) on four of the dummies.
+	clear_effects(g)
+	for i in range(EliteMods.ORDER.size()): EliteMods.assign(g,g.enemies[i],EliteMods.ORDER[i])
+	await step(g,10);skills.append(await frame(g))
 	# Spells (SkillBook): each cast through the real fire path at rank 1 and rank 9,
 	# into a 24-enemy crowd around the hero, plus the Void Orb's collapse at rank 9.
 	var spells=[]
@@ -178,5 +182,5 @@ static func run(g: Node3D):
 	checks.spells_expired=g.skills.is_empty()
 	checks.effects_expired=not g.effects.any(func(e):return e.get("ink_fx",false))
 	checks.sheets=sheet(flights,"flight") and sheet(impacts,"impact") and sheet(statuses,"status") and sheet(skills,"skills") and sheet(spells,"spells")
-	var result={"checks":checks,"kinds":KINDS,"spell_cells":["tornado r1","tornado r9","blackhole r1","blackhole r9","blackhole r9 collapse","thunderstorm r1","thunderstorm r9","inferno r1","inferno r9"],"skill_cells":MutationBook.STRAIN_ORDER+["slam","hero hit","hero hit on shield","co-op crossfire","co-op overload"],"status_cells":["statuses","statuses later","ember burst","burning","poison burst","poisoned","burning deaths","after deaths"]}
+	var result={"checks":checks,"kinds":KINDS,"spell_cells":["tornado r1","tornado r9","blackhole r1","blackhole r9","blackhole r9 collapse","thunderstorm r1","thunderstorm r9","inferno r1","inferno r9"],"skill_cells":MutationBook.STRAIN_ORDER+["slam","hero hit","hero hit on shield","co-op crossfire","co-op overload","elite badges"],"status_cells":["statuses","statuses later","ember burst","burning","poison burst","poisoned","burning deaths","after deaths"]}
 	print("FX_REVIEW "+JSON.stringify(result));g.get_tree().quit(0 if not checks.values().has(false) else 1)

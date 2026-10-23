@@ -87,7 +87,7 @@ export function assertCommittedBuild(cwd) {
 }
 
 async function main(action) {
-  if (!['balance-review', 'mutation-balance', 'shared-review', 'shared-review-stress', 'coop-dropin', 'hermes-review', 'playfeel-review', 'red-moon-review', 'fresh-import', 'biome-review', 'release-review', 'roster-review', 'bake-roster', 'style-review', 'fx-review', 'boss-review', 'forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'crowd-spells', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
+  if (!['balance-review', 'mutation-balance', 'shared-review', 'shared-review-stress', 'coop-dropin', 'bot-playtest', 'island-review', 'hermes-review', 'playfeel-review', 'red-moon-review', 'fresh-import', 'biome-review', 'release-review', 'roster-review', 'bake-roster', 'style-review', 'fx-review', 'boss-review', 'forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'crowd-spells', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
     console.error('Usage: node scripts/agent-workflow.mjs check|smoke|capture|capture-ui|combat-review|pace-review|soak|integration|build|status'); return 2;
   }
   const git = (...args) => spawnSync('git', ['-C', root, ...args], {encoding:'utf8', windowsHide:true}).stdout?.trim() ?? '';
@@ -326,6 +326,31 @@ async function main(action) {
         return parsed;
       });
       const results=await Promise.allSettled(runs);report.shared=results.filter(r=>r.status==='fulfilled').map(r=>r.value);
+      const failed=results.filter(r=>r.status==='rejected');if(failed.length)throw new Error(failed.map(r=>r.reason.message).join('\n'));
+    }
+    if (action === 'island-review') {
+      const output=await step('island-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--island-review'],240000);
+      const line=output.split(/\r?\n/).findLast(x=>x.startsWith('ISLAND_REVIEW '));
+      if(!line) throw new Error('Missing island review');report.islands=JSON.parse(line.slice(14));
+      if(Object.values(report.islands.checks).some(v=>v===false)) throw new Error('Island review assertions failed');
+      report.capture=assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','island-sheet.png'),started);
+    }
+    if (action === 'bot-playtest') {
+      // Full-run bots in parallel, each in its own profile. BOT_RUNS="hero:style:seed,..."
+      const specs=(process.env.BOT_RUNS||'duck:balanced:101,grandma:offense:102,broccoli:defense:103,wrench:balanced:104,florist:balanced:105,ninja:offense:106').split(',').map(x=>x.split(':'));
+      const minutes=process.env.BOT_MINUTES||'40';
+      const runs=specs.map(async([hero,style,seed])=>{
+        const profile=join(runDir,hero+'-'+seed);mkdirSync(profile,{recursive:true});
+        const result=await runStep(godot,['--headless','--path',join(root,'native'),'--','--run-bot','--bot-hero='+hero,'--bot-style='+style,'--bot-seed='+seed,'--bot-minutes='+minutes],{cwd:root,env:{...env,APPDATA:profile},timeoutMs:2400000,logPath:join(runDir,hero+'-'+seed+'.log')});
+        const {output,...record}=result;report.steps.push(record);
+        const line=output.split(/\r?\n/).findLast(x=>x.startsWith('RUN_BOT '));
+        if(!line || /SCRIPT ERROR/.test(output)) throw new Error(hero+' bot failed: '+output.slice(-2000));
+        return JSON.parse(line.slice(8));
+      });
+      const results=await Promise.allSettled(runs);
+      report.bots=results.filter(r=>r.status==='fulfilled').map(r=>r.value);
+      const n=report.bots.length||1;
+      report.summary={runs:report.bots.length,cleared_first_realm:report.bots.filter(b=>b.reached_realm>=1).length/n,reached_baron:report.bots.filter(b=>b.reached_realm>=3).length/n,baron_defeated:report.bots.filter(b=>b.baron_defeated).length/n,median_minutes:report.bots.map(b=>b.minutes).sort((a,b)=>a-b)[Math.floor(report.bots.length/2)]||0};
       const failed=results.filter(r=>r.status==='rejected');if(failed.length)throw new Error(failed.map(r=>r.reason.message).join('\n'));
     }
     if (action === 'coop-dropin') {

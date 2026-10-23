@@ -36,9 +36,20 @@ The user picked these from a list of 30 suggestions, plus internet co-op without
 - Fixed along the way: the full `coop` route test now passes (`2026-10-22T21-35-12-347Z-coop`). The long-open client failure `lobby_hero_ready_synced` was the test comparing the roster's hero display name with the hero id. The host's `realm_received` is always false by design, since only clients receive realm messages. Separation now scales with enemy speed only, so stationary enemies stay put.
 
 ### Phase C — difficulty ("the game must be hard")
-- [ ] **11 · Automated full-run playtests.** A bot plays complete runs with several builds and records realm reached, deaths, time-to-kill and the Baron fight. Proposed target for a competent bot: clears the first realm about 70% of the time, reaches the Baron about 25%, wins about 10%. Tune until met.
-- [ ] **14 · Wave pacing.** Crowd density that rewards area builds while single-target builds stay viable, judged by the bot runs.
-- [ ] **4 · Elite modifiers.** Shielded, splitting, teleporting and berserk elites with a clear badge; co-op synced.
+- [x] **11 · Automated full-run playtests.** `run_bot.gd` plays complete runs headless at about 4x real time through the real inputs, dash, interact and offer choices. It kites crowds and attack warnings, collects XP and gold, opens chests, follows the portal objective through all three islands, fights the Baron and tends turrets. The `bot-playtest` action runs 6–12 heroes and styles in parallel and reports clear, reach and win rates, a timeline, death details and the last hits (what blocked the hero, nearest enemy and warning).
+  - The bot is a "competent, not expert" measuring stick. A planner variant that scored 16 directions was too cautious (never collected XP) and was dropped; reactive steering plays most like a person.
+  - Findings that changed the game: (1) live crowds body-blocked a walking hero, with 3 of 8 bots killed in the first minute. **Dashing now passes through enemies**, never walls, and first-minute deaths fell to 0 of 8. (2) The first swarm wave went from about 10 to 105 enemies in 20 s at level 10. (3) The opening minute already put about 35 enemies, including elites, on a hero with one gun. (4) The Eclipse's flat 2.5x contact damage killed most first-island runs right after 10:00.
+  - Difficulty target: about 70% clear the first island, about 25% reach the Baron, about 10% beat him. Final 12-run batch (`2026-10-23T09-40-56-088Z-bot-playtest`): 58%, 17% and 8%, deliberately on the hard side as the user asked. The batch before, one step easier, gave 92%, 42% and 25%. With 12 runs the noise is about ±14%.
+- [x] **14 · Wave pacing.** The first wave holds up to 70 enemies (+40 per island) and the second 120 (+50), instead of 180 (+60). Wave spawns add 2 instead of 3. Each island's first 90 s spawn one fewer enemy per wave. The Eclipse multiplies contact damage by 1.5x, 2x and 2.5x on islands 1, 2 and 3 (was 2.5x everywhere). Island difficulty is 1.08 + 0.3 per island (was 1.0 + 0.25).
+- [x] **4 · Elite modifiers** (`elite_mods.gd`). Each elite carries one modifier with a coloured badge:
+  - Shielded: a bubble absorbs 60% of its health and regrows after 4 s.
+  - Splitting: leaves two smaller enemies when it dies.
+  - Blinking: reappears behind the hero after a warning puff.
+  - Berserk: below half health, 60% faster and 50% harder-hitting.
+
+  Elites are absent in the first island's opening 90 s, then appear 4% of the time, rising to 8%. Co-op: the modifier travels with the actor and the shield level in the snapshot (stride 21, protocol 12). Verified by integration checks for each modifier and a rendered badge cell in `fx-skills`.
+- [x] **Islands look different and harder** (user request, October 23). Island 2 is now "Blighted Highlands" and island 3 "Ashen Reach". Each has its own coastline shape (gameplay, terrain and sea shaders agree), sky and fog tint, sun and ambient light, ground corruption with thin glowing cracks (violet, then molten), a scenery tint, and drifting air (rising blight motes; falling ash with embers). Arriving shows "ISLAND n · NAME", a mood line and how much tougher enemies are. Verified on the new rendered `island-review` sheet (`2026-10-23T09-55-54-751Z-island-review`). The first, thick vein version looked like neon roads and was thinned.
+- Validation: check, smoke, integration, combat, biome, shared, drop-in, effects and the full `coop` route pass (`2026-10-23T09-58-37-336Z-coop`).
 
 ### Phase D — run depth
 - [ ] **1 · Weapon evolutions.** A max-rank weapon plus a matching card evolves it into a stronger form with its own look.

@@ -2,11 +2,13 @@ shader_type spatial;
 render_mode unshaded,cull_disabled;
 uniform bool red_moon=false;
 uniform float phase=0.0;
+// Per-island coastline terms (RealmWorld.GRADE): 4-lobe, 6-lobe, radius shift.
+uniform vec3 shape=vec3(0.0);
 varying vec3 p;
 void vertex(){p=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz;}
 void fragment(){
  float a=atan(p.z,p.x);
- float coast=344.0+24.0*sin(3.0*(a+phase))+14.0*sin(5.0*(a-phase))+8.0*cos(7.0*(a+phase*.5));
+ float coast=344.0+24.0*sin(3.0*(a+phase))+14.0*sin(5.0*(a-phase))+8.0*cos(7.0*(a+phase*.5))+shape.x*sin(4.0*(a-phase*1.3))+shape.y*sin(6.0*(a+phase))+shape.z;
  if(red_moon) coast=72.0;
  float shore_distance=length(p.xz)-coast;
  if(shore_distance< -4.0) discard;

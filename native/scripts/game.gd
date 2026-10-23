@@ -284,6 +284,8 @@ func _ready():
 	)
 	if OS.get_cmdline_user_args().has("--shared-review-host") or OS.get_cmdline_user_args().has("--shared-review-client"): preload("res://scripts/shared_review.gd").run.call_deferred(self,OS.get_cmdline_user_args().has("--shared-review-host"))
 	elif OS.get_cmdline_user_args().has("--dropin-review-host") or OS.get_cmdline_user_args().has("--dropin-review-client"): preload("res://scripts/dropin_review.gd").run.call_deferred(self,OS.get_cmdline_user_args().has("--dropin-review-host"))
+	elif OS.get_cmdline_user_args().has("--run-bot"): preload("res://scripts/run_bot.gd").run.call_deferred(self)
+	elif OS.get_cmdline_user_args().has("--island-review"): preload("res://scripts/island_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--balance-review"): preload("res://scripts/balance_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--mutation-balance"): preload("res://scripts/mutation_balance.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--hermes-review"): preload("res://scripts/hermes_review.gd").run.call_deferred(self)
@@ -486,7 +488,10 @@ func enter_realm(index: int,broadcast_transition: bool=true):
 	nova_clock = 6
 	yaw = 0
 	pitch = 0.3
-	realm_difficulty = 1.0 + realm * 0.25
+	# Enemy health and damage per island, tuned with full-run bot playtests
+	# (bot-playtest) toward: ~70% clear the first island, ~25% reach the Baron,
+	# ~10% beat him.
+	realm_difficulty = 1.08 + realm * 0.3
 	world.build(realm,seed_value)
 	player.position = Vector3(0,1.2,0)
 	player.velocity = Vector3.ZERO
@@ -509,6 +514,10 @@ func enter_realm(index: int,broadcast_transition: bool=true):
 		for i in range(9+realm): spawn_enemy(11.0+randf()*5.0)
 	else: preload("res://scripts/final_arena.gd").setup(self)
 	hud.tell("THE RED MOON" if realm==3 else "%d / 3  ·  %s" % [realm+1,RealmWorld.NAMES[realm]],4)
+	if realm in [1,2]:
+		# Later islands announce themselves and how much harder they are.
+		var tougher=roundi((realm_difficulty/(1.08)-1.0)*100)
+		Journey.announce(self,"ISLAND %d · %s" % [realm+1,RealmWorld.NAMES[realm].to_upper()],"%s · enemies +%d%% health and damage" % [RealmWorld.GRADE[realm].title,tougher])
 	if realm > 0: sound.say("realm",0)
 	if broadcast_transition: coop.realm_changed()
 	if broadcast_transition and realm==3 and coop.active and coop.hosting: preload("res://scripts/final_arena.gd").broadcast_intro(self)
@@ -968,7 +977,9 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 	world.ensure_ground(p)
 	var biome=world.biome_at(p)
 	var species=CreatureBook.pick(biome,rules.rng)
-	var elite=not boss and not structure and rules.rng.randf()<.08
+	# Elites ramp in: none in the first island's opening 90 seconds, then 4% rising to 8%.
+	var elite_chance=0.0 if realm==0 and realm_time<90 else lerpf(.04,.08,clampf(realm_time/300.0,0,1))
+	var elite=not boss and not structure and rules.rng.randf()<elite_chance
 	var boss_id=(8 if realm==3 else BossBook.choose(seed_value,realm,biome,boss_history)) if boss else -1
 	var boss_entry=BossBook.entry(boss_id) if boss else {}
 	var body_scale=rules.rng.randf_range(.90,1.12) if not boss else 1.0
@@ -1027,6 +1038,7 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 		sound.say("boss",0);update.quip("boss")
 		vibrate(.5,.8,.35)
 		Journey.boss_arrived(self,enemy)
+	if elite: EliteMods.assign(self,enemy)
 	enemies.append(enemy)
 
 func enemy_xp_reward(enemy: Dictionary) -> float:
@@ -1220,6 +1232,9 @@ func spawn_network_enemy(actor: Dictionary) -> Dictionary:
 	if enemy.boss:
 		boss_name=enemy.title
 		
+	enemy.modifier=str(actor.get("modifier",""))
+	if enemy.modifier.is_empty(): enemy.erase("modifier")
+	else: EliteMods.badge(self,enemy)
 	enemies.append(enemy)
 	# Apply eclipse corruption for newly spawned remote enemies
 	if events.get("eclipse",false):
@@ -1519,6 +1534,9 @@ func hurt_enemy(enemy: Dictionary, damage: float, cause: String,mechanic: String
 		damage*=PartyCombo.multiplier(self,enemy)
 		PartyCombo.on_hit(self,enemy,damage,cause,int(enemy.get("hit_owner",coop.local_id)))
 		if enemy.dead: return
+	if enemy.has("modifier"):
+		damage=EliteMods.absorb(self,enemy,damage)
+		if damage<=0: return
 	var credited=minf(enemy.hp,damage)
 	var owner=int(enemy.get("hit_owner",enemy.get(cause+"_owner",enemy.get("status_owner",coop.local_id)) if cause in ["poison","fire"] else coop.local_id))
 	update.party_damage+=credited
@@ -1546,6 +1564,7 @@ func kill_enemy(enemy: Dictionary, cause: String):
 	coop.died(enemy,cause)
 	enemy.dead = true
 	StatusFx.death(self,enemy)
+	if enemy.has("modifier"): EliteMods.died(self,enemy)
 	Hunt.defeated(self,enemy)
 	if enemy.boss or enemy.get("elite",false) or rules.rng.randf()<.03: drop_consumable(enemy.node.position,enemy.boss)
 	kills += 1
@@ -1827,7 +1846,8 @@ func update_combat(delta: float):
 	spawn_clock -= delta
 	if spawn_clock <= 0 and (realm<3 or events.get("eclipse",false) and not events.get("final_ceremony",false)):
 		var swarm = events.get("swarm_until",0.0)>realm_time or update.beacon_state=="defending"
-		var count = 2+realm+(3 if swarm else 0)
+		# The opening 90 seconds of an island ramp up before the full spawn rate.
+		var count = (1 if realm_time<90 else 2)+realm+(2 if swarm else 0)
 		var budget=int(update.beacon_budget) if update.beacon_state=="defending" else int(events.get("wave_budget",0))
 		if swarm: count=mini(count,budget)
 		for i in range(count): spawn_enemy(randf_range(18,25))
@@ -1907,6 +1927,7 @@ func update_combat(delta: float):
 		if enemy.status_time<=0:
 			enemy.poison=0;enemy.fire=0;enemy.slow=0
 		update_status_indicators(enemy)
+		if enemy.has("modifier"): EliteMods.tick(self,enemy,enemy_delta)
 		var target_player=coop.target(enemy.node.position)
 		enemy.wants_climb=target_player.position.y-enemy.node.position.y>1.5
 		var toward = target_player.position-enemy.node.position
@@ -2015,7 +2036,8 @@ func update_combat(delta: float):
 			if enemy.dead: continue
 		if preload("res://scripts/combat_tactics.gd").contact_tick(self,enemy,target_player,touching,enemy_delta):
 			enemy.node.get_meta("rig").attack=.25
-			coop.damage_player(target_player.id,(18+realm*5 if enemy.boss else 11+realm*4)*enemy.damage*(1+enemy.get("biome",0)*.12)*(2.5 if events.get("eclipse",false) else 1.0),enemy.node.position,enemy.sound)
+			# The Eclipse hits harder island by island: 1.5x, 2x, then 2.5x contact damage.
+			coop.damage_player(target_player.id,(18+realm*5 if enemy.boss else 11+realm*4)*enemy.damage*(1+enemy.get("biome",0)*.12)*((1.5+mini(realm,2)*.5) if events.get("eclipse",false) else 1.0),enemy.node.position,enemy.sound)
 			if target_player.id==coop.local_id:
 				if enemy.get("biome",0)==1 and not buffs.has("poison"): player_poison=3
 				if enemy.get("biome",0)==4 and not buffs.has("fire"): player_fire=3
@@ -2152,7 +2174,9 @@ func update_events():
 			events[item[1]]=true
 			if item[2]=="spawn": spawn_enemy(18,true)
 			if item[2] in ["boss","swarm"]: sound.say(item[2],0);hud.tell("☠  00:30" if item[2]=="boss" else "☠☠☠  00:30",4)
-			if item[2]=="rush": events.swarm_until=realm_time+25;events.wave_active=true;events.wave_budget=180+realm*60;hud.tell("WAVE START · 25 s",3)
+			# Waves surge but build: the first is a test (70 enemies on the first island),
+			# the second a real push; later islands add to both.
+			if item[2]=="rush": events.swarm_until=realm_time+25;events.wave_active=true;events.wave_budget=(70+realm*40) if item[1]=="swarm_one" else (120+realm*50);hud.tell("WAVE START · 25 s",3)
 
 func _physics_process(delta: float):
 	var pads = Input.get_connected_joypads()
@@ -2199,6 +2223,9 @@ func _physics_process(delta: float):
 	var previous = player.position
 	dash_time=maxf(0,dash_time-delta)
 	dash_cooldown=maxf(0,dash_cooldown-delta)
+	# A dash passes through enemies (never through the world), so a hero hemmed
+	# in by a crowd can always break out.
+	player.collision_mask=1 if dash_time>0 else 5
 	slam_cooldown=maxf(0,slam_cooldown-delta)
 	invulnerable=maxf(0,invulnerable-delta)
 	ghost_time=maxf(0,ghost_time-delta)

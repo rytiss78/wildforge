@@ -125,6 +125,47 @@ static func run(game: Node3D):
 		checks.banish_mutation_gone=game.rules.banished.has("mut:"+banned_mutation) and not game.offers.any(func(i):return i.id=="mut:"+banned_mutation)
 		for i in range(40): checks.banish_mutation_gone=checks.banish_mutation_gone and MutationBook.roll(game,[]).get("id","")!="mut:"+banned_mutation
 	game.rules.banished=banishes;game.hud.close();game.mode="playing"
+	# Dashing ignores enemy bodies (live crowds can pin a walking hero; bot runs
+	# showed 3 of 8 first-minute deaths without this) and collides again after.
+	game.mode="playing";game.dash_cooldown=0.0;game.invulnerable=5.0;game.dash()
+	game._physics_process(1.0/60.0)
+	var through=game.player.collision_mask&4==0
+	for i in range(20): game._physics_process(1.0/60.0)
+	checks.dash_through_enemies=through and game.player.collision_mask==5
+	game.invulnerable=0.0
+	# Elite modifiers, each forced on a fresh elite through the real spawn path.
+	var elite_checks={}
+	for id in EliteMods.ORDER:
+		# A random spawn spot can be blocked; try a few distances.
+		var before=game.enemies.size()
+		for attempt in range(6):
+			game.spawn_enemy(8+attempt*3)
+			if game.enemies.size()>before: break
+		if game.enemies.size()==before: elite_checks[id]=false;continue
+		var elite=game.enemies[-1];elite.elite=true
+		if elite.node.has_meta("elite_badge"): elite.node.get_meta("elite_badge").queue_free();elite.node.remove_meta("elite_badge")
+		EliteMods.assign(game,elite,id)
+		if id=="blinking": elite.blink_clock=.5
+		match id:
+			"shielded":
+				var hp_before=elite.hp;game.hurt_enemy(elite,elite.shield_max*.5,"hit")
+				var absorbed=is_equal_approx(elite.hp,hp_before) and elite.shield<elite.shield_max
+				elite.shield_clock=0.0;var low=elite.shield;EliteMods.tick(game,elite,1.0)
+				elite_checks[id]=absorbed and elite.shield>low and elite.node.has_meta("elite_bubble") and elite.node.has_meta("elite_badge")
+			"blinking":
+				EliteMods.tick(game,elite,.3);var warned=elite.has("blink_to");EliteMods.tick(game,elite,.3)
+				elite_checks[id]=warned and elite.node.position.distance_to(game.player.position)<5.0 and not elite.has("blink_to")
+			"berserk":
+				var speed_before=elite.speed;elite.hp=elite.maxHp*.4;EliteMods.tick(game,elite,.1)
+				elite_checks[id]=elite.get("enraged",false) and elite.speed>speed_before*1.5
+			"splitting":
+				var count=game.enemies.filter(func(e):return not e.dead).size()
+				game.hurt_enemy(elite,elite.hp+10,"hit")
+				elite_checks[id]=elite.dead and game.enemies.filter(func(e):return not e.dead).size()==count+1
+		if not elite.dead: elite.dead=true;elite.node.queue_free()
+	game.enemies=game.enemies.filter(func(e):return not e.dead)
+	checks.elite_modifiers=elite_checks.values().all(func(v):return v) and elite_checks.size()==4
+	if not checks.elite_modifiers: print("ELITE_CHECKS ",elite_checks)
 	# Internet invite codes round-trip, tolerate retyping, and reject garbage;
 	# carrier-grade and private addresses are recognised as unreachable.
 	var codes_ok=true
