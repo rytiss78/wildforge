@@ -94,6 +94,18 @@ static func run(g):
 		# in the crowd. Gun hits keep landing on the nearest enemy, as in play, which
 		# conditional cards (Shatter, Rot, Thermal Shock) depend on.
 		if layout!="crowd": continue
+		# Spell synergies at rank 5: the damage (and healing) a strain adds to a spell
+		# beyond the spell and the strain measured apart. Dash mutations carry the
+		# strain without firing on spell hits; Ember Edge measures spell hits as
+		# "on hit" triggers on top of the synthetic weapon hits.
+		result.synergies={};result.spell_hit_triggers={}
+		for kind in SkillBook.KINDS:
+			var alone=run_once(g,dummies,[],true,7,kind,5)
+			for strain in SpellSynergy.PAIRS[kind]:
+				var kit=[strain+"_dash"];var strain_only=run_once(g,dummies,kit,false,7);var combo=run_once(g,dummies,kit,true,7,kind,5)
+				result.synergies[kind+":"+strain]={"spell":alone.dps,"strain":strain_only.dps,"combo":combo.dps,"gain":snappedf(combo.dps-alone.dps-strain_only.dps,.1),"heal_gain":snappedf(combo.hps-alone.hps-strain_only.hps,.01)}
+			var hit_only=run_once(g,dummies,["ember_hit"],false,7);var hit_combo=run_once(g,dummies,["ember_hit"],true,7,kind,5)
+			result.spell_hit_triggers[kind]=snappedf(hit_combo.dps-alone.dps-hit_only.dps,.1)
 		# Repeatability: the same kit and seed must measure the same; extras rely on it.
 		result.repeat=[]
 		for i in range(3): result.repeat.append(run_once(g,dummies,["ember_dash","frost_kill","storm_hit"],true,13).dps)

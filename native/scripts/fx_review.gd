@@ -201,6 +201,29 @@ static func run(g: Node3D):
 				await step(g,160-timing[kind]);spells.append(await frame(g,true))
 			await step(g,60)
 			checks[kind+"_hurts_r"+str(rank)]=total_hp(g)<before
+	# Spell synergies: each spell at rank 5 with the matching strain carried, captured
+	# where its synergy shows (Firestorm's eruption ring, Collapsar's and Plague
+	# Well's collapse, Supercell's forks and Hailstorm's frost, the twisters' trails).
+	var synergies=[];var synergy_cells=[]
+	var moments={"inferno":58,"blackhole":163,"thunderstorm":18,"tornado":80}
+	for kind in SkillBook.KINDS:
+		for strain in SpellSynergy.PAIRS[kind]:
+			for weapon in g.equipped:
+				if is_instance_valid(weapon.get("node")): weapon.node.queue_free()
+			g.equipped.clear();clear_effects(g)
+			for spell in g.skills:
+				if is_instance_valid(spell.node): spell.node.queue_free()
+			g.skills.clear();MutationBook.reset(g);MutationBook.take(g,MutationBook.card(strain+"_dash",1))
+			for enemy in g.enemies: enemy.fire=0.0;enemy.poison=0.0;enemy.freeze=0.0;enemy.status_time=0.0
+			var item=weapons[kind].duplicate(true);item.kind="weapon";item.strength=1.0
+			for i in range(5): g.equip_weapon(item)
+			var weapon=g.equipped[-1];weapon.clock=1e9;g.events.announcement_until=0.0
+			await step(g,10);g.fire(weapon,g.player.position+Vector3.UP*.9);g.equipped.clear()
+			await step(g,moments[kind]);synergies.append(await frame(g,true));synergy_cells.append(SpellSynergy.PAIRS[kind][strain].name)
+			checks["synergy_"+kind+"_"+strain]=g.mutation_state.get("synergies",{}).has(kind+":"+strain)
+			await step(g,60)
+	MutationBook.reset(g)
+	checks.synergy_sheet=sheet(synergies,"synergies")
 	for weapon in g.equipped:
 		if is_instance_valid(weapon.get("node")): weapon.node.queue_free()
 	g.equipped.clear()

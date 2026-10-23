@@ -80,6 +80,17 @@ static func pull(enemy: Dictionary,velocity: Vector3):
 	var current: Vector3=enemy.get("pull",Vector3.ZERO)
 	enemy.pull=(current+velocity).limit_length(maxf(current.length(),velocity.length()))
 
+# Every spell hit: damage, then "on hit" mutations and the spell's strain synergies.
+static func strike(g,spell: Dictionary,enemy: Dictionary,damage: float,cause: String):
+	g.hurt_enemy(enemy,damage,cause,spell.weapon_id)
+	if enemy.dead: return
+	# One "on hit" trigger per spell damage tick (four a second, like a fast gun): a
+	# spell hits a whole crowd at once, and every hit counting would pin hit
+	# mutations at their cooldown.
+	if float(spell.age)-float(spell.get("trigger_age",-1.0))>=.24:
+		spell.trigger_age=spell.age;MutationBook.event(g,"hit",enemy.node.position,{"enemy":enemy})
+	SpellSynergy.on_hit(g,spell,enemy)
+
 static func ground(g,p: Vector3) -> Vector3:
 	return Vector3(p.x,g.world.height_at(p.x,p.z),p.z)
 
@@ -103,7 +114,8 @@ static func tick(g,delta: float):
 					var offset: Vector3=(p-enemy.node.position)*Vector3(1,0,1)
 					if offset.length()>spell.radius: continue
 					if not spell.visual_only and authority and not enemy.boss and offset.length()>.4: pull(enemy,offset.normalized()*5.0)
-					if hits: g.hurt_enemy(enemy,spell.damage*.9,"hit",spell.weapon_id)
+					if hits: strike(g,spell,enemy,spell.damage*.9,"hit")
+				if hits: SpellSynergy.on_twister(g,spell,p)
 				if fresh:
 					var debris=CombatInk.begin(g,p+Vector3.UP*spell.radius*.6,.4,"trail")
 					if debris!=null: debris.shards(Color("d9cfb8"),3,spell.radius*1.6);debris.fall=-1.0
@@ -117,15 +129,17 @@ static func tick(g,delta: float):
 					var offset: Vector3=(center-enemy.node.position)*Vector3(1,0,1)
 					if offset.length()>spell.radius*1.6: continue
 					if not spell.visual_only and authority and not enemy.boss and offset.length()>.6: pull(enemy,offset.normalized()*7.5)
-					if hits and offset.length()<spell.radius: g.hurt_enemy(enemy,spell.damage*.04,"gravity",spell.weapon_id)
+					if hits and offset.length()<spell.radius: strike(g,spell,enemy,spell.damage*.04,"gravity")
 				if spell.life<=0:
 					var burst=CombatInk.star(g,center+Vector3.UP*1.2,spell.radius*2.0,COLORS.blackhole,10.0,.5)
 					if burst!=null: burst.shards(Color("e3d2ff"),12,spell.radius*1.8);burst.lamp(g,COLORS.blackhole,5.0,spell.radius*2.5,Vector3.UP)
 					CombatInk.wave(g,center,spell.radius*1.5,COLORS.blackhole);g.sound.effect("blast",center)
 					g.hit_shake=maxf(g.hit_shake,.25)
 					if not spell.visual_only:
+						var blast=spell.radius*1.2*SpellSynergy.collapse_scale(g)
 						for enemy in g.enemies.duplicate():
-							if not enemy.dead and center.distance_to(g.melee_contact(enemy,center))<spell.radius*1.2: g.hurt_enemy(enemy,spell.damage*.45,"explosion",spell.weapon_id)
+							if not enemy.dead and center.distance_to(g.melee_contact(enemy,center))<blast: strike(g,spell,enemy,spell.damage*.45,"explosion")
+						SpellSynergy.on_collapse(g,spell,center)
 			"thunderstorm":
 				while spell.next<spell.points.size() and spell.age>=spell.next*.07:
 					var point: Vector3=spell.points[spell.next];point.y=g.world.height_at(point.x,point.z);spell.next+=1
@@ -135,7 +149,8 @@ static func tick(g,delta: float):
 					if spell.next%3==1: g.sound.effect("lightning",point)
 					if not spell.visual_only:
 						for enemy in g.enemies.duplicate():
-							if not enemy.dead and point.distance_to(g.melee_contact(enemy,point))<spell.radius: g.hurt_enemy(enemy,spell.damage*.6,"lightning",spell.weapon_id)
+							if not enemy.dead and point.distance_to(g.melee_contact(enemy,point))<spell.radius: strike(g,spell,enemy,spell.damage*.6,"lightning")
+						SpellSynergy.on_strike(g,spell,point)
 				if spell.next>0: g.hit_shake=maxf(g.hit_shake,.06)
 			"inferno":
 				var front=lerpf(.6,spell.radius,1.0-pow(1.0-clampf(spell.age/.85,0,1),2.0))
@@ -146,7 +161,8 @@ static func tick(g,delta: float):
 					for enemy in g.enemies.duplicate():
 						if enemy.dead or spell.burned.has(enemy.net_id): continue
 						if (enemy.node.position-center).length()<front+float(enemy.get("radius",.7)):
-							spell.burned[enemy.net_id]=true;g.hurt_enemy(enemy,spell.damage*.2,"fire",spell.weapon_id)
+							spell.burned[enemy.net_id]=true;strike(g,spell,enemy,spell.damage*.2,"fire")
+					if spell.life<=0: SpellSynergy.on_end(g,spell,center,front)
 	for spell in g.skills:
 		if spell.life<=0 and is_instance_valid(spell.node): spell.node.queue_free()
 	g.skills=g.skills.filter(func(c):return c.life>0)

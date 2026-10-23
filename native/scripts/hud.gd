@@ -937,6 +937,8 @@ func offer_card(item: Dictionary, index: int, select: Callable) -> Button:
 			note="New weapon — full slot required"
 		else:
 			note="New weapon — fills empty slot"
+		var synergy=SpellSynergy.note_for_spell(game,item.id)
+		if not synergy.is_empty(): note+=" · "+synergy
 	var useful=true
 	if item.kind=="evolution":
 		var owned=game.equipped.filter(func(w):return w.id==item.weapon_id)
@@ -1103,6 +1105,11 @@ func build_menu(return_to_pause: bool=false,detailed: bool=false):
 		var recipe=WeaponEvolution.recipe(game,weapon)
 		if not recipe.is_empty():
 			var evolution=label(recipe,14,WeaponEvolution.GOLD);evolution.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;rows.add_child(evolution)
+	var synergies=SpellSynergy.lines(game)
+	if not synergies.is_empty():
+		rows.add_child(label("SPELL SYNERGIES",18))
+		for line in synergies:
+			var entry=label(line,14,Color("9fe7ff"));entry.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;rows.add_child(entry)
 	rows.add_child(label("OWNED ITEMS & SKILLS",18))
 	for item in game.owned:
 		icon_text_row(rows,icon_key(item),false,item.name+(" · "+game.rules.describe(item.effects[0]) if detailed else ""))

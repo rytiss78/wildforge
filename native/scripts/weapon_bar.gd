@@ -49,6 +49,9 @@ func refresh():
 			panel.tooltip_text = weapon.name+" · Level "+str(weapon.rank)+"\n"+WeaponDetails.describe(weapon.id)
 			var recipe=WeaponEvolution.recipe(game,weapon)
 			if not recipe.is_empty(): panel.tooltip_text+="\n"+recipe
+			var spell_name=SpellSynergy.SPELL_NAMES.get(ContentExpansion.kind(weapon.id),"")
+			for line in SpellSynergy.lines(game):
+				if not spell_name.is_empty() and line.contains(spell_name): panel.tooltip_text+="\n"+line
 			# Evolved: a thick gold frame. Ready to evolve: a thin one until a chest offers it.
 			var evolved=weapon.get("evolved",false)
 			if evolved or WeaponEvolution.ready(game,weapon):

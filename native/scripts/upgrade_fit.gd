@@ -44,7 +44,8 @@ static func describe(game,item: Dictionary) -> Dictionary:
 		var level=int(game.mutations.get(definition.get("id",""),0))
 		var group=str(definition.get("group",""))
 		var text={"core":"MUTATION · ","rule":"STRAIN RULE · ","hybrid":"HYBRID · "}.get(group,"WILD CARD · changes every mutation")+("" if group=="wild" else MutationBook.family(definition))
-		return {"useful":true,"text":text+(" · owned Lv %d" % level if level>0 else "")}
+		var synergy=SpellSynergy.note_for_strain(game,str(definition.get("strain","")))
+		return {"useful":true,"text":text+(" · owned Lv %d" % level if level>0 else "")+(" · "+synergy if not synergy.is_empty() else "")}
 	var notes=[];var useful=false
 	var candidate=game.stats.duplicate(true);game.rules.apply_effects(candidate,item.effects)
 	for effect in item.effects:

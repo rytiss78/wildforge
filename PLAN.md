@@ -88,7 +88,48 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
     - Remote co-op shot visuals are not gilded; teammates see the halo only.
     - The evolved damage was not measured separately with the damage-dummy harness; the bot batch is too small to say whether it changes win rates (3 of 8 reached the Baron, against 1 of 8 before, on the same seeds).
     - Not playtested by a person.
-- [ ] **Spell–mutation synergies.** Mutation triggers react to spells (for example, Ember igniting inside Inferno Halo).
+- [x] **Spell–mutation synergies** (`spell_synergy.gd`, October 23).
+  - **Found first:** spell damage never fired "on hit" mutations. Spells call `hurt_enemy` directly, so Ember Edge did nothing inside Inferno Halo.
+  - **Spell hits as triggers:** spell hits now count as weapon hits for "on hit" mutations, at most once per spell damage tick (4 per second, like a fast gun). Unthrottled, a spell hitting a crowd pinned those mutations at their cooldown.
+  - **Eight named synergies,** two per spell. Each is active while the hero carries the matching strain (any mutation of it):
+    - **Firestorm** (Inferno Halo + Ember): burns twice as hot and ends in a ring of Ember eruptions.
+    - **Phoenix Ring** (Inferno Halo + Bloom): 0.3 healing per enemy burned, up to 3 per cast.
+    - **Supercell** (Storm Crown + Storm): strikes fork Storm lightning.
+    - **Hailstorm** (Storm Crown + Frost): strikes freeze enemies for 0.8 s.
+    - **Collapsar** (Void Orb + Comet): 50% wider collapse that hurls the crowd.
+    - **Plague Well** (Void Orb + Venom): a poison cloud where it collapses.
+    - **Fire Whirl** (Twister Totem + Ember): twisters set held enemies on fire.
+    - **Toxic Cyclone** (Twister Totem + Venom): poison clouds along the path.
+  - Synergy damage scales like the strain's own effects.
+  - **Where players see them:**
+    - the first activation each run shows a "SPELL SYNERGY · NAME" card;
+    - mutation cards name the synergy they would switch on with the equipped spells, and spell cards name the ones they would switch on with the carried strains;
+    - the build menu has a SPELL SYNERGIES section;
+    - the spell's slot tooltip lists its active synergies.
+  - **Measured** (`2026-10-23T12-23-51-055Z-mutation-balance`, 12-dummy crowd, spells at rank 5). Damage each synergy adds beyond the spell and the strain measured separately:
+    - Firestorm +65% of the spell;
+    - Collapsar +54%;
+    - Plague Well +54%;
+    - Fire Whirl +43%;
+    - Toxic Cyclone +42%;
+    - Supercell +24%;
+    - Hailstorm adds control, not damage;
+    - Phoenix Ring heals 2.5 HP/s.
+  - **Tuning the measurement caught:**
+    - Firestorm first compounded the burn on each recast (+14,000 dps). It now sets a fixed burn.
+    - Plague Well's cloud was 11 times Venom's own cloud (+218%).
+    - Phoenix Ring healed 6 HP/s.
+    - Unthrottled spell hits let one Ember Edge nearly double Void Orb's damage.
+  - **Verified:**
+    - 13 integration checks with real casts against controls without the strain (`2026-10-23T12-25-06-160Z-integration`). The halo alone already ignites, so Firestorm is checked by burn strength. Disabling the synergies and the spell-hit trigger makes 10 of them fail.
+    - The `fx-synergies` sheet (`2026-10-23T12-26-01-124Z-fx-review`) shows one cell per synergy with its card, all inspected.
+    - Check, smoke, capture-ui, shared-review, coop-dropin, combat and playfeel reviews pass with 0 errors.
+    - `crowd-spells` (no mutations) runs at median 34 ms / p95 51 ms, no slower than Phase A.
+  - **Limits:**
+    - Teammates see a teammate's spell but not its synergy effects. Damage stays on the caster, as before.
+    - Supercell's forks and Phoenix Ring's healing are subtle on screen.
+    - Frame cost with a full mutation kit in a 125-enemy crowd was not measured.
+    - Not playtested by a person.
 - [ ] **Biome mechanics in fights.** One per biome, for example ice floors, spreading lava or toxic fog.
 
 ## Then: Phase E — look and feel (Hades direction)
