@@ -32,6 +32,7 @@ def mesh_object(name, bm, parent):
 
 
 def smooth(obj, level, color, cavity=1.0, light=.32):
+    obj['pilot_hex'] = color
     if level > 0: forge.apply(obj, 'SUBSURF', levels=level, render_levels=level)
     forge.finish(obj, color, None, cavity)
     # Painted light from above: the lower part of each form a little darker.
@@ -126,11 +127,29 @@ def torus(name, center, major, minor, color, parent=None):
     return smooth(obj, 0, color, 0.0, .1)
 
 
+def at_socket(obj, socket, offset=(0, 0, 0)):
+    # The orb shader measures the liquid level from the orb node's own origin, so
+    # the orb (and its rims) sit exactly on the socket, not offset inside a parent.
+    obj.parent = socket; obj.matrix_parent_inverse = Matrix.Identity(4); obj.location = offset
+
+
 def core(socket, radius, rim_offset, rim_major):
     """The GlassCore health orb and its two gilt rims, as in the shipped models."""
-    c = socket.location
-    ellipsoid('GlassCore', c, (radius, radius, radius), '7fd0c0', socket)
-    for s in (1, -1): torus('GiltOrbRim', (c.x, c.y + s * rim_offset, c.z), rim_major, .028, 'd6a84e', socket)
+    at_socket(ellipsoid('GlassCore', (0, 0, 0), (radius, radius, radius), '7fd0c0', None), socket)
+    for s in (1, -1): at_socket(torus('GiltOrbRim', (0, 0, 0), rim_major, .028, 'd6a84e', None), socket, (0, s * rim_offset, 0))
+
+
+# StyleModel gives these names a special surface coloured from the material's base
+# colour (hero_surfaces.gd); vertex paint would export it as white.
+SPECIAL_WORDS = ["coat", "cape", "bowtie", "wizardhat", "hatcrown", "hatbrim", "glove", "bookspine", "bookbinding", "belt", "boot", "gimbal", "airtank", "shower", "helmet", "suitpod", "metal", "cannon", "track", "tread", "turret", "rim", "tubside", "tubfloor", "teapot", "ceramic"]
+
+
+def flat_special_surfaces():
+    for obj in bpy.context.scene.objects:
+        if obj.type != 'MESH' or not any(w in obj.name.lower() for w in SPECIAL_WORDS): continue
+        hex_value = obj.get('pilot_hex', 'ffffff'); mat = bpy.data.materials.new('Flat_' + hex_value); mat.use_nodes = True
+        mat.node_tree.nodes.get('Principled BSDF').inputs['Base Color'].default_value = (*forge.srgb(hex_value), 1)
+        obj.data.materials.clear(); obj.data.materials.append(mat)
 
 
 def grid_shell(name, fn, nu, nv, thickness, color, parent=None):
@@ -154,7 +173,9 @@ def duck(out):
     head = forge.pivot('Head', (0, 0, 0), body)
     lathe('DuckSkull', [(1.22, .2, .18, .02), (1.32, .29, .25, .02), (1.50, .30, .25, .02), (1.64, .25, .21, 0), (1.72, .14, .12, -.01), (1.765, .03, .03, -.01)], 'f2c14e', head, segments=10, level=1, creased=(2,), crease_value=.5)
     # A broad flat bill wider than the face, with a small hooked tip.
-    slab('Beak', [(-.2, .12), (-.29, .24), (-.25, .36), (-.08, .44), (0, .47), (.08, .44), (.25, .36), (.29, .24), (.2, .12)], .08, 'e8973f', head, 'xy', (0, 0, 1.36), level=1, crease_value=.85)
+    # A thick bill with a raised ridge, so it reads from the front as well as from above.
+    slab('Beak', [(-.2, .12), (-.29, .24), (-.25, .36), (-.08, .44), (0, .47), (.08, .44), (.25, .36), (.29, .24), (.2, .12)], .12, 'e8973f', head, 'xy', (0, 0, 1.34), level=1, crease_value=.85)
+    slab('BillRidge', [(-.07, .14), (-.08, .3), (0, .42), (.08, .3), (.07, .14)], .05, 'f6b75a', head, 'xy', (0, 0, 1.455), level=1)
     slab('LowerBill', [(-.16, .14), (-.21, .26), (0, .36), (.21, .26), (.16, .14)], .05, 'a8622e', head, 'xy', (0, 0, 1.31), level=1)
     for s in (-1, 1):
         # An angular mask piece per eye, pointed up and out: a vampire scowl.
@@ -170,6 +191,8 @@ def duck(out):
         slab('CuirassInlay', mirror([(.06, 0), (.13, 0), (.36, .36), (.29, .38)], s), .025, 'c99a45', body, 'xz', (0, .27, .5), level=1, crease_value=.9)
     socket = forge.pivot('CoreSocket', (0, 0, .82), body)
     core(socket, .30, .205, .275)
+    # A gold clasp chain across the cape notch.
+    tube('CapeChain', (-.16, -.23, 1.3), (.16, -.23, 1.3), .022, .022, 'd6a84e', body)
     # A high pointed vampire collar behind the head.
     for s in (-1, 1):
         slab('HighCollar', mirror([(.04, 0), (.34, .02), (.46, .44), (.22, .3), (.06, .2)], s), .045, '3a0f1c', body, 'xz', (0, -.12, 1.06), level=1, crease_value=.9)
@@ -178,7 +201,12 @@ def duck(out):
         cape = forge.pivot(name, (0, 0, 0), body)
         def cloak(u, v, side=side):
             hem = .09 * abs(math.sin(u * math.pi * 3)) * v ** 6
-            return (side * (.1 + u * (.42 + .32 * v)), -.21 - .1 * math.sin(math.pi * u) - .06 * v, 1.36 - v * 1.18 - hem)
+            # Seen from behind (the gameplay camera): panels hang from the shoulders with a
+            # V notch at the collar that closes towards the hem, stop above the boots, and
+            # end in deep scallops, so the back has shape instead of one red block.
+            inner = .16 * (1 - v) ** 1.5 + .015
+            hem = .14 * abs(math.sin(u * math.pi * 3)) * v ** 5
+            return (side * (inner + u * (.42 + .3 * v)), -.21 - .1 * math.sin(math.pi * (.5 + u * .5)) - .06 * v, 1.36 - v * 1.0 - hem)
         grid_shell('Cloak', cloak, 9, 10, .03, '8e2234', cape)
     for s in (-1, 1):
         arm = forge.pivot('Arm' + str(s), (s * .43, 0, 1.04), body)
@@ -190,6 +218,7 @@ def duck(out):
         shin = lathe('BootShin', [(.36, .075, .075, 0), (.24, .07, .07, .01), (.13, .065, .065, .03)], '2b2838', leg, segments=8, level=1)
         shin.location.x = s * .24; shin.location.y = -.02
         slab('WebbedBoot', [(-.12, -.1), (-.14, .08), (-.09, .2), (-.03, .17), (0, .23), (.03, .17), (.09, .2), (.14, .08), (.12, -.1)], .09, 'e0a040', leg, 'xy', (s * .24, .06, .02), level=1, crease_value=.85)
+    flat_special_surfaces()
     forge.export(os.path.join(out, 'pilot_count_duck.glb'))
 
 
@@ -215,14 +244,16 @@ def beetle(out):
             cone('Thorn', (s * .52, y, z), (s * .7, y - .04, z + .08), .045, '9ab85a', body)
         ellipsoid('Berry', (s * .33, .2, 1.02), (.05, .05, .05), 'd2384a', body)
     for s in (-1, 1):
+        # Legs fan out front to back so the six read as six, not a rake.
         for y in (.18, -.08, -.34):
-            hip = (s * .36, y, .5); knee = (s * .62, y + .02, .64); foot = (s * .74, y + .06, 0.02)
+            hip = (s * .36, y, .5); knee = (s * .62, y * 1.5 + .04, .64); foot = (s * .76, y * 2.2 + .06, 0.02)
             tube('HookLeg', hip, knee, .065, .05, 'd8cfaa', body)
             tube('HookLeg', knee, foot, .05, .022, 'd8cfaa', body)
         slab('EyeSlit', mirror([(-.07, 0), (.06, .01), (.07, .045), (-.06, .03)], s), .02, '46e0a8', body, 'xz', (s * .12, .3, 1.11), level=0)
         cone('Mandible', (s * .1, .25, .46), (s * .02, .46, .36), .045, 'd8cfaa', body)
     socket = forge.pivot('CoreSocket', (0, .26, .84), body)
     core(socket, .22, .15, .205)
+    flat_special_surfaces()
     forge.export(os.path.join(out, 'pilot_briar_beetle.glb'))
 
 

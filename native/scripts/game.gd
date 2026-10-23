@@ -296,6 +296,7 @@ func _ready():
 	elif OS.get_cmdline_user_args().has("--dropin-review-host") or OS.get_cmdline_user_args().has("--dropin-review-client"): preload("res://scripts/dropin_review.gd").run.call_deferred(self,OS.get_cmdline_user_args().has("--dropin-review-host"))
 	elif OS.get_cmdline_user_args().has("--run-bot"): preload("res://scripts/run_bot.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--island-review"): preload("res://scripts/island_review.gd").run.call_deferred(self)
+	elif OS.get_cmdline_user_args().has("--model-review"): preload("res://scripts/model_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--balance-review"): preload("res://scripts/balance_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--mutation-balance"): preload("res://scripts/mutation_balance.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--hermes-review"): preload("res://scripts/hermes_review.gd").run.call_deferred(self)

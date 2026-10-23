@@ -43,8 +43,13 @@ func setup_baked(asset: String, tank: bool):
 func setup(asset: String, tank: bool = false):
 	if asset.begins_with("creature_") and ResourceLoader.exists("res://assets/style3d/baked/"+asset+".res"):
 		setup_baked(asset,tank);return
+	setup_scene(load("res://assets/style3d/"+asset+".glb").instantiate(),asset,tank)
+
+# Any glTF scene with the shipped node names gets the same treatment; the model
+# review uses it for Blender pilot files loaded straight from disk.
+func setup_scene(scene: Node3D,asset: String,tank: bool=false):
 	identity=asset;is_tank=tank
-	model=load("res://assets/style3d/"+asset+".glb").instantiate()
+	model=scene
 	add_child(model)
 	body=model.find_child("Body",true,false)
 	if body==null: body=model

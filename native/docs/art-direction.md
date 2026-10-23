@@ -88,5 +88,6 @@ Kept from 0.1, still binding:
 | Islands | `island-review` | `island-sheet.png` |
 | Weapons, statuses, spells, synergies, deaths, zoom, telegraphs | `fx-review` | `fx-*.png` |
 | HUD and menus | `capture-ui` | `ui-*.png`, at 1280×720 and 1920×1080 through `release-review` |
+| Model pilot against shipped models | `model-review` (builds `scripts/blender/pilot.py` into the run folder) | `model-sheet.png`: gameplay camera, then close-ups |
 
 Compare against the previous run's images before accepting a look change.

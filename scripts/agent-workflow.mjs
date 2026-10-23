@@ -87,7 +87,7 @@ export function assertCommittedBuild(cwd) {
 }
 
 async function main(action) {
-  if (!['balance-review', 'mutation-balance', 'shared-review', 'shared-review-stress', 'coop-dropin', 'bot-playtest', 'island-review', 'hermes-review', 'playfeel-review', 'red-moon-review', 'fresh-import', 'biome-review', 'release-review', 'roster-review', 'bake-roster', 'style-review', 'fx-review', 'boss-review', 'forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'crowd-spells', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
+  if (!['balance-review', 'mutation-balance', 'shared-review', 'shared-review-stress', 'coop-dropin', 'bot-playtest', 'island-review', 'model-review', 'hermes-review', 'playfeel-review', 'red-moon-review', 'fresh-import', 'biome-review', 'release-review', 'roster-review', 'bake-roster', 'style-review', 'fx-review', 'boss-review', 'forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'crowd-spells', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
     console.error('Usage: node scripts/agent-workflow.mjs check|smoke|capture|capture-ui|combat-review|pace-review|soak|integration|build|status'); return 2;
   }
   const git = (...args) => spawnSync('git', ['-C', root, ...args], {encoding:'utf8', windowsHide:true}).stdout?.trim() ?? '';
@@ -327,6 +327,19 @@ async function main(action) {
       });
       const results=await Promise.allSettled(runs);report.shared=results.filter(r=>r.status==='fulfilled').map(r=>r.value);
       const failed=results.filter(r=>r.status==='rejected');if(failed.length)throw new Error(failed.map(r=>r.reason.message).join('\n'));
+    }
+    if (action === 'model-review') {
+      // Model pilot: Blender builds the pilot GLBs into this run's folder, then the
+      // game renders them beside the shipped models (they never enter the assets).
+      const blender=process.env.BLENDER_EXE||'C:/Program Files/Blender Foundation/Blender 5.2/blender.exe';
+      const pilot=join(runDir,'pilot');
+      await step('pilot-models',blender,['-b','--factory-startup','-P',join(root,'scripts/blender/pilot.py'),'--',pilot],300000);
+      env.WILDFORGE_PILOT_DIR=pilot;
+      const output=await step('model-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--model-review'],180000);
+      const line=output.split(/\r?\n/).findLast(x=>x.startsWith('MODEL_REVIEW '));
+      if(!line) throw new Error('Missing model review');report.models=JSON.parse(line.slice(13));
+      if(Object.values(report.models.checks).some(v=>v===false)) throw new Error('Model review assertions failed');
+      report.capture=assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','model-sheet.png'),started);
     }
     if (action === 'island-review') {
       const output=await step('island-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--island-review'],240000);

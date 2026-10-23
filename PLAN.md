@@ -192,7 +192,15 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
 - [ ] **Model pilot in progress** (`scripts/blender/pilot.py`, not used by the game). It rebuilds Count Duck and the Briar Beetle with the same node names, pivots, hand sockets and GlassCore health orb as the shipped models. The GLBs are generated outside the game's assets until the pilot wins a side-by-side.
   - **Version 1** (subdivision cages): rounder but weaker than the faceted originals. A bandit-like mask, loaf arms and an egg torso hid the orb; the beetle shells read as bullets.
   - **Version 2** (planes and points, subdivision only on corners): a better beetle (wing plates over a dark body, thorns, berries) but messy legs. The duck gained a vampire collar, scowl mask, visible orb and scalloped cape, but its bill reads as a thin line from the front.
-  - **Next:** an in-game comparison at the gameplay camera, which shows heroes from behind and enemies from the front and above, before any judgement.
+  - **In-game comparison** (October 23): the new `model-review` action builds the pilot in Blender into its run folder and renders it beside the shipped models through `StyleModel`. `StyleModel.setup_scene` adopts any glTF scene with the shipped node names. The sheet shows the gameplay camera (duck from behind, beetle trio ahead) and close-ups.
+  - **Pipeline fixes the comparison found:**
+    - the pilot orb's node sat at the body origin, so the orb shader drew it empty;
+    - parts with special surface names (`metal`, `boot`, `rim`…) rendered white because Blender exports vertex-painted base colour as white.
+  - **Version 3:** thick ridged bill, fanned beetle legs, a cape with a shoulder V notch, scalloped hem and gold chain (`2026-10-23T16-52-12-518Z-model-review`).
+  - **Verdict (assistant):**
+    - The beetle pilot is a plausible improvement: wing plates over a dark body, thorns, berries, legs that read as six.
+    - The duck pilot does not beat the shipped Count Duck. From behind (the view players see all game) its cape is still rectangular next to the current flared, pointed one, and the current head and gold arms read stronger.
+  - **Decision needed:** whether the beetle direction (curved plates, thorns, darker body under brighter plates) should be developed for the creature roster. Nothing is in the game yet.
 - [ ] **Better hero and creature models**, made in-house. Earlier procedural and Blender metaball rebuilds read as blobs and were rejected. Pilot one hero and one creature with a slower, hand-directed Blender pipeline (blocked silhouette, subdivision, painted texture, ink outline). Compare them side by side with the current models before any wider rollout.
 - [x] **Spell sounds** (`spell_audio.gd`, October 23). Synthesized, no samples. Each spell has its own cast:
   - Twister Totem: a rising whoosh.
