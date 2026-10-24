@@ -63,7 +63,8 @@ static func run(game: Node3D):
 	game.clear_entities();game.spawn_enemy(20,true)
 	checks.huge_boss=game.enemies[0].height>=8 and game.enemies[0].height==BossBook.entry(game.enemies[0].boss_id).height and is_equal_approx(game.enemies[0].radius,BossBook.entry(game.enemies[0].boss_id).radius) and BossBook.ROSTER.all(func(b):return b.height>=8 and b.radius>=1.8)
 	game.telegraph(game.enemies[0]);checks.boss_telegraph=game.hazards.size()>=1
-	checks.draw_distance=game.camera.far<=230
+	# Draw distance grows with spare frame rate (October 24), capped at 300 m.
+	checks.draw_distance=game.camera.far<=300
 	checks.character_voices=game.rules.data.heroes.all(func(h):return ResourceLoader.exists("res://assets/voices/hurt_"+h.id+"_0.wav") and ResourceLoader.exists("res://assets/voices/hurt_"+h.id+"_1.wav"))
 	checks.weapon_icons=["boomerang","disc","harpoon","gravity","horn","bubble","meteor","bomb"].all(func(id):return ResourceLoader.exists("res://assets/illustrated/weapon-icons/"+id+".png"))
 	game.clear_entities();game.select_hero(game.rules.data.heroes[1]);game.mode="playing";game.hud.close();game.hud.update(0)

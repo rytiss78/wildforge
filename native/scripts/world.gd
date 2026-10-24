@@ -5,6 +5,14 @@ const EXTENT=400.0
 const SPAWN_EXTENT=EXTENT-30.0
 const DANGER_EXTENT=EXTENT-25.0
 const CHUNK=64.0
+# Draw distance (user request, October 24: enemies and grass appeared right in
+# front of the hero). Fog, camera range and new chunks' fade distances scale with
+# view_scale, which the game raises while the frame rate has room (1.0 to 1.5).
+const FOG_REACH=1.4
+const GRASS_RANGE=100.0
+const SCENERY_RANGE=170.0
+const FOG_LIMIT=205.0
+var view_scale=1.0
 const NAMES=["Sunlit Frontier","Blighted Highlands","Ashen Reach","The Red Moon"]
 # Each island looks harsher than the last: a different coastline, a darker sky
 # tint, corrupted ground with glowing veins, and its own drifting air.
@@ -283,7 +291,7 @@ func make_chunk(cell: Vector2i):
 	for path in scenery_groups:
 		var instances=MultiMesh.new();instances.transform_format=MultiMesh.TRANSFORM_3D;instances.mesh=prop_meshes[path];instances.instance_count=scenery_groups[path].size()
 		for index in range(instances.instance_count): instances.set_instance_transform(index,scenery_groups[path][index])
-		var combined=MultiMeshInstance3D.new();combined.multimesh=instances;combined.material_override=scenery_material;combined.visibility_range_end=105;combined.visibility_range_end_margin=15;root.add_child(combined)
+		var combined=MultiMeshInstance3D.new();combined.multimesh=instances;combined.material_override=scenery_material;combined.visibility_range_end=SCENERY_RANGE*view_scale;combined.visibility_range_end_margin=15;root.add_child(combined)
 	GroundCover.build(self,root,cell,local_rng)
 
 # Candy Hell (biome 4): three deterministic winding lava streams.
@@ -337,15 +345,16 @@ func stream(position_value: Vector3,party: Array=[]):
 		stream_signature=signature;pending.clear()
 		var wanted={}
 		for cell in centers:
-			for x in range(-2,3):
-				for z in range(-2,3):
+			# Three chunks out (192 m): the longer fog would show the edge of two.
+			for x in range(-3,4):
+				for z in range(-3,4):
 					var key=cell+Vector2i(x,z)
 					if absi(key.x)<=ceili(EXTENT/CHUNK) and absi(key.y)<=ceili(EXTENT/CHUNK): wanted[key]=true
 		for key in wanted:
 			if not chunks.has(key): pending.append(key)
 		pending.sort_custom(func(a,b):return a.distance_squared_to(centers[0])<b.distance_squared_to(centers[0]))
 		for key in chunks.keys():
-			if centers.all(func(c):return maxi(absi(key.x-c.x),absi(key.y-c.y))>3): chunks[key].queue_free();chunks.erase(key)
+			if centers.all(func(c):return maxi(absi(key.x-c.x),absi(key.y-c.y))>4): chunks[key].queue_free();chunks.erase(key)
 	if not pending.is_empty(): make_chunk(pending.pop_front())
 
 # Frame-budgeted chunk building for realm transitions

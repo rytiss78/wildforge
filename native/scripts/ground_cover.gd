@@ -71,4 +71,4 @@ static func build(world,root: Node3D,cell: Vector2i,rng: RandomNumberGenerator):
 			var paint=ShaderMaterial.new();paint.shader=preload("res://shaders/flora.gdshader")
 			paint.set_shader_parameter("wind_strength",0.0 if kind==2 else 1.0);paints[kind]=paint
 		var node=MultiMeshInstance3D.new();node.name="GroundCover";node.multimesh=batch;node.material_override=paints[kind]
-		node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;node.visibility_range_end=65;node.visibility_range_end_margin=8;root.add_child(node)
+		node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;node.visibility_range_end=world.GRASS_RANGE*world.view_scale;node.visibility_range_end_margin=8;root.add_child(node)

@@ -231,7 +231,7 @@ func _ready():
 	add_child(camera)
 	InkOverlay.attach(camera)
 	camera.fov = 70
-	camera.far = 180
+	camera.far = 260
 	camera.current = true
 	camera.physics_interpolation_mode=Node.PHYSICS_INTERPOLATION_MODE_OFF
 	var listener=AudioListener3D.new();camera.add_child(listener);listener.make_current()
@@ -1933,7 +1933,8 @@ func update_combat(delta: float):
 		var count = (1 if realm_time<90 else 2)+realm+(2 if swarm else 0)
 		var budget=int(update.beacon_budget) if update.beacon_state=="defending" else int(events.get("wave_budget",0))
 		if swarm: count=mini(count,budget)
-		for i in range(count): spawn_enemy(randf_range(18,25))
+		# Further out than the old 18-25 m, so the hero sees them coming.
+		for i in range(count): spawn_enemy(randf_range(28,38))
 		if update.beacon_state=="defending": update.beacon_budget=maxi(0,update.beacon_budget-count)
 		elif swarm: events.wave_budget=maxi(0,budget-count)
 		spawn_clock = maxf(.4,.95-realm_time*.0005)*(1.0/1.35 if swarm else 2.0)
@@ -2414,6 +2415,18 @@ func update_aura_visual():
 	aura.scale=Vector3(pulse,.1,pulse)
 	aura.material_override.emission_energy_multiplier=2.4+sin(elapsed*5)*.4
 
+# Draw distance follows the frame rate: up to 1.5x while above 90 fps, back toward
+# 1.0 below 55. The camera range keeps up with the fog.
+var view_clock=0.0
+func adapt_view(delta: float):
+	view_clock+=delta
+	if view_clock<1.0 or mode!="playing": return
+	view_clock=0.0
+	var fps=Engine.get_frames_per_second()
+	if fps>=90: world.view_scale=minf(1.5,world.view_scale+.05)
+	elif fps<55: world.view_scale=maxf(1.0,world.view_scale-.1)
+	camera.far=minf(260.0*world.view_scale,300.0)
+
 # Crowd profiling (crowd-review/crowd-spells): time since the last mark, by section.
 func profile_mark(section: String,since: int) -> int:
 	var now=Time.get_ticks_usec()
@@ -2423,6 +2436,7 @@ func profile_mark(section: String,since: int) -> int:
 
 func _process(delta: float):
 	if not is_instance_valid(avatar): return
+	adapt_view(delta)
 	var process_mark=Time.get_ticks_usec() if profile_crowd else 0
 	coop.tick(delta)
 	if profile_crowd: process_mark=profile_mark("p_coop",process_mark)

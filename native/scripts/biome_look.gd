@@ -38,7 +38,11 @@ static func apply(world,biome: int,grade: Dictionary,rate: float):
 		sun.rotation_degrees.x=lerpf(sun.rotation_degrees.x,pitch,rate)
 	var env: Environment=world.environment
 	env.ambient_light_color=env.ambient_light_color.lerp(ambient,rate);env.ambient_light_energy=lerpf(env.ambient_light_energy,ambient_energy,rate)
-	env.fog_depth_begin=lerpf(env.fog_depth_begin,look.fog.x,rate);env.fog_depth_end=lerpf(env.fog_depth_end,look.fog.y,rate)
+	# The clear zone grows with view_scale; the far end stops at FOG_LIMIT, where the
+	# loaded terrain ends (three chunks out).
+	var reach=world.FOG_REACH*world.view_scale
+	var fog_end=minf(look.fog.y*reach,world.FOG_LIMIT)
+	env.fog_depth_begin=lerpf(env.fog_depth_begin,minf(look.fog.x*reach,fog_end-60.0),rate);env.fog_depth_end=lerpf(env.fog_depth_end,fog_end,rate)
 	var camera=world.get_viewport().get_camera_3d() if world.is_inside_tree() else null
 	var overlay=camera.get_node_or_null("InkOverlay") if camera!=null else null
 	if overlay!=null:
