@@ -18,7 +18,7 @@ class_name ShortsPanel
 const BASE=Vector2(306,544)
 const FEEDS=["TheDodoSite","ThePetCollective","GoodNewsNetwork","AnimalPlanetTV"]
 # Chosen by the user (October 24).
-const TAGS=["phonk","gymtok","meme","gravel","remco","techhouse","nature","run","rally","parrot","core","cuterat","punk","puppy"]
+const TAGS=["phonk","gymtok","meme","gravel","remco","techhouse","nature","run","rally","parrot","core","cuterat","punk","puppy","mindset","uptempo","rats"]
 const PAGES={"youtube":"res://assets/shorts/player.html","tiktok":"res://assets/shorts/tiktok.html"}
 const MAX_PLAY=15.0
 const MAX_DURATION=60.0
