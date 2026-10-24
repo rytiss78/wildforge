@@ -6,7 +6,8 @@ const REFERENCE_DPS=300.0
 # him in 2-12 minutes in bot runs, against 17 before; 6.0 restores a long fight.
 # 7.5 (October 24): after the weapon-damage fixes half the bots that reached him
 # still won; the target is about 40%.
-const HEALTH_MULTIPLIER=7.5
+# 37.5 (October 24, user request): five times the Colossus's health.
+const HEALTH_MULTIPLIER=37.5
 const INTRO_SECONDS=3.6
 # The final boss is the Ashen Colossus (ColossusFight, ColossusRig): three phases.
 const PHASE_NAMES=ColossusFight.PHASES
