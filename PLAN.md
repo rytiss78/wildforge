@@ -1,6 +1,6 @@
 # Wildforge — plan
 
-October 24, 2026 · main branch · **Build 22 (1.5.0) is built locally and not published** (source `be50250`, build `.build-staging/agent-workflow/2026-10-24T16-25-52-018Z-build`, [notes](native/docs/build22-release.md)). **Build 21 (1.4.0) is the latest public release** ([build-21](https://github.com/rytiss78/wildforge/releases/tag/build-21), source `3d51f3c`, zip SHA-256 `8605ba40…58cfafd`). It contains everything under "Since Build 19" and the Phase D and E items checked below (the model pilot is not in it).
+October 24, 2026 · main branch · **Build 22 (1.5.0) is the latest public release** ([build-22](https://github.com/rytiss78/wildforge/releases/tag/build-22), source `be50250`, zip SHA-256 `386e73b1…f5450c9`, build `.build-staging/agent-workflow/2026-10-24T16-25-52-018Z-build`, [notes](native/docs/build22-release.md)). The packaged ZIP, unpacked into a fresh folder, passed the video-panel review. Before it, **Build 21 (1.4.0)** ([build-21](https://github.com/rytiss78/wildforge/releases/tag/build-21), source `3d51f3c`, zip SHA-256 `8605ba40…58cfafd`). It contains everything under "Since Build 19" and the Phase D and E items checked below (the model pilot is not in it).
 
 Rules: [AGENTS.md](AGENTS.md) and the [Godot workflow](native/docs/godot-workflow.md). A checked item means the real entry point was exercised and the evidence is recorded. The full history up to this rewrite, with every evidence path, is in [plan-history-through-build19.md](native/docs/archive/plan-history-through-build19.md).
 

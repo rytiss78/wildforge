@@ -2,6 +2,8 @@
 
 Build 22 is a Windows alpha. `build-info.json` beside the executable records the exact source commit and artifact hashes. Co-op uses protocol `wildforge-shared-world-14`, so **every player in a party needs Build 22**.
 
+**Install:** extract the whole ZIP into a folder and run `Wildforge.exe`. Keep `godot_wry.dll` beside it; the video panel needs it. Archive `Wildforge-1.5.0-Windows.zip`, SHA-256 `386e73b1a7e029870ca4d72848232c07122161c8483a3e78866a44f25f5450c9`.
+
 ## New
 
 - **Block Drop.** A small falling-blocks game in the pause menu (**▦ BLOCK DROP**). In co-op it also opens by itself while a friend is still choosing a reward. Your board is saved and continues at the next pause. It has its own chiptune take on the folk song "Korobeiniki" and blip sounds; the game music pauses while it is open.
@@ -38,3 +40,4 @@ Build 22 is a Windows alpha. `build-info.json` beside the executable records the
 
 - The export from source commit `be50250` passes the startup smoke and reports 1.5.0 / Build 22. The browser plugin (`godot_wry.dll`) ships beside the executable.
 - The video panel passes its review in an exported executable: TikTok, YouTube, auto-scroll and the switch button.
+- The packaged ZIP, unpacked into a fresh folder, passes the same review with its own `Wildforge.exe` and `godot_wry.dll`.
