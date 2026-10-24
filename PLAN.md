@@ -316,6 +316,10 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
 - **Effect so far:** island 1 is on target. Baron fights won by bots now last 9–16 minutes instead of 5–10.
 - **Still open:** islands 2–3 and the Baron remain too easy. 6 of the 10 bots that reached him won.
 - **Main killers:** enemy meteor hazards account for 6 of 13 deaths on islands 1–2. They are telegraphed, so they are left as they are.
+- **Step 0.55 tried and dropped:** over 48 runs it gave 81% / 40% / 27%, against 71% / 42% / 25% at 0.45. That is no measurable difference, so the game stays at 0.45.
+  - **Evidence:** `2026-10-24T15-02-19-270Z`, `15-18-44-994Z`, and the paired reruns `15-33-28-564Z`, `15-42-11-694Z`.
+  - **Bot runs do not repeat from their seed:** the same hero and seed went from beating the Baron to dying in the first minute, and island 1 outcomes changed in 13 of 24 runs at an unchanged island 1. Paired seeds therefore cannot reduce the noise, and 24-run batches swing by about 20 points.
+  - **Next:** a step change is not a lever this noise can measure. The Baron's own damage and patterns, judged by human playtest or batches of 48+ runs, is the next thing to try.
 
 ## Open issues and limits
 
