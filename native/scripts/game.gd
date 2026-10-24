@@ -1057,7 +1057,8 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 	var max_health = ((500+realm*500+realm_time*3) if boss else (35+realm*22+realm_time*.12))*realm_difficulty
 	max_health *= 1+biome*.18
 	if not boss: max_health*=species.health*pow(body_scale,1.5)*(.60 if species.behavior=="spit" else 1.0)
-	if boss: max_health*=4
+	# x20 (October 24, user request): five times the earlier x4 for every boss.
+	if boss: max_health*=20
 	if elite: max_health*=2.5
 	var enemy = {"biome":biome,"elite":elite,"node":node,"hp":max_health,"maxHp":max_health,"speed":(2.9+realm*.35+randf()*0.6)*ENEMY_SPEED_SCALE,"boss":boss,"fire":0.0,"poison":0.0,"status_time":0.0,"freeze":0.0,"blind":0.0,"slow":0.0,"attack":2.5*realm_difficulty,"telegraph":0.0,"dead":false,"contact":0.0,"phase":1,"startDamage":health_damage,"formation_id":formation_id}
 	enemy.guardian=guardian
