@@ -85,6 +85,14 @@ void vertex(){
 }
 void fragment(){float melt=0.0;if(dissolve>0.0){vec3 q=dissolve_p*4.0;float n=.5+.25*sin(q.x*1.7+sin(q.y*2.3))+.25*sin(q.z*2.1+q.y*1.3+sin(q.x*1.1));float t=n*.65+(1.0-clamp(dissolve_p.y/2.4,0.0,1.0))*.35;if(t<dissolve){discard;}melt=1.0-smoothstep(dissolve,dissolve+.12,t);}vec3 paint=COLOR.a<.5?texture(bark,UV*vec2(1.0,2.0)).rgb:COLOR.a<.8?texture(stone,UV).rgb:texture(paper,UV*.7).rgb;ALBEDO=pow(COLOR.rgb,vec3(2.2))*tint*mix(vec3(1.0),paint*1.3,.32);ALBEDO=mix(ALBEDO,ALBEDO*vec3(.48,.38,.57),corruption);if(COLOR.a>.85 && COLOR.a<.95){EMISSION=pow(COLOR.rgb,vec3(2.2))*1.7;}ALBEDO=mix(ALBEDO,vec3(.03,.035,.05),max(melt,dissolve*.75));EMISSION+=vec3(.32,.14,.5)*melt*.7;ROUGHNESS=1.0;SPECULAR=0.0;}
 """
+	if animated:
+		# Enemies stand out from the ground and scenery in every biome (user report,
+		# October 24: they blended in): a warm rim light along the silhouette, and a
+		# slight self-light so bodies read brighter than the ground around them.
+		shader.code=shader.code.replace("uniform float dissolve=0.0;","uniform float dissolve=0.0;
+uniform vec3 rim_color=vec3(1.0,.62,.34);
+uniform float rim_strength=1.8;")
+		shader.code=shader.code.replace("ROUGHNESS=1.0;SPECULAR=0.0;}","ROUGHNESS=1.0;SPECULAR=0.0;float rim=pow(1.0-clamp(dot(NORMAL,VIEW),0.0,1.0),1.8);EMISSION+=(rim_color*rim*rim_strength+ALBEDO*.22)*(1.0-dissolve);}")
 	if not animated:
 		shader.code=shader.code.replace("void vertex(){","varying vec3 world_position;void vertex(){world_position=(MODEL_MATRIX*vec4(VERTEX,1.0)).xyz;if(COLOR.g>COLOR.r*1.04 && VERTEX.y>2.0){VERTEX.x+=sin(TIME*1.3+VERTEX.z*.2)*.05;}")
 		shader.code=shader.code.replace("void fragment(){", "void fragment(){"+sightline_cutaway("world_position"))

@@ -328,7 +328,7 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
   - **Further:** fog 1.4x further, capped at 205 m where the loaded terrain ends (three chunks out instead of two). Grass shows to 100 m (was 65), scenery to 170 m (was 105). Camera range 260 m (was 180). Wave enemies spawn 28–38 m out (was 18–25).
   - **Follows the frame rate:** `view_scale` rises to 1.5x while above 90 fps and drops back below 55 fps (`game.adapt_view`), stretching the clear zone, grass and scenery further.
   - **Verified:** biome-review captures inspected (much deeper views), check, smoke and integration pass. crowd-spells frame median 35.8 ms against 33 before (process +1.4 ms for the extra terrain; GPU unchanged).
-- [ ] **2. Enemies stand out.** They blend into the ground and scenery. Give them a clear read against every biome, for example a rim outline or contrast tint.
+- [x] **2. Enemies stand out.** The enemy shader (`painted_batch.gd`, animated variant) adds a warm rim light along the silhouette and a slight self-light, so bodies read brighter than the ground in every biome. No extra draw calls. Verified with crowd-review captures before and after.
 - [ ] **3. Much harder.** Less XP per drop, slightly faster enemies, more enemies.
 - [ ] **4. Hit knockback.** A received hit should push the hero back slightly. Today it is unclear whether you were hit.
 - [ ] **5. New main music.** Phonk style.
