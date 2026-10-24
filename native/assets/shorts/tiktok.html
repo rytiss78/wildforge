@@ -1,0 +1,43 @@
+<!doctype html>
+<!-- Wildforge's TikTok player (shorts_panel.gd): TikTok's official embed player
+     (tiktok.com/player/v1) driven through its postMessage API, with the same
+     wfPlay / wfState / wfPause / wfResume / wfSeekEnd calls as player.html. -->
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+html,body{margin:0;height:100%;background:#0d0f17;overflow:hidden}
+iframe{position:fixed;inset:0;width:100vw;height:100vh;border:0}
+</style>
+</head>
+<body>
+<iframe id="player" allow="autoplay; encrypted-media; fullscreen" src="about:blank"></iframe>
+<script>
+const frame=document.getElementById('player');
+let time=0, duration=0, state=-1, volume=0, ready=false, events=[];
+function post(data){ try{ window.ipc.postMessage(JSON.stringify(data)); }catch(e){} }
+function send(type,value){ frame.contentWindow && frame.contentWindow.postMessage({type, value, 'x-tiktok-player':true}, '*'); }
+window.addEventListener('message', e=>{
+  const d=e.data; if(!d || typeof d!=='object' || !d['x-tiktok-player']) return;
+  if(events.length<40) events.push(d.type);
+  if(d.type==='onPlayerReady'){ ready=true; send('unMute'); send('changeVolume', volume); send('play'); }
+  if(d.type==='onStateChange'){ state=d.value; if(d.value===0) post({type:'ended'}); }
+  if(d.type==='onCurrentTime' && d.value){ time=d.value.currentTime||0; duration=d.value.duration||0; }
+  if(d.type==='onError') post({type:'error', code:d.value});
+});
+window.wfPlay=(id,v)=>{
+  volume=v/100; time=0; duration=0; state=-1; ready=false;
+  frame.src='https://www.tiktok.com/player/v1/'+id+'?autoplay=1&loop=0&controls=0&progress_bar=0&play_button=0&volume_control=0&fullscreen_button=0&timestamp=0&music_info=0&description=0&rel=0&native_context_menu=0&closed_caption=0';
+};
+window.wfState=(v)=>{
+  if(Math.abs(v/100-volume)>0.001){ volume=v/100; send('changeVolume', volume); }
+  post({type:'state', t:time, d:duration, state, volume, loop:false, ready, events});
+};
+window.wfPause=()=>send('pause');
+window.wfResume=()=>send('play');
+// Review hook: jump to the end to check that the next video follows.
+window.wfSeekEnd=()=>{ if(duration>1) send('seekTo', duration-0.5); };
+post({type:'ready'});
+</script>
+</body>
+</html>

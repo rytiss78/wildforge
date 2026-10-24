@@ -900,15 +900,29 @@ func pause_menu(ended: bool = false, win: bool = false):
 func block_drop_menu():
 	var box=open("BLOCK DROP","A falling-blocks break. Your board waits here for the next pause.")
 	game.mode="paused"
+	# Nearly the whole screen, like the reward screen; in co-op the party panel
+	# with everyone's choices takes the right third.
+	var view=get_viewport().get_visible_rect().size
+	var panel=box.get_parent()
+	if game.coop.active: panel.position=Vector2(16,16);panel.size=Vector2(view.x*.65,view.y-32);show_party_panel(game.party_seen)
+	else: panel.position=Vector2(80,40);panel.size=Vector2(view.x-160,view.y-80)
+	for frame in modal.get_children():
+		if frame.get_script()!=null and str(frame.get_script().resource_path).ends_with("forge_frame.gd"): frame.position=panel.position;frame.size=panel.size
+	set_wait_zoom(minf((panel.size.y-210)/WAIT_BASE.y,(panel.size.x-60)/WAIT_BASE.x))
 	var holder=HBoxContainer.new();holder.alignment=BoxContainer.ALIGNMENT_CENTER;holder.size_flags_vertical=Control.SIZE_EXPAND_FILL;box.add_child(holder)
 	if wait_room.get_parent()!=null: wait_room.get_parent().remove_child(wait_room)
 	wait_room.position=Vector2.ZERO;wait_room.scale=Vector2.ONE;wait_room.size_flags_vertical=Control.SIZE_SHRINK_CENTER;holder.add_child(wait_room)
-	# Co-op: room on the right for the party panel with everyone's choices.
-	if game.coop.active:
-		var spacer=Control.new();spacer.custom_minimum_size.x=330;holder.add_child(spacer);show_party_panel(game.party_seen)
-	var shorts_on=bool(game.career.data.settings.get("shortsPanel",true))
-	box.add_child(button("▶  SHORTS: "+("ON" if shorts_on else "OFF"),func():game.career.data.settings.shortsPanel=not shorts_on;game.career.save();block_drop_menu()))
-	box.add_child(button("←  BACK",func():pause_menu()))
+	var settings=game.career.data.settings
+	var videos_on=bool(settings.get("shortsPanel",true));var youtube=str(settings.get("shortsSource","tiktok"))=="youtube"
+	var row=HBoxContainer.new();row.add_theme_constant_override("separation",10);box.add_child(row)
+	for entry in [["▶  VIDEOS: "+("ON" if videos_on else "OFF"),func():settings.shortsPanel=not videos_on;game.career.save();block_drop_menu()],
+		["⇄  SWITCH TO "+("TIKTOK" if youtube else "YOUTUBE SHORTS"),func():settings.shortsSource="tiktok" if youtube else "youtube";game.career.save();block_drop_menu()],
+		["←  BACK",func():pause_menu()]]:
+		var control=button(entry[0],entry[1]);control.size_flags_horizontal=Control.SIZE_EXPAND_FILL;row.add_child(control)
+
+const WAIT_BASE=Vector2(776,544)
+func set_wait_zoom(zoom: float):
+	block_drop.set_zoom(zoom);shorts.set_zoom(zoom);wait_room.add_theme_constant_override("separation",roundi(16*zoom))
 
 # The wait room lives outside the tree between uses; free it with the HUD.
 func _exit_tree():
@@ -923,12 +937,12 @@ func update_block_drop_overlay():
 	if wanted and wait_room.get_parent()!=root:
 		if wait_room.get_parent()!=null: wait_room.get_parent().remove_child(wait_room)
 		root.add_child(wait_room)
-		wait_room.size=wait_room.get_combined_minimum_size()
-		# Below the vitals panel and the "party paused" banner, clear of the loadout
-		# bar, and left of the party panel (right third) with everyone's choices.
+		# As large as fits below the vitals panel and the "party paused" banner,
+		# clear of the loadout bar, and left of the party panel (right third).
 		var view=root.size if root.size.x>0 else get_viewport().get_visible_rect().size
-		var fit=minf(1.0,minf((view.y-365)/wait_room.size.y,(view.x*.66)/wait_room.size.x));wait_room.scale=Vector2.ONE*fit
-		wait_room.position=Vector2((view.x*.68-wait_room.size.x*fit)/2,175)
+		set_wait_zoom(minf((view.y-375)/WAIT_BASE.y,(view.x*.66)/WAIT_BASE.x))
+		wait_room.scale=Vector2.ONE;wait_room.size=wait_room.get_combined_minimum_size()
+		wait_room.position=Vector2((view.x*.68-wait_room.size.x)/2,175)
 		show_party_panel(game.party_seen)
 	elif not wanted and wait_room.get_parent()==root: root.remove_child(wait_room)
 

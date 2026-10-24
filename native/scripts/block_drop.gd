@@ -38,6 +38,8 @@ var music=AudioStreamPlayer.new()
 var voice=AudioStreamPlayer.new()
 var sounds={}
 var rng=RandomNumberGenerator.new()
+# Drawn larger where the screen has room (the wait room sets it).
+var zoom=1.0
 
 func _init():
 	custom_minimum_size=Vector2(COLUMNS*CELL+PANEL+24,ROWS*CELL+24)
@@ -49,6 +51,9 @@ func _init():
 	if theme!=null:
 		theme=theme.duplicate();theme.loop_mode=AudioStreamWAV.LOOP_FORWARD;theme.loop_begin=0;theme.loop_end=roundi(theme.get_length()*theme.mix_rate)
 		music.stream=theme
+
+func set_zoom(value: float):
+	zoom=value;custom_minimum_size=Vector2(COLUMNS*CELL+PANEL+24,ROWS*CELL+24)*zoom;queue_redraw()
 
 func active() -> bool:
 	return game!=null and is_visible_in_tree()
@@ -240,9 +245,10 @@ func block(origin: Vector2,color: Color,ghost: bool=false):
 func _draw():
 	if state.is_empty(): return
 	var font=get_theme_default_font()
+	draw_set_transform(Vector2.ZERO,0.0,Vector2.ONE*zoom)
 	var board_size=Vector2(COLUMNS,ROWS)*CELL
 	var origin=Vector2(12,12)
-	draw_rect(Rect2(Vector2.ZERO,size),Color(.05,.06,.09,.94))
+	draw_rect(Rect2(Vector2.ZERO,size/zoom),Color(.05,.06,.09,.94))
 	draw_rect(Rect2(origin,board_size),Color(.1,.12,.17))
 	for x in range(1,COLUMNS): draw_line(origin+Vector2(x*CELL,0),origin+Vector2(x*CELL,board_size.y),Color(1,1,1,.04))
 	for y in range(1,ROWS): draw_line(origin+Vector2(0,y*CELL),origin+Vector2(board_size.x,y*CELL),Color(1,1,1,.04))

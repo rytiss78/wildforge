@@ -353,7 +353,7 @@ async function main(action) {
       const line=output.split(/\r?\n/).findLast(x=>x.startsWith('SHORTS_REVIEW '));
       if(!line) throw new Error('Missing shorts review');report.shorts=JSON.parse(line.slice(14));
       if(Object.values(report.shorts.checks).some(v=>v===false)) throw new Error('Shorts review failed: '+JSON.stringify(report.shorts));
-      report.capture=assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','shorts-panel.png'),started);
+      report.captures=['shorts-tiktok','shorts-youtube'].map(n=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge',n+'.png'),started));
     }
     if (action === 'block-drop-review') {
       const output=await step('block-drop-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--block-drop-review'],180000);

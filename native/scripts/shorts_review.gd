@@ -1,10 +1,11 @@
 extends RefCounted
 
-# The YouTube Shorts panel through the real pause path (Esc, BLOCK DROP): a short
-# from an upbeat channel feed plays at low volume with its loop off, the next one
-# loads when it ends, and BACK hides the browser. Needs the internet. The
-# browser is a native window over the game, so the capture is taken from the
-# desktop (shorts-panel.png), not from the game's own viewport.
+# The short-video panel through the real pause path (Esc, BLOCK DROP): TikTok
+# plays by default and scrolls on by itself within MAX_PLAY seconds; the switch
+# button moves to YouTube Shorts, which plays too; the end of a video loads the
+# next; nothing loops; BACK hides the browser. Needs the internet. The browser
+# is a native window over the game, so captures come from the desktop
+# (shorts-tiktok.png, shorts-youtube.png), not from the game's own viewport.
 
 static func key(g,code: Key):
 	for pressed in [true,false]:
@@ -24,33 +25,49 @@ static func wait(g,condition: Callable,seconds: float) -> bool:
 		await g.get_tree().create_timer(.1).timeout
 	return condition.call()
 
+static func desktop(g,file: String) -> bool:
+	await g.get_tree().create_timer(1.5).timeout
+	var screen=DisplayServer.window_get_current_screen()
+	var image=DisplayServer.screen_get_image(screen)
+	return image!=null and image.get_region(Rect2i(DisplayServer.window_get_position()-DisplayServer.screen_get_position(screen),DisplayServer.window_get_size())).save_png("user://"+file)==OK
+
 static func run(g):
 	AudioServer.set_bus_volume_db(0,-80)
 	var checks={}
 	# Quiet: the panel plays at 35% of the music volume.
-	g.career.data.settings.music=.05;g.career.data.settings.shortsPanel=true
+	g.career.data.settings.music=.05;g.career.data.settings.shortsPanel=true;g.career.data.settings.erase("shortsSource")
 	g.start_run(407);g.invulnerable=1e9;g.spawn_clock=1e9
 	await wait(g,func():return g.mode=="playing" and not g.hud.modal.visible,3)
 	var shorts=g.hud.shorts
 	checks.extension=ClassDB.class_exists("WebView")
 	await key(g,KEY_ESCAPE)
 	checks.menu_button=await press(g,"▦  BLOCK DROP")
+	checks.bigger=g.hud.block_drop.zoom>1.2 and shorts.size.y>shorts.BASE.y*1.2
 	checks.browser=await wait(g,func():return shorts.view!=null and shorts.shown,5)
-	checks.reads_feeds=await wait(g,func():return shorts.stage=="short" and shorts.current!="",30)
-	checks.plays=await wait(g,func():return shorts.playing,30)
+	# TikTok by default.
+	checks.tiktok_default=await wait(g,func():return shorts.source=="tiktok",3)
+	checks.tiktok_reads_tag=await wait(g,func():return shorts.stage=="short" and shorts.current!="",40)
+	checks.tiktok_plays=await wait(g,func():return shorts.playing,30)
 	checks.low_volume=float(shorts.last_state.get("volume",1))<=.05
+	checks.capture_tiktok=await desktop(g,"shorts-tiktok.png")
+	# Fast scrolling: the next video comes by itself within MAX_PLAY seconds.
+	var first=shorts.current;var played=shorts.shorts_played
+	checks.auto_scroll=await wait(g,func():return shorts.shorts_played>played and shorts.current!=first,shorts.MAX_PLAY+10)
+	# The switch button moves to YouTube Shorts.
+	checks.switch_button=await press(g,"⇄  SWITCH TO YOUTUBE SHORTS")
+	checks.youtube_source=await wait(g,func():return shorts.source=="youtube",5)
+	checks.youtube_reads_feeds=await wait(g,func():return shorts.source=="youtube" and shorts.stage=="short" and shorts.current!="",30)
+	checks.youtube_plays=await wait(g,func():return shorts.playing,30)
 	checks.no_loop=await wait(g,func():return shorts.last_state.get("loop",true)==false,3)
-	var rect=Rect2i(DisplayServer.window_get_position(),DisplayServer.window_get_size())
-	await g.get_tree().create_timer(1.5).timeout
-	var image=DisplayServer.screen_get_image(DisplayServer.window_get_current_screen())
-	checks.capture=image!=null and image.get_region(Rect2i(rect.position-DisplayServer.screen_get_position(DisplayServer.window_get_current_screen()),rect.size)).save_png("user://shorts-panel.png")==OK
-	# The end of a short loads the next one; nothing loops.
-	var first=shorts.current
+	checks.capture_youtube=await desktop(g,"shorts-youtube.png")
+	# The end of a video loads the next one.
+	var youtube_first=shorts.current
 	shorts.run("window.wfSeekEnd&&wfSeekEnd()")
-	checks.next_short=await wait(g,func():return shorts.current!=first and shorts.current!="",20)
-	checks.next_plays=await wait(g,func():return shorts.playing,30)
+	checks.next_after_end=await wait(g,func():return shorts.current!=youtube_first and shorts.current!="",20)
+	checks.switch_back=await press(g,"⇄  SWITCH TO TIKTOK")
+	checks.tiktok_again=await wait(g,func():return shorts.source=="tiktok",5)
 	checks.back=await press(g,"←  BACK")
 	await g.get_tree().create_timer(.3).timeout
 	checks.hidden_on_back=not shorts.shown
-	print("SHORTS_REVIEW "+JSON.stringify({"checks":checks,"played":shorts.shorts_played,"current":shorts.current,"state":shorts.last_state,"queue":shorts.queue.size()}))
+	print("SHORTS_REVIEW "+JSON.stringify({"checks":checks,"played":shorts.shorts_played,"current":shorts.current,"state":shorts.last_state,"queue":shorts.queue.size(),"zoom":g.hud.block_drop.zoom}))
 	g.get_tree().quit(0 if not checks.values().has(false) else 1)
