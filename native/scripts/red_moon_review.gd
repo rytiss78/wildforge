@@ -62,7 +62,7 @@ static func run(g):
 	g.interact();checks.hidden_portal_no_travel=g.realm==3
 	g.player.position=arena_spawn
 	var boss=g.enemies[0]
-	checks.final_identity=boss.boss_id==8 and boss.height==42 and boss.speed<=.22 and is_equal_approx(boss.maxHp,(preload("res://scripts/final_arena.gd").TARGET_SECONDS*preload("res://scripts/final_arena.gd").REFERENCE_DPS*preload("res://scripts/final_arena.gd").HEALTH_MULTIPLIER))
+	checks.final_identity=boss.boss_id==8 and boss.height==BossBook.entry(8).height and is_equal_approx(boss.speed,BossBook.entry(8).speed) and is_equal_approx(boss.maxHp,(preload("res://scripts/final_arena.gd").TARGET_SECONDS*preload("res://scripts/final_arena.gd").REFERENCE_DPS*preload("res://scripts/final_arena.gd").HEALTH_MULTIPLIER))
 	checks.arena_cracks=g.events.final_cracks.size()==32 and g.events.final_cracks.all(func(crack):return is_instance_valid(crack) and crack.mesh is BoxMesh and crack.is_inside_tree())
 	checks.entrance_darkened=is_equal_approx(g.world.environment.ambient_light_energy,.12) and is_equal_approx(g.world.environment.adjustment_brightness,.68) and boss.node.scale.x<.1
 	for frame in range(20):
@@ -84,24 +84,25 @@ static func run(g):
 	for i in range(80):g._process(.016);await g.get_tree().process_frame
 	checks.silhouette=await capture(g,"silhouette")
 	var minimum=Vector3(INF,INF,INF);var maximum=Vector3(-INF,-INF,-INF)
-	for mesh in boss.node.get_meta("rig").solid.model.find_children("*","MeshInstance3D",true,false):
+	for mesh in boss.node.get_meta("rig").model.find_children("*","MeshInstance3D",true,false):
 		var bounds=mesh.mesh.get_aabb()
 		for corner in range(8):
 			var point=mesh.global_transform*bounds.get_endpoint(corner)
 			minimum=minimum.min(point);maximum=maximum.max(point)
-	checks.authored_giant=maximum.y-minimum.y>40 and maximum.x-minimum.x>25
-	var baron_model=boss.node.get_meta("rig").solid.model
-	checks.baron_model=baron_model.find_child("BaldHead",true,false)!=null and baron_model.find_child("BareTorso",true,false)!=null and baron_model.find_child("SuspendedRobe",true,false)==null and baron_model.find_child("Arm-1",true,false)!=null and baron_model.find_child("Leg-1",true,false)!=null
-	var vents=boss.node.get_meta("rig").find_children("BaronSteam*","GPUParticles3D",true,false)
-	checks.steam_budget=vents.size()==4 and vents.all(func(v):return v.emitting and v.amount==16 and v.draw_pass_1!=null)
+	# The Ashen Colossus: the golem model (bind-pose bounds), its animations and skins.
+	checks.authored_giant=maximum.y-minimum.y>14 and maximum.x-minimum.x>8
+	var colossus=boss.node.get_meta("rig")
+	checks.baron_model=colossus is ColossusRig and colossus.player!=null and ["idle","walk","attack","attack2","flinch","die"].all(func(a):return colossus.player.has_animation(a))
+	checks.steam_budget=colossus.skins.size()==3 and colossus.find_child("GlassCore",true,false)!=null
 	g.player.position=Vector3(0,g.world.height_at(0,28),28);g.pitch=.3
 	checks.small_map=g.world.shore_radius(Vector3.ZERO)==72 and g.hud.map_view.map_extent==85
 	var counts=[]
 	for i in range(4):
 		clear(g.hazards);BossBook.attack(g,boss);counts.append(g.hazards.size())
 		checks["attack_"+str(i)]=await capture(g,"attack-"+str(i))
-	checks.attack_patterns=counts==[10,30,7,15]
-	checks.deadly_warnings=g.hazards.all(func(h):return h.damage>=95 and h.duration>=1.6 and Vector2(h.node.position.x,h.node.position.z).length()<=64.1)
+	# The Colossus (October 24): each attack is an action with its own red marks.
+	checks.attack_patterns=counts.all(func(c):return c>=5)
+	checks.deadly_warnings=g.hazards.all(func(h):return h.damage>=45 and h.duration>=.8 and Vector2(h.node.position.x,h.node.position.z).length()<=60.1)
 	checks.terrain_marks=preload("res://scripts/boss_review.gd").marks_follow_terrain(g)
 	clear(g.hazards);preload("res://scripts/final_arena.gd").erupt(g)
 	checks.arena_eruption=g.hazards.size()==10 and g.hazards.all(func(h):return h.style=="lava" and h.damage==48 and h.duration==2.6 and Vector2(h.node.position.x,h.node.position.z).length()<=64.1)
@@ -112,11 +113,11 @@ static func run(g):
 	checks.network_boss=remote.boss_id==8 and remote.maxHp==boss.maxHp and remote.node.get_meta("rig").identity=="boss_8"
 	remote.node.queue_free();g.enemies.erase(remote)
 	clear(g.hazards)
-	# Very slow actual locomotion, then real attack resolution against an unarmoured hero.
+	# It walks the hero down (the Baron stood almost still), then real attack resolution.
 	boss.freeze=0;boss.attack=999;boss.recovery=0;var start=boss.node.position
 	for i in range(120):
 		await g.get_tree().physics_frame;g.update_combat(1.0/60);g._process(1.0/60)
-	checks.slow_locomotion=Vector2(boss.node.position.x-start.x,boss.node.position.z-start.z).length()<.6
+	checks.walks_toward_hero=Vector2(boss.node.position.x-start.x,boss.node.position.z-start.z).length()>.6
 	boss.freeze=999;g.hp=500;g.invulnerable=0
 	g.warn_at(g.player.position,3.4,1.6,120,"annihilation");g.update_combat(1.7)
 	checks.deadly_impact=is_equal_approx(g.hp,380)
@@ -135,22 +136,19 @@ static func run(g):
 	for i in range(90):g.update_combat(1.0/60)
 	checks.giant_weapon_hits=boss.hp<before_shot
 	g.equipped.clear();clear(g.projectiles);g.invulnerable=1000
-	# Cross every health phase with real damage and ensure each new curse asset streams.
-	checks.phase_voice_assets=true
-	for voice_index in range(10,18):
-		var voice=load("res://assets/voices/boss_lt_%d.mp3" % voice_index)
-		checks.phase_voice_assets=checks.phase_voice_assets and voice is AudioStreamMP3 and voice.get_length()>.5
+	# Cross both phase thresholds with real damage: the body takes the ice, then fire skin.
+	var rig=boss.node.get_meta("rig")
+	checks.roar_asset=rig.roar_player.stream!=null and rig.roar_player.stream.get_length()>1.0
 	var phase_checks=[]
-	for phase in range(1,8):
-		var target_hp=boss.maxHp*(1.0-float(phase)*.125);var applied=boss.hp-target_hp
-		g.hurt_enemy(boss,applied,"shot")
-		phase_checks.append(int(boss.get("voice_phase",-1))==phase and g.sound.boss_voice.stream!=null and g.sound.boss_voice.stream.get_length()>.5)
-	checks.phase_voices=phase_checks.size()==7 and phase_checks.all(func(value):return value) and g.sound.boss_voice_count>=8
+	for step in [[1,.6],[2,.25]]:
+		boss.open_until=-1;g.hurt_enemy(boss,boss.hp-boss.maxHp*float(step[1]),"shot")
+		phase_checks.append(ColossusFight.phase(boss)==step[0] and rig.phase_index==step[0] and rig.mesh.material_override==rig.skins[step[0]])
+	checks.phase_voices=phase_checks.size()==2 and phase_checks.all(func(value):return value)
 	# Calibrate health with real damage application; no mandatory five-minute invulnerability.
-	var original_hp=boss.hp;g.hurt_enemy(boss,300,"shot");checks.reference_dps=is_equal_approx(original_hp-boss.hp,300)
+	boss.open_until=-1;var original_hp=boss.hp;g.hurt_enemy(boss,300,"shot");checks.reference_dps=is_equal_approx(original_hp-boss.hp,300)
 	g.hurt_enemy(boss,boss.hp+1000,"shot")
 	checks.death_eclipse=g.events.get("final_defeated",false) and g.events.get("eclipse",false) and g.mode=="playing"
-	checks.baron_fall_event=g.events.get("final_ceremony",false) and g.events.announcement=="THE BARON FALLS"
+	checks.baron_fall_event=g.events.get("final_ceremony",false) and g.events.announcement=="THE COLOSSUS FALLS"
 	g.realm_time=float(g.events.get("final_ceremony_until",0))+.01;g.Journey.tick(g)
 	checks.eclipse_transition=not g.events.get("final_ceremony",true) and g.events.announcement=="ENDLESS ECLIPSE" and int(g.events.eclipse_stage)>=1 and g.events.final_cracks.all(func(crack):return crack.material_override.emission.g>.5)
 	g.realm_time=660;g.Journey.tick(g)
@@ -159,5 +157,5 @@ static func run(g):
 	g.Journey.activate(g);checks.no_exit=g.realm==3 and g.mode=="playing"
 	for i in range(90):g._process(.016)
 	g.hud.update(0);checks.eclipse=await capture(g,"eclipse")
-	print("RED_MOON_REVIEW "+JSON.stringify({"checks":checks,"attack_counts":counts,"authored_size":CoopSession.array(maximum-minimum),"reference_seconds":(preload("res://scripts/final_arena.gd").TARGET_SECONDS*preload("res://scripts/final_arena.gd").REFERENCE_DPS*preload("res://scripts/final_arena.gd").HEALTH_MULTIPLIER)/1200.0,"timing_note":"Solo Baron HP = 300 s x 300 dps x HEALTH_MULTIPLIER (7.5 since October 24, 6 since Phase D; 4 was the requested fourfold). Representative builds still need playtesting."}))
+	print("RED_MOON_REVIEW "+JSON.stringify({"checks":checks,"attack_counts":counts,"authored_size":CoopSession.array(maximum-minimum),"reference_seconds":(preload("res://scripts/final_arena.gd").TARGET_SECONDS*preload("res://scripts/final_arena.gd").REFERENCE_DPS*preload("res://scripts/final_arena.gd").HEALTH_MULTIPLIER)/1200.0,"timing_note":"Solo Colossus HP = 300 s x 300 dps x HEALTH_MULTIPLIER (7.5 since October 24, 6 since Phase D; 4 was the requested fourfold). Representative builds still need playtesting."}))
 	g.get_tree().quit(0 if not checks.values().has(false) else 1)

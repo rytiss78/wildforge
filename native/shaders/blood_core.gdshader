@@ -4,6 +4,9 @@ render_mode diffuse_toon, specular_disabled;
 uniform float fill : hint_range(0.0,1.0) = 1.0;
 uniform float hit : hint_range(0.0,1.0) = 0.0;
 uniform float radius = 0.5;
+// The liquid's bright colour; the default is the enemies' blood red. The final
+// boss changes it with each phase.
+uniform vec3 liquid_color = vec3(0.98,0.025,0.08);
 varying vec3 world_position;
 varying float centre_y;
 varying float radius_y;
@@ -20,7 +23,7 @@ void fragment() {
 	float blood=(1.0-smoothstep(surface-0.008,surface+0.008,height))*step(0.002,fill);
 	float rim=pow(1.0-clamp(dot(normalize(NORMAL),normalize(VIEW)),0.0,1.0),2.3);
 	vec3 empty_glass=mix(vec3(0.18,0.32,0.29),vec3(0.035,0.09,0.09),rim*0.75);
-	vec3 red=mix(vec3(0.20,0.006,0.026),vec3(0.98,0.025,0.08),floor(height*5.0)/4.0);
+	vec3 red=mix(liquid_color*vec3(0.204,0.24,0.325),liquid_color,floor(height*5.0)/4.0);
 	vec3 liquid=red;
 	vec3 color=mix(empty_glass,liquid,blood*(1.0-rim*0.3));
 	float meniscus=(1.0-smoothstep(0.008,0.021,abs(height-surface)))*step(0.015,fill)*step(fill,0.985);

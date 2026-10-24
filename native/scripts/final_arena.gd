@@ -8,7 +8,8 @@ const REFERENCE_DPS=300.0
 # still won; the target is about 40%.
 const HEALTH_MULTIPLIER=7.5
 const INTRO_SECONDS=3.6
-const PHASE_NAMES=["THE ARRIVAL","THE HUNT","THE WRATH","THE EXECUTION","THE RUIN","THE LAST JUDGMENT","THE WORLD BREAKS","THE FINAL CURSE"]
+# The final boss is the Ashen Colossus (ColossusFight, ColossusRig): three phases.
+const PHASE_NAMES=ColossusFight.PHASES
 
 static func setup(g):
 	g.events.final_arena=true;g.events.final_defeated=false
@@ -26,7 +27,7 @@ static func setup(g):
 	enemy.maxHp=TARGET_SECONDS*REFERENCE_DPS*HEALTH_MULTIPLIER*(1+.65*(party_size-1));enemy.hp=enemy.maxHp
 	enemy.node.rotation.y=PI
 	enemy.final_ground_y=enemy.node.position.y;enemy.node.position.y-=11;enemy.node.scale=Vector3.ONE*.08
-	enemy.voice_phase=0;enemy.guardian=true;enemy.attack=4;enemy.attack_cycle=0;enemy.freeze=INTRO_SECONDS;enemy.contact=INTRO_SECONDS
+	enemy.colossus_phase=0;enemy.guardian=true;enemy.attack=INTRO_SECONDS+1.5;enemy.freeze=INTRO_SECONDS;enemy.contact=INTRO_SECONDS
 	g.events.final_boss_hp=enemy.maxHp
 	phase_changed(g,enemy,0,false)
 
@@ -43,12 +44,11 @@ static func make_cracks(g):
 		g.world.add_child(crack);g.events.final_cracks.append(crack)
 
 static func phase_changed(g,enemy,phase: int,replicate: bool=true):
-	g.boss_phases_reached=maxi(int(g.boss_phases_reached),clampi(phase,0,7)+1)
-	var index=10+clampi(phase,0,7)
-	var selected=g.sound.boss_curse(enemy.node.position,index,true)
+	g.boss_phases_reached=maxi(int(g.boss_phases_reached),clampi(phase,0,2)+1)
 	var phase_name=PHASE_NAMES[clampi(phase,0,PHASE_NAMES.size()-1)]
-	g.hud.tell("BARON · "+phase_name,4)
-	if replicate and g.coop.active and g.coop.hosting: broadcast_phase(g,enemy,phase,phase_name,selected)
+	var body=ColossusFight.rig(enemy)
+	if body!=null: body.roar()
+	if replicate and g.coop.active and g.coop.hosting: broadcast_phase(g,enemy,phase,phase_name,0)
 	return phase_name
 
 static func broadcast_phase(g,enemy,phase: int,phase_name: String,index: int):
@@ -57,8 +57,10 @@ static func broadcast_phase(g,enemy,phase: int,phase_name: String,index: int):
 static func broadcast_intro(g):
 	for enemy in g.enemies:
 		if enemy.get("boss_id",-1)==8 and not enemy.dead:
-			broadcast_phase(g,enemy,0,PHASE_NAMES[0],10);return
+			broadcast_phase(g,enemy,0,PHASE_NAMES[0],0);return
 
+# The old Baron's four mark volleys, kept for reference; the Colossus fights
+# through ColossusFight.attack.
 static func attack(g,enemy):
 	var cycle=int(enemy.get("attack_cycle",0))%4;enemy.attack_cycle=cycle+1
 	var origin=enemy.node.position;var target_info=g.coop.target(origin);var target=target_info.position
@@ -96,7 +98,7 @@ static func defeated(g):
 	g.events.final_defeated=true;g.events.eclipse=true;g.events.eclipse_started=g.realm_time;g.events.eclipse_stage=0
 	g.events.final_ceremony=true;g.events.final_ceremony_until=g.realm_time+3.5;g.events.final_ceremony_announced=false
 	g.events.eclipse_started=g.events.final_ceremony_until;g.spawn_clock=99999
-	g.Journey.announce(g,"THE BARON FALLS","The Red Moon cracks beneath him.")
+	g.Journey.announce(g,"THE COLOSSUS FALLS","The Red Moon cracks beneath it.")
 	CombatInk.wave(g,Vector3(0,g.world.height_at(0,0)+.2,0),58,Color("ffd16c"))
 	for i in range(8):
 		var x=cos(i*TAU/8)*16;var z=sin(i*TAU/8)*16
@@ -118,12 +120,14 @@ static func tick(g):
 			titan.node.position.y=lerpf(ground-11,ground,eased);titan.node.scale=Vector3.ONE*lerpf(.08,1.0,eased)
 		if progress>=1:
 			g.events.final_intro=false;g.world.environment.ambient_light_energy=.36;g.world.environment.adjustment_brightness=1.0
-			g.hud.tell("THE BARON HAS RISEN",3)
+			g.hud.tell("THE ASHEN COLOSSUS RISES",3)
+			var body=ColossusFight.rig(titan) if not titan.is_empty() else null
+			if body!=null: body.play("roar",.9,1.4,.9)
 	if replica:return
 	if g.events.get("final_defeated",false):
 		if g.events.get("final_ceremony",false) and g.realm_time>=float(g.events.final_ceremony_until):
 			g.events.final_ceremony=false;g.events.final_ceremony_announced=true;g.spawn_clock=0
-			g.Journey.announce(g,"ENDLESS ECLIPSE","The Baron has fallen. Survive until the last light falls.")
+			g.Journey.announce(g,"ENDLESS ECLIPSE","The Colossus has fallen. Survive until the last light falls.")
 			for crack in g.events.get("final_cracks",[]):
 				if is_instance_valid(crack) and crack.material_override is StandardMaterial3D:
 					crack.material_override.albedo_color=Color(1,.62,.16,.96);crack.material_override.emission=Color("ffc357");crack.material_override.emission_energy_multiplier=4.0
@@ -135,6 +139,7 @@ static func tick(g):
 				for enemy in g.enemies:EclipseCorruption.apply(enemy,stage)
 				g.events.swarm_until=g.realm_time+30;g.events.wave_active=true;g.events.wave_budget=60+stage*10
 		return
+	if not titan.is_empty() and not g.events.get("final_intro",false): ColossusFight.tick(g,titan)
 	if g.events.get("final_intro",false) or not titan.is_empty():return
 	if g.realm_time>=float(g.events.get("final_rift_time",14.0)):
 		erupt(g)

@@ -308,12 +308,14 @@ static func run(g,host: bool):
 		send(g,"drop2_done",drop2)
 		checks.final_realm=await wait_for(g,func():return g.realm==3 and g.enemies.any(func(e):return e.get("boss_id",-1)==8))
 		var bosses=g.enemies.filter(func(e):return e.get("boss_id",-1)==8)
-		checks.baron_model=not bosses.is_empty() and bosses[0].node.get_meta("rig").solid.identity=="boss_8_baron" and bosses[0].node.get_meta("rig").find_children("BaronSteam*","GPUParticles3D",true,false).size()==4
+		# The Ashen Colossus (October 24) replaced the Baron.
+		checks.baron_model=not bosses.is_empty() and bosses[0].node.get_meta("rig") is ColossusRig
 		var intro_line=g.coop.test_messages.get("boss_phase_0",{})
-		checks.baron_intro_voice=intro_line.get("name","")=="THE ARRIVAL" and intro_line.get("index",-1)==10
+		checks.baron_intro_voice=intro_line.get("name","")==ColossusFight.PHASES[0]
 		if checks.baron_intro_voice:send(g,"baron_intro_seen")
 		if not bosses.is_empty():
-			checks.baron_phase_peer=await wait_for(g,func():return g.sound.boss_voice.stream!=null and g.sound.boss_voice.stream.get_length()>0)
+			# The host's phase change reaches this guest's body: it takes the phase II skin.
+			checks.baron_phase_peer=await wait_for(g,func():return bosses[0].node.get_meta("rig").phase_index==1)
 			if checks.baron_phase_peer:send(g,"baron_phase_seen")
 			checks.baron_focus_peer=await wait_for(g,func():return g.events.get("boss_focus_id",0)==g.coop.local_id and is_instance_valid(g.coop.local_nameplate) and g.coop.local_nameplate.text.contains("TARGET"))
 			if checks.baron_focus_peer:send(g,"baron_focus_seen")

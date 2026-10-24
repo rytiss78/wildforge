@@ -186,6 +186,9 @@ func portal_site() -> Vector3:
 	return p
 
 func model(name: String,height: float) -> Node3D:
+	# The final boss is built at full size by its own rig (ColossusRig).
+	if name=="boss_8":
+		var colossus=ColossusRig.new();colossus.setup(name);return colossus
 	if name.begins_with("boss_"):
 		var rig=ActorRig.new();rig.setup(name);rig.scale=Vector3.ONE*(height/3.0);return rig
 	var asset=name if name.begins_with("creature_") else "count_duck" if name=="rubber_duck_toy" else "hero_"+name

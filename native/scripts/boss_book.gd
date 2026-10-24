@@ -14,7 +14,7 @@ const ROSTER=[
 ]
 
 static func entry(id: int) -> Dictionary:
-	if id==8: return {"name":"Baron Vladimir Harkonnen","height":42.0,"radius":9.0,"speed":.22,"cooldown":4.8,"style":"meteor","role":"Suspended tyrant · execution volleys and annihilation rings"}
+	if id==8: return {"name":"The Ashen Colossus","height":17.0,"radius":4.2,"speed":3.0,"cooldown":3.0,"style":"annihilation","role":"Ashen colossus · heavy committed blows, openings after the big ones, three phases"}
 	return ROSTER[clampi(id,0,ROSTER.size()-1)]
 
 static func choose(seed_value: int,realm: int,biome: int,history: Array) -> int:
@@ -66,7 +66,7 @@ static func attack(g,enemy: Dictionary):
 	if g.coop.active and not g.coop.hosting: return
 	var id=int(enemy.boss_id);var boss=entry(id)
 	if id==8:
-		preload("res://scripts/final_arena.gd").attack(g,enemy);return
+		ColossusFight.attack(g,enemy);return
 	enemy.node.get_meta("rig").attack=1.4
 	for mark in pattern(id,enemy.node.position,g.coop.target(enemy.node.position).position,enemy.phase):
 		var damage=roundi((22+g.realm*8)*g.realm_difficulty*mark.damage_scale)
@@ -76,12 +76,6 @@ static func attack(g,enemy: Dictionary):
 	g.sound.say("attack_warn",25)
 
 static func animate(rig,clock: float,speed: float,warning: float):
-	if rig.identity=="boss_8":
-		for i in range(rig.legs.size()):rig.legs[i].rotation.x=sin(clock*.55+i*PI/3)*.018*clampf(speed,0,1)
-		for i in range(rig.arms.size()):rig.arms[i].rotation.x=-.13*warning+sin(clock*.31+i)*.025
-		rig.body.rotation=Vector3(0,0,sin(clock*.18)*.008);rig.body.position.y=.08+sin(clock*.35)*.025
-		if rig.head!=null:rig.head.rotation.y=sin(clock*.21)*.022
-		return
 	var stride=clampf(speed/3,0,1)
 	for i in range(rig.legs.size()): rig.legs[i].rotation.x=sin(clock*2.1+i*PI)*.15*stride
 	for i in range(rig.arms.size()): rig.arms[i].rotation.x=-.25*warning+sin(clock*1.7+i)*.07

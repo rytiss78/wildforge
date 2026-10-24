@@ -102,12 +102,12 @@ static func run(g):
 	checks.baron_spawn=barons.size()==1
 	if not barons.is_empty():
 		var baron=barons[0];var rig=baron.node.get_meta("rig")
-		checks.baron_scale=baron.height==42.0 and baron.radius==9.0 and rig.identity=="boss_8" and rig.solid.identity=="boss_8_baron"
-		var vents=rig.find_children("BaronSteam_*","GPUParticles3D",true,false)
-		checks.baron_steam=vents.size()==4 and vents.all(func(p):return p.emitting and p.amount==16 and p.lifetime==3.0)
+		# The Ashen Colossus (October 24): the 17 m golem with its health orb.
+		checks.baron_scale=baron.height==17.0 and is_equal_approx(baron.radius,4.2) and rig is ColossusRig and rig.identity=="boss_8" and rig.model!=null
+		checks.baron_orb=rig.find_child("GlassCore",true,false)!=null and rig.skins.size()==3
 		var local_shape=baron.node.get_child(0).shape
-		checks.baron_collider=local_shape is CylinderShape3D and is_equal_approx(local_shape.height,42.0) and is_equal_approx(local_shape.radius,9.0)
-		# Keep the normal 12 m third-person camera; frame the full 42 m silhouette at arena distance.
+		checks.baron_collider=local_shape is CylinderShape3D and is_equal_approx(local_shape.height,17.0) and is_equal_approx(local_shape.radius,4.2)
+		# Keep the normal 12 m third-person camera; frame the full silhouette at arena distance.
 		g.player.position=Vector3(0,g.world.height_at(0,55)+1.0,55)
 		g.pitch=-.05;g.yaw=0;g.camera_distance=12.0
 		var camera_anchor=g.player.position+Vector3.UP*1.2
@@ -117,7 +117,7 @@ static func run(g):
 		clear_list(g.effects);g.hud.update(0);checks.baron_capture=await capture(g,"baron")
 		var actor=bytes_to_var(var_to_bytes(g.coop.actor_descriptor(baron)))
 		var remote=g.spawn_network_enemy(actor);var remote_rig=remote.node.get_meta("rig")
-		checks.baron_network=remote.boss_id==8 and remote.model=="boss_8" and remote_rig.identity=="boss_8" and remote_rig.solid.identity=="boss_8_baron" and remote_rig.find_children("BaronSteam_*","GPUParticles3D",true,false).size()==4
+		checks.baron_network=remote.boss_id==8 and remote.model=="boss_8" and remote_rig is ColossusRig and remote_rig.identity=="boss_8"
 		checks.baron_network_collider=remote.node.get_child(0).shape.height==local_shape.height and remote.node.get_child(0).shape.radius==local_shape.radius
 		remote.node.queue_free();g.enemies.erase(remote)
 	print("BOSS_REVIEW "+JSON.stringify({"checks":checks,"rotation":seen,"patterns":patterns.size(),"draw_calls":Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME)}))

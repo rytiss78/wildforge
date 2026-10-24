@@ -322,6 +322,28 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
   - **Bot runs do not repeat from their seed:** the same hero and seed went from beating the Baron to dying in the first minute, and island 1 outcomes changed in 13 of 24 runs at an unchanged island 1. Paired seeds therefore cannot reduce the noise, and 24-run batches swing by about 20 points.
   - **Next:** a step change is not a lever this noise can measure. The Baron's own damage and patterns, judged by human playtest or batches of 48+ runs, is the next thing to try.
 
+## Final boss remade: the Ashen Colossus (user request, October 24)
+
+- **Request:** "completely remade, Dark Souls style huge monster with phases"; then "use a free asset; an HP orb in it, no HP bar, the orb changes colour per phase".
+- **Model:** OpenGameArt's [Fire/Ice/Stone Golem](https://opengameart.org/content/fireicestone-golem) by umask007, CC-BY 3.0, with textures by yughues (CC0). The user approved the download. Credits are in `assets/boss/golem/CREDITS.txt`, which ships with exports.
+  - Converted by `scripts/blender/convert_golem.py`, run with Blender scripts disabled: a GLB with the idle, walk, attack, attack2, flinch and die animations, plus the stone, ice and fire textures.
+  - Scaled to 17 m (`ColossusRig`). It replaces the old Baron model; `boss_8` stays its id everywhere.
+- **Fight (`ColossusFight`):** it walks the hero down, turns to face its target as each wind-up starts, then commits. Every blow has an animation timed to land as its red marks go off. After heavy blows it is open, taking 1.35x damage while its orb flashes.
+  - **Phase I** (100–65%), stone: sweep, overhead slam with a shockwave, stomp, lunge.
+  - **Phase II** (65–30%), ice: adds leap slam, fire breath and tail spin, plus lava vents every 15 s.
+  - **Phase III** (below 30%), fire: faster wind-ups, chained second blows, meteor rain on every hero.
+  - **Phase changes:** a roar (`scripts/make-colossus-audio.py`), a shockwave ring, the new skin and a title card.
+- **Health orb:** a glass orb on the chest bone; no boss bar. The liquid is red in phase I, icy blue in II and fire orange in III.
+- **Co-op:** the host decides; guests replay actions from `colossus_action` messages and take the phase skin from `boss_phase`.
+- **Verified:**
+  - `colossus-review`: real Red Moon entry, every action with marks, lunge and leap movement, both phases, the open-window bonus, the orb; contact sheet inspected.
+  - boss-review, red-moon-review, hermes-review and shared-review updated to the new boss and passing. Their old checks were the Baron's size, steam vents, fixed volleys and voice lines.
+  - check, smoke, integration and coop-dropin pass.
+- **Not verified:**
+  - balance against real players;
+  - how the roar sounds;
+  - the phase II ice skin and its orb in a capture (phase III fire was captured).
+
 ## Next: user list (October 24)
 
 - [x] **1. Longer draw distance.** Enemies and grass appeared just in front of the hero.

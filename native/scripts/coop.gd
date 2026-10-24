@@ -122,7 +122,7 @@ func cosmetic_style(id: String) -> Dictionary:
 
 func set_boss_focus(id: int,name: String):
 	game.events.boss_focus_id=id;game.events.boss_focus_until=game.elapsed+4.0
-	game.hud.tell("BARON MARKS "+clean_player_name(name)+" · MOVE",3.0)
+	game.hud.tell("THE COLOSSUS MARKS "+clean_player_name(name)+" · MOVE",3.0)
 	sync_local_nameplate()
 
 func name_changed():
@@ -977,9 +977,9 @@ func receive(sender: int,message):
 			set_boss_focus(int(message.get("player_id",0)),str(message.get("name","Player")))
 		elif kind=="boss_phase" and int(message.get("realm",-1))==game.realm:
 			game.boss_phases_reached=maxi(int(game.boss_phases_reached),clampi(int(message.get("phase",0)),0,7)+1)
-			game.hud.tell("BARON · "+str(message.get("name","THE WRATH")),4)
-			game.sound.boss_curse(vector(message.get("position",[])),int(message.get("index",10)),true)
+			ColossusFight.show_phase(game,clampi(int(message.get("phase",0)),0,2))
 			if test_mode:test_messages["boss_phase_"+str(int(message.get("phase",-1))) ]={"name":str(message.get("name","")),"index":int(message.get("index",-1))}
+		elif kind=="colossus_action" and int(message.get("realm",-1))==game.realm: ColossusFight.replay(game,message)
 		elif kind=="boss_voice" and int(message.get("realm",-1))==game.realm:
 			game.sound.boss_curse(vector(message.get("position",[])),int(message.get("index",10)),true)
 		elif kind=="damage":

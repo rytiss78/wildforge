@@ -299,6 +299,7 @@ func _ready():
 	elif OS.get_cmdline_user_args().has("--block-drop-review"): preload("res://scripts/block_drop_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--shorts-review"): preload("res://scripts/shorts_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--hero-numbers-review"): preload("res://scripts/hero_numbers_review.gd").run.call_deferred(self)
+	elif OS.get_cmdline_user_args().has("--colossus-review"): preload("res://scripts/colossus_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--model-review"): preload("res://scripts/model_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--weapon-review"): preload("res://scripts/weapon_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--balance-review"): preload("res://scripts/balance_review.gd").run.call_deferred(self)
@@ -1595,7 +1596,8 @@ func hurt_enemy(enemy: Dictionary, damage: float, cause: String,mechanic: String
 	elif cause=="ice" and enemy.freeze<=0: enemy.freeze=3;enemy.status_time=4;sound.effect("freeze",enemy.node.position)
 	if coop.active and not coop.hosting:
 		coop.hit(enemy,damage,mechanic if not mechanic.is_empty() else cause,mechanic_origin,cause);enemy.node.get_meta("rig").hurt=.18;return
-	if enemy.boss and cause not in ["poison","fire"]:
+	# The Colossus roars on its own; the spoken curses belong to the other bosses.
+	if enemy.boss and enemy.get("boss_id",-1)!=8 and cause not in ["poison","fire"]:
 		var curse=sound.boss_curse(enemy.node.position)
 		if curse>=0 and coop.active: coop.broadcast({"type":"big_boss_voice","realm":realm,"index":curse,"position":CoopSession.array(enemy.node.position)})
 	# Co-op combos (host): Crossfire marks add damage; Overload blasts.
@@ -1606,6 +1608,8 @@ func hurt_enemy(enemy: Dictionary, damage: float, cause: String,mechanic: String
 	if enemy.has("modifier"):
 		damage=EliteMods.absorb(self,enemy,damage)
 		if damage<=0: return
+	# The Colossus takes more damage while open after a heavy blow.
+	if enemy.get("boss_id",-1)==8: damage*=ColossusFight.damage_scale(self,enemy)
 	var credited=minf(enemy.hp,damage)
 	var owner=int(enemy.get("hit_owner",enemy.get(cause+"_owner",enemy.get("status_owner",coop.local_id)) if cause in ["poison","fire"] else coop.local_id))
 	update.party_damage+=credited
@@ -1620,11 +1624,7 @@ func hurt_enemy(enemy: Dictionary, damage: float, cause: String,mechanic: String
 	enemy.node.get_meta("rig").set_health(enemy.hp/enemy.maxHp,enemy.boss or enemy.health>=1.8)
 	if enemy.node.has_meta("rig"): enemy.node.get_meta("rig").hurt=.18
 	if enemy.hp <= 0: kill_enemy(enemy,cause)
-	elif enemy.get("boss_id",-1)==8:
-		var voice_phase=clampi(int(floor((1.0-clampf(enemy.hp/enemy.maxHp,0,1))*8.0)),0,7)
-		if voice_phase>int(enemy.get("voice_phase",0)):
-			enemy.voice_phase=voice_phase
-			preload("res://scripts/final_arena.gd").phase_changed(self,enemy,voice_phase)
+	elif enemy.get("boss_id",-1)==8: ColossusFight.on_hurt(self,enemy)
 
 func kill_enemy(enemy: Dictionary, cause: String):
 	condition_times.kill=elapsed
@@ -1925,8 +1925,9 @@ func update_fight_zoom(delta: float):
 			if d<256.0: crowd+=1
 			if enemy.boss and d<900.0: boss_near=true
 		var spells=skills.any(func(spell):return not spell.get("visual_only",false) and float(spell.get("radius",0))>6.0)
-		fight_zoom_target=1.0+clampf((crowd-10)/40.0,0,1)*.22+(.08 if spells else 0.0)+(.1 if boss_near and realm<3 else 0.0)
-		fight_zoom_target=minf(1.35,fight_zoom_target) if mode=="playing" else 1.0
+		# The 17 m Colossus needs the camera well back to be read.
+		fight_zoom_target=1.0+clampf((crowd-10)/40.0,0,1)*.22+(.08 if spells else 0.0)+(.1 if boss_near and realm<3 else .45 if boss_near else 0.0)
+		fight_zoom_target=minf(1.6 if realm==3 else 1.35,fight_zoom_target) if mode=="playing" else 1.0
 	fight_zoom=lerpf(fight_zoom,fight_zoom_target,1.0-exp(-delta*(1.2 if fight_zoom_target>fight_zoom else .6)))
 
 func update_combat(delta: float):
@@ -2112,7 +2113,7 @@ func update_combat(delta: float):
 			if profile_crowd: section_times.slide=float(section_times.get("slide",0.0))+(Time.get_ticks_usec()-slide_start)/1000.0
 			enemy.vertical=body.velocity.y/(enemy_delta/delta)
 			if body.position.y<world.height_at(body.position.x,body.position.z)-4: body.position.y=world.height_at(body.position.x,body.position.z)+.3;body.velocity.y=0
-			if aim.length()>.01: body.rotation.y=lerp_angle(body.rotation.y,atan2(-aim.x,-aim.z),enemy_delta*(.28 if enemy.get("boss_id",-1)==8 else 6))
+			if aim.length()>.01: body.rotation.y=lerp_angle(body.rotation.y,atan2(-aim.x,-aim.z),enemy_delta*(1.4 if enemy.get("boss_id",-1)==8 else 6))
 		if profile_crowd:
 			section_times.movement+=(Time.get_ticks_usec()-section_start)/1000.0;section_start=Time.get_ticks_usec()
 		if body.has_meta("rig"):

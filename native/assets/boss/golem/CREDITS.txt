@@ -1,0 +1,11 @@
+The Ashen Colossus (final boss) model
+
+"Fire/Ice/Stone Golem" by umask007
+https://opengameart.org/content/fireicestone-golem
+License: CC-BY 3.0 (https://creativecommons.org/licenses/by/3.0/)
+Textures used to bake its normal and diffuse maps by yughues (CC0).
+Original model: http://www.blendswap.com/blends/view/68618
+
+Changes for Wildforge: converted from .blend to glTF with its six animations
+(scripts/blender/convert_golem.py), scaled to 17 m, a glass health orb added on
+its chest, and the stone, ice and fire materials used as the boss's three phases.
