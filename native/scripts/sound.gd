@@ -2,6 +2,9 @@ extends Node
 class_name RunSound
 
 const BAR_LOOP = 16.0 * 60.0 / 144.0
+# Main music (October 24, user request for new phonk): the drift-phonk set made by
+# scripts/make-phonk-music.py. The earlier set (phonk_*) stays on disk.
+const MUSIC="phonk2_"
 var settings: Dictionary
 var voice = AudioStreamPlayer3D.new()
 var drums = AudioStreamPlayer.new()
@@ -118,10 +121,10 @@ func play_phrase():
 	var riff = arrangement[phrase % arrangement.size()]
 	var volume = 0.0 if eclipse_active else float(settings.music)
 	for player in [drums,rhythm,lead,synth]: player.volume_db = linear_to_db(maxf(.0001, volume))
-	drums.stream = stream("phonk_boss_drums" if boss else "phonk_drums")
-	rhythm.stream = stream("phonk_bass_"+str(riff))
-	lead.stream = stream("phonk_bell_"+str(riff))
-	synth.stream = stream("phonk_air_0")
+	drums.stream = stream(MUSIC+("boss_drums" if boss else "drums"))
+	rhythm.stream = stream(MUSIC+"bass_"+str(riff))
+	lead.stream = stream(MUSIC+"bell_"+str(riff))
+	synth.stream = stream(MUSIC+"air_0")
 	drums.volume_db-=7 if genre=="cyber" else 3
 	rhythm.volume_db-=5
 	lead.volume_db-=12 if genre=="cyber" else 7
@@ -230,7 +233,7 @@ func tick(delta: float, playing: bool, has_boss: bool):
 	var realm_index=clampi(get_parent().realm,0,2)
 	if active and theme_realm!=realm_index:
 		theme_realm=realm_index
-		var theme=stream("phonk_air_"+str(realm_index)).duplicate() as AudioStreamWAV
+		var theme=stream(MUSIC+"air_"+str(realm_index)).duplicate() as AudioStreamWAV
 		theme.loop_mode=AudioStreamWAV.LOOP_FORWARD;theme.loop_begin=0;theme.loop_end=roundi(theme.get_length()*theme.mix_rate)
 		atmosphere.stream=theme;atmosphere.play();atmosphere.stream_paused=not playing
 	atmosphere.volume_db=-80 if eclipse_active or boss or hunt_active else linear_to_db(maxf(.0001,float(settings.music)))-(24 if boss else 18)

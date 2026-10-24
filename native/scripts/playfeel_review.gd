@@ -83,7 +83,7 @@ static func run(g):
 	g.invulnerable=0;g.shield_hp=50;g.take_damage(10);checks.shield_sound=g.sound.cache.has("effect_shield-hit")
 	g.hp=g.stats.maxHp;g.damage_feedback_time=0;g.invulnerable=1000
 	g.sound.start(407);g.sound.tick(.01,true,false)
-	checks.phonk_playing=g.sound.drums.playing and g.sound.drums.stream.resource_path.ends_with("phonk_drums.wav")
+	checks.phonk_playing=g.sound.drums.playing and g.sound.drums.stream.resource_path.ends_with(g.sound.MUSIC+"drums.wav")
 	g.sound.tick(.1,false,false);checks.music_paused=g.sound.drums.stream_paused
 	g.events.eclipse=true;g.sound.tick(.1,true,false)
 	checks.eclipse_mix=g.sound.eclipse_music.playing and g.sound.eclipse_music.stream.resource_path.ends_with("eclipse_game_mix.wav")
