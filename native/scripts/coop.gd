@@ -850,7 +850,7 @@ func receive(sender: int,message):
 				if not is_finite(damage): return
 				enemy.hit_owner=sender
 				var cause=str(message.get("cause","hit"))
-				if cause not in ["hit","crit","melee","slam","explosion","fire","poison","ice","sonic","thorn","aura","lightning","meteor","burrow","stomp","burn"]: cause="hit"
+				if cause not in ["hit","crit","melee","slam","explosion","fire","poison","ice","sonic","thorn","aura","lightning","meteor","burrow","stomp","burn","gravity","bloom"]: cause="hit"
 				game.hurt_enemy(enemy,damage,cause,str(message.get("mechanic","")));remote_hits+=1
 				enemy.erase("hit_owner");enemy.status_owner=sender
 				if not enemy.dead:

@@ -245,6 +245,22 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
   - shared-review-stress, coop-dropin and the full `coop` route (`2026-10-23T20-37-43-363Z`), all with 0 errors.
 - **Not verified:** a real internet session with packet loss; the tests run on one machine. Snapshots still fragment into about 13 pieces at this size. If loss stays visible, the next step is splitting the snapshot into independent packets.
 
+## Weapon damage review (user report, October 24)
+
+- **Report:** a friend saw one weapon always show "1" damage, even after ranking it up. The user also asked that hero-specific weapons can drop for other heroes.
+- **New review:** `weapon-review` (`weapon_review.gd`) runs every weapon through the real combat path at ranks 1 and 5 and reads the number shown at its slot.
+- **Hero weapons:** all already sit in the shared drop pool. The review checks that each hero's starting weapon is offered in 4,000 weapon rolls.
+- **Fixes:**
+  - Gravity wells (Gravity Jar, Pocket Black Hole, Teacup Singularity) dealt damage every frame. Each slice was a fraction of a point, shown as "1", and on a co-op guest each slice was one hit message per enemy. Wells now tick four times a second with the same total.
+  - Gravity and meteor damage was not on the list of causes that show a number; neither was flower blooms. All three now show.
+  - Flowers bloomed at the power they had when planted, for their full 22 s life, so a rank-up only showed once the old trail withered. Blooms now use the weapon's current rank.
+  - The burn or poison of a fire or poison weapon, and flower pollen, were flat (10 / 9 / 4). They now grow with the square root of the weapon's power, like spells.
+  - Hybrid mutation infusions hit for a flat 1. They now scale like their strain.
+  - Rolling bombs (Bomb, Marble Mine, Bottle Barrage, Pumpkin Fuse) aimed their hit test at an enemy's middle while rolling on the ground, so they passed under tall enemies and went off only at the end of the fuse. They now test at bomb height.
+  - The host's co-op cause list keeps a guest's gravity and bloom damage as such, instead of plain hits.
+- **Verified:** `weapon-review` passed on two runs (`2026-10-24T13-37-46-311Z`); every weapon grows from rank 1 to rank 5. check, integration, smoke, shared-review and coop-dropin passed with no script errors.
+- **Limits:** the review uses pinned dummies, not moving crowds. Spells grow about 1.5x by rank 5 by design (square root of power). The friend's weapon was not named, so the fix covers every cause found, not a confirmed single weapon.
+
 ## Open issues and limits
 
 - **Internet port opening failed on the user's router** (October 23): the "router did not allow automatic port opening" message appeared. UPnP was on in the modem, but no mapping was created. That message covered both "no router answered" and "router refused".

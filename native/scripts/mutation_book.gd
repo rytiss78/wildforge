@@ -272,7 +272,9 @@ static func infuse(g,strain: String,enemies: Array):
 	for hybrid in HYBRIDS:
 		if not hybrid.has("infuse") or hybrid.infuse[0]!=strain or not has(g,hybrid.id): continue
 		for enemy in enemies:
-			if not enemy.dead: g.hurt_enemy(enemy,1.0,hybrid.infuse[1])
+			# The infused element lands with a small hit of its own that scales like the
+			# strain (it was a flat 1, shown as a stream of "1"s).
+			if not enemy.dead: g.hurt_enemy(enemy,maxf(1.0,power(g,strain,.12,enemy)),hybrid.infuse[1])
 
 static func hybrid_heal(g,strain: String):
 	for hybrid in HYBRIDS:

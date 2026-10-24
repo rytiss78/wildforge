@@ -297,6 +297,7 @@ func _ready():
 	elif OS.get_cmdline_user_args().has("--run-bot"): preload("res://scripts/run_bot.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--island-review"): preload("res://scripts/island_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--model-review"): preload("res://scripts/model_review.gd").run.call_deferred(self)
+	elif OS.get_cmdline_user_args().has("--weapon-review"): preload("res://scripts/weapon_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--balance-review"): preload("res://scripts/balance_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--mutation-balance"): preload("res://scripts/mutation_balance.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--hermes-review"): preload("res://scripts/hermes_review.gd").run.call_deferred(self)
@@ -1382,8 +1383,11 @@ func hit_enemy(enemy: Dictionary, shot: Dictionary,cause: String="hit"):
 			var pop=shape(shell,Color("c6e4ed"),self,enemy_center(enemy));pop.material_override=pop.material_override.duplicate();pop.material_override.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA;pop.material_override.albedo_color.a=.22
 			effects.append({"node":pop,"life":enemy.bubble,"velocity":Vector3.ZERO,"bubble_enemy":enemy})
 		enemy.status_time = 4
-		set_damage_status(enemy,"fire",stats.burn + (10.0 if kind.contains("fire") or kind=="flame" else 0.0),coop.local_id)
-		set_damage_status(enemy,"poison",stats.poison + (9.0 if kind.contains("poison") else 0.0),coop.local_id)
+		# A fire or poison weapon's own burn grows with its power (square root, like
+		# spells), so ranking it up raises the burn too; it was a flat 10 / 9.
+		var element=sqrt(maxf(1.0,float(weapon_power(str(shot.get("weapon_id",kind))))))
+		set_damage_status(enemy,"fire",stats.burn + (10.0*element if kind.contains("fire") or kind=="flame" else 0.0),coop.local_id)
+		set_damage_status(enemy,"poison",stats.poison + (9.0*element if kind.contains("poison") else 0.0),coop.local_id)
 		enemy.slow = maxf(enemy.slow,stats.slow + (.35 if kind.contains("ice") else 0.0))
 		if rules.rng.randf()<stats.freeze or kind.contains("ice") and rules.rng.randf()<.3:
 			enemy.freeze = .35 if enemy.boss else 1.6
@@ -1421,11 +1425,16 @@ func hit_enemy(enemy: Dictionary, shot: Dictionary,cause: String="hit"):
 		hurt_enemy(next,damage*.6,"lightning")
 		origin = next.node.position
 
+func weapon_power(weapon_id: String) -> float:
+	for weapon in equipped:
+		if weapon.id==weapon_id: return float(weapon.get("power",1.0))
+	return 1.0
+
 func record_damage_number(enemy_id: int, damage: float, cause: String,position_value: Vector3=Vector3.INF,weapon_id: String=""):
 	# Only equipped weapons have a HUD slot to rise from.
 	if not equipped.any(func(w):return w.id==weapon_id): weapon_id=""
 	# Every damaging hit shows a number, ordinary gun hits included (October 21 request).
-	var show_causes=["hit","lightning","crit","fire","ice","slam","explosion","melee","sonic","thorn","poison","aura","burn","heal","coop"]
+	var show_causes=["hit","lightning","crit","fire","ice","slam","explosion","melee","sonic","thorn","poison","aura","burn","heal","coop","gravity","meteor","bloom"]
 	if cause not in show_causes: return
 	# De-dup: merge damage within 400ms for same enemy+cause to reduce visual noise
 	# A spell hits a whole crowd at once, and burn and poison tick on every enemy
@@ -2122,11 +2131,15 @@ func update_combat(delta: float):
 		if shot.kind=="bomb":
 			shot.node.position.y=world.height_at(shot.node.position.x,shot.node.position.z)+.3;shot.node.rotation.x+=delta*9
 		if shot.life<=0:
-			if shot.kind=="bomb": damage_area(shot.node.position,3.5*stats.bombSize,shot.damage,"explosion",{},str(shot.get("weapon_id","bomb")))
+			if shot.kind=="bomb": damage_area(shot.node.position,3.5*stats.bombSize*float(shot.get("area_scale",1)),shot.damage,"explosion",{},str(shot.get("weapon_id","bomb")))
 			continue
 		for enemy in enemies:
 			if enemy.dead or shot.hit.has(enemy.net_id): continue
 			var center=enemy_center(enemy)
+			# Bombs roll along the ground: test them against the enemy's axis at bomb
+			# height, or they pass under tall enemies (centre above reach) and only
+			# go off at the end of the fuse, wherever they have rolled to.
+			if shot.kind=="bomb": center.y=clampf(shot.node.position.y,minf(enemy.node.position.y,center.y),maxf(enemy.node.position.y,center.y))
 			# Sphere-swept check: fast distance-to-segment comparison instead of Geometry3D API.
 			var to_center=center-shot_start
 			var dir=shot.node.position-shot_start
@@ -2154,9 +2167,14 @@ func update_combat(delta: float):
 	update_pickups(delta)
 	for pool in pools:
 		pool.life-=delta
+		# Damage lands four times a second (same total): per-frame slices showed as a
+		# stream of "1"s and, on a co-op guest, sent one hit message per enemy a frame.
+		pool.tick=float(pool.get("tick",0.0))-delta
+		var ticking=pool.tick<=0
+		if ticking: pool.tick+=.25
 		for enemy in enemies:
 			if not enemy.dead and pool.node.position.distance_to(melee_contact(enemy,pool.node.position))<pool.get("radius",2.5):
-				hurt_enemy(enemy,pool.damage*delta,"gravity" if pool.get("gravity",false) else "poison",str(pool.get("mechanic","gravity")) if pool.get("gravity",false) else "",pool.node.position)
+				if ticking: hurt_enemy(enemy,pool.damage*.25,"gravity" if pool.get("gravity",false) else "poison",str(pool.get("mechanic","gravity")) if pool.get("gravity",false) else "",pool.node.position)
 				if pool.get("gravity",false) and not enemy.boss: enemy.node.move_and_collide((pool.node.position-enemy.node.position).normalized()*delta*3)
 	for hazard in hazards:
 		hazard.life-=delta
@@ -2901,7 +2919,7 @@ func update_garden(delta: float):
 		for enemy in enemies:
 			if enemy.dead or not is_instance_valid(enemy.node): continue
 			if flower.node.position.distance_to(melee_contact(enemy,flower.node.position))<3:
-				enemy.slow=maxf(enemy.slow,stats.flowerRoots);set_damage_status(enemy,"poison",stats.flowerPollen,coop.local_id);enemy.status_time=3
+				enemy.slow=maxf(enemy.slow,stats.flowerRoots);set_damage_status(enemy,"poison",stats.flowerPollen*sqrt(maxf(1.0,weapon_power("flowers"))),coop.local_id);enemy.status_time=3
 				achievement_event("ROOTS");achievement_event("POLLEN")
 		if flower.bloom<=0 and enemies.any(func(e): return not e.dead and flower.node.position.distance_to(melee_contact(e,flower.node.position))<3):
 			var chain=flowers.filter(func(f):return f.age>=1.5 and f.bloom<=0 and f.node.position.distance_to(flower.node.position)<5)
@@ -2910,7 +2928,9 @@ func update_garden(delta: float):
 				bloom.bloom=3.5
 				for enemy in enemies:
 					if not enemy.dead and enemy.boss and bloom.node.position.distance_to(melee_contact(enemy,bloom.node.position))<3.5: achievement_event("FLOWER_BOSS")
-				damage_area(bloom.node.position,3.5,stat("damage")*stats.flowerPower*bloom.power*.8,"bloom",{},"flowers")
+				# Current rank, not the rank when the flower was planted: flowers live 22 s,
+				# so a rank-up only showed once the old trail had withered.
+				damage_area(bloom.node.position,3.5,stat("damage")*stats.flowerPower*maxf(bloom.power,weapon_power("flowers"))*.8,"bloom",{},"flowers")
 				burst(bloom.node.position+Vector3.UP*.85,Color("f5a8c4"),5)
 				if player.position.distance_to(bloom.node.position)<4 and hp<stats.maxHp: heal(stats.flowerHeal);achievement_event("FLOWER_HEAL")
 	for flower in flowers:
