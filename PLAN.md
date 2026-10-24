@@ -329,9 +329,10 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
   - **Follows the frame rate:** `view_scale` rises to 1.5x while above 90 fps and drops back below 55 fps (`game.adapt_view`), stretching the clear zone, grass and scenery further.
   - **Verified:** biome-review captures inspected (much deeper views), check, smoke and integration pass. crowd-spells frame median 35.8 ms against 33 before (process +1.4 ms for the extra terrain; GPU unchanged).
 - [x] **2. Enemies stand out.** The enemy shader (`painted_batch.gd`, animated variant) adds a warm rim light along the silhouette and a slight self-light, so bodies read brighter than the ground in every biome. No extra draw calls. Verified with crowd-review captures before and after.
-- [ ] **3. Much harder.** Less XP per drop, slightly faster enemies, more enemies.
+- [x] **3. Much harder.** XP per kill x0.75 (`XP_SCALE`), enemy speed x1.1 (`ENEMY_SPEED_SCALE`), one more enemy per wave after the opening 90 s, waves 15% closer together (spawn clock factor 2.0 to 1.7); the 125-enemy cap is unchanged. check, smoke and integration pass; a bot batch measures it.
 - [ ] **4. Hit knockback.** A received hit should push the hero back slightly. Today it is unclear whether you were hit.
 - [ ] **5. New main music.** Phonk style.
+- [ ] **6. Danger is red, safe is not.** Warnings for anything that can hurt the hero (enemy skills, map events) are red; the hero's own skill and weapon indicators avoid red, so it is clear what to dodge and what is safe.
 
 ## Damage numbers: own only, none while dead (user report, October 24, Build 22)
 

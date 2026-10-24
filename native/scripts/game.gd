@@ -1058,7 +1058,7 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 	if not boss: max_health*=species.health*pow(body_scale,1.5)*(.60 if species.behavior=="spit" else 1.0)
 	if boss: max_health*=4
 	if elite: max_health*=2.5
-	var enemy = {"biome":biome,"elite":elite,"node":node,"hp":max_health,"maxHp":max_health,"speed":2.9+realm*.35+randf()*0.6,"boss":boss,"fire":0.0,"poison":0.0,"status_time":0.0,"freeze":0.0,"blind":0.0,"slow":0.0,"attack":2.5*realm_difficulty,"telegraph":0.0,"dead":false,"contact":0.0,"phase":1,"startDamage":health_damage,"formation_id":formation_id}
+	var enemy = {"biome":biome,"elite":elite,"node":node,"hp":max_health,"maxHp":max_health,"speed":(2.9+realm*.35+randf()*0.6)*ENEMY_SPEED_SCALE,"boss":boss,"fire":0.0,"poison":0.0,"status_time":0.0,"freeze":0.0,"blind":0.0,"slow":0.0,"attack":2.5*realm_difficulty,"telegraph":0.0,"dead":false,"contact":0.0,"phase":1,"startDamage":health_damage,"formation_id":formation_id}
 	enemy.guardian=guardian
 	enemy.merge(species);enemy.speed*=species.speed/pow(body_scale,.6)*(.9 if elite else 1.0)
 	enemy.height=height;enemy.radius=radius_value;enemy.flying=species.flying and not boss and not structure
@@ -1082,12 +1082,17 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 	if elite: EliteMods.assign(self,enemy)
 	enemies.append(enemy)
 
+# Much harder (user request, October 24): a quarter less XP per kill, enemies 10%
+# faster, one more enemy per wave and waves 15% closer together.
+const XP_SCALE=.75
+const ENEMY_SPEED_SCALE=1.1
+
 func enemy_xp_reward(enemy: Dictionary) -> float:
 	# Sublinear strength scaling prevents late high-HP enemies multiplying XP bursts.
 	var strength=sqrt(maxf(.25,float(enemy.maxHp)/35.0))*pow(maxf(.25,float(enemy.get("damage",1))),.25)
-	if enemy.get("boss",false): return clampf(12*strength,24,45)
-	if enemy.get("elite",false): return clampf(3*strength,6,12)
-	return clampf(2*strength,1.5,5)
+	if enemy.get("boss",false): return clampf(12*strength,24,45)*XP_SCALE
+	if enemy.get("elite",false): return clampf(3*strength,6,12)*XP_SCALE
+	return clampf(2*strength,1.5,5)*XP_SCALE
 
 func make_spawn_room() -> bool:
 	enemies=enemies.filter(func(e):return not e.dead)
@@ -1930,14 +1935,14 @@ func update_combat(delta: float):
 	if spawn_clock <= 0 and (realm<3 or events.get("eclipse",false) and not events.get("final_ceremony",false)):
 		var swarm = events.get("swarm_until",0.0)>realm_time or update.beacon_state=="defending"
 		# The opening 90 seconds of an island ramp up before the full spawn rate.
-		var count = (1 if realm_time<90 else 2)+realm+(2 if swarm else 0)
+		var count = (1 if realm_time<90 else 3)+realm+(2 if swarm else 0)
 		var budget=int(update.beacon_budget) if update.beacon_state=="defending" else int(events.get("wave_budget",0))
 		if swarm: count=mini(count,budget)
 		# Further out than the old 18-25 m, so the hero sees them coming.
 		for i in range(count): spawn_enemy(randf_range(28,38))
 		if update.beacon_state=="defending": update.beacon_budget=maxi(0,update.beacon_budget-count)
 		elif swarm: events.wave_budget=maxi(0,budget-count)
-		spawn_clock = maxf(.4,.95-realm_time*.0005)*(1.0/1.35 if swarm else 2.0)
+		spawn_clock = maxf(.4,.95-realm_time*.0005)*(1.0/1.35 if swarm else 1.7)
 	if realm<3 and (not coop.active or coop.hosting):
 		formation_clock-=delta
 		if formation_clock<=0:
