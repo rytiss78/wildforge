@@ -287,7 +287,13 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
   - check, smoke, integration, shared-review and coop-dropin passed, with no leaks at exit.
 - **Party choices beside the board:** in co-op, the team options panel (each player's cards, ✓ on a pick) shows while Block Drop is open, both in the menu and the waiting overlay. The board moves left to make room.
 - **Space no longer picks reward cards** (friends spamming Space as hard drop picked a random card). For 0.8 s after an offer opens, Enter and controller A are ignored too. Number keys and the mouse pick at once. block-drop-review checks `space_guard`, `space_never_picks` and `number_picks`. The smoke test's controller-accept check now presses after that moment.
-- **Short videos beside the board:** the user wants the real YouTube Shorts or TikTok feed, not a parody. That needs a web-view plugin (godot_wry, MIT, WebView2 on Windows), and downloading it waits for the user's approval.
+- **YouTube Shorts beside the board** (`shorts_panel.gd`, `assets/shorts/player.html`):
+  - **Plugin:** godot_wry v1.0.2 (MIT; the user approved the download). Only its Windows DLL is installed, in `addons/godot_wry`. It is a native Edge WebView2 window laid over the game, so it follows the panel's on-screen rectangle (including the 1920x1080 stretch) and hides when the panel leaves the screen.
+  - **Upbeat only:** the shorts come from the public feeds of The Dodo, The Pet Collective, Good News Network and Animal Planet. Nat Geo Wild and BBC Earth are left out because their feeds include predators hunting. Each short plays once, looping is off, and the next loads when one ends. The panel volume is 35% of the music volume.
+  - **No cookie banner:** youtube.com pages open on a consent wall in the EU (the user saw it). Playback goes through a local player page with YouTube's IFrame API on the privacy-enhanced youtube-nocookie.com host. The page loads from `res://`, so the embedded player gets a referrer; a direct embed load fails with error 153.
+  - **Options:** a SHORTS: ON/OFF button on the Block Drop screen.
+  - **Verified:** shorts-review (real videos played; end of a short loads the next; low volume; loop off; BACK hides), with desktop captures of the menu and the co-op overlay inspected. block-drop-review, smoke, integration, shared-review and coop-dropin passed.
+- **Not verified:** the exported build with the plugin.
 - **Not verified:** how the music and effects sound (generated, not listened to), and the overlay in a real two-machine session.
 
 ## Difficulty retune (October 24, bot-playtest)

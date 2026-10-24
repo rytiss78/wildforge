@@ -4,9 +4,10 @@ class_name RunHUD
 var game
 var root = Control.new()
 var modal = Control.new()
-# The wait room: the Block Drop board (with room for more beside it), one for
+# The wait room: YouTube Shorts and the Block Drop board side by side, one for
 # the session, moved between the pause-menu screen and the co-op waiting overlay.
 var block_drop
+var shorts
 var wait_room: HBoxContainer
 # A new offer ignores confirm presses for a moment: Space and A spammed in Block
 # Drop used to pick whichever card had focus.
@@ -196,7 +197,8 @@ func setup(owner_game):
 	game = owner_game
 	block_drop=preload("res://scripts/block_drop.gd").new();block_drop.game=game
 	wait_room=HBoxContainer.new();wait_room.add_theme_constant_override("separation",16);wait_room.mouse_filter=Control.MOUSE_FILTER_IGNORE
-	wait_room.add_child(block_drop)
+	shorts=preload("res://scripts/shorts_panel.gd").new();shorts.game=game;shorts.host=self
+	wait_room.add_child(shorts);wait_room.add_child(block_drop)
 	# HUD clusters (1920×1080 logical): vitals top-left, map + run clock top-right,
 	# loadout (skills, weapons, slam/turret, level/XP) bottom-centre.
 	skill_strip.position=Vector2(LOADOUT.position.x+34,LOADOUT.position.y+8);skill_strip.add_theme_constant_override("separation",3);root.add_child(skill_strip)
@@ -904,6 +906,8 @@ func block_drop_menu():
 	# Co-op: room on the right for the party panel with everyone's choices.
 	if game.coop.active:
 		var spacer=Control.new();spacer.custom_minimum_size.x=330;holder.add_child(spacer);show_party_panel(game.party_seen)
+	var shorts_on=bool(game.career.data.settings.get("shortsPanel",true))
+	box.add_child(button("▶  SHORTS: "+("ON" if shorts_on else "OFF"),func():game.career.data.settings.shortsPanel=not shorts_on;game.career.save();block_drop_menu()))
 	box.add_child(button("←  BACK",func():pause_menu()))
 
 # The wait room lives outside the tree between uses; free it with the HUD.

@@ -79,6 +79,11 @@ static func run(g):
 	await key(g,KEY_LEFT)
 	checks.wait_keys=g.mode=="playing"
 	checks.capture_wait=await shot(g,"block-drop-wait.png")
+	# The Shorts browser is a native window: only a desktop capture shows it.
+	await g.get_tree().create_timer(6.0).timeout
+	var screen=DisplayServer.window_get_current_screen()
+	var desktop=DisplayServer.screen_get_image(screen)
+	if desktop!=null: desktop.get_region(Rect2i(DisplayServer.window_get_position()-DisplayServer.screen_get_position(screen),DisplayServer.window_get_size())).save_png("user://block-drop-wait-desktop.png")
 	g.coop.paused=false;g.coop.active=false
 	for i in range(4): await g.get_tree().process_frame
 	checks.wait_ends=not g.hud.block_drop_active() and not drop.music.playing

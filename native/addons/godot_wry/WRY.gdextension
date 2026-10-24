@@ -1,0 +1,17 @@
+; godot_wry v1.0.2 (MIT, github.com/doceazedo/godot_wry), Windows build only:
+; Wildforge ships for Windows. Used for the YouTube Shorts panel beside Block Drop.
+[configuration]
+entry_symbol = "gdext_rust_init"
+compatibility_minimum = 4.1
+reloadable = false
+
+[libraries]
+windows.debug.x86_64   = "bin/x86_64-pc-windows-msvc/godot_wry.dll"
+windows.release.x86_64 = "bin/x86_64-pc-windows-msvc/godot_wry.dll"
+
+[icons]
+WebView = "icons/webview.svg"
+
+[dependencies]
+windows.debug.x86_64 = { "bin/x86_64-pc-windows-msvc/godot_wry.dll" : "" }
+windows.release.x86_64 = { "bin/x86_64-pc-windows-msvc/godot_wry.dll" : "" }

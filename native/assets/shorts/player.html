@@ -1,0 +1,47 @@
+<!doctype html>
+<!-- Wildforge's YouTube Shorts player (shorts_panel.gd). Loaded from res:// so the
+     embedded player gets a referrer (YouTube error 153 otherwise); plays through
+     the privacy-enhanced youtube-nocookie.com host with the official IFrame API. -->
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+html,body{margin:0;height:100%;background:#0d0f17;overflow:hidden}
+#player,iframe{position:fixed;inset:0;width:100vw;height:100vh;border:0}
+</style>
+</head>
+<body>
+<div id="player"></div>
+<script>
+let player=null, ready=false, pending=null;
+function post(data){ try{ window.ipc.postMessage(JSON.stringify(data)); }catch(e){} }
+function onYouTubeIframeAPIReady(){
+  ready=true; post({type:'ready'});
+  if(pending){ const p=pending; pending=null; window.wfPlay(p.id,p.volume); }
+}
+window.wfPlay=(id,volume)=>{
+  if(!ready){ pending={id,volume}; return; }
+  if(!player){
+    player=new YT.Player('player',{
+      host:'https://www.youtube-nocookie.com', width:'100%', height:'100%', videoId:id,
+      playerVars:{autoplay:1, controls:0, playsinline:1, rel:0, loop:0, fs:0, iv_load_policy:3},
+      events:{
+        onReady:e=>{ e.target.setVolume(volume); e.target.playVideo(); },
+        onStateChange:e=>{ if(e.data===YT.PlayerState.ENDED) post({type:'ended'}); },
+        onError:e=>post({type:'error',code:e.data})
+      }});
+  } else { player.loadVideoById(id); player.setVolume(volume); }
+};
+window.wfState=(volume)=>{
+  if(!player || !player.getCurrentTime) return;
+  player.setVolume(volume);
+  post({type:'state', t:player.getCurrentTime(), d:player.getDuration(), state:player.getPlayerState(), volume:player.getVolume()/100, loop:false});
+};
+// Review hook: jump to the end to check that the next short follows.
+window.wfSeekEnd=()=>{ if(player && player.getDuration) player.seekTo(Math.max(0,player.getDuration()-0.5),true); };
+window.wfPause=()=>{ if(player && player.pauseVideo) player.pauseVideo(); };
+window.wfResume=()=>{ if(player && player.playVideo) player.playVideo(); };
+</script>
+<script src="https://www.youtube.com/iframe_api"></script>
+</body>
+</html>

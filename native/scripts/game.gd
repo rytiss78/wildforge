@@ -297,6 +297,7 @@ func _ready():
 	elif OS.get_cmdline_user_args().has("--run-bot"): preload("res://scripts/run_bot.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--island-review"): preload("res://scripts/island_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--block-drop-review"): preload("res://scripts/block_drop_review.gd").run.call_deferred(self)
+	elif OS.get_cmdline_user_args().has("--shorts-review"): preload("res://scripts/shorts_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--model-review"): preload("res://scripts/model_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--weapon-review"): preload("res://scripts/weapon_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--balance-review"): preload("res://scripts/balance_review.gd").run.call_deferred(self)
