@@ -4,9 +4,13 @@ class_name RunHUD
 var game
 var root = Control.new()
 var modal = Control.new()
-# Block Drop minigame: one board for the session, moved between the pause-menu
-# screen and the co-op waiting overlay.
+# The wait room: the Block Drop board (with room for more beside it), one for
+# the session, moved between the pause-menu screen and the co-op waiting overlay.
 var block_drop
+var wait_room: HBoxContainer
+# A new offer ignores confirm presses for a moment: Space and A spammed in Block
+# Drop used to pick whichever card had focus.
+var offer_guard=0.0
 var content: VBoxContainer
 var clock = RunClock.new()
 var map_view = ExploreMap.new()
@@ -191,6 +195,8 @@ func cluster_plate(area: Rect2):
 func setup(owner_game):
 	game = owner_game
 	block_drop=preload("res://scripts/block_drop.gd").new();block_drop.game=game
+	wait_room=HBoxContainer.new();wait_room.add_theme_constant_override("separation",16);wait_room.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	wait_room.add_child(block_drop)
 	# HUD clusters (1920×1080 logical): vitals top-left, map + run clock top-right,
 	# loadout (skills, weapons, slam/turret, level/XP) bottom-centre.
 	skill_strip.position=Vector2(LOADOUT.position.x+34,LOADOUT.position.y+8);skill_strip.add_theme_constant_override("separation",3);root.add_child(skill_strip)
@@ -376,7 +382,7 @@ func open(title: String, subtitle: String = "") -> VBoxContainer:
 	binding_action=""
 	if offer_tween!=null and offer_tween.is_valid(): offer_tween.kill()
 	preview_id="";party_split=false
-	if modal.is_ancestor_of(block_drop): block_drop.get_parent().remove_child(block_drop)
+	if modal.is_ancestor_of(wait_room): wait_room.get_parent().remove_child(wait_room)
 	for child in modal.get_children(): child.queue_free()
 	modal.visible = true
 	var vp_size = get_viewport().get_visible_rect().size
@@ -447,6 +453,7 @@ func show_party_panel(selections: Dictionary):
 # Teammate updates only refresh the rows; the panel shows beside this player's
 # own reward choice and never over gameplay or another full-width screen.
 func party_visible() -> bool:
+	if game.coop.active and game.run_active and block_drop_active(): return true
 	return party_panel_open and party_split and modal.visible and game.coop.active and game.run_active
 
 func party_panel_toggle():
@@ -492,6 +499,7 @@ func level_flash():
 	game.sound.effect("level")
 
 func update(delta: float):
+	offer_guard=maxf(0,offer_guard-delta)
 	player_locator.queue_redraw()
 	update_skill_strip()
 	journey_overlay.queue_redraw()
@@ -578,7 +586,7 @@ func update(delta: float):
 	prompt.text = game.interaction_hint().replace("E / X", ControlBindings.display(game.career.data.settings,"interact","controller" if game.input_kind=="xbox" else "keyboard"))
 	alert.visible=false
 	alert.text = ""
-	if game.coop.frozen() and game.mode=="playing": alert.text="PARTY PAUSED  ·  A FRIEND IS CHOOSING  ·  BLOCK DROP WHILE YOU WAIT";alert.visible=true
+	if game.coop.frozen() and game.mode=="playing": alert.text="PARTY PAUSED  ·  A FRIEND IS CHOOSING";alert.visible=true
 	update_block_drop_overlay()
 	map_view.configure(game.world.seed_value,game.world.realm)
 	map_view.interactables.clear()
@@ -890,14 +898,17 @@ func pause_menu(ended: bool = false, win: bool = false):
 func block_drop_menu():
 	var box=open("BLOCK DROP","A falling-blocks break. Your board waits here for the next pause.")
 	game.mode="paused"
-	var holder=CenterContainer.new();holder.size_flags_vertical=Control.SIZE_EXPAND_FILL;box.add_child(holder)
-	if block_drop.get_parent()!=null: block_drop.get_parent().remove_child(block_drop)
-	block_drop.position=Vector2.ZERO;block_drop.scale=Vector2.ONE;holder.add_child(block_drop)
+	var holder=HBoxContainer.new();holder.alignment=BoxContainer.ALIGNMENT_CENTER;holder.size_flags_vertical=Control.SIZE_EXPAND_FILL;box.add_child(holder)
+	if wait_room.get_parent()!=null: wait_room.get_parent().remove_child(wait_room)
+	wait_room.position=Vector2.ZERO;wait_room.scale=Vector2.ONE;wait_room.size_flags_vertical=Control.SIZE_SHRINK_CENTER;holder.add_child(wait_room)
+	# Co-op: room on the right for the party panel with everyone's choices.
+	if game.coop.active:
+		var spacer=Control.new();spacer.custom_minimum_size.x=330;holder.add_child(spacer);show_party_panel(game.party_seen)
 	box.add_child(button("←  BACK",func():pause_menu()))
 
-# The board lives outside the tree between uses; free it with the HUD.
+# The wait room lives outside the tree between uses; free it with the HUD.
 func _exit_tree():
-	if is_instance_valid(block_drop) and not block_drop.is_inside_tree(): block_drop.free()
+	if is_instance_valid(wait_room) and not wait_room.is_inside_tree(): wait_room.free()
 
 func block_drop_active() -> bool:
 	return is_instance_valid(block_drop) and block_drop.is_visible_in_tree()
@@ -905,15 +916,17 @@ func block_drop_active() -> bool:
 # While a co-op friend chooses a reward, players who are done get the board.
 func update_block_drop_overlay():
 	var wanted=game.coop.frozen() and game.mode=="playing" and game.run_active
-	if wanted and block_drop.get_parent()!=root:
-		if block_drop.get_parent()!=null: block_drop.get_parent().remove_child(block_drop)
-		root.add_child(block_drop)
-		block_drop.size=block_drop.custom_minimum_size
-		# Below the "party paused" banner and clear of the loadout bar.
+	if wanted and wait_room.get_parent()!=root:
+		if wait_room.get_parent()!=null: wait_room.get_parent().remove_child(wait_room)
+		root.add_child(wait_room)
+		wait_room.size=wait_room.get_combined_minimum_size()
+		# Below the vitals panel and the "party paused" banner, clear of the loadout
+		# bar, and left of the party panel (right third) with everyone's choices.
 		var view=root.size if root.size.x>0 else get_viewport().get_visible_rect().size
-		var fit=minf(1.0,(view.y-250)/block_drop.size.y);block_drop.scale=Vector2.ONE*fit
-		block_drop.position=Vector2((view.x-block_drop.size.x*fit)/2,100)
-	elif not wanted and block_drop.get_parent()==root: root.remove_child(block_drop)
+		var fit=minf(1.0,minf((view.y-365)/wait_room.size.y,(view.x*.66)/wait_room.size.x));wait_room.scale=Vector2.ONE*fit
+		wait_room.position=Vector2((view.x*.68-wait_room.size.x*fit)/2,175)
+		show_party_panel(game.party_seen)
+	elif not wanted and wait_room.get_parent()==root: root.remove_child(wait_room)
 
 func icon_key(item: Dictionary) -> String:
 	return str(item.weapon_id) if item.kind=="evolution" else item.id
@@ -1030,6 +1043,7 @@ func preview_offer(item: Dictionary):
 
 func show_offers(items: Array, source: String,animate: bool=true):
 	var coop_split=game.coop.active and game.run_active
+	offer_guard=.8
 	var box=open("LEVEL %d · CHOOSE YOUR NEXT POWER" % game.level if source=="level" else "TREASURE FOUND", "Choose one reward. Shape your next fight.")
 	if coop_split: game.coop.publish_reward_options(items,source,game.offer_kind,game.offer_elite)
 	var panel=box.get_parent();panel.position=Vector2(80,83);panel.size=Vector2(1760,914)

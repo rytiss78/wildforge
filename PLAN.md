@@ -285,6 +285,9 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
   - `block-drop-review`: 20 checks through the real Esc, button and key path; captures inspected.
   - capture-ui pause menu inspected.
   - check, smoke, integration, shared-review and coop-dropin passed, with no leaks at exit.
+- **Party choices beside the board:** in co-op, the team options panel (each player's cards, ✓ on a pick) shows while Block Drop is open, both in the menu and the waiting overlay. The board moves left to make room.
+- **Space no longer picks reward cards** (friends spamming Space as hard drop picked a random card). For 0.8 s after an offer opens, Enter and controller A are ignored too. Number keys and the mouse pick at once. block-drop-review checks `space_guard`, `space_never_picks` and `number_picks`. The smoke test's controller-accept check now presses after that moment.
+- **Short videos beside the board:** the user wants the real YouTube Shorts or TikTok feed, not a parody. That needs a web-view plugin (godot_wry, MIT, WebView2 on Windows), and downloading it waits for the user's approval.
 - **Not verified:** how the music and effects sound (generated, not listened to), and the overlay in a real two-machine session.
 
 ## Difficulty retune (October 24, bot-playtest)

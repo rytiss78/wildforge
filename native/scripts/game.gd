@@ -891,6 +891,13 @@ func camera_look(amount: Vector2):
 
 func _input(event):
 	if hud.capture_binding(event): get_viewport().set_input_as_handled();return
+	# Space never picks a reward card, and Enter or A only after a moment: players
+	# spamming Space (hard drop) or A (rotate) in Block Drop picked whatever card
+	# had focus when the offer opened. Number keys and the mouse still pick.
+	if mode in ["offer","replace"]:
+		var space=event is InputEventKey and event.pressed and event.physical_keycode==KEY_SPACE
+		var confirm=event is InputEventKey and event.pressed and event.physical_keycode in [KEY_ENTER,KEY_KP_ENTER] or event is InputEventJoypadButton and event.pressed and event.button_index==JOY_BUTTON_A
+		if space or confirm and hud.offer_guard>0: get_viewport().set_input_as_handled();return
 	if event is InputEventKey or event is InputEventMouseButton: input_kind = "keyboard"
 	if event is InputEventJoypadButton or (event is InputEventJoypadMotion and absf(event.axis_value)>.25): input_kind = "xbox"
 	if hud.modal.visible and input_kind=="xbox":
@@ -2650,6 +2657,9 @@ func run_smoke():
 	checks.reveal_keeps_choice=mode=="offer" and owned.is_empty() and offers.size()==5
 	input_kind="xbox";hud.cards[1].grab_focus();hud.cards[0].mouse_entered.emit()
 	checks.xbox_reward_focus=get_viewport().gui_get_focus_owner()==hud.cards[1]
+	# A confirm press right as an offer opens is ignored on purpose (Space/A spam
+	# from Block Drop); this check presses after that moment has passed.
+	hud.offer_guard=0.0
 	_input(confirm)
 	checks.xbox_reward_accept=owned.size()==1 and mode=="playing"
 	input_kind="keyboard"
