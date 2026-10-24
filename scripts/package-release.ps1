@@ -25,7 +25,18 @@ foreach($taskName in @('Wildforge.exe','Wildforge.pck')){
   if($taskActualHash -ne $taskManifest.artifacts.$taskName){throw "Build artifact changed: $taskName"}
 }
 $taskFiles=@('Wildforge.exe','Wildforge.pck','build-info.json') | ForEach-Object {Get-Item -LiteralPath (Join-Path $taskBuild $_)}
+# The video panel's web view (godot_wry, MIT) loads its DLL from beside the
+# executable; ship it with its license, or the panel only shows "Loading…".
+$taskAddon=Join-Path $taskRoot 'native/addons/godot_wry'
+if(Test-Path -LiteralPath $taskAddon){
+  $taskDll=Join-Path $taskBuild 'godot_wry.dll'
+  if(!(Test-Path -LiteralPath $taskDll)){throw 'The build lacks godot_wry.dll; rebuild with agent-workflow build.'}
+  $taskLicense=Join-Path $taskDist 'godot_wry-LICENSE.txt'
+  Copy-Item -LiteralPath (Join-Path $taskAddon 'LICENSE') -Destination $taskLicense -Force
+  $taskFiles+=@((Get-Item -LiteralPath $taskDll),(Get-Item -LiteralPath $taskLicense))
+}
 Compress-Archive -LiteralPath $taskFiles.FullName -DestinationPath $taskArchive
+if($taskLicense){Remove-Item -LiteralPath $taskLicense}
 $taskHash=(Get-FileHash -LiteralPath $taskArchive -Algorithm SHA256).Hash.ToLower()
 [IO.File]::WriteAllText((Join-Path $taskDist "SHA256SUMS-$taskVersion.txt"),$taskHash+'  '+[IO.Path]::GetFileName($taskArchive)+[Environment]::NewLine)
 Write-Output $taskArchive
