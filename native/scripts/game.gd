@@ -2079,6 +2079,7 @@ func update_combat(delta: float):
 		if profile_crowd:
 			section_times.steering+=(Time.get_ticks_usec()-section_start)/1000.0;section_start=Time.get_ticks_usec()
 		var surface_moved=EnemySurface.tick(self,enemy,surface_target,enemy_delta)
+		if profile_crowd: section_times.surface=float(section_times.get("surface",0.0))+(Time.get_ticks_usec()-section_start)/1000.0
 		if not surface_moved:
 			body.velocity.x=velocity.x*(enemy_delta/delta);body.velocity.z=velocity.z*(enemy_delta/delta)
 			var vertical=enemy.get("vertical",0.0)
@@ -2092,8 +2093,10 @@ func update_combat(delta: float):
 			else: vertical=0
 			if enemy.freeze>0 and (enemy.flying or enemy.bubble>0): vertical=0
 			body.velocity.y=vertical*(enemy_delta/delta)
+			var slide_start=Time.get_ticks_usec() if profile_crowd else 0
 			EnemySurface.step_up(enemy,Vector3(body.velocity.x,0,body.velocity.z)*delta)
 			body.move_and_slide()
+			if profile_crowd: section_times.slide=float(section_times.get("slide",0.0))+(Time.get_ticks_usec()-slide_start)/1000.0
 			enemy.vertical=body.velocity.y/(enemy_delta/delta)
 			if body.position.y<world.height_at(body.position.x,body.position.z)-4: body.position.y=world.height_at(body.position.x,body.position.z)+.3;body.velocity.y=0
 			if aim.length()>.01: body.rotation.y=lerp_angle(body.rotation.y,atan2(-aim.x,-aim.z),enemy_delta*(.28 if enemy.get("boss_id",-1)==8 else 6))
@@ -2406,9 +2409,18 @@ func update_aura_visual():
 	aura.scale=Vector3(pulse,.1,pulse)
 	aura.material_override.emission_energy_multiplier=2.4+sin(elapsed*5)*.4
 
+# Crowd profiling (crowd-review/crowd-spells): time since the last mark, by section.
+func profile_mark(section: String,since: int) -> int:
+	var now=Time.get_ticks_usec()
+	if not crowd_sections.has(section): crowd_sections[section]=[]
+	crowd_sections[section].append((now-since)/1000.0)
+	return now
+
 func _process(delta: float):
 	if not is_instance_valid(avatar): return
+	var process_mark=Time.get_ticks_usec() if profile_crowd else 0
 	coop.tick(delta)
+	if profile_crowd: process_mark=profile_mark("p_coop",process_mark)
 	menu_repeat=maxf(0,menu_repeat-delta)
 	if hud.modal.visible and hud.binding_action=="" and input_kind=="xbox" and controller_id>=0 and menu_repeat<=0:
 		var menu_stick=Vector2(Input.get_joy_axis(controller_id,JOY_AXIS_LEFT_X),Input.get_joy_axis(controller_id,JOY_AXIS_LEFT_Y))
@@ -2416,6 +2428,7 @@ func _process(delta: float):
 			hud.controller_move(Vector2(signf(menu_stick.x),0) if absf(menu_stick.x)>absf(menu_stick.y) else Vector2(0,signf(menu_stick.y)));menu_repeat=.22
 	world.stream(player.position,coop.members.values().filter(func(m):return m.has("position") and m.get("hp",0)>0).map(func(m):return CoopSession.vector(m.position)) if coop.hosting else [])
 	world.build_tick(delta)
+	if profile_crowd: process_mark=profile_mark("p_stream",process_mark)
 	world.eclipse=events.get("eclipse",false)
 	# Keep rain near the active camera, not fixed to an arbitrary world height.
 	if is_instance_valid(blood_rain):
@@ -2425,6 +2438,7 @@ func _process(delta: float):
 		if wants_rain:
 			blood_rain.global_position=player.global_position+Vector3(0,13,0)
 	world.weather_tick(delta,player.position)
+	if profile_crowd: process_mark=profile_mark("p_world",process_mark)
 	sound.weapon_loop("steam",world.edge_near,player.position)
 	if mode=="level_reveal":
 		level_reveal-=delta
@@ -2436,6 +2450,7 @@ func _process(delta: float):
 		dn.life-=delta
 		if dn.get("flash_timer",0)>0: dn.flash_timer-=delta
 	damage_numbers=damage_numbers.filter(func(dn):return dn.life>0)
+	if profile_crowd: process_mark=profile_mark("p_numbers",process_mark)
 	if not camera_locked:
 		var anchor=player.position+Vector3.UP*1.2
 		update_fight_zoom(delta)
@@ -2477,12 +2492,15 @@ func _process(delta: float):
 			elif effect.has("remote_impact") and effect.has("fx_kind"): ShotFx.impact(self,effect.remote_impact,effect.fx_kind,false,effect.velocity)
 			update.release_effect(effect.node)
 	effects=effects.filter(func(effect):return effect.life>0)
+	if profile_crowd: process_mark=profile_mark("p_camera_effects",process_mark)
 	if mode=="reveal":
 		reveal_clock+=delta
 		if reveal_clock>=.8: hud.chest_reveal(reveal_tier,minf(1,(reveal_clock-.8)/(reveal_duration-.8)))
 		if reveal_clock>=reveal_duration: finish_reveal()
 	sound.tick(delta,mode in ["playing","settings"] and not hud.block_drop_active(),boss_active() or events.get("eclipse",false))
+	if profile_crowd: process_mark=profile_mark("p_sound",process_mark)
 	hud.update(delta)
+	if profile_crowd: process_mark=profile_mark("p_hud",process_mark)
 	next_save+=delta
 	if next_save>10:
 		next_save=0
