@@ -262,6 +262,17 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
 - **Verified:** `weapon-review` passed on two runs (`2026-10-24T13-37-46-311Z`); every weapon grows from rank 1 to rank 5. check, integration, smoke, shared-review and coop-dropin passed with no script errors.
 - **Limits:** the review uses pinned dummies, not moving crowds. Spells grow about 1.5x by rank 5 by design (square root of power). The friend's weapon was not named, so the fix covers every cause found, not a confirmed single weapon.
 
+## Reward offers (user reports, October 24)
+
+- **"Level-up sometimes offers just one item":** in co-op, shared offers hid every weapon a full loadout (3 weapons) could not hold. A weapon level (level 2, then every third level) then showed only the rank-up of a held weapon. All cards now stay, and a new weapon opens the swap menu, as in solo. A swap is now reported to the party panel too.
+- **"Every player gets the same drop" in co-op:** the host rolled one set of cards for everyone. Level-ups and chests are still shared events, but each guest now rolls its own cards from its own loadout and luck. Event chests keep their minimum rarity, because the chest message now says it is an event chest.
+- **"All runs end up with the same weapons":** the first weapon offer was already varied (72 of 73 weapons over 80 runs, the commonest 12 times in 400 cards), so the sameness came from the shared co-op cards and from habit. The profile now keeps the last runs' weapons (`recentWeapons`, up to 8, not the hero's own weapon). Those sit out the weapon offers at levels 2, 3 and 6, including rerolls.
+- **Verified:**
+  - weapon-review checks `early_diverse`, `recent_sit_out` (0 of 200 cards) and `full_loadout_cards` (5).
+  - shared-review checks `own_pool` and `own_chest_pool`. These replace `same_pool` and `shared_chest_pool`, which required the host's cards; the spec changed on request.
+  - check, integration, smoke, coop-dropin and shared-review-stress passed with no script errors.
+- **Limits:** the full-loadout case is checked by calling the offer directly, not by pressing through a co-op swap. The swap menu itself is the solo path.
+
 ## Open issues and limits
 
 - **Internet port opening failed on the user's router** (October 23): the "router did not allow automatic port opening" message appeared. UPnP was on in the modem, but no mapping was created. That message covered both "no router answered" and "router refused".

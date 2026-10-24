@@ -80,6 +80,31 @@ static func run(g: Node3D):
 	var offered={}
 	for i in range(4000): offered[g.rules.roll("weapon").id]=true
 	var hero_weapons=g.rules.data.heroes.map(func(h):return str(h.weapon))
-	var checks={"dummies":ring(g).size()==8,"hero_weapons_offered":hero_weapons.all(func(id):return offered.has(id)),"weapons_measured":rows.size()==g.rules.data.weapons.size(),"weapons_scale":flagged.is_empty()}
+	# The first weapon offer of a run (level 2) over many runs: how many different
+	# weapons appear, and how often the commonest one does (user report, October 24:
+	# "all runs become with same weapons").
+	var early={};var early_cards=0
+	for run_seed in range(1,81):
+		g.start_run(run_seed);g.set_process(false);g.set_physics_process(false);g.mode="playing";g.level_choice_cooldown=0
+		g.xp=g.xp_target;g.level_up()
+		for item in g.offers:
+			if item.kind=="weapon": early[item.id]=int(early.get(item.id,0))+1;early_cards+=1
+	var early_top=early.keys().map(func(id):return [early[id],id]);early_top.sort();early_top.reverse()
+	# Weapons from recent runs never show in the first offer while others remain.
+	var recent=["marble-rain","pumpkin-fuse","button-barrage","teacup-singularity","shotgun","ninja-shuriken","bomb","flame"]
+	g.career.data.recentWeapons=recent.duplicate();var recent_shown=0
+	for run_seed in range(101,141):
+		g.start_run(run_seed);g.set_process(false);g.set_physics_process(false);g.mode="playing";g.level_choice_cooldown=0
+		g.xp=g.xp_target;g.level_up()
+		recent_shown+=g.offers.filter(func(item):return recent.has(item.id) and not g.equipped.any(func(w):return w.id==item.id)).size()
+	g.career.data.recentWeapons=[]
+	# A shared co-op weapon level with a full loadout keeps all five cards.
+	g.start_run(7);g.set_process(false);g.set_physics_process(false);g.equipped.clear()
+	for id in ["gun","rocket","disc"]:
+		var item=g.rules.data.weapons.filter(func(w):return w.id==id)[0].duplicate(true);item.kind="weapon";item.strength=1.0;g.equip_weapon(item)
+	g.open_shared_offer(g.rules.offers("weapon",0,false,g.stats,g.equipped),"weapon",false,"level","review:full")
+	var full_cards=g.offers.size();g.hud.close();g.mode="playing"
+	print("EARLY_OFFERS "+JSON.stringify({"cards":early_cards,"distinct":early.size(),"top":early_top.slice(0,8),"recent_shown":recent_shown,"full_loadout_cards":full_cards}))
+	var checks={"dummies":ring(g).size()==8,"hero_weapons_offered":hero_weapons.all(func(id):return offered.has(id)),"weapons_measured":rows.size()==g.rules.data.weapons.size(),"weapons_scale":flagged.is_empty(),"early_diverse":early.size()>=50 and int(early_top[0][0])<=early_cards/10,"recent_sit_out":recent_shown==0,"full_loadout_cards":full_cards==5}
 	print("WEAPON_REVIEW "+JSON.stringify({"checks":checks,"flagged":flagged,"rows":rows}))
 	g.get_tree().quit(0 if not checks.values().has(false) else 1)

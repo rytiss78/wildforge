@@ -675,7 +675,7 @@ func buy_chest(chest: Dictionary,payer: int=-1):
 	# never shared); broadcast the rolled pool so every member opens the same chest
 	# and each filters it to their own loadout, and hide the chest from every map.
 	if coop.active:
-		coop.broadcast({"type":"chest_open","offers":offers,"kind":"item","elite":bool(chest.elite),"realm":realm,"reward_id":party_reward_id})
+		coop.broadcast({"type":"chest_open","offers":offers,"kind":"item","elite":bool(chest.elite),"event":offer_event,"realm":realm,"reward_id":party_reward_id})
 		coop.broadcast({"type":"chest_hide","realm":realm,"pos":[int(chest.node.position.x),int(chest.node.position.y),int(chest.node.position.z)]})
 	reveal_duration = [2.6,2.9,3.3,3.8][reveal_tier]
 	sound.chest_open(reveal_tier,reveal_duration)
@@ -701,7 +701,7 @@ func level_up():
 	var kind = "weapon" if level == 2 or level%3 == 0 else "skill"
 	offer_kind=kind;offer_elite=false;offer_rerolls=0
 	party_reward_id=run_id+":level:"+str(realm)+":"+str(level)
-	offers = WeaponEvolution.inject(self,MutationBook.mix(self,rules.offers(kind,stats.luck,false,stats,equipped),"level"),"level")
+	offers = WeaponEvolution.inject(self,MutationBook.mix(self,rules.offers(kind,stats.luck,false,stats,equipped,early_avoid()),"level"),"level")
 	offer_source = "level"
 	mode = "level_reveal"
 	level_reveal = .95
@@ -750,6 +750,12 @@ func choose_offer(index: int):
 	hud.close()
 	if (not coop.active or coop.hosting) and xp >= xp_target: level_up()
 
+# Weapons from the last few runs sit out a new run's first weapon offers (levels
+# 2, 3 and 6), so runs do not keep starting with the same picks (October 24 request).
+func early_avoid() -> Array:
+	if offer_kind!="weapon" or level>6: return []
+	return career.data.get("recentWeapons",[]).filter(func(id):return not equipped.any(func(w):return w.id==id))
+
 func reroll_price() -> int:
 	return maxi(10,level*4)*int(pow(2,mini(offer_rerolls,16)))
 
@@ -757,7 +763,7 @@ func reroll_price() -> int:
 # mutations, chest offers the chest luck bonus. Used by reroll and banish.
 func roll_offers(excluded: Array=[]) -> Array:
 	var event=offer_event and offer_source=="chest"
-	return WeaponEvolution.inject(self,MutationBook.mix(self,rules.offers(offer_kind,stats.luck+(stats.chestBonus*.2 if offer_source=="chest" else 0),offer_elite,stats,equipped,excluded,"",EventLoot.MIN_TIER if event else -1),offer_source,event),offer_source)
+	return WeaponEvolution.inject(self,MutationBook.mix(self,rules.offers(offer_kind,stats.luck+(stats.chestBonus*.2 if offer_source=="chest" else 0),offer_elite,stats,equipped,excluded+early_avoid(),"",EventLoot.MIN_TIER if event else -1),offer_source,event),offer_source)
 
 func reroll_offers():
 	if mode!="offer": return
@@ -802,6 +808,7 @@ func replace_weapon(index: int, item: Dictionary):
 	sound.weapon_loop(previous.id,false,player.position)
 	equipped.remove_at(index)
 	equip_weapon(item)
+	if coop.active: coop.publish_reward_choice(item,offer_source)
 	hud.close()
 
 func deploy_turret(weapon: Dictionary):
@@ -845,6 +852,10 @@ func record_run(win: bool, abandoned: bool = false):
 	if run_recorded or not run_active: return
 	run_recorded = true
 	if elapsed < 2 and abandoned: return
+	var recent=equipped.map(func(w):return str(w.id)).filter(func(id):return id!=str(hero.weapon))
+	for id in career.data.get("recentWeapons",[]):
+		if not recent.has(id) and recent.size()<8: recent.append(id)
+	career.data.recentWeapons=recent
 	career.score({"id":run_id,"hero":hero.id,"seconds":elapsed,"kills":kills,"level":level,"bosses":run_bosses,"bossPhases":boss_phases_reached,"revives":update.run_revives,"rescues":update.run_rescues,"chests":run_chests,"win":win,"abandoned":abandoned,"healthDamage":health_damage,"realm":realm,"gold":gold,"seed":seed_value,"recap":update.recap(),"localDamage":update.run_damage,"partyDamage":update.party_damage,"damageSources":damage_sources.duplicate(),"killTypes":kill_types.duplicate(),"deaths":death_count})
 	# Career totals: sum kills and deaths across all runs
 	career.bump("deaths",death_count)
@@ -946,11 +957,12 @@ func finish_reveal():
 	if coop.active: open_shared_offer(offers,offer_kind,offer_elite,offer_source)
 	else: hud.show_offers(offers,"chest")
 
-# Shared chest/level pool. Rolled once by the opener/host, identical on every
-# machine. Filter this player's visible cards to their own loadout so the shared
-# level does NOT force a shared build — the companion panel (party_seen /
-# hud.show_party_panel) shows what the other players picked instead.
-func open_shared_offer(pool: Array, kind: String, elite: bool, source: String, reward_id: String=""):
+# A shared chest or level reward. The reward is shared (everyone levels up or opens
+# the chest together), but each player gets cards of their own (October 24
+# request): a guest rolls its cards from its own loadout and luck, and the host's
+# were already rolled from its own. The companion panel (party_seen /
+# hud.show_party_panel) shows what the other players picked.
+func open_shared_offer(pool: Array, kind: String, elite: bool, source: String, reward_id: String="", event: bool=false):
 	if pool.is_empty(): return
 	if reward_id.is_empty(): reward_id=run_id+":"+source+":"+str(realm)+":"+str(level if source=="level" else run_chests)
 	if party_reward_id!=reward_id: party_seen.clear()
@@ -959,13 +971,11 @@ func open_shared_offer(pool: Array, kind: String, elite: bool, source: String, r
 	party_offers = pool
 	party_source = source
 	offer_source = source
-	var shown := []
-	for item in pool:
-		if item.kind == "weapon" and not rules.can_weapon(equipped,item.id): continue
-		shown.append(item)
-	if shown.is_empty(): shown = pool.duplicate(true)
-	offers = WeaponEvolution.inject(self,shown,source)
 	offer_kind = kind;offer_elite = elite;offer_rerolls = 0
+	# Every card stays: a weapon a full loadout cannot hold opens the swap menu, as
+	# in solo. Hiding those left a weapon level with a single card.
+	if coop.active and not coop.hosting: offer_event=event;offers=roll_offers()
+	else: offers = WeaponEvolution.inject(self,pool.duplicate(true),source)
 	hud.show_offers(offers,source)
 
 func random_spawn(radius: float,anchor: Vector3=Vector3.INF) -> Vector3:

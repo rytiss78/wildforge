@@ -475,7 +475,7 @@ func tick(delta: float):
 	if not active: return
 	if not queued_offers.is_empty() and game.mode=="playing" and game.run_active:
 		var next=queued_offers.pop_front()
-		if int(next[5])==game.realm: game.open_shared_offer(next[0],next[1],next[2],next[3],next[4])
+		if int(next[5])==game.realm: game.open_shared_offer(next[0],next[1],next[2],next[3],next[4],next[6])
 	if transport=="lan" and peer!=null:
 		peer.poll()
 		if peer==null or not active: return
@@ -657,13 +657,13 @@ static func vector(v) -> Vector3:
 
 # Opens a shared reward, or queues it while another is still open: a second
 # reward used to replace the first, which was lost.
-func shared_offer(pool,kind: String,elite: bool,source: String,reward_id: String):
+func shared_offer(pool,kind: String,elite: bool,source: String,reward_id: String,event: bool=false):
 	if not reward_id.is_empty():
 		if rewards_seen.has(reward_id): return
 		rewards_seen[reward_id]=true
 	if game.mode in ["offer","replace","reveal","level_reveal"] and game.party_reward_id!=reward_id:
-		queued_offers.append([pool,kind,elite,source,reward_id,game.realm]);return
-	game.open_shared_offer(pool,kind,elite,source,reward_id)
+		queued_offers.append([pool,kind,elite,source,reward_id,game.realm,event]);return
+	game.open_shared_offer(pool,kind,elite,source,reward_id,event)
 
 func publish_reward_options(items: Array,source: String,kind: String,elite: bool):
 	if not active or not game.run_active or game.party_reward_id.is_empty(): return
@@ -983,7 +983,7 @@ func receive(sender: int,message):
 			game.run_chests+=1;game.career.bump("chests");game.heal(game.stats.chestHeal)
 		elif kind=="chest_rejected": game.pending_chest=false;game.hud.tell("Chest unavailable or not enough coins")
 		elif kind=="chest_open" and int(message.get("realm",-1))==game.realm:
-			shared_offer(message.get("offers",[]),str(message.get("kind","item")),bool(message.get("elite",false)),"chest",str(message.get("reward_id","")))
+			shared_offer(message.get("offers",[]),str(message.get("kind","item")),bool(message.get("elite",false)),"chest",str(message.get("reward_id","")),bool(message.get("event",false)))
 		elif kind=="biome_event": BiomeMechanics.spawn(game,message)
 		elif kind=="chest_hide" and int(message.get("realm",-1))==game.realm:
 			apply_chest_hide(message.get("pos",[]))

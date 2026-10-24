@@ -107,7 +107,9 @@ static func run(g,host: bool):
 		checks.shared_level=g.level==2 and g.xp==10 and g.update.run_xp==16
 		checks.client_level=await wait_for(g,func():return g.coop.test_messages.has("level"))
 		var data=g.coop.test_messages.get("level",{})
-		checks.same_pool=data.get("pool",[])==g.offers.map(func(o):return o.id)
+		# Each player gets cards of their own (October 24 request; this used to
+		# require the host's pool).
+		checks.own_pool=data.get("pool",[]).size()==g.offers.size() and data.get("pool",[])!=g.offers.map(func(o):return o.id)
 		var client_options=data.get("options",[])
 		var client_state=g.party_seen.get(str(g.coop.members.keys()[0]),{})
 		checks.client_options=data.get("reward_id","")==g.party_reward_id and client_options.size()==g.offers.size() and client_state.get("options",[]).size()==g.offers.size()
@@ -125,7 +127,7 @@ static func run(g,host: bool):
 		checks.client_chest=await wait_for(g,func():return g.coop.test_messages.has("chest_done"))
 		data=g.coop.test_messages.get("chest_done",{})
 		checks.one_payment=data.get("gold",-1)==70 and data.get("paid",-1)==1 and g.gold==100
-		checks.shared_chest_pool=data.get("pool",[])==pool and data.get("hidden",false)
+		checks.own_chest_pool=data.get("pool",[]).size()==pool.size() and data.get("pool",[])!=pool and data.get("hidden",false)
 		checks.shared_chest_options=data.get("options",[]).size()==pool.size() and data.get("reward_id","")==g.party_reward_id and g.party_seen.get(str(client_id),{}).get("options",[]).size()==pool.size()
 		checks.chest_choice_highlight=await wait_for(g,func():return str(g.party_seen.get(str(client_id),{}).get("selected_id",""))!="")
 		checks.resumed=await wait_for(g,func():return not g.coop.frozen() and g.mode=="playing")

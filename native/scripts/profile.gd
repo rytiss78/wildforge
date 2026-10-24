@@ -11,7 +11,7 @@ const COSMETIC_REWARDS={"WF_WEAPON_MASTERY":"mastery_crown","WF_FORMATION_BREAKE
 func _init(catalog: Dictionary, smoke: bool = false):
 	achievements = catalog.achievements
 	if smoke: file = "user://smoke-career.json"
-	data = {"version":6,"feedback":[],"total":{},"best":{},"unlocked":{},"cosmetics":[],"weaponMastery":{},"scores":[],"lastRun":{},"settings":{"sfx":0.65,"music":0.45,"voice":0.8,"rumble":true,"genre":"metal","name":"Local hero","lookSensitivity":1.0,"invertLook":false}}
+	data = {"version":6,"feedback":[],"total":{},"best":{},"unlocked":{},"cosmetics":[],"weaponMastery":{},"recentWeapons":[],"scores":[],"lastRun":{},"settings":{"sfx":0.65,"music":0.45,"voice":0.8,"rumble":true,"genre":"metal","name":"Local hero","lookSensitivity":1.0,"invertLook":false}}
 	if FileAccess.file_exists(file):
 		var saved = JSON.parse_string(FileAccess.get_file_as_string(file))
 		if saved is Dictionary:
