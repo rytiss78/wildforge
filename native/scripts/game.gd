@@ -1735,9 +1735,11 @@ func take_damage(amount: float, source: Vector3=Vector3.ZERO, voice_type: String
 	var mark=CombatInk.star(self,struck,2.1+damage_feedback_strength,Color("8fe9ff") if taken<=0 else Color("ff3b3b"),5.0,.3)
 	if mark!=null: mark.shards(Color("d9f8ff") if taken<=0 else Color("ff8a6a"),6,3.4)
 	hit_shake=maxf(hit_shake,.18+damage_feedback_strength*.24)
-	if source!=Vector3.ZERO:
-		knock_velocity=(player.position-source).normalized()*8;knock_velocity.y=0
-		player.velocity.y=maxf(player.velocity.y,1.7)
+	# A received hit pushes the hero back about two metres with a small hop (user
+	# report, October 24: it was unclear whether you were hit). Ticks have no source.
+	if source!=Vector3.ZERO and (player.position-source)*Vector3(1,0,1)!=Vector3.ZERO:
+		knock_velocity=((player.position-source)*Vector3(1,0,1)).normalized()*11
+		player.velocity.y=maxf(player.velocity.y,2.6)
 	sound.effect("shield-hit" if absorbed>0 and taken<=0 else voice_type,source)
 	sound.hero_hurt(hero.id,player)
 	vibrate(.35,.65,.13)
@@ -2218,7 +2220,7 @@ func update_combat(delta: float):
 			player.move_and_collide((hazard.node.position-player.position).normalized()*delta*2)
 		if hazard.life<=0:
 			if hazard.get("friendly",false): damage_area(hazard.node.position,hazard.radius,hazard.damage,"meteor",{},str(hazard.get("weapon_id","meteor")))
-			elif not hazard.get("visual_only",false) and player.position.distance_to(hazard.node.position)<hazard.radius: take_damage(hazard.damage)
+			elif not hazard.get("visual_only",false) and player.position.distance_to(hazard.node.position)<hazard.radius: take_damage(hazard.damage,hazard.node.position,"blast")
 			if not hazard.get("friendly",false) and coop.active and coop.hosting:
 				for id in coop.members:
 					if CoopSession.vector(coop.members[id].get("position",[])).distance_to(hazard.node.position)<hazard.radius: coop.damage_player(id,hazard.damage,hazard.node.position,"blast","poison" if hazard.get("style","")=="toxic" else "")
@@ -2351,7 +2353,7 @@ func _physics_process(delta: float):
 		player.velocity.x=running.x;player.velocity.z=running.z
 	if player_chill>0: player.velocity.x*=.7;player.velocity.z*=.7
 	player.velocity.x+=knock_velocity.x;player.velocity.z+=knock_velocity.z
-	knock_velocity=knock_velocity.move_toward(Vector3.ZERO,delta*30)
+	knock_velocity=knock_velocity.move_toward(Vector3.ZERO,delta*28)
 	if not player.is_on_floor(): player.velocity.y-=24*delta
 	var was_grounded=player.is_on_floor()
 	peak_height=maxf(peak_height,player.position.y)

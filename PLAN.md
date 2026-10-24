@@ -330,7 +330,7 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
   - **Verified:** biome-review captures inspected (much deeper views), check, smoke and integration pass. crowd-spells frame median 35.8 ms against 33 before (process +1.4 ms for the extra terrain; GPU unchanged).
 - [x] **2. Enemies stand out.** The enemy shader (`painted_batch.gd`, animated variant) adds a warm rim light along the silhouette and a slight self-light, so bodies read brighter than the ground in every biome. No extra draw calls. Verified with crowd-review captures before and after.
 - [x] **3. Much harder.** XP per kill x0.75 (`XP_SCALE`), enemy speed x1.1 (`ENEMY_SPEED_SCALE`), one more enemy per wave after the opening 90 s, waves 15% closer together (spawn clock factor 2.0 to 1.7); the 125-enemy cap is unchanged. check, smoke and integration pass; a bot batch measures it.
-- [ ] **4. Hit knockback.** A received hit should push the hero back slightly. Today it is unclear whether you were hit.
+- [x] **4. Hit knockback.** A received hit pushes the hero about 2 m back with a small hop (11 m/s, was 8 m/s and about 1 m). Area blasts and meteors now pass their centre, so they push and aim the hit-direction arrow too. Damage-over-time ticks still do not push. check, smoke, integration and playfeel-review pass.
 - [ ] **5. New main music.** Phonk style.
 - [ ] **6. Danger is red, safe is not.** Warnings for anything that can hurt the hero (enemy skills, map events) are red; the hero's own skill and weapon indicators avoid red, so it is clear what to dodge and what is safe.
 
