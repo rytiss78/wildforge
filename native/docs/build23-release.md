@@ -2,7 +2,7 @@
 
 Build 23 is a Windows alpha. `build-info.json` beside the executable records the exact source commit and artifact hashes. Co-op uses protocol `wildforge-shared-world-15`, so **every player in a party needs Build 23**. Build 22 players cannot join a Build 23 party, and Build 23 players cannot join a Build 22 party.
 
-**Install:** extract the whole ZIP into a folder and run `Wildforge.exe`. Keep `godot_wry.dll` beside it; the video panel needs it. Archive `Wildforge-1.6.0-Windows.zip`, SHA-256 `ARCHIVE_SHA256`.
+**Install:** extract the whole ZIP into a folder and run `Wildforge.exe`. Keep `godot_wry.dll` beside it; the video panel needs it. Archive `Wildforge-1.6.0-Windows.zip`, SHA-256 `c392581e0b8b4370967d1bf563301d8677752b794d44c285790b64ec27ee244a`.
 
 ## New
 
@@ -40,7 +40,7 @@ Build 23 is a Windows alpha. `build-info.json` beside the executable records the
 
 ## Verified
 
-- The export from source commit `SOURCE_COMMIT` passes the startup smoke and reports 1.6.0 / Build 23.
+- The export from source commit `cc89655` passes the startup smoke and reports 1.6.0 / Build 23.
 - The packaged ZIP, unpacked into a fresh folder, starts and passes the startup smoke with its own `Wildforge.exe`.
 - `colossus-review` (rendered): the real Red Moon entry, every action with its marks, lunge and leap movement, both phase changes, the open-window bonus, the health orb, 2.5x damage, the three potions and potion healing.
 - `check`, `integration`, `boss-review`, `red-moon-review` and the co-op `shared-review` pass.
