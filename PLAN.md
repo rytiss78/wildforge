@@ -1,6 +1,6 @@
 # Wildforge — plan
 
-October 23, 2026 · main branch · **Build 21 (1.4.0) is the latest public release** ([build-21](https://github.com/rytiss78/wildforge/releases/tag/build-21), source `3d51f3c`, zip SHA-256 `8605ba40…58cfafd`). It contains everything under "Since Build 19" and the Phase D and E items checked below (the model pilot is not in it).
+October 24, 2026 · main branch · **Build 22 (1.5.0) is built locally and not published** (source `be50250`, build `.build-staging/agent-workflow/2026-10-24T16-25-52-018Z-build`, [notes](native/docs/build22-release.md)). **Build 21 (1.4.0) is the latest public release** ([build-21](https://github.com/rytiss78/wildforge/releases/tag/build-21), source `3d51f3c`, zip SHA-256 `8605ba40…58cfafd`). It contains everything under "Since Build 19" and the Phase D and E items checked below (the model pilot is not in it).
 
 Rules: [AGENTS.md](AGENTS.md) and the [Godot workflow](native/docs/godot-workflow.md). A checked item means the real entry point was exercised and the evidence is recorded. The full history up to this rewrite, with every evidence path, is in [plan-history-through-build19.md](native/docs/archive/plan-history-through-build19.md).
 
@@ -10,8 +10,9 @@ Evidence folders are under `.build-staging/agent-workflow/`. Run folders older t
 
 - **Run:** three islands of six biomes each (island 2 is "Blighted Highlands", island 3 "Ashen Reach"). Each island has a 10-minute clock, two wardens and a portal. Then the Red Moon arena with the Baron, then an endless Eclipse.
 - **Content:** 25 heroes, 73 weapons (including four screen-filling spells), 746 upgrade cards, 102 mutations, elite modifiers (shielded, splitting, blinking, berserk), hunts, supply beacons, magnet events, a merchant, rerolls and banishes, and 117 achievements with earned cosmetics.
-- **Co-op:** up to four players over LAN, or over the internet with UPnP invite codes. Drop-in join, reconnect, shared XP and chests, and party combos (Crossfire, Overload). Protocol `wildforge-shared-world-12`.
-- **Difficulty:** tuned with the playtest bot. The last 12-run batch had 58% clear island 1, 17% reach the Baron and 8% beat him (`2026-10-23T09-40-56-088Z-bot-playtest`). The target was about 70 / 25 / 10, kept deliberately hard.
+- **Co-op:** up to four players over LAN, or over the internet with UPnP invite codes. Drop-in join, reconnect (missed rewards are replayed), shared XP with each player's own reward cards, and party combos (Crossfire, Overload). The world travels in packets under the MTU. Protocol `wildforge-shared-world-14`.
+- **Difficulty:** tuned with the playtest bot (island step 0.45, Baron health x7.5). The last 24 runs had 71% clear island 1, 42% reach the Baron and 25% beat him, against a target of about 70 / 25 / 10. Bot runs vary by about 20 points (see "Difficulty retune").
+- **Waiting:** Block Drop in the pause menu and the co-op waiting overlay, with real TikTok or YouTube Shorts beside it (godot_wry web view).
 - **Tooling:** `node scripts/agent-workflow.mjs` covers check, smoke, integration, about 30 rendered and two-process reviews, `bot-playtest` and `build`.
 
 ## Since Build 19 (released as Build 20)

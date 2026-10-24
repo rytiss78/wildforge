@@ -6,9 +6,11 @@ A vivid 3D survival game where a duck, a loaf of bread and an angry granny are p
 
 **[Download Build 21 for Windows](https://github.com/rytiss78/wildforge/releases/tag/build-21)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
 
-**Build 21 (1.4.0) is now available as an alpha release.** Weapons evolve into gilded new forms, spells and mutations combine into named synergies, and every biome has its own fight mechanic: clover rings, spore fog, ice floors, wind gusts, lava vents and gravity rifts. Enemies dissolve into ink or shatter, every attack warning speaks one danger-red language, and each biome has its own light and ink. [Build 21 notes and limits](native/docs/build21-release.md) · [Build 20 notes](native/docs/build20-release.md).
+**Coming next: Build 22 (1.5.0)** adds Block Drop, a falling-blocks game in the pause menu that also opens while a co-op friend is choosing, with real TikTok or YouTube Shorts playing beside it. It also brings each co-op player their own reward cards, sturdier co-op in big fights and rejoins, and honest weapon damage numbers. [Build 22 notes](native/docs/build22-release.md).
 
-The third map leads to the Red Moon, where an immense, slow Baron waits with four visible steam vents and deadly, telegraphed attacks. He is a stylized original fallback, not a photorealistic or officially licensed film model. Defeat him to begin an endless Eclipse. **Known limits:** internet hosting has not yet been tried on a real router. Balance comes from automated playtests rather than people, especially the Baron fight. The early co-op desync reported in older builds has never been reproduced and is not claimed fixed.
+**Build 21 (1.4.0) is the current alpha release.** Weapons evolve into gilded new forms, spells and mutations combine into named synergies, and every biome has its own fight mechanic: clover rings, spore fog, ice floors, wind gusts, lava vents and gravity rifts. Enemies dissolve into ink or shatter, every attack warning speaks one danger-red language, and each biome has its own light and ink. [Build 21 notes and limits](native/docs/build21-release.md) · [Build 20 notes](native/docs/build20-release.md).
+
+The third map leads to the Red Moon, where an immense, slow Baron waits with four visible steam vents and deadly, telegraphed attacks. He is a stylized original fallback, not a photorealistic or officially licensed film model. Defeat him to begin an endless Eclipse. **Known limits:** some internet providers put homes behind a shared address (carrier-grade NAT), where no router can open a port; the game says so, and a friend with a public address can host instead. Balance comes from automated playtests rather than people, especially the Baron fight. Co-op fixes have been tested on one machine, not yet over a real internet connection.
 
 ## Your hero. Your chaos.
 
@@ -32,9 +34,9 @@ Spend your coins on a chest, choose one of five rewards and keep building your r
 
 ## Bring friends
 
-Survive solo or team up with up to three friends. Share XP, levels and chest opportunities, choose your own upgrades and discover what happens when four questionable heroes meet the same boss.
+Survive solo or team up with up to three friends. Share XP, levels and chests, get your own cards to choose from, see what everyone picked, and discover what happens when four questionable heroes meet the same boss. Done choosing before your friend? Play Block Drop until they are.
 
-Over the internet, the host shares an invite code (the router opens the port automatically through UPnP) and friends paste it into Join. On the same Wi-Fi, friends can pick the party from the nearby list. Friends can also join a run already in progress. [Co-op setup](native/docs/coop.md)
+Over the internet, the host shares an invite code (the router opens the port automatically through UPnP; behind carrier-grade NAT this is impossible and the game says so) and friends paste it into Join. On the same Wi-Fi, friends can pick the party from the nearby list. Friends can also join a run already in progress. [Co-op setup](native/docs/coop.md)
 
 ## Jump in
 
