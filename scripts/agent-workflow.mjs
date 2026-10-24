@@ -87,7 +87,7 @@ export function assertCommittedBuild(cwd) {
 }
 
 async function main(action) {
-  if (!['balance-review', 'mutation-balance', 'shared-review', 'shared-review-stress', 'coop-dropin', 'bot-playtest', 'island-review', 'block-drop-review', 'shorts-review', 'model-review', 'weapon-review', 'hermes-review', 'playfeel-review', 'red-moon-review', 'fresh-import', 'biome-review', 'release-review', 'roster-review', 'bake-roster', 'style-review', 'fx-review', 'boss-review', 'forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'crowd-spells', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
+  if (!['balance-review', 'mutation-balance', 'shared-review', 'shared-review-stress', 'coop-dropin', 'bot-playtest', 'island-review', 'block-drop-review', 'shorts-review', 'hero-numbers-review', 'model-review', 'weapon-review', 'hermes-review', 'playfeel-review', 'red-moon-review', 'fresh-import', 'biome-review', 'release-review', 'roster-review', 'bake-roster', 'style-review', 'fx-review', 'boss-review', 'forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'crowd-spells', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
     console.error('Usage: node scripts/agent-workflow.mjs check|smoke|capture|capture-ui|combat-review|pace-review|soak|integration|build|status'); return 2;
   }
   const git = (...args) => spawnSync('git', ['-C', root, ...args], {encoding:'utf8', windowsHide:true}).stdout?.trim() ?? '';
@@ -346,6 +346,13 @@ async function main(action) {
       if(!line) throw new Error('Missing model review');report.models=JSON.parse(line.slice(13));
       if(Object.values(report.models.checks).some(v=>v===false)) throw new Error('Model review assertions failed');
       report.capture=assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','model-sheet.png'),started);
+    }
+    if (action === 'hero-numbers-review') {
+      const output=await step('hero-numbers-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--hero-numbers-review'],120000);
+      const line=output.split(/\r?\n/).findLast(x=>x.startsWith('HERO_NUMBERS_REVIEW '));
+      if(!line) throw new Error('Missing hero numbers review');report.heroNumbers=JSON.parse(line.slice(20));
+      if(Object.values(report.heroNumbers.checks).some(v=>v===false)) throw new Error('Hero numbers review failed: '+JSON.stringify(report.heroNumbers));
+      report.capture=assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','hero-numbers.png'),started);
     }
     if (action === 'shorts-review') {
       // Needs the internet: real YouTube Shorts in the godot_wry browser.

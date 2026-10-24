@@ -18,10 +18,8 @@ func _draw():
 	for i in range(8):
 		var inset=float(i)*8;var paint=Color(.95,.025,.07,alpha*(1-float(i)/8))
 		draw_rect(Rect2(Vector2.ONE*inset,bounds-Vector2.ONE*inset*2),paint,false,8)
+	# The amount itself falls from under the health panel (hud.hero_number).
 	if t>.05:
-		var color=Color(1,.83,.69,t)
-		var amount="−%d HP" % ceili(game.last_damage_taken) if game.last_damage_taken>0 else "SHIELD HIT"
-		draw_string(ThemeDB.fallback_font,Vector2(352,150),amount,HORIZONTAL_ALIGNMENT_LEFT,-1,20,color)
 		if game.damage_feedback_source!=Vector3.ZERO:
 			var toward=(game.damage_feedback_source-game.player.position).rotated(Vector3.UP,-game.yaw)
 			var angle=atan2(toward.x,-toward.z)

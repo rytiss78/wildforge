@@ -298,6 +298,7 @@ func _ready():
 	elif OS.get_cmdline_user_args().has("--island-review"): preload("res://scripts/island_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--block-drop-review"): preload("res://scripts/block_drop_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--shorts-review"): preload("res://scripts/shorts_review.gd").run.call_deferred(self)
+	elif OS.get_cmdline_user_args().has("--hero-numbers-review"): preload("res://scripts/hero_numbers_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--model-review"): preload("res://scripts/model_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--weapon-review"): preload("res://scripts/weapon_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--balance-review"): preload("res://scripts/balance_review.gd").run.call_deferred(self)
@@ -842,7 +843,7 @@ func heal(amount: float):
 	if actual > 0:
 		if actual>=5: sound.effect("heal");CombatInk.burst(self,player.position+Vector3.UP,Color("65f8bd"),6)
 		career.bump("healing",actual)
-		record_damage_number(-1,actual,"heal",player.position if is_instance_valid(player) else Vector3.INF)
+		hud.hero_number(actual,"heal")
 	update_hero_vitals()
 
 func update_hero_vitals():
@@ -1709,6 +1710,7 @@ func take_damage(amount: float, source: Vector3=Vector3.ZERO, voice_type: String
 	# Prevent sudden unavoidable one-hit deaths without weakening repeated attacks.
 	if hp>=stats.maxHp*.95 and taken>=hp: taken=stats.maxHp*.85
 	hp -= taken
+	hud.hero_number(absorbed,"shield");hud.hero_number(taken,"damage")
 	last_damage_taken=taken;damage_feedback_time=.65
 	damage_feedback_strength=clampf((taken+absorbed*.3)/maxf(1,stats.maxHp)*3,.22,1)
 	damage_feedback_source=source

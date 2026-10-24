@@ -19,7 +19,7 @@ static func run(game) -> Dictionary:
 	game.mode="playing";HarvestBook.tick(game,21)
 	checks.harvest_expiry=not game.harvest_buffs.has(4) and is_equal_approx(game.stat("damage"),damage)
 	var herb=game.harvestables.filter(func(h):return h.biome==0)[0];game.hp=game.stats.maxHp-20;game.pick_harvestable(herb)
-	checks.harvest_heal=game.hp==game.stats.maxHp-8 and game.damage_numbers.any(func(d):return d.cause=="heal")
+	checks.harvest_heal=game.hp==game.stats.maxHp-8 and game.hud.hero_numbers.any(func(d):return d.kind=="heal")
 	var crystal=game.harvestables.filter(func(h):return h.biome==2)[0];var shield=game.stats.shield;game.pick_harvestable(crystal)
 	checks.harvest_shield=game.stats.shield==shield+2 and game.shield_hp>=2
 	game.harvest_buffs[3]=20;game.harvest_buffs[5]=20

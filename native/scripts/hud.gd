@@ -7,6 +7,15 @@ var modal = Control.new()
 # The wait room: YouTube Shorts and the Block Drop board side by side, one for
 # the session, moved between the pause-menu screen and the co-op waiting overlay.
 var block_drop
+# The hero's own numbers fall from under the health panel (user request, October
+# 24): damage in red, shield damage in blue, healing in green. Enemy and weapon
+# numbers keep their places.
+const HERO_NUMBER_LIFE=1.3
+const HERO_NUMBER_COLORS={"damage":[Color("ff4d4d"),Color("3a0808")],"shield":[Color("6cc8ff"),Color("0a2a44")],"heal":[Color("7dff9a"),Color("0f3a18")]}
+var hero_numbers=[]
+var hero_labels=[]
+var hero_lane=0
+var hero_layer=Control.new()
 var shorts
 var wait_room: HBoxContainer
 # A new offer ignores confirm presses for a moment: Space and A spammed in Block
@@ -196,6 +205,7 @@ func cluster_plate(area: Rect2):
 func setup(owner_game):
 	game = owner_game
 	block_drop=preload("res://scripts/block_drop.gd").new();block_drop.game=game
+	hero_layer.mouse_filter=Control.MOUSE_FILTER_IGNORE;hero_layer.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);hero_layer.z_index=5;root.add_child(hero_layer)
 	wait_room=HBoxContainer.new();wait_room.add_theme_constant_override("separation",16);wait_room.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	shorts=preload("res://scripts/shorts_panel.gd").new();shorts.game=game;shorts.host=self
 	wait_room.add_child(shorts);wait_room.add_child(block_drop)
@@ -621,6 +631,7 @@ func update(delta: float):
 	if toast_time > 0:
 		toast_time -= delta
 		if toast_time <= 0: toast.text = ""
+	update_hero_numbers(delta)
 	# Render damage numbers (2D UI - rise from bottom)
 	for damage_label in damage_labels: damage_label.visible=false
 	if game.damage_numbers and not modal.visible:
@@ -927,6 +938,36 @@ func set_wait_zoom(zoom: float):
 # The wait room lives outside the tree between uses; free it with the HUD.
 func _exit_tree():
 	if is_instance_valid(wait_room) and not wait_room.is_inside_tree(): wait_room.free()
+
+func hero_number(amount: float,kind: String):
+	if amount<=0 or not HERO_NUMBER_COLORS.has(kind): return
+	# Rapid hits of one kind (poison ticks, a burst) add up into one number.
+	for entry in hero_numbers:
+		if entry.kind==kind and entry.age<.3: entry.amount+=amount;entry.age=0.0;return
+	hero_numbers.append({"amount":amount,"kind":kind,"age":0.0,"lane":hero_lane})
+	hero_lane=(hero_lane+1)%4
+	if hero_numbers.size()>12: hero_numbers.pop_front()
+
+func update_hero_numbers(delta: float):
+	for entry in hero_numbers: entry.age+=delta
+	hero_numbers=hero_numbers.filter(func(entry):return entry.age<HERO_NUMBER_LIFE)
+	for label in hero_labels: label.visible=false
+	if modal.visible: return
+	for index in range(hero_numbers.size()):
+		if index>=hero_labels.size():
+			var pooled=Label.new();pooled.mouse_filter=Control.MOUSE_FILTER_IGNORE
+			damage_font.font_names=PackedStringArray(["Segoe UI","Arial"]);damage_font.font_weight=800
+			pooled.add_theme_font_override("font",damage_font);pooled.add_theme_font_size_override("font_size",32)
+			pooled.add_theme_constant_override("outline_size",7);pooled.add_theme_color_override("font_shadow_color",Color(0,0,0,.8));pooled.add_theme_constant_override("shadow_offset_y",3)
+			hero_layer.add_child(pooled);hero_labels.append(pooled)
+		var entry=hero_numbers[index];var label=hero_labels[index];var colors=HERO_NUMBER_COLORS[entry.kind]
+		label.visible=true
+		label.text=("+" if entry.kind=="heal" else "−")+str(maxi(1,roundi(entry.amount)))
+		label.add_theme_color_override("font_color",colors[0]);label.add_theme_color_override("font_outline_color",colors[1])
+		# Starts just under the health panel and falls while it fades.
+		var t=entry.age/HERO_NUMBER_LIFE
+		label.position=Vector2(VITALS.position.x+28+float(entry.lane)*74.0,VITALS.end.y+6+t*160.0)
+		label.modulate.a=1.0-smoothstep(.55,1.0,t)
 
 func block_drop_active() -> bool:
 	return is_instance_valid(block_drop) and block_drop.is_visible_in_tree()

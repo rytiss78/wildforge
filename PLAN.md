@@ -322,6 +322,11 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
   - **Bot runs do not repeat from their seed:** the same hero and seed went from beating the Baron to dying in the first minute, and island 1 outcomes changed in 13 of 24 runs at an unchanged island 1. Paired seeds therefore cannot reduce the noise, and 24-run batches swing by about 20 points.
   - **Next:** a step change is not a lever this noise can measure. The Baron's own damage and patterns, judged by human playtest or batches of 48+ runs, is the next thing to try.
 
+## Hero damage and heal numbers (user request, October 24)
+
+- The hero's own numbers now fall from just under the health panel: damage in red, shield damage in blue (a hit that is partly absorbed shows both), healing in green "+N". Healing no longer goes through the enemy-number band. Hits of one kind within 0.3 s add up into one number. The fixed "−N HP" / "SHIELD HIT" label on the damage flash is gone; the red edge and direction arrow stay.
+- **Verified:** `hero-numbers-review` (all three kinds shown below the panel; capture inspected), smoke and integration (`harvest_heal` now checks the hero numbers).
+
 ## Open issues and limits
 
 - **Internet port opening failed on the user's router** (October 23): the "router did not allow automatic port opening" message appeared. UPnP was on in the modem, but no mapping was created. That message covered both "no router answered" and "router refused".
