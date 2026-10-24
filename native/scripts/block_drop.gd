@@ -68,7 +68,8 @@ func _process(delta: float):
 		if now: resume()
 		else: suspend()
 	if not now: return
-	music.volume_db=linear_to_db(maxf(.0001,float(settings().get("music",.45))))-4
+	# 30% quieter than the music setting (user request, October 24).
+	music.volume_db=linear_to_db(maxf(.0001,float(settings().get("music",.45))*.7))-4
 	if state.over: queue_redraw();return
 	# Held d-pad directions repeat; held keys repeat through key echo.
 	if held!="" and held_device>=0:

@@ -35,6 +35,8 @@ window.wfState=(v)=>{
 };
 window.wfPause=()=>send('pause');
 window.wfResume=()=>send('play');
+// Hidden: unload the player, so no sound can carry on after the pause.
+window.wfStop=()=>{ frame.src='about:blank'; time=0; duration=0; state=-1; ready=false; };
 // Review hook: jump to the end to check that the next video follows.
 window.wfSeekEnd=()=>{ if(duration>1) send('seekTo', duration-0.5); };
 post({type:'ready'});

@@ -69,5 +69,10 @@ static func run(g):
 	checks.back=await press(g,"←  BACK")
 	await g.get_tree().create_timer(.3).timeout
 	checks.hidden_on_back=not shorts.shown
+	# Reopening starts a fresh video (the hidden one was stopped, not paused).
+	await g.get_tree().create_timer(1.0).timeout
+	var stopped_at=shorts.shorts_played
+	checks.reopen=await press(g,"▦  BLOCK DROP")
+	checks.plays_after_reopen=await wait(g,func():return shorts.shorts_played>stopped_at and shorts.playing,30)
 	print("SHORTS_REVIEW "+JSON.stringify({"checks":checks,"played":shorts.shorts_played,"current":shorts.current,"state":shorts.last_state,"queue":shorts.queue.size(),"zoom":g.hud.block_drop.zoom}))
 	g.get_tree().quit(0 if not checks.values().has(false) else 1)

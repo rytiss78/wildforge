@@ -41,6 +41,8 @@ window.wfState=(volume)=>{
 window.wfSeekEnd=()=>{ if(player && player.getDuration) player.seekTo(Math.max(0,player.getDuration()-0.5),true); };
 window.wfPause=()=>{ if(player && player.pauseVideo) player.pauseVideo(); };
 window.wfResume=()=>{ if(player && player.playVideo) player.playVideo(); };
+// Hidden: stop, so no sound can carry on after the pause.
+window.wfStop=()=>{ if(player && player.stopVideo) player.stopVideo(); };
 </script>
 <script src="https://www.youtube.com/iframe_api"></script>
 </body>

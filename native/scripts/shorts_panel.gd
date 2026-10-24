@@ -86,13 +86,19 @@ func _process(delta: float):
 	if wanted:
 		if source!=wanted_source(): switch_source()
 		follow()
-		if not shown: shown=true;view.call("set_visible",stage=="short");run("window.wfResume&&wfResume()")
+		if not shown:
+			shown=true
+			# The stopped video is not resumed: the next one starts fresh.
+			if stage in ["short","loading"]: pending_play=false;next_short()
+			else: view.call("set_visible",false)
 		tick(delta)
 	elif shown: hide_view()
 	queue_redraw()
 
+# Leaving the screen stops the video outright (a pause message could be missed by a
+# video still loading, whose sound then played on after the pause: user report).
 func hide_view():
-	shown=false;run("window.wfPause&&wfPause()");view.call("set_visible",false)
+	shown=false;run("window.wfStop&&wfStop()");view.call("set_visible",false)
 
 func create():
 	view=ClassDB.instantiate("WebView")
@@ -110,7 +116,7 @@ func create():
 
 # A new source starts a fresh queue from its own feeds.
 func switch_source():
-	if page!="": run("window.wfPause&&wfPause()")
+	if page!="": run("window.wfStop&&wfStop()")
 	source=wanted_source();queue.clear();seen.clear();current="";playing=false;pending_play=false
 	stage="idle";stage_clock=0.0;fetched_at=-1e9;page=""
 	if view!=null: view.call("set_visible",false)
@@ -175,6 +181,10 @@ func add_ids(text: String,pattern: String):
 func message(text: String):
 	var data=JSON.parse_string(text)
 	if not data is Dictionary: return
+	# While hidden nothing may start playing; only note that a page has loaded.
+	if not shown:
+		if str(data.get("type",""))=="ready": page_ready=true
+		return
 	match str(data.get("type","")):
 		"ready":
 			page_ready=true

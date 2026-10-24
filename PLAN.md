@@ -322,6 +322,11 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
   - **Bot runs do not repeat from their seed:** the same hero and seed went from beating the Baron to dying in the first minute, and island 1 outcomes changed in 13 of 24 runs at an unchanged island 1. Paired seeds therefore cannot reduce the noise, and 24-run batches swing by about 20 points.
   - **Next:** a step change is not a lever this noise can measure. The Baron's own damage and patterns, judged by human playtest or batches of 48+ runs, is the next thing to try.
 
+## Block Drop audio and video stop (user reports, October 24, Build 22)
+
+- Block Drop music is 30% quieter.
+- **TikTok sound played on after the pause ended** (friend's report). Hiding the panel only sent a pause message, which a video still loading could miss. Hiding now stops the video outright: the TikTok player is unloaded and YouTube's is stopped. A hidden panel ignores player messages, so nothing new can start, and reopening starts a fresh video. shorts-review checks `hidden_on_back` and `plays_after_reopen`.
+
 ## Hero damage and heal numbers (user request, October 24)
 
 - The hero's own numbers now fall from just under the health panel: damage in red, shield damage in blue (a hit that is partly absorbed shows both), healing in green "+N". Healing no longer goes through the enemy-number band. Hits of one kind within 0.3 s add up into one number. The fixed "−N HP" / "SHIELD HIT" label on the damage flash is gone; the red edge and direction arrow stay.
