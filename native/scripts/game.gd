@@ -1452,6 +1452,9 @@ func weapon_power(weapon_id: String) -> float:
 	return 1.0
 
 func record_damage_number(enemy_id: int, damage: float, cause: String,position_value: Vector3=Vector3.INF,weapon_id: String=""):
+	# A dead or downed hero shows no damage: burns and wells left behind still tick,
+	# but numbers then read as if the hero were still fighting.
+	if hp<=0 or update.downed: return
 	# Only equipped weapons have a HUD slot to rise from.
 	if not equipped.any(func(w):return w.id==weapon_id): weapon_id=""
 	# Every damaging hit shows a number, ordinary gun hits included (October 21 request).
@@ -1601,10 +1604,10 @@ func hurt_enemy(enemy: Dictionary, damage: float, cause: String,mechanic: String
 	var credited=minf(enemy.hp,damage)
 	var owner=int(enemy.get("hit_owner",enemy.get(cause+"_owner",enemy.get("status_owner",coop.local_id)) if cause in ["poison","fire"] else coop.local_id))
 	update.party_damage+=credited
-	# Host displays confirmed damage, including hits from teammates. Client
-	# receives its own authoritative total via big_damage below.
+	# Every player sees only their own damage (user report, October 24: the host saw
+	# teammates' numbers). Clients get their own confirmed totals via big_damage below.
 	# This hero's weapon hits rise from that weapon's slot on the HUD.
-	record_damage_number(enemy.net_id,credited,cause,enemy_center(enemy),mechanic if owner==coop.local_id else "")
+	if owner==coop.local_id: record_damage_number(enemy.net_id,credited,cause,enemy_center(enemy),mechanic)
 	if owner==coop.local_id:
 		update.run_damage+=credited;credit_damage(mechanic if not mechanic.is_empty() else "effect:"+cause,credited)
 	elif coop.hosting and coop.members.has(owner): coop.send_to(owner,{"type":"big_damage","enemy_id":enemy.net_id,"position":coop.array(enemy_center(enemy)),"cause":cause,"amount":credited,"source":mechanic if not mechanic.is_empty() else "effect:"+cause,"realm":realm})

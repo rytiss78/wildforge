@@ -191,7 +191,7 @@ static func run(game: Node3D):
 	game.coop.upnp_finished({"error":"carrier","address":"","log":["device http://192.168.101.1:49652/49652gatedesc.xml: status 5"]})
 	checks.upnp_provider_nat=CoopSession.provider_nat([UPNPDevice.IGD_STATUS_DISCONNECTED]) and not CoopSession.provider_nat([UPNPDevice.IGD_STATUS_NO_IGD]) and game.coop.status.contains("public IP address")
 	checks.upnp_result_names=CoopSession.upnp_result(UPNP.UPNP_RESULT_ONLY_PERMANENT_LEASE_SUPPORTED)=="only permanent leases supported" and CoopSession.upnp_result(UPNP.UPNP_RESULT_UNKNOWN_ERROR)=="unknown error"
-	game.coop.upnp=null;game.coop.invite="";game.coop.upnp_port=CoopSession.PORT;game.coop.hosting=was_hosting;game.coop.status=was_status
+	game.coop.upnp=null;game.coop.invite="";game.coop.upnp_port=game.coop.party_port;game.coop.hosting=was_hosting;game.coop.status=was_status
 	# Effect settings: the real Shake slider (first of the three effect sliders)
 	# changes both the saved setting and the live value.
 	game.hud.settings_menu()

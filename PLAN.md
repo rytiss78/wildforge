@@ -322,6 +322,15 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
   - **Bot runs do not repeat from their seed:** the same hero and seed went from beating the Baron to dying in the first minute, and island 1 outcomes changed in 13 of 24 runs at an unchanged island 1. Paired seeds therefore cannot reduce the noise, and 24-run batches swing by about 20 points.
   - **Next:** a step change is not a lever this noise can measure. The Baron's own damage and patterns, judged by human playtest or batches of 48+ runs, is the next thing to try.
 
+## Damage numbers: own only, none while dead (user report, October 24, Build 22)
+
+- **Report:** "I see damage numbers when I'm dead… am I seeing other players' damage?" Yes: the host showed every confirmed hit, teammates' included. Each player now sees only their own damage (guests already did). A dead or downed hero shows no damage numbers; burns and wells left behind still tick but are not shown.
+- **Verified:**
+  - coop-feedback, updated to the current rules: own hits and burns show; a teammate's hits and burns do not; a dead hero shows none. Its old "ordinary hits hidden" and "start 200 px above the bottom" checks predated the October 21 and 23 changes.
+  - shared-review `teammate_number_hidden` and the guest's `confirmed_critical`.
+- **Tests left the user's party:** automated co-op tests used the game's real port 29736, and a test guest joined the user's own party while they played. Tests now run on their own ports (`WILDFORGE_COOP_PORT`, 39736 and 39737 for discovery, set by the agent workflow); the game itself keeps 29736.
+- One shared-review run missed `drop2.snapshots` (rejoin snapshot count); the rerun passed.
+
 ## Block Drop audio and video stop (user reports, October 24, Build 22)
 
 - Block Drop music is 30% quieter.

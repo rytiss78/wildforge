@@ -65,7 +65,7 @@ static func run(g,host: bool):
 	else:
 		# Give the host time to start its run before joining.
 		await g.get_tree().create_timer(3.0).timeout
-		g.coop.join_lan(InviteCode.encode("127.0.0.1",CoopSession.PORT))
+		g.coop.join_lan(InviteCode.encode("127.0.0.1",g.coop.party_port))
 		checks.joined_run=await wait_for(g,func():return g.coop.welcomed and g.run_active and g.mode=="playing")
 		checks.host_avatar=checks.joined_run and await wait_for(g,func():return g.coop.avatars.has(g.coop.owner_id))
 		var opened=g.chests.filter(func(c):return c is Dictionary and is_instance_valid(c.get("node")) and not c.node.visible)

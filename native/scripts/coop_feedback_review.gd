@@ -14,13 +14,16 @@ static func run(game):
 	game.spawn_enemy(4);var enemy=game.enemies[-1];enemy.hp=1000;enemy.node.position=game.player.position+Vector3(-2,0,0)
 	game.coop.active=true;game.coop.hosting=true;game.coop.members[77]={}
 	enemy.hit_owner=77;game.hurt_enemy(enemy,15,"coop","gun");enemy.erase("hit_owner")
+	# Each player sees only their own damage (October 24); every own hit shows a
+	# number (October 21, so the old "ordinary hits hidden" check is gone).
 	checks.other_hidden=game.damage_numbers.is_empty()
-	game.hurt_enemy(enemy,12,"hit","gun");checks.ordinary_hit_hidden=game.damage_numbers.is_empty()
 	game.hurt_enemy(enemy,12,"crit","gun");checks.own_visible=game.damage_numbers.size()==1 and game.damage_numbers[0].value==12
 	game.set_damage_status(enemy,"poison",3,77);game.hurt_enemy(enemy,1,"poison")
 	checks.other_dot_hidden=game.damage_numbers.size()==1
 	game.set_damage_status(enemy,"fire",3,game.coop.local_id);game.hurt_enemy(enemy,2,"fire")
 	checks.own_dot_visible=game.damage_numbers.size()==2
+	# A dead hero shows no damage, its own lingering burn included.
+	var alive_hp=game.hp;game.hp=0;game.hurt_enemy(enemy,2,"fire");checks.dead_hidden=game.damage_numbers.size()==2;game.hp=alive_hp
 	game.coop.hosting=false;game.coop.owner_id=77;game.damage_numbers.clear()
 	game.hurt_enemy(enemy,7,"crit","gun");checks.no_predicted_duplicate=game.damage_numbers.is_empty()
 	game.update.receive(77,{"type":"big_damage","realm":game.realm,"amount":7,"enemy_id":enemy.net_id,"cause":"crit","source":"gun","position":CoopSession.array(game.enemy_center(enemy))})
@@ -30,7 +33,8 @@ static func run(game):
 	checks.starts_at_bottom=false;checks.rises_up=false
 	if not game.hud.damage_labels.is_empty() and not game.damage_numbers.is_empty():
 		var label=game.hud.damage_labels[0];var first_y=label.position.y
-		checks.starts_at_bottom=first_y>viewport.size.y-300 and label.get_rect().end.y<=viewport.size.y-200
+		# Numbers start on the XP bar at the bottom edge (October 23).
+		checks.starts_at_bottom=first_y>viewport.size.y-300
 		game.damage_numbers[0].life=.4;game.hud.update(0)
 		checks.rises_up=label.position.y<first_y-50
 	for i in range(4): await game.get_tree().process_frame

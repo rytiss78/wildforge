@@ -96,6 +96,9 @@ async function main(action) {
   mkdirSync(runDir, {recursive:true});
   const started = Date.now();
   const env = {...process.env, APPDATA:join(runDir,'profile/Roaming'), LOCALAPPDATA:join(runDir,'profile/Local'), TEMP:join(runDir,'temp'), TMP:join(runDir,'temp')};
+  // Test parties use ports of their own, so they never meet a real game hosting on
+  // this PC (a test guest once joined the user's own party).
+  env.WILDFORGE_COOP_PORT=process.env.WILDFORGE_COOP_PORT||'39736';
   for (const dir of [env.APPDATA, env.LOCALAPPDATA, env.TEMP]) mkdirSync(dir,{recursive:true});
   const report = {action, started:new Date(started).toISOString(), head:git('rev-parse','HEAD'),
     diffSha256:await diffFingerprint(root),

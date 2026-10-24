@@ -27,7 +27,7 @@ static func run(g,host: bool):
 	if host: g.coop.host_lan()
 	# The guest joins with an internet invite code for this machine, exercising
 	# the same decode-and-connect path a friend uses.
-	else: g.coop.join_lan(InviteCode.encode("127.0.0.1",CoopSession.PORT))
+	else: g.coop.join_lan(InviteCode.encode("127.0.0.1",g.coop.party_port))
 	var checks={}
 	if host:
 		checks.host_open=g.coop.active and g.coop.hosting
@@ -134,7 +134,9 @@ static func run(g,host: bool):
 		var sentry=g.update.magnet_turrets[0];var sentry_hp=sentry.hp
 		send(g,"guard",{"id":sentry.net_id})
 		checks.remote_guard_hit=await wait_for(g,func():return sentry.hp<sentry_hp)
-		checks.critical_cause=g.damage_numbers.any(func(d):return d.enemy_id==sentry.net_id and d.cause=="crit")
+		# A teammate's hit shows on their screen only (October 24); the guest's own
+		# confirmed critical is checked on its side (confirmed_critical).
+		checks.teammate_number_hidden=not g.damage_numbers.any(func(d):return d.enemy_id==sentry.net_id)
 		checks.no_phantom_poison=sentry.poison==0
 		for guard in g.update.magnet_turrets:
 			if not guard.dead: g.hurt_enemy(guard,100000,"melee")

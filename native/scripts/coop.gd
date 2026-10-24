@@ -20,11 +20,19 @@ const ORBS_PER_PACKET=45
 const ACTOR_STATUS=["fire","poison","freeze","blind","slip_until","windup","contact_windup","elite_shield"]
 const PORT=29736
 const DISCOVERY_PORT=29737
+# Automated tests run on ports of their own (WILDFORGE_COOP_PORT, set by the agent
+# workflow), so a test party never meets a real game hosting on this PC (user
+# report, October 24: a test guest joined the user's party).
+var party_port=env_port()
+var discovery_port=party_port+1
+static func env_port() -> int:
+	var value=OS.get_environment("WILDFORGE_COOP_PORT")
+	return int(value) if value.is_valid_int() and int(value)>1024 and int(value)<65000 else PORT
 # Internet hosting: the router opens PORT through UPnP on a worker thread and
 # reports the public address, which becomes the party's invite code.
 # The gateway device that holds our mapping, and the outside port it opened.
 var upnp: UPNPDevice
-var upnp_port=PORT
+var upnp_port=party_port
 var upnp_thread: Thread
 var invite=""
 # Peer ids the host transport currently has, from its connect/disconnect
@@ -176,7 +184,7 @@ func discover_tick(delta: float):
 	if discovery_clock<=0:
 		discovery_clock=1.5
 		for address in ["255.255.255.255","127.0.0.1"]:
-			search.set_dest_address(address,DISCOVERY_PORT);search.put_packet(JSON.stringify({"query":PROTOCOL}).to_utf8_buffer())
+			search.set_dest_address(address,discovery_port);search.put_packet(JSON.stringify({"query":PROTOCOL}).to_utf8_buffer())
 	for i in range(mini(32,search.get_available_packet_count())):
 		var bytes=search.get_packet();var address=search.get_packet_ip()
 		if bytes.size()>512: continue
@@ -189,15 +197,15 @@ func discover_tick(delta: float):
 
 func host_lan():
 	leave();peer=ENetMultiplayerPeer.new()
-	var error=peer.create_server(PORT,3)
-	if error!=OK: status="Could not open party port "+str(PORT)+". Another copy of the game may be hosting.";peer=null;return
+	var error=peer.create_server(party_port,3)
+	if error!=OK: status="Could not open party port "+str(party_port)+". Another copy of the game may be hosting.";peer=null;return
 	transport="lan";active=true;hosting=true;local_id=1;owner_id=1
 	discovery=PacketPeerUDP.new()
-	if discovery.bind(DISCOVERY_PORT,"0.0.0.0")!=OK: discovery=null
+	if discovery.bind(discovery_port,"0.0.0.0")!=OK: discovery=null
 	publish_lobby()
 	peer.peer_connected.connect(func(id):linked[id]=true)
 	peer.peer_disconnected.connect(func(id):linked.erase(id))
-	peer.peer_disconnected.connect(remove_member);status="Party ready on your network · %s · UDP %d. Friends can also join after the run starts." % [", ".join(local_addresses()),PORT]
+	peer.peer_disconnected.connect(remove_member);status="Party ready on your network · %s · UDP %d. Friends can also join after the run starts." % [", ".join(local_addresses()),party_port]
 
 # Opens the party to the internet. Only the HOST PARTY button calls this:
 # automated tests never change a router's port mappings.
@@ -247,12 +255,12 @@ func upnp_work() -> Dictionary:
 	var last=""
 	for device in devices:
 		log.append("gateway %s via %s" % [device.description_url,device.igd_our_addr])
-		for external_port in [PORT,PORT+10,PORT+20]:
+		for external_port in [party_port,party_port+10,party_port+20]:
 			var conflict=false
 			for lease in [0,7200]:
-				var code=device.add_port_mapping(external_port,PORT,"Wildforge co-op","UDP",lease)
+				var code=device.add_port_mapping(external_port,party_port,"Wildforge co-op","UDP",lease)
 				last=upnp_result(code)
-				log.append("  map UDP %d -> %d lease %d: %s" % [external_port,PORT,lease,last])
+				log.append("  map UDP %d -> %d lease %d: %s" % [external_port,party_port,lease,last])
 				if code==UPNP.UPNP_RESULT_SUCCESS:
 					var external=device.query_external_address()
 					log.append("  public address: %s" % (external if external!="" else "none"))
@@ -273,9 +281,9 @@ func upnp_finished(result: Dictionary):
 		return
 	match str(result.get("error","")):
 		"no_router":
-			status="Internet hosting unavailable: no router answered the automatic port-opening request (UPnP). Check that UPnP is on in the router and that Windows Firewall allows Wildforge (Windows Security · Firewall · Allow an app). Or forward UDP %d to this PC by hand and give friends your public IP. %s" % [PORT,lan]
+			status="Internet hosting unavailable: no router answered the automatic port-opening request (UPnP). Check that UPnP is on in the router and that Windows Firewall allows Wildforge (Windows Security · Firewall · Allow an app). Or forward UDP %d to this PC by hand and give friends your public IP. %s" % [party_port,lan]
 		"refused":
-			status="Internet hosting unavailable: the router answered but refused to open UDP %d (router said: %s). Forward UDP %d to this PC by hand and give friends your public IP, or let a friend host. %s" % [PORT,str(result.get("reason","")),PORT,lan]
+			status="Internet hosting unavailable: the router answered but refused to open UDP %d (router said: %s). Forward UDP %d to this PC by hand and give friends your public IP, or let a friend host. %s" % [party_port,str(result.get("reason","")),party_port,lan]
 		"carrier":
 			status="Internet hosting unavailable: your modem answered, but its own outside address is private. Your internet provider shares one public address between customers (carrier-grade NAT), so friends cannot reach this PC, whatever the router settings. Let a friend host, or ask your provider for a public IP address. %s" % lan
 		_:
@@ -304,7 +312,8 @@ func join_lan(address: String):
 
 # Opens only the client transport. A run rejoin keeps avatars, nameplates and
 # reward progress; leave() is reserved for actually quitting the party.
-func open_client(address: String,port: int=PORT):
+func open_client(address: String,port: int=-1):
+	if port<0: port=party_port
 	peer=ENetMultiplayerPeer.new()
 	var err=peer.create_client(address,port)
 	if err!=OK: status="Could not connect to that address.";peer=null;return
