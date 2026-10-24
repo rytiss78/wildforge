@@ -7,7 +7,7 @@ var party_seen={}
 
 # Transport-independent authoritative world. Important events are reliable;
 # poses/snapshots use unreliable ordered delivery. Never deserialize objects.
-const PROTOCOL="wildforge-shared-world-14"
+const PROTOCOL="wildforge-shared-world-15"
 # Big fights: only this many XP orbs (nearest any hero) travel in a world packet.
 const XP_SYNC_LIMIT=200
 # World snapshots carry each enemy as ACTOR_STRIDE floats: id, position(3), hp,

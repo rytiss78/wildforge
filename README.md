@@ -4,9 +4,9 @@
 
 A vivid 3D survival game where a duck, a loaf of bread and an angry granny are perfectly reasonable hero choices. Explore strange places, grab unpredictable upgrades and become outrageously overpowered before the monsters catch you.
 
-**[Download Build 22 for Windows](https://github.com/rytiss78/wildforge/releases/tag/build-22)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
+**[Download Build 23 for Windows](https://github.com/rytiss78/wildforge/releases/tag/build-23)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
 
-**Build 22 (1.5.0) is now available as an alpha release.** It adds Block Drop, a falling-blocks game in the pause menu that also opens while a co-op friend is choosing, with real TikTok or YouTube Shorts playing beside it. It also brings each co-op player their own reward cards, sturdier co-op in big fights and rejoins, and honest weapon damage numbers. Everyone in a co-op party needs Build 22. [Build 22 notes and limits](native/docs/build22-release.md).
+**Build 23 (1.6.0) is now available as an alpha release.** The Red Moon ends with a new final boss, the Ashen Colossus: a 17 m stone golem with telegraphed blows, openings, three phases and a health orb instead of a bar. Every boss has five times more health, the islands are much harder, and danger always reads red. Everyone in a co-op party needs Build 23. [Build 23 notes and limits](native/docs/build23-release.md).
 
 **Build 21 (1.4.0)** brought weapon evolutions into gilded new forms, named spell-and-mutation synergies, and a fight mechanic for every biome: clover rings, spore fog, ice floors, wind gusts, lava vents and gravity rifts. Enemies dissolve into ink or shatter, every attack warning speaks one danger-red language, and each biome has its own light and ink. [Build 21 notes](native/docs/build21-release.md) · [Build 20 notes](native/docs/build20-release.md).
 
@@ -60,7 +60,7 @@ node scripts/native.mjs
 ./scripts/test-coop.ps1 -Packaged -RenderedClient
 ```
 
-Published downloads use sequential build numbers. This release is `Wildforge 1.5.0 — Build 22`, tag `build-22`, archive `Wildforge-1.5.0-Windows.zip` (with `godot_wry.dll` and its license, needed beside the executable for the video panel). The game remains a development alpha. Packaging includes `build-info.json` and a version-specific SHA-256 checksum. Pass `-BuildDirectory` and its exact `-SourceCommit` when packaging a verified staging directory.
+Published downloads use sequential build numbers. This release is `Wildforge 1.6.0 — Build 23`, tag `build-23`, archive `Wildforge-1.6.0-Windows.zip` (with `godot_wry.dll` and its license, needed beside the executable for the video panel). The game remains a development alpha. Packaging includes `build-info.json` and a version-specific SHA-256 checksum. Pass `-BuildDirectory` and its exact `-SourceCommit` when packaging a verified staging directory.
 
 WASD / left stick moves; mouse / right stick looks; Space / A jumps; Shift / RT dashes; Ctrl / B slams; E / X interacts; B / Y opens your build; Escape / Menu pauses. Weapons attack automatically. Florist plants while moving.
 
