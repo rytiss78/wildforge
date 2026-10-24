@@ -1322,6 +1322,8 @@ func fire(weapon: Dictionary, origin: Vector3):
 		node.material_override = material(color,1.8)
 		node.material_override.albedo_texture=load("res://assets/illustrated/paper.png")
 		if node.mesh!=projectile_mesh: node.material_override=painted_shot
+		# Some weapons throw their own shape, not their archetype's (ninja stars).
+		if ShotShapes.has(weapon.id): node.mesh=ShotShapes.mesh(weapon.id);node.material_override=ShotShapes.material(weapon.id)
 		node.position = origin
 		node.scale = Vector3.ONE * minf(2.5,stat("size"))*(1.6 if kind.contains("rocket") else 1.0)*float(mods.get("shotScale",1))
 		add_child(node)
@@ -1340,6 +1342,7 @@ func fire(weapon: Dictionary, origin: Vector3):
 
 
 func remote_weapon_effect(id: String,origin: Vector3,target: Vector3,duration: float=.44):
+	var source=id
 	id=ContentExpansion.kind(id)
 	if id in SkillBook.KINDS: SkillBook.cast_visual(self,id,origin,target,duration);return
 	if id=="saw":
@@ -1354,6 +1357,7 @@ func remote_weapon_effect(id: String,origin: Vector3,target: Vector3,duration: f
 	elif id in ["boomerang","disc","bomb","bubble","gun","shotgun","rail","harpoon","turret"]:
 		var node=MeshInstance3D.new();node.mesh=load("res://assets/style3d/baked/weapon_"+id+".res") if id in ["boomerang","disc","bomb"] else orb_mesh if id=="bubble" else brass_mesh
 		node.material_override=painted_shot;node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;add_child(node);node.position=origin
+		if ShotShapes.has(source): node.mesh=ShotShapes.mesh(source);node.material_override=ShotShapes.material(source)
 		var aim=(target-origin).normalized();node.look_at(origin+aim)
 		effects.append({"node":node,"life":maxf(.05,origin.distance_to(target)/22),"velocity":aim*22,"visual_shot":true,"remote_impact":target,"bomb":id=="bomb"})
 		ShotFx.launch(effects[-1],id);ShotFx.muzzle(self,origin,aim,id)
@@ -2110,7 +2114,11 @@ func update_combat(delta: float):
 		var shot_start: Vector3=shot.node.position
 		shot.node.position += shot.velocity*delta
 		ShotFx.follow(self,shot,shot.velocity,delta)
-		if shot.kind in ["boomerang","disc"]: shot.node.rotation.y+=delta*18
+		if ShotShapes.faces_camera(str(shot.get("weapon_id",""))):
+			# Thrown stars turn their face to the camera and spin around it, or the low
+			# gameplay camera sees them edge-on and their points never show.
+			shot.spin=float(shot.get("spin",0))+delta*20;shot.node.look_at(camera.global_position,Vector3.UP);shot.node.rotate_object_local(Vector3.BACK,shot.spin)
+		elif shot.kind in ["boomerang","disc"]: shot.node.rotation.y+=delta*18
 		if shot.kind=="bomb":
 			shot.node.position.y=world.height_at(shot.node.position.x,shot.node.position.z)+.3;shot.node.rotation.x+=delta*9
 		if shot.life<=0:

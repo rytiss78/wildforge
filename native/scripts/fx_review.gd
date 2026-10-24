@@ -107,6 +107,19 @@ static func run(g: Node3D):
 	await RenderingServer.frame_post_draw;close=g.get_viewport().get_texture().get_image()
 	close=close.get_region(Rect2i(Vector2i(size*Vector2(.40,.38)),Vector2i(size*Vector2(.2,.2))));close.resize(CELL.x,CELL.y,Image.INTERPOLATE_LANCZOS);evolved.append(close)
 	checks.evolved_sheet=sheet(evolved,"evolved")
+	# Weapons with their own projectile shape: the Ninja's Moon Shuriken throws stars.
+	var shapes=[]
+	for weapon in g.equipped:
+		if is_instance_valid(weapon.get("node")): weapon.node.queue_free()
+	g.equipped.clear()
+	var star_item=weapons["ninja-shuriken"].duplicate(true);star_item.kind="weapon";star_item.strength=1.0;g.equip_weapon(star_item)
+	var star_weapon=g.equipped[-1];star_weapon.clock=1e9
+	clear_effects(g);await step(g,12);g.fire(star_weapon,g.player.position+Vector3.UP*.9)
+	for i in range(6): await step(g,1)
+	shapes.append(await frame(g))
+	checks.shuriken_shape=not g.projectiles.is_empty() and g.projectiles.all(func(p):return p.node.mesh==ShotShapes.mesh("ninja-shuriken"))
+	await step(g,4);shapes.append(await frame(g))
+	checks.shapes_sheet=sheet(shapes,"shapes")
 	for weapon in g.equipped:
 		if is_instance_valid(weapon.get("node")): weapon.node.queue_free()
 	g.equipped.clear()
