@@ -58,9 +58,18 @@ export function expandContent(loot,weapons,stats,labels){
   const [base,n0,m0,n1,m1]=pairs[a];const name=v?n1:n0;const modifiers=v?m1:m0;
   const source=weapons.find(w=>w.id===base);const id=name.toLowerCase().replaceAll(/[^a-z0-9]+/g,'-');
   weapons.push({...source,id,name,archetype:base,icon:id,art:{shape:a,condition:18+v},modifiers,
-   damage:source.damage*(v?1.12:.9),rate:source.rate*(v?.88:1.1),description:variantDescription(base,modifiers)});
+   damage:source.damage*(v?1.12:.9)*volleyShare(modifiers,base),rate:source.rate*(v?.88:1.1),description:variantDescription(base,modifiers)});
  }
  return augments;
+}
+// Variants that fire extra projectiles or meteors split their damage across the
+// volley: a full volley lands about 1.5x a base shot, not 2-4x. Before this the
+// damage per shot matched the base weapon (weapon-review, October 24: Marble Rain
+// dealt 6.7x Meteor, Hail Hose 4x Ice Gun, Button Barrage 3x Disc).
+// The Shotgun's own volley is already three pellets.
+export function volleyShare(m,base){
+ const own=base==='shotgun'?3:1;const extra=(m.extraShots||0)+(m.extraMeteors||0);
+ return extra>0?1.5*own/(own+extra):1;
 }
 function variantDescription(base,m){
  const lines=[];
