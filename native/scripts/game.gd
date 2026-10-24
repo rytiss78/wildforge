@@ -296,6 +296,7 @@ func _ready():
 	elif OS.get_cmdline_user_args().has("--dropin-review-host") or OS.get_cmdline_user_args().has("--dropin-review-client"): preload("res://scripts/dropin_review.gd").run.call_deferred(self,OS.get_cmdline_user_args().has("--dropin-review-host"))
 	elif OS.get_cmdline_user_args().has("--run-bot"): preload("res://scripts/run_bot.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--island-review"): preload("res://scripts/island_review.gd").run.call_deferred(self)
+	elif OS.get_cmdline_user_args().has("--block-drop-review"): preload("res://scripts/block_drop_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--model-review"): preload("res://scripts/model_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--weapon-review"): preload("res://scripts/weapon_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--balance-review"): preload("res://scripts/balance_review.gd").run.call_deferred(self)
@@ -2472,7 +2473,7 @@ func _process(delta: float):
 		reveal_clock+=delta
 		if reveal_clock>=.8: hud.chest_reveal(reveal_tier,minf(1,(reveal_clock-.8)/(reveal_duration-.8)))
 		if reveal_clock>=reveal_duration: finish_reveal()
-	sound.tick(delta,mode in ["playing","settings"],boss_active() or events.get("eclipse",false))
+	sound.tick(delta,mode in ["playing","settings"] and not hud.block_drop_active(),boss_active() or events.get("eclipse",false))
 	hud.update(delta)
 	next_save+=delta
 	if next_save>10:

@@ -4,6 +4,9 @@ class_name RunHUD
 var game
 var root = Control.new()
 var modal = Control.new()
+# Block Drop minigame: one board for the session, moved between the pause-menu
+# screen and the co-op waiting overlay.
+var block_drop
 var content: VBoxContainer
 var clock = RunClock.new()
 var map_view = ExploreMap.new()
@@ -187,6 +190,7 @@ func cluster_plate(area: Rect2):
 
 func setup(owner_game):
 	game = owner_game
+	block_drop=preload("res://scripts/block_drop.gd").new();block_drop.game=game
 	# HUD clusters (1920×1080 logical): vitals top-left, map + run clock top-right,
 	# loadout (skills, weapons, slam/turret, level/XP) bottom-centre.
 	skill_strip.position=Vector2(LOADOUT.position.x+34,LOADOUT.position.y+8);skill_strip.add_theme_constant_override("separation",3);root.add_child(skill_strip)
@@ -372,6 +376,7 @@ func open(title: String, subtitle: String = "") -> VBoxContainer:
 	binding_action=""
 	if offer_tween!=null and offer_tween.is_valid(): offer_tween.kill()
 	preview_id="";party_split=false
+	if modal.is_ancestor_of(block_drop): block_drop.get_parent().remove_child(block_drop)
 	for child in modal.get_children(): child.queue_free()
 	modal.visible = true
 	var vp_size = get_viewport().get_visible_rect().size
@@ -573,7 +578,8 @@ func update(delta: float):
 	prompt.text = game.interaction_hint().replace("E / X", ControlBindings.display(game.career.data.settings,"interact","controller" if game.input_kind=="xbox" else "keyboard"))
 	alert.visible=false
 	alert.text = ""
-	if game.coop.frozen() and game.mode=="playing": alert.text="PARTY PAUSED  ·  A FRIEND IS CHOOSING";alert.visible=true
+	if game.coop.frozen() and game.mode=="playing": alert.text="PARTY PAUSED  ·  A FRIEND IS CHOOSING  ·  BLOCK DROP WHILE YOU WAIT";alert.visible=true
+	update_block_drop_overlay()
 	map_view.configure(game.world.seed_value,game.world.realm)
 	map_view.interactables.clear()
 	var hunt_shrine=game.Hunt.shrine(game)
@@ -869,6 +875,7 @@ func pause_menu(ended: bool = false, win: bool = false):
 	var box = open("YOU WON" if win else "TRY AGAIN" if ended else "PAUSED", "%s · %d coins · %d enemies · ★ %d%s" % [game.hero.name,game.gold,game.kills,game.level,extra])
 	if ended: box.add_child(label(game.update.recap(),15))
 	if not ended: box.add_child(button("▶  CONTINUE",close,true))
+	if not ended: box.add_child(button("▦  BLOCK DROP",block_drop_menu))
 	box.add_child(button("HERO STATS & EQUIPMENT",func():build_menu(true)))
 	box.add_child(button("RUN REPORT",run_report_menu))
 	box.add_child(button("↻  NEW RUN",game.start_run,ended))
@@ -879,6 +886,34 @@ func pause_menu(ended: bool = false, win: bool = false):
 	box.add_child(button("QUIT",func(): game.record_run(false,true); game.career.save(); game.get_tree().quit()))
 	for control in box.get_children():
 		if control is Button and not control.disabled: control.grab_focus();break
+
+func block_drop_menu():
+	var box=open("BLOCK DROP","A falling-blocks break. Your board waits here for the next pause.")
+	game.mode="paused"
+	var holder=CenterContainer.new();holder.size_flags_vertical=Control.SIZE_EXPAND_FILL;box.add_child(holder)
+	if block_drop.get_parent()!=null: block_drop.get_parent().remove_child(block_drop)
+	block_drop.position=Vector2.ZERO;block_drop.scale=Vector2.ONE;holder.add_child(block_drop)
+	box.add_child(button("←  BACK",func():pause_menu()))
+
+# The board lives outside the tree between uses; free it with the HUD.
+func _exit_tree():
+	if is_instance_valid(block_drop) and not block_drop.is_inside_tree(): block_drop.free()
+
+func block_drop_active() -> bool:
+	return is_instance_valid(block_drop) and block_drop.is_visible_in_tree()
+
+# While a co-op friend chooses a reward, players who are done get the board.
+func update_block_drop_overlay():
+	var wanted=game.coop.frozen() and game.mode=="playing" and game.run_active
+	if wanted and block_drop.get_parent()!=root:
+		if block_drop.get_parent()!=null: block_drop.get_parent().remove_child(block_drop)
+		root.add_child(block_drop)
+		block_drop.size=block_drop.custom_minimum_size
+		# Below the "party paused" banner and clear of the loadout bar.
+		var view=root.size if root.size.x>0 else get_viewport().get_visible_rect().size
+		var fit=minf(1.0,(view.y-250)/block_drop.size.y);block_drop.scale=Vector2.ONE*fit
+		block_drop.position=Vector2((view.x-block_drop.size.x*fit)/2,100)
+	elif not wanted and block_drop.get_parent()==root: root.remove_child(block_drop)
 
 func icon_key(item: Dictionary) -> String:
 	return str(item.weapon_id) if item.kind=="evolution" else item.id
