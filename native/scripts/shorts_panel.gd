@@ -4,8 +4,8 @@ class_name ShortsPanel
 # Real short videos beside Block Drop (user requests, October 24): TikTok by
 # default, YouTube Shorts on a switch. Through the godot_wry WebView
 # (addons/godot_wry: a native Edge WebView2 window laid over the game window).
-# Short and fast: each video plays at most MAX_PLAY seconds (anything over
-# MAX_DURATION is skipped), never loops, and the next starts at once.
+# Short and fast: only videos up to MAX_DURATION (15 s) play, never looping, and
+# the next starts at once.
 # - TikTok: the panel reads the video links on a hashtag page from the user's
 #   tag list (TAGS) while it is
 #   hidden (the page's cookie banner is never shown or answered), then plays
@@ -20,8 +20,10 @@ const FEEDS=["TheDodoSite","ThePetCollective","GoodNewsNetwork","AnimalPlanetTV"
 # Chosen by the user (October 24).
 const TAGS=["phonk","gymtok","meme","gravel","remco","techhouse","nature","run","rally","parrot","core","cuterat","punk","puppy","mindset","uptempo","rats"]
 const PAGES={"youtube":"res://assets/shorts/player.html","tiktok":"res://assets/shorts/tiktok.html"}
+# Only videos of 15 s or less play (user request); longer ones are skipped as soon
+# as their length is known. MAX_PLAY stays as a cap if a length is never reported.
 const MAX_PLAY=15.0
-const MAX_DURATION=60.0
+const MAX_DURATION=15.5
 const STALL_SECONDS=12.0
 const REFRESH_SECONDS=1800.0
 const COLLECT_TIKTOK="""(()=>{try{
