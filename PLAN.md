@@ -287,6 +287,22 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
   - check, smoke, integration, shared-review and coop-dropin passed, with no leaks at exit.
 - **Not verified:** how the music and effects sound (generated, not listened to), and the overlay in a real two-machine session.
 
+## Difficulty retune (October 24, bot-playtest)
+
+- **Target:** about 70% clear island 1, 25% reach the Baron, 10% beat him.
+- **Results** (24 runs each, 12 heroes and styles, 55 simulated minutes):
+
+| Setting | Clear island 1 | Reach the Baron | Beat the Baron | Evidence |
+|---|---|---|---|---|
+| Island step 0.3 (before) | 67% | 50% | 33% | batches `2026-10-23T21-18-09-505Z`, `2026-10-24T13-09-47-181Z` |
+| Island step 0.38 | 79% | 46% | 25% | `2026-10-24T13-41-23-297Z`, `14-01-46-922Z` |
+| Island step 0.45, Baron health x7.5, volley-damage fix | 71% | 42% | 25% | `2026-10-24T14-16-36-566Z`, `14-36-09-552Z` |
+
+- **Now in the game:** island step 0.45 and Baron health x7.5 (both runs at 0.38 and later also had the weapon-damage fixes).
+- **Effect so far:** island 1 is on target. Baron fights won by bots now last 9–16 minutes instead of 5–10.
+- **Still open:** islands 2–3 and the Baron remain too easy. 6 of the 10 bots that reached him won.
+- **Main killers:** enemy meteor hazards account for 6 of 13 deaths on islands 1–2. They are telegraphed, so they are left as they are.
+
 ## Open issues and limits
 
 - **Internet port opening failed on the user's router** (October 23): the "router did not allow automatic port opening" message appeared. UPnP was on in the modem, but no mapping was created. That message covered both "no router answered" and "router refused".

@@ -506,7 +506,7 @@ func enter_realm(index: int,broadcast_transition: bool=true):
 	# Enemy health and damage per island, tuned with full-run bot playtests
 	# (bot-playtest) toward: ~70% clear the first island, ~25% reach the Baron,
 	# ~10% beat him.
-	realm_difficulty = 1.08 + realm * 0.3
+	realm_difficulty = 1.08 + realm * 0.45
 	world.build(realm,seed_value)
 	player.position = Vector3(0,1.2,0)
 	player.velocity = Vector3.ZERO

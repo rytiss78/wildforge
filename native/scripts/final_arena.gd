@@ -4,7 +4,9 @@ const TARGET_SECONDS=300.0
 const REFERENCE_DPS=300.0
 # 4.0 was the requested fourfold increase. Evolved builds (Phase D) then killed
 # him in 2-12 minutes in bot runs, against 17 before; 6.0 restores a long fight.
-const HEALTH_MULTIPLIER=6.0
+# 7.5 (October 24): after the weapon-damage fixes half the bots that reached him
+# still won; the target is about 40%.
+const HEALTH_MULTIPLIER=7.5
 const INTRO_SECONDS=3.6
 const PHASE_NAMES=["THE ARRIVAL","THE HUNT","THE WRATH","THE EXECUTION","THE RUIN","THE LAST JUDGMENT","THE WORLD BREAKS","THE FINAL CURSE"]
 

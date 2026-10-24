@@ -159,5 +159,5 @@ static func run(g):
 	g.Journey.activate(g);checks.no_exit=g.realm==3 and g.mode=="playing"
 	for i in range(90):g._process(.016)
 	g.hud.update(0);checks.eclipse=await capture(g,"eclipse")
-	print("RED_MOON_REVIEW "+JSON.stringify({"checks":checks,"attack_counts":counts,"authored_size":CoopSession.array(maximum-minimum),"reference_seconds":(preload("res://scripts/final_arena.gd").TARGET_SECONDS*preload("res://scripts/final_arena.gd").REFERENCE_DPS*preload("res://scripts/final_arena.gd").HEALTH_MULTIPLIER)/1200.0,"timing_note":"Solo Baron HP = 300 s x 300 dps x HEALTH_MULTIPLIER (6 since Phase D; 4 was the requested fourfold). Representative builds still need playtesting."}))
+	print("RED_MOON_REVIEW "+JSON.stringify({"checks":checks,"attack_counts":counts,"authored_size":CoopSession.array(maximum-minimum),"reference_seconds":(preload("res://scripts/final_arena.gd").TARGET_SECONDS*preload("res://scripts/final_arena.gd").REFERENCE_DPS*preload("res://scripts/final_arena.gd").HEALTH_MULTIPLIER)/1200.0,"timing_note":"Solo Baron HP = 300 s x 300 dps x HEALTH_MULTIPLIER (7.5 since October 24, 6 since Phase D; 4 was the requested fourfold). Representative builds still need playtesting."}))
 	g.get_tree().quit(0 if not checks.values().has(false) else 1)
