@@ -7,13 +7,16 @@ var party_seen={}
 
 # Transport-independent authoritative world. Important events are reliable;
 # poses/snapshots use unreliable ordered delivery. Never deserialize objects.
-const PROTOCOL="wildforge-shared-world-13"
+const PROTOCOL="wildforge-shared-world-14"
 # Big fights: only this many XP orbs (nearest any hero) travel in a world packet.
 const XP_SYNC_LIMIT=200
 # World snapshots carry each enemy as ACTOR_STRIDE floats: id, position(3), hp,
 # maxHp, surface up(3), surface forward(3), ACTOR_STATUS(8), corruption. Static
 # identity (species, size, boss/elite flags) is sent once via actors_info.
 const ACTOR_STRIDE=21
+# Split world packets stay under the 1,392-byte ENet MTU (about 1,180 and 1,120 bytes).
+const ACTORS_PER_PACKET=13
+const ORBS_PER_PACKET=45
 const ACTOR_STATUS=["fire","poison","freeze","blind","slip_until","windup","contact_windup","elite_shield"]
 const PORT=29736
 const DISCOVERY_PORT=29737
@@ -80,6 +83,11 @@ var reconnect_attempting=false
 var disconnect_started=0.0
 var snapshot_seq=0
 var last_snapshot_seq=-1
+# Last snapshot seq applied per enemy, orb and player (split packets).
+var actor_seq={}
+var orb_seq={}
+var player_seq={}
+var ids_seq={}
 var actor_info={}
 var actor_requested={}
 var test_reconnect_hold=0.0
@@ -327,7 +335,7 @@ func close_transport():
 	active=false;welcomed=false;joined=false
 
 func reset_actor_sync():
-	last_snapshot_seq=-1;actor_info.clear();actor_requested.clear()
+	last_snapshot_seq=-1;actor_info.clear();actor_requested.clear();actor_seq.clear();orb_seq.clear();player_seq.clear();ids_seq.clear()
 
 func connection_lost():
 	if game.run_active and not hosting and not reconnecting:
@@ -387,7 +395,7 @@ func send_to(id: int,message: Dictionary,reliable: bool=true):
 	if transport=="lan" and transport_peer_connected(id):
 		# World snapshots and poses stay unreliable at any size: a newer one supersedes
 		# a lost one, and reliable delivery would stall events behind stale state.
-		var unreliable=not reliable and (bytes.size()<=1000 or message.get("type","") in ["world","pose"])
+		var unreliable=not reliable and (bytes.size()<=1000 or message.get("type","") in ["world","world_actors","world_orbs","world_players","world_ids","pose"])
 		peer.set_target_peer(id);peer.transfer_mode=MultiplayerPeer.TRANSFER_MODE_UNRELIABLE_ORDERED if unreliable else MultiplayerPeer.TRANSFER_MODE_RELIABLE;peer.put_packet(bytes)
 
 func broadcast(message: Dictionary,reliable: bool=true):
@@ -505,7 +513,8 @@ func tick(delta: float):
 	if accumulator>=.10:
 		accumulator=fmod(accumulator,.10)
 		if hosting:
-			if game.run_active and not members.is_empty(): broadcast(snapshot(),false)
+			if game.run_active and not members.is_empty():
+				for packet in snapshot_packets(): broadcast(packet,false)
 		else:
 			# Before the host's welcome a rejoining client still reports its
 			# disconnected "paused" mode, which would freeze the host's run.
@@ -941,6 +950,16 @@ func receive(sender: int,message):
 		elif kind=="party_combo" and int(message.get("realm",-1))==game.realm and str(message.get("kind","")) in ["crossfire","overload"]:
 			PartyCombo.visual(game,str(message.kind),vector(message.get("position",[])));party_combos_seen+=1
 		elif kind=="world": apply_world(message)
+		elif kind in ["world_actors","world_orbs","world_players","world_ids"] and game.run_active and int(message.get("realm",-1))==game.realm:
+			var seq=int(message.get("seq",0))
+			if kind=="world_ids":
+				var list=str(message.get("kind",""))
+				if list in ["actors","orbs"] and fresh_item(ids_seq,list.hash(),seq):
+					if list=="actors": remove_missing_actors(message.get("ids",PackedInt32Array()))
+					else: remove_missing_orbs(message.get("ids",PackedInt32Array()))
+			elif kind=="world_actors": apply_actors(message.get("actors"),seq)
+			elif kind=="world_orbs": apply_orbs(message.get("xp_orbs"),seq)
+			else: apply_players(message.get("players"),seq)
 		elif kind=="journey_announcement": game.Journey.announce(game,str(message.title),str(message.detail))
 		elif kind=="shot": show_shot(message)
 		elif kind=="hazard" and int(message.get("realm",-1))==game.realm:
@@ -1054,23 +1073,9 @@ func apply_world(message: Dictionary):
 	game.xp=int(message.get("xp",game.xp))
 	game.xp_target=int(message.get("xp_target",game.xp_target))
 	game.update.run_xp=int(message.get("run_xp",game.update.run_xp))
-	# Index the client's orbs once: a search per orb cost 90,000 comparisons a
-	# packet in a 300-orb fight.
-	var drop_ids={};var by_id={}
-	for pickup in game.pickups:
-		if pickup.kind=="xp": by_id[int(pickup.net_id)]=pickup
-	var orbs=message.get("xp_orbs",PackedFloat32Array())
-	if not orbs is PackedFloat32Array: orbs=PackedFloat32Array()
-	for i in range(0,orbs.size()-5,6):
-		var drop_id=int(orbs[i]);drop_ids[drop_id]=true;var at=Vector3(orbs[i+1],orbs[i+2],orbs[i+3])
-		var pickup=by_id.get(drop_id,{})
-		if pickup.is_empty():
-			game.spawn_pickup(at,"xp",orbs[i+4],true)
-			pickup=game.pickups[-1];pickup.net_id=drop_id
-		pickup.value=orbs[i+4];pickup.target_position=at;pickup.magnet_heap=orbs[i+5]>.5;game.resize_xp(pickup,true)
-	for pickup in game.pickups:
-		if pickup.kind=="xp" and not drop_ids.has(pickup.net_id): pickup.age=-1;pickup.node.queue_free()
-	game.pickups=game.pickups.filter(func(p):return p.age>=0)
+	# A full snapshot carries everything; a split one (snapshot_packets) carries
+	# only the live ids here, with the orbs, players and enemies in their own packets.
+	if message.has("xp_orbs"): apply_orbs(message.xp_orbs,seq);remove_missing_orbs(ids_in(message.xp_orbs,6))
 	game.update.apply_state(message.get("big_update",{}))
 	game.events=message.get("journey",game.events).duplicate(true);game.realm_bosses=int(message.get("wardens",game.realm_bosses))
 	snapshots_received+=1;paused=bool(message.pause);saw_pause=saw_pause or paused
@@ -1081,19 +1086,80 @@ func apply_world(message: Dictionary):
 	else:
 		game.realm_time=target_time
 	game.elapsed=float(message.elapsed)
-	for id in message.players:
-		var number=int(id)
-		if number==local_id: continue
-		members[number]=message.players[id];ensure_avatar(number,members[number])
+	if message.has("players"): apply_players(message.players,seq)
+	var player_ids=message.get("player_ids",message.get("players",{}).keys()).map(func(id):return int(id))
 	for id in avatars.keys():
-		if not message.players.has(str(id)) and not message.players.has(id): avatars[id].queue_free();avatars.erase(id);members.erase(id)
-	var packed=message.get("actors",PackedFloat32Array())
-	if not packed is PackedFloat32Array: packed=PackedFloat32Array()
+		if not player_ids.has(int(id)): avatars[id].queue_free();avatars.erase(id);members.erase(id)
+	if message.has("actors"): apply_actors(message.actors,seq);remove_missing_actors(ids_in(message.actors,ACTOR_STRIDE))
+
+# The host's world in packets under the network MTU: one core packet (time,
+# progression, events, player ids), the ids of every live enemy and orb, and the
+# enemies, XP orbs and players in packets of their own. A lost packet now costs only its own
+# enemies for one tick; as one 13-fragment message, any lost fragment lost all of it.
+func snapshot_packets() -> Array:
+	var full=snapshot();var seq=full.seq;var realm=full.realm
+	var core=full.duplicate();core.erase("actors");core.erase("xp_orbs");core.erase("players")
+	core.player_ids=full.players.keys()
+	var packets=[core]
+	# Removals come from these lists: an enemy missing from a lost actor packet stays.
+	packets.append({"type":"world_ids","seq":seq,"realm":realm,"kind":"actors","ids":ids_in(full.actors,ACTOR_STRIDE)})
+	packets.append({"type":"world_ids","seq":seq,"realm":realm,"kind":"orbs","ids":ids_in(full.xp_orbs,6)})
+	var actors: PackedFloat32Array=full.actors
+	for begin in range(0,actors.size(),ACTOR_STRIDE*ACTORS_PER_PACKET): packets.append({"type":"world_actors","seq":seq,"realm":realm,"actors":actors.slice(begin,begin+ACTOR_STRIDE*ACTORS_PER_PACKET)})
+	var orbs: PackedFloat32Array=full.xp_orbs
+	for begin in range(0,orbs.size(),6*ORBS_PER_PACKET): packets.append({"type":"world_orbs","seq":seq,"realm":realm,"xp_orbs":orbs.slice(begin,begin+6*ORBS_PER_PACKET)})
+	for id in full.players: packets.append({"type":"world_players","seq":seq,"realm":realm,"players":{id:full.players[id]}})
+	return packets
+
+static func ids_in(packed,stride: int) -> PackedInt32Array:
+	var ids=PackedInt32Array()
+	if packed is PackedFloat32Array:
+		for base in range(0,packed.size()-stride+1,stride): ids.append(int(packed[base]))
+	return ids
+
+# A split packet: newer data for each item only (an item's last seq is kept).
+func fresh_item(table: Dictionary,id: int,seq: int) -> bool:
+	if seq>0 and seq<int(table.get(id,-1)): return false
+	table[id]=seq;return true
+
+func apply_orbs(orbs,seq: int):
+	if not orbs is PackedFloat32Array: return
+	# Index the client's orbs once: a search per orb cost 90,000 comparisons a
+	# packet in a 300-orb fight.
+	var by_id={}
+	for pickup in game.pickups:
+		if pickup.kind=="xp": by_id[int(pickup.net_id)]=pickup
+	for i in range(0,orbs.size()-5,6):
+		var drop_id=int(orbs[i]);var at=Vector3(orbs[i+1],orbs[i+2],orbs[i+3])
+		if not fresh_item(orb_seq,drop_id,seq): continue
+		var pickup=by_id.get(drop_id,{})
+		if pickup.is_empty():
+			game.spawn_pickup(at,"xp",orbs[i+4],true)
+			pickup=game.pickups[-1];pickup.net_id=drop_id
+		pickup.value=orbs[i+4];pickup.target_position=at;pickup.magnet_heap=orbs[i+5]>.5;game.resize_xp(pickup,true)
+
+func remove_missing_orbs(ids):
+	var alive={}
+	for id in ids: alive[int(id)]=true
+	for pickup in game.pickups:
+		if pickup.kind=="xp" and not alive.has(int(pickup.net_id)): pickup.age=-1;pickup.node.queue_free();orb_seq.erase(int(pickup.net_id))
+	game.pickups=game.pickups.filter(func(p):return p.age>=0)
+
+func apply_players(players,seq: int):
+	if not players is Dictionary: return
+	for id in players:
+		var number=int(id)
+		if number==local_id or not fresh_item(player_seq,number,seq): continue
+		members[number]=players[id];ensure_avatar(number,members[number])
+
+func apply_actors(packed,seq: int):
+	if not packed is PackedFloat32Array: return
 	var known={}
 	for enemy in game.enemies: known[int(enemy.net_id)]=enemy
-	var ids={};var missing=[]
+	var missing=[]
 	for base in range(0,packed.size()-ACTOR_STRIDE+1,ACTOR_STRIDE):
-		var id=int(packed[base]);ids[id]=true
+		var id=int(packed[base])
+		if not fresh_item(actor_seq,id,seq): continue
 		var found=known.get(id,{})
 		if found.is_empty():
 			if not actor_info.has(id): missing.append(id);continue
@@ -1105,8 +1171,12 @@ func apply_world(message: Dictionary):
 		for i in range(ACTOR_STATUS.size()): found[ACTOR_STATUS[i]]=packed[base+12+i]
 		EliteMods.replicate(found)
 	request_actors(missing)
+
+func remove_missing_actors(ids):
+	var alive={}
+	for id in ids: alive[int(id)]=true
 	for enemy in game.enemies:
-		if not ids.has(enemy.net_id) and not enemy.dead: enemy.dead=true;enemy.node.queue_free()
+		if not alive.has(int(enemy.net_id)) and not enemy.dead: enemy.dead=true;enemy.node.queue_free();actor_seq.erase(int(enemy.net_id))
 
 func hit(enemy: Dictionary,damage: float,mechanic: String="",origin: Vector3=Vector3.ZERO,cause: String="hit"):
 	if active and not hosting: send_to(owner_id,{"type":"hit","id":enemy.net_id,"damage":damage,"mechanic":mechanic,"origin":array(origin),"cause":cause})

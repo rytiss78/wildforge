@@ -174,7 +174,8 @@ static func run(g,host: bool):
 		g.enter_realm(1)
 		checks.drop2_rejoined=await wait_for(g,func():return g.coop.test_messages.has("reconnected"),42)
 		var away_restored=g.coop.members.values().filter(func(member):return str(member.get("token",""))==away_token and not member.get("disconnected",false))
-		checks.drop2_state=away_restored.size()==1 and away_restored[0].get("mode","")=="playing"
+		# The returning guest may already be choosing the chest replayed from island 1.
+		checks.drop2_state=away_restored.size()==1 and away_restored[0].get("mode","") in ["playing","offer"]
 		checks.drop2_client=await wait_for(g,func():return g.coop.test_messages.has("drop2_done"),15) and g.coop.test_messages.drop2_done.values().all(func(v):return v)
 		trace.append({"phase":"rejoin","drop1":g.coop.test_messages.get("drop1_done",{}),"drop2":g.coop.test_messages.get("drop2_done",{})})
 		g.enter_realm(3)

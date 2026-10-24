@@ -243,7 +243,7 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
   - integration (`net_world_size`, `net_pose_unreliable`);
   - shared-review with a new silent-drop rejoin (the guest's link dies without notice) and `reconnect_no_duplicate`;
   - shared-review-stress, coop-dropin and the full `coop` route (`2026-10-23T20-37-43-363Z`), all with 0 errors.
-- **Not verified:** a real internet session with packet loss; the tests run on one machine. Snapshots still fragment into about 13 pieces at this size. If loss stays visible, the next step is splitting the snapshot into independent packets.
+- **Not verified:** a real internet session with packet loss; the tests run on one machine. Snapshots were later split into independent packets (see Open issues: split world snapshots).
 
 ## Weapon damage review (user report, October 24)
 
@@ -336,7 +336,10 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
     - The modem is a Huawei EchoLife at 192.168.101.1. It answers UPnP, and its WAN service reports **Connected**, but with outside address **10.254.50.76**: a private address, meaning the provider's carrier-grade NAT. The engine labels such a gateway status 5 ("disconnected") and refuses to use it.
     - No port mapping on this connection can be reached from the internet. Fix: a friend with a public address hosts, or the user asks the provider for a public IP.
   - **Game fix:** a modem answering with status 5 is now reported as carrier-grade NAT, with that advice, instead of "router did not allow". Verified against the real modem: the game's `upnp_work` returns `carrier` on it. Integration check `upnp_provider_nat`.
-- **Snapshot size:** at 100 enemies, snapshots exceed the 1,392-byte MTU (about 9 fragments). This has not been measured under real packet loss.
+- **Split world snapshots** (fixed October 24, protocol `wildforge-shared-world-14`): the world now travels as about 20 packets, all under the 1,392-byte MTU (the largest is 1,200 bytes at 125 enemies and 300 orbs). It used to be one 17.7 KB message in about 13 fragments, where any lost fragment lost the whole update.
+  - **Packets:** a core packet (time, progression, events, player ids), the live enemy and orb id lists (removals come only from these), enemies 13 per packet, orbs 45 per packet, and one packet per player.
+  - **Late packets:** each enemy, orb and player keeps the newest seq it has seen, so a late packet never rolls it back. A lost packet costs only its own enemies for one tick.
+  - **Verified:** integration `net_packets_fit_mtu`; shared-review (100-enemy crowd all visible), shared-review-stress and coop-dropin. Not yet measured over a real lossy internet link.
 - **Early co-op desync:** the original symptom was never described in detail. The pause-input fix and the passing full `coop` route do not prove it is gone, so the issue stays open until a matching report or reproduction exists.
 - **Rejoin rewards** (fixed October 24): level-ups and chests the host shared while a player was away were lost, and a second shared reward arriving while one was still open replaced it. The host now keeps its last 24 shared rewards and replays those from shortly before the player's last packet when they rejoin. The guest queues a reward that arrives while another is open and never opens the same reward twice. Verified by shared-review `drop1.away_offer` and `away_offer_once`; with the replay switched off, the check fails. Replayed rewards are marked as replays, so they count even after the host has moved to another island (shared-review `drop2.earlier_island_chest`).
 - **Performance:** three rank-9 spells in a 125-enemy crowd run at about 20 fps (median 49.5 ms). The per-step enemy update is the remaining cost.
