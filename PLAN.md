@@ -329,10 +329,15 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
   - **Follows the frame rate:** `view_scale` rises to 1.5x while above 90 fps and drops back below 55 fps (`game.adapt_view`), stretching the clear zone, grass and scenery further.
   - **Verified:** biome-review captures inspected (much deeper views), check, smoke and integration pass. crowd-spells frame median 35.8 ms against 33 before (process +1.4 ms for the extra terrain; GPU unchanged).
 - [x] **2. Enemies stand out.** The enemy shader (`painted_batch.gd`, animated variant) adds a warm rim light along the silhouette and a slight self-light, so bodies read brighter than the ground in every biome. No extra draw calls. Verified with crowd-review captures before and after.
-- [x] **3. Much harder.** XP per kill x0.75 (`XP_SCALE`), enemy speed x1.1 (`ENEMY_SPEED_SCALE`), one more enemy per wave after the opening 90 s, waves 15% closer together (spawn clock factor 2.0 to 1.7); the 125-enemy cap is unchanged. check, smoke and integration pass; a bot batch measures it.
+- [x] **3. Much harder.** XP per kill x0.75 (`XP_SCALE`), enemy speed x1.1 (`ENEMY_SPEED_SCALE`), one more enemy per wave after the opening 90 s, waves 15% closer together (spawn clock factor 2.0 to 1.7); the 125-enemy cap is unchanged. check, smoke and integration pass. Bot batch `2026-10-24T18-05-09-387Z` (12 runs): 75% clear island 1, 25% reach the Baron, 0% beat him. That is on target to the Baron and hard at the Baron; 12 runs vary a lot.
 - [x] **4. Hit knockback.** A received hit pushes the hero about 2 m back with a small hop (11 m/s, was 8 m/s and about 1 m). Area blasts and meteors now pass their centre, so they push and aim the hit-direction arrow too. Damage-over-time ticks still do not push. check, smoke, integration and playfeel-review pass.
 - [ ] **5. New main music.** Phonk style.
-- [ ] **6. Danger is red, safe is not.** Warnings for anything that can hurt the hero (enemy skills, map events) are red; the hero's own skill and weapon indicators avoid red, so it is clear what to dodge and what is safe.
+- [x] **6. Danger is red, safe is not.**
+  - **Enemy warnings (`DangerMark`):** fills now stay in the red family; orbital was blue, void purple, storm teal and the default green.
+  - **Biome events that hurt the hero:** spore fog, lava vents and gravity rifts get a danger-red rim and fill (`BiomeMechanics.hurts_hero`), and the spore fog has a red mist. Clover, ice and wind are harmless and keep their colours.
+  - **The hero's own areas avoid red:** Inferno Halo is amber (was red-orange), burning pools are amber, friendly meteors gold.
+  - **Verified:** biome-review captures inspected (spore fog now red, ice unchanged), fx-review and check pass.
+  - **Limit:** in Candy Hell, whose ground is red, lava's red rim has little contrast.
 
 ## Damage numbers: own only, none while dead (user report, October 24, Build 22)
 

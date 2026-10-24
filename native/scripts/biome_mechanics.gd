@@ -22,6 +22,11 @@ const KINDS={
 const MAX_ZONES=8
 static var disc_paints={}
 
+# Spore fog poisons, lava burns and a rift implodes on whoever is at its centre: these
+# zones wear the danger red. Clover heals, ice and wind only move you.
+static func hurts_hero(biome: int) -> bool:
+	return biome in [1,4,5]
+
 static func active(g) -> bool:
 	return g.run_active and g.realm<3 and g.mode=="playing"
 
@@ -85,7 +90,9 @@ static func disc(g,at: Vector3,radius: float,color: Color,biome: int) -> Node3D:
 	var key=str(biome)
 	if not disc_paints.has(key):
 		var paint=StandardMaterial3D.new();paint.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED;paint.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA
-		paint.albedo_color=Color(Color("ffc24a") if biome==4 else color,{0:.42,1:.22,2:.55,3:.0,4:.92,5:.25}[biome]);paint.cull_mode=BaseMaterial3D.CULL_DISABLED
+		var fill: Color=Color("ffc24a") if biome==4 else color
+		if hurts_hero(biome): fill=fill.lerp(DangerMark.DANGER,.45)
+		paint.albedo_color=Color(fill,{0:.42,1:.22,2:.55,3:.0,4:.92,5:.25}[biome]);paint.cull_mode=BaseMaterial3D.CULL_DISABLED
 		if biome==4: paint.emission_enabled=true;paint.emission=Color("ffb02e");paint.emission_energy_multiplier=2.4
 		disc_paints[key]=paint
 	floor_disc.material_override=disc_paints[key];root.add_child(floor_disc)
@@ -98,10 +105,10 @@ static func disc(g,at: Vector3,radius: float,color: Color,biome: int) -> Node3D:
 	var edge=MeshInstance3D.new();edge.name="Rim";edge.mesh=rim.commit();edge.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	if not disc_paints.has(key+"rim"):
 		var line=StandardMaterial3D.new();line.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED;line.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA;line.cull_mode=BaseMaterial3D.CULL_DISABLED
-		line.albedo_color=Color("4a170a") if biome==4 else Color(color.lightened(.35),.9)
+		line.albedo_color=Color(DangerMark.DANGER,.95) if hurts_hero(biome) else Color(color.lightened(.35),.9)
 		disc_paints[key+"rim"]=line
 	edge.material_override=disc_paints[key+"rim"];edge.visible=biome!=3;floor_disc.add_child(edge)
-	if biome==1: AreaVisual.make(root,"poison",radius,Vector3.ZERO)
+	if biome==1: AreaVisual.make(root,"danger_poison",radius,Vector3.ZERO)
 	if biome==5: AreaVisual.make(root,"gravity",radius*.55,Vector3.ZERO)
 	floor_disc.visible=biome!=3
 	return root

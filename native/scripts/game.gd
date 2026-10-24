@@ -1337,7 +1337,7 @@ func fire(weapon: Dictionary, origin: Vector3):
 			position_value.y=world.height_at(position_value.x,position_value.z)
 			var warning=preload("res://scripts/danger_mark.gd").make(self,position_value,3.0*float(mods.get("areaScale",1)),"ally")
 			hazards.append({"node":warning,"life":.85+meteor_index*.12,"duration":.85+meteor_index*.12,"radius":3.0*float(mods.get("areaScale",1)),"damage":base_damage,"weapon_id":weapon.id,"friendly":true})
-			var meteor=shape(orb_mesh,Color("ee986d"),self,position_value+Vector3.UP*14,1.0);meteor.scale=Vector3.ONE*6
+			var meteor=shape(orb_mesh,Color("ffd27a"),self,position_value+Vector3.UP*14,1.0);meteor.scale=Vector3.ONE*6
 			effects.append({"node":meteor,"life":.85,"velocity":Vector3(0,-13,0),"meteor":true})
 		return
 	ShotFx.muzzle(self,origin,aim,kind)
@@ -1379,7 +1379,7 @@ func remote_weapon_effect(id: String,origin: Vector3,target: Vector3,duration: f
 		var well=preload("res://scripts/area_visual.gd").make(self,"gravity",3,point)
 		effects.append({"node":well,"life":3.0,"velocity":Vector3.ZERO,"stationary":true})
 	elif id=="meteor":
-		var meteor=shape(orb_mesh,Color("ee986d"),self,target+Vector3.UP*14);meteor.scale=Vector3.ONE*6
+		var meteor=shape(orb_mesh,Color("ffd27a"),self,target+Vector3.UP*14);meteor.scale=Vector3.ONE*6
 		effects.append({"node":meteor,"life":.85,"velocity":Vector3(0,-13,0),"meteor":true,"remote_impact":target})
 	elif id in ["boomerang","disc","bomb","bubble","gun","shotgun","rail","harpoon","turret"]:
 		var node=MeshInstance3D.new();node.mesh=load("res://assets/style3d/baked/weapon_"+id+".res") if id in ["boomerang","disc","bomb"] else orb_mesh if id=="bubble" else brass_mesh

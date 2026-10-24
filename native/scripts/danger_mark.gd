@@ -14,9 +14,10 @@ static func make(game,point: Vector3,radius: float,style: String) -> MeshInstanc
 	var node=MeshInstance3D.new();node.mesh=mesh.commit();node.position=point
 	var paint=ShaderMaterial.new();paint.shader=preload("res://shaders/danger_mark.gdshader")
 	# One language: danger red for every enemy attack, gold for the hero's own strikes,
-	# pale blue for harmless hazards. The attack's own colour stays as the inner fill.
+	# pale blue for harmless hazards. Danger fills stay in the red family too (user
+	# request, October 24: what hurts must read as red, what is safe must not).
 	var ink=Color("ffd35a") if style=="ally" else Color("bfe6ff") if style=="caution" else DANGER
 	paint.set_shader_parameter("ink",ink)
-	paint.set_shader_parameter("fill",ink if style in ["ally","caution"] else Color("ffd35a") if style=="ally" else Color("ff354f") if style=="annihilation" else Color("55bfff") if style=="orbital" else Color("b5a1ff") if style=="void" else Color("ed9455") if style in ["roots","lava","meteor"] else Color("72d5d8") if style=="storm" else Color("b5d775"))
+	paint.set_shader_parameter("fill",ink if style in ["ally","caution"] else Color("ff354f") if style=="annihilation" else Color("ff6a5a") if style=="orbital" else Color("ff4a7a") if style=="void" else Color("ff7a3d") if style in ["roots","lava","meteor"] else Color("ff5a4a") if style=="storm" else Color("e8402a"))
 	node.material_override=paint;node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;game.add_child(node)
 	return node

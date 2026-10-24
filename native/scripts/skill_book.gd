@@ -10,7 +10,7 @@ class_name SkillBook
 #   inferno      a ring of fire that sweeps outward and sets everything alight
 # Active casts live in g.skills. A spell from a co-op teammate is visual only.
 const KINDS=["tornado","blackhole","thunderstorm","inferno"]
-const COLORS={"tornado":Color("b8ece0"),"blackhole":Color("a77cff"),"thunderstorm":Color("79c6ff"),"inferno":Color("ff7424")}
+const COLORS={"tornado":Color("b8ece0"),"blackhole":Color("a77cff"),"thunderstorm":Color("79c6ff"),"inferno":Color("ffb02e")}
 const SOUNDS={"tornado":"spell_tornado","blackhole":"spell_blackhole","thunderstorm":"spell_thunderstorm","inferno":"spell_inferno"}
 const MAX_SCALE=4.0
 static var funnel_mesh: CylinderMesh
