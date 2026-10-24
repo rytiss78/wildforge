@@ -168,6 +168,9 @@ static func run(g,host: bool):
 		var away_token=str(g.coop.members.values()[0].get("token",""))
 		g.coop.test_messages.erase("reconnected");send(g,"reconnect_force",{"hold":1.5})
 		checks.drop2_dropped=await wait_for(g,func():return g.coop.members.values().any(func(m):return m.get("disconnected",false)))
+		# A chest opened on this island while the guest is away, then the host moves on:
+		# the guest must still get it after rejoining on the next island.
+		free_chest.call()
 		g.enter_realm(1)
 		checks.drop2_rejoined=await wait_for(g,func():return g.coop.test_messages.has("reconnected"),42)
 		var away_restored=g.coop.members.values().filter(func(member):return str(member.get("token",""))==away_token and not member.get("disconnected",false))
@@ -294,7 +297,9 @@ static func run(g,host: bool):
 		drop2.realm=await wait_for(g,func():return g.realm==1,6)
 		# The host may still be streaming the new realm; require snapshots to resume.
 		drop2.snapshots=await wait_for(g,func():return g.coop.snapshots_received-rejoin_start>=5,5)
-		drop2.mode=g.mode=="playing"
+		drop2.earlier_island_chest=await wait_for(g,func():return g.mode=="offer" and g.offer_source=="chest",8)
+		choose(g)
+		drop2.mode=await wait_for(g,func():return g.mode=="playing",4)
 		trace.append({"phase":"rejoin_client","snapshots":g.coop.snapshots_received-rejoin_start,"last_seq":g.coop.last_snapshot_seq,"realm":g.realm,"run_active":g.run_active,"since_snapshot":Time.get_ticks_msec()/1000.0-g.coop.last_snapshot})
 		checks.drop2=drop2.values().all(func(v):return v)
 		send(g,"drop2_done",drop2)

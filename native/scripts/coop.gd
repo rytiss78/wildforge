@@ -770,7 +770,8 @@ func receive(sender: int,message):
 				# Level-ups and chests shared while the player was away; their game
 				# skips any it already opened.
 				for entry in reward_log:
-					if float(entry.time)>=away_since: send_to(sender,entry.message)
+					if float(entry.time)>=away_since:
+						var replay=entry.message.duplicate();replay.replay=true;send_to(sender,replay)
 			elif game.run_active:
 				# Drop-in: the joiner starts the same run and enters the host's realm;
 				# the world pauses ("loading") until they are in.
@@ -966,7 +967,9 @@ func receive(sender: int,message):
 			if state is Dictionary and str(state.get("reward_id",""))==game.party_reward_id: apply_reward_state(state)
 		elif kind=="reward_chosen":
 			apply_reward_choice(int(message.get("player_id",0)),str(message.get("reward_id","")),str(message.get("selected_id","")),str(message.get("selected_name","")),str(message.get("source","")),str(message.get("name","Player")))
-		elif kind=="level_up" and int(message.get("realm",-1))==game.realm:
+		# A replayed reward (missed while away) counts even if the host has since
+		# moved to another island.
+		elif kind=="level_up" and (int(message.get("realm",-1))==game.realm or message.get("replay",false)):
 			var shared_level=int(message.get("level",game.level))
 			if shared_level<game.level or shared_level<=last_remote_reward_level: return
 			if shared_level>last_remote_reward_level:
@@ -982,7 +985,7 @@ func receive(sender: int,message):
 			if price>0: game.paid_chests+=1
 			game.run_chests+=1;game.career.bump("chests");game.heal(game.stats.chestHeal)
 		elif kind=="chest_rejected": game.pending_chest=false;game.hud.tell("Chest unavailable or not enough coins")
-		elif kind=="chest_open" and int(message.get("realm",-1))==game.realm:
+		elif kind=="chest_open" and (int(message.get("realm",-1))==game.realm or message.get("replay",false)):
 			shared_offer(message.get("offers",[]),str(message.get("kind","item")),bool(message.get("elite",false)),"chest",str(message.get("reward_id","")),bool(message.get("event",false)))
 		elif kind=="biome_event": BiomeMechanics.spawn(game,message)
 		elif kind=="chest_hide" and int(message.get("realm",-1))==game.realm:
