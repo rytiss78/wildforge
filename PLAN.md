@@ -322,6 +322,14 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
   - **Bot runs do not repeat from their seed:** the same hero and seed went from beating the Baron to dying in the first minute, and island 1 outcomes changed in 13 of 24 runs at an unchanged island 1. Paired seeds therefore cannot reduce the noise, and 24-run batches swing by about 20 points.
   - **Next:** a step change is not a lever this noise can measure. The Baron's own damage and patterns, judged by human playtest or batches of 48+ runs, is the next thing to try.
 
+## Next: user list (October 24)
+
+- [ ] **1. Longer draw distance.** Enemies and grass appear just in front of the hero, so enemies have to be found on the minimap. Push the view and spawn distance out, and much further when the frame rate has room.
+- [ ] **2. Enemies stand out.** They blend into the ground and scenery. Give them a clear read against every biome, for example a rim outline or contrast tint.
+- [ ] **3. Much harder.** Less XP per drop, slightly faster enemies, more enemies.
+- [ ] **4. Hit knockback.** A received hit should push the hero back slightly. Today it is unclear whether you were hit.
+- [ ] **5. New main music.** Phonk style.
+
 ## Damage numbers: own only, none while dead (user report, October 24, Build 22)
 
 - **Report:** "I see damage numbers when I'm dead… am I seeing other players' damage?" Yes: the host showed every confirmed hit, teammates' included. Each player now sees only their own damage (guests already did). A dead or downed hero shows no damage numbers; burns and wells left behind still tick but are not shown.
