@@ -64,6 +64,13 @@ var saw_pause=false
 var saw_realm=false
 var turret_models={}
 var last_remote_reward_level=1
+# Shared rewards (level-ups, chests) the host broadcast recently: a player who
+# rejoins is sent the ones broadcast while they were away.
+var reward_log=[]
+# A guest's shared rewards that arrived while another was still open, and the
+# rewards already opened (a replay after a rejoin must not open one twice).
+var queued_offers=[]
+var rewards_seen={}
 var review_lag_ms=0
 var review_packet_queue=[]
 var reconnecting=false
@@ -312,7 +319,7 @@ func leave():
 	for actor in avatars.values(): actor.queue_free()
 	for turret in turret_models.values(): turret.queue_free()
 	turret_models.clear()
-	avatars.clear();members.clear();active=false;hosting=false;paused=false;transport="";joined=false;welcomed=false;connection_clock=0;last_snapshot=0;last_remote_reward_level=1
+	avatars.clear();members.clear();active=false;hosting=false;paused=false;transport="";joined=false;welcomed=false;connection_clock=0;last_snapshot=0;last_remote_reward_level=1;reward_log.clear();queued_offers.clear();rewards_seen.clear()
 	reset_actor_sync()
 
 func close_transport():
@@ -359,6 +366,7 @@ func attempt_reconnect():
 func remove_member(id: int):
 	sync_flowers(id,{"flower_realm":game.realm})
 	if hosting and game.run_active and members.has(id):
+		members[id].away_since=float(members[id].get("last_seen",Time.get_ticks_msec()/1000.0))
 		members[id].disconnected=true;members[id].disconnect_until=Time.get_ticks_msec()/1000.0+40.0;members[id].last_seen=Time.get_ticks_msec()/1000.0
 		if avatars.has(id): avatars[id].queue_free();avatars.erase(id)
 		for key in turret_models.keys():
@@ -383,6 +391,9 @@ func send_to(id: int,message: Dictionary,reliable: bool=true):
 		peer.set_target_peer(id);peer.transfer_mode=MultiplayerPeer.TRANSFER_MODE_UNRELIABLE_ORDERED if unreliable else MultiplayerPeer.TRANSFER_MODE_RELIABLE;peer.put_packet(bytes)
 
 func broadcast(message: Dictionary,reliable: bool=true):
+	if hosting and message.get("type","") in ["level_up","chest_open"]:
+		reward_log.append({"time":Time.get_ticks_msec()/1000.0,"message":message})
+		if reward_log.size()>24: reward_log.pop_front()
 	for id in members:
 		if not members[id].get("disconnected",false) and transport_peer_connected(int(id)): send_to(id,message,reliable)
 
@@ -462,6 +473,9 @@ func tick(delta: float):
 		var result=upnp_thread.wait_to_finish();upnp_thread=null;upnp_finished(result)
 	discover_tick(delta)
 	if not active: return
+	if not queued_offers.is_empty() and game.mode=="playing" and game.run_active:
+		var next=queued_offers.pop_front()
+		if int(next[5])==game.realm: game.open_shared_offer(next[0],next[1],next[2],next[3],next[4])
 	if transport=="lan" and peer!=null:
 		peer.poll()
 		if peer==null or not active: return
@@ -641,6 +655,16 @@ static func vector(v) -> Vector3:
 	if not v is Array or v.size()!=3: return Vector3.ZERO
 	return Vector3(float(v[0]),float(v[1]),float(v[2]))
 
+# Opens a shared reward, or queues it while another is still open: a second
+# reward used to replace the first, which was lost.
+func shared_offer(pool,kind: String,elite: bool,source: String,reward_id: String):
+	if not reward_id.is_empty():
+		if rewards_seen.has(reward_id): return
+		rewards_seen[reward_id]=true
+	if game.mode in ["offer","replace","reveal","level_reveal"] and game.party_reward_id!=reward_id:
+		queued_offers.append([pool,kind,elite,source,reward_id,game.realm]);return
+	game.open_shared_offer(pool,kind,elite,source,reward_id)
+
 func publish_reward_options(items: Array,source: String,kind: String,elite: bool):
 	if not active or not game.run_active or game.party_reward_id.is_empty(): return
 	var options=[]
@@ -732,7 +756,10 @@ func receive(sender: int,message):
 			# Up to four players; a new player may drop into a run in progress.
 			if resume_id==0 and members.values().filter(func(m):return not m.get("disconnected",false)).size()>=3: send_to(sender,{"type":"reject","reason":"Party is full."});return
 			if resume_id>0:
-				var restored=members[resume_id];members.erase(resume_id);restored.erase("disconnected");restored.erase("disconnect_until");restored.last_seen=Time.get_ticks_msec()/1000.0;restored.mode="playing";members[sender]=restored
+				# Rewards are replayed from shortly before the last packet heard: after a
+				# silent drop the host kept sending to a connection that was already dead.
+				var away_since=float(members[resume_id].get("away_since",members[resume_id].get("last_seen",0.0)))-2.0
+				var restored=members[resume_id];members.erase(resume_id);restored.erase("away_since");restored.erase("disconnected");restored.erase("disconnect_until");restored.last_seen=Time.get_ticks_msec()/1000.0;restored.mode="playing";members[sender]=restored
 				game.update.remap_peer_id(resume_id,sender)
 				if game.party_seen.has(str(resume_id)):
 					game.party_seen[str(sender)]=game.party_seen[str(resume_id)];game.party_seen[str(sender)].player_id=sender;game.party_seen.erase(str(resume_id))
@@ -740,6 +767,10 @@ func receive(sender: int,message):
 				# Everything one-off broadcasts changed while the member was away.
 				var opened=game.chests.filter(func(c):return c is Dictionary and c.get("opened",false) and is_instance_valid(c.get("node"))).map(func(c):return [int(c.node.position.x),int(c.node.position.y),int(c.node.position.z)])
 				send_to(sender,{"type":"welcome","reconnected":true,"realm":game.realm,"opened_chests":opened})
+				# Level-ups and chests shared while the player was away; their game
+				# skips any it already opened.
+				for entry in reward_log:
+					if float(entry.time)>=away_since: send_to(sender,entry.message)
 			elif game.run_active:
 				# Drop-in: the joiner starts the same run and enters the host's realm;
 				# the world pauses ("loading") until they are in.
@@ -945,14 +976,14 @@ func receive(sender: int,message):
 			game.level=shared_level
 			game.xp=int(message.get("xp",game.xp))
 			game.xp_target=int(message.get("xp_target",game.xp_target))
-			game.open_shared_offer(message.get("offers",[]),str(message.get("kind","skill")),bool(message.get("elite",false)),"level",str(message.get("reward_id","")))
+			shared_offer(message.get("offers",[]),str(message.get("kind","skill")),bool(message.get("elite",false)),"level",str(message.get("reward_id","")))
 		elif kind=="chest_paid" and int(message.get("realm",-1))==game.realm:
 			game.pending_chest=false;var price=int(message.get("price",0));game.gold=maxi(0,game.gold-price)
 			if price>0: game.paid_chests+=1
 			game.run_chests+=1;game.career.bump("chests");game.heal(game.stats.chestHeal)
 		elif kind=="chest_rejected": game.pending_chest=false;game.hud.tell("Chest unavailable or not enough coins")
 		elif kind=="chest_open" and int(message.get("realm",-1))==game.realm:
-			game.open_shared_offer(message.get("offers",[]),str(message.get("kind","item")),bool(message.get("elite",false)),"chest",str(message.get("reward_id","")))
+			shared_offer(message.get("offers",[]),str(message.get("kind","item")),bool(message.get("elite",false)),"chest",str(message.get("reward_id","")))
 		elif kind=="biome_event": BiomeMechanics.spawn(game,message)
 		elif kind=="chest_hide" and int(message.get("realm",-1))==game.realm:
 			apply_chest_hide(message.get("pos",[]))

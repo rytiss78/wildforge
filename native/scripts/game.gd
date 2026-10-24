@@ -437,6 +437,7 @@ func start_run(shared_seed: int=-1):
 	party_seen.clear()
 	party_reward_id=""
 	coop.last_remote_reward_level = 1
+	coop.reward_log.clear();coop.queued_offers.clear();coop.rewards_seen.clear()
 	hud.party_panel_open = false
 	xp_target = rules.next_xp(level)
 	level_choice_cooldown=0

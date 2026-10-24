@@ -268,8 +268,17 @@ static func run(g,host: bool):
 		var drop1={}
 		drop1.rejoined=await wait_for(g,func():return g.coop.test_messages.has("reconnected"),42)
 		drop1.offer_kept=g.mode=="offer" and g.hud.modal.visible and not g.offers.is_empty()
+		var kept_reward=g.party_reward_id
 		choose(g)
+		# The chest the host opened while this guest was away follows once the kept
+		# choice is made (it used to be lost), and is offered only once.
+		drop1.away_offer=await wait_for(g,func():return g.mode=="offer" and g.offer_source=="chest" and g.party_reward_id!=kept_reward,6)
+		var away_reward=g.party_reward_id
+		choose(g)
+		drop1.away_offer_once=g.party_reward_id==away_reward and g.coop.queued_offers.is_empty()
 		drop1.offer_chosen=await wait_for(g,func():return g.mode=="playing",4)
+		await g.get_tree().create_timer(.5).timeout
+		drop1.away_offer_once=drop1.away_offer_once and g.mode=="playing"
 		drop1.nameplate=is_instance_valid(g.coop.local_nameplate) and g.coop.local_nameplate.is_inside_tree()
 		var away_instruction=await wait_for(g,func():return g.coop.test_messages.has("away_chest"))
 		var away=CoopSession.vector(g.coop.test_messages.get("away_chest",{}).get("position",[]))
