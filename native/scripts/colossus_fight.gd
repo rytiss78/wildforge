@@ -17,6 +17,12 @@ const THRESHOLDS=[.65,.30]
 const OPEN_DAMAGE=1.35
 const SPEED=[1.0,.88,.75]
 const REST=[1.1,.8,.5]
+# Every blow, vent and meteor hits this much harder (October 24, user request):
+# the fight is paid for with health potions, POTIONS of them every POTION_SECONDS.
+const DEADLY=2.5
+const POTIONS=3
+const POTION_SECONDS=60.0
+const POTION_HEAL=.4
 
 static func phase(enemy: Dictionary) -> int:
 	return int(enemy.get("colossus_phase",0))
@@ -108,9 +114,22 @@ static func start(g,enemy: Dictionary,action: String,target: Vector3):
 	if g.coop.active and g.coop.hosting: g.coop.broadcast({"type":"colossus_action","realm":g.realm,"action":action,"windup":windup,"active":active,"recover":recover,"open":open,"turn":enemy.node.rotation.y})
 
 static func hazard(g,at: Vector3,radius: float,delay: float,damage: float,style: String):
-	at=on_arena(g,at)
+	at=on_arena(g,at);damage*=DEADLY
 	g.warn_at(at,radius,delay,damage,style)
 	if g.coop.active: g.coop.broadcast({"type":"hazard","realm":g.realm,"position":CoopSession.array(at),"radius":radius,"delay":delay,"damage":damage,"style":style})
+
+# Each player's game shakes POTIONS health potions out of the living Colossus
+# every POTION_SECONDS, scattered round it, so healing means closing in.
+static func potions(g,enemy: Dictionary):
+	if enemy.dead or g.events.get("final_intro",false): return
+	if not enemy.has("next_potions"): enemy.next_potions=g.realm_time+POTION_SECONDS;return
+	if g.realm_time<float(enemy.next_potions): return
+	enemy.next_potions=g.realm_time+POTION_SECONDS
+	var turn=g.rules.rng.randf()*TAU
+	for i in range(POTIONS):
+		var at=enemy.node.position+Vector3.RIGHT.rotated(Vector3.UP,turn+i*TAU/POTIONS)*g.rules.rng.randf_range(9.0,14.0)
+		g.drop_consumable(on_arena(g,at),true,"health")
+	g.hud.tell("THE COLOSSUS SHEDS HEALTH POTIONS",3)
 
 # Keep impacts and landings on the playable ground of the arena.
 static func on_arena(g,at: Vector3) -> Vector3:

@@ -335,6 +335,7 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
   - **Phase changes:** a roar (`scripts/make-colossus-audio.py`), a shockwave ring, the new skin and a title card.
 - **Health:** 5x the Baron's (`HEALTH_MULTIPLIER` 37.5, user request), so about 3.4 million solo.
 - **Every other boss:** 5x health too (`spawn_enemy` boss factor x4 -> x20, user request, October 24).
+- **Deadlier, with potions:** every Colossus blow, vent and meteor hits 2.5x harder (`ColossusFight.DEADLY`); it sheds 3 health potions round itself every 60 s (40% max HP each, drunk by walking into one). Checked by colossus-review `deadly`, `potions_drop`, `potion_heals`.
 - **Health orb:** a glass orb on the chest bone; no boss bar. The liquid is red in phase I, icy blue in II and fire orange in III.
 - **Co-op:** the host decides; guests replay actions from `colossus_action` messages and take the phase skin from `boss_phase`.
 - **Verified:**

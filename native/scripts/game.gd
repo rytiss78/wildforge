@@ -143,6 +143,7 @@ var last_safe = Vector3.ZERO
 var landing_ready = false
 var buffs = {}
 var consumables = []
+const HEALTH_POTION={"name":"Health Potion","color":"e8283c","mark":"+"}
 var biome_seen = {}
 var formation_clock=48.0
 var formation_serial=0
@@ -3278,8 +3279,14 @@ func update_exploration(delta: float):
 			lava_clock-=1.0
 			take_damage(maxf(7.0,stats.maxHp*.06),player.position,"fire")
 	else: lava_clock=0.0
+	if realm==3:
+		for enemy in enemies:
+			if enemy.get("boss_id",-1)==8: ColossusFight.potions(self,enemy)
 	for drop in consumables:
 		drop.age+=delta
+		# Health potions are drunk by walking into them: no key press mid-fight.
+		if drop.kind=="health" and drop.age<=120 and Vector2(drop.node.position.x-player.position.x,drop.node.position.z-player.position.z).length()<1.8:
+			activate_consumable("health");drop.node.queue_free();drop.age=1e9;continue
 		drop.node.position.y=drop.base_y+sin(drop.age*2)*.08
 		drop.node.rotation.y+=delta*.5
 		if drop.age>120: drop.node.queue_free()
@@ -3341,6 +3348,9 @@ func activate_consumable(kind: String):
 		var bubble=SphereMesh.new();bubble.radius=.18;bubble.height=.36
 		var pop=shape(bubble,PowerIcon.color_for("potionPower"),self,player.position+Vector3.UP*1.8)
 		effects.append({"node":pop,"life":.8,"velocity":Vector3.UP*.6})
+	# The Colossus's health potions heal at once instead of giving a timed buff.
+	if kind=="health":
+		heal(stats.maxHp*ColossusFight.POTION_HEAL);sound.effect("drink");vibrate(.2,.2,.1);hud.tell("HEALTH POTION");return
 	if not PotionBook.TYPES.has(kind): return
 	var duration=25.0*stats.get("potionDuration",1.0)
 	buffs[kind]=maxf(float(buffs.get(kind,0)),duration)
@@ -3349,10 +3359,11 @@ func activate_consumable(kind: String):
 	sound.effect("drink");vibrate(.2,.2,.1)
 	hud.tell("%d s  ·  %s" % [duration,PotionBook.TYPES[kind].name])
 
-func drop_consumable(p: Vector3, force: bool=false):
+func drop_consumable(p: Vector3, force: bool=false, kind: String=""):
 	if not force and rules.rng.randf()>minf(.75,.22+maxf(0,stats.luck)*.12+stats.potionChance*.5): return
-	var kinds=PotionBook.TYPES.keys();var kind=kinds[rules.rng.randi_range(0,kinds.size()-1)]
-	var entry=PotionBook.TYPES[kind]
+	var kinds=PotionBook.TYPES.keys()
+	if kind=="": kind=kinds[rules.rng.randi_range(0,kinds.size()-1)]
+	var entry=HEALTH_POTION if kind=="health" else PotionBook.TYPES[kind]
 	var node=Node3D.new();add_child(node)
 	p.x=clampf(p.x,-RealmWorld.SPAWN_EXTENT,RealmWorld.SPAWN_EXTENT);p.z=clampf(p.z,-RealmWorld.SPAWN_EXTENT,RealmWorld.SPAWN_EXTENT);p.y=world.height_at(p.x,p.z)
 	node.position=p+Vector3.UP*.4

@@ -65,6 +65,24 @@ static func run(g):
 	checks.open_bonus=is_equal_approx(ColossusFight.damage_scale(g,boss),ColossusFight.OPEN_DAMAGE)
 	boss.open_until=g.realm_time-.1
 	checks.closed_normal=is_equal_approx(ColossusFight.damage_scale(g,boss),1.0)
+	# Its blows hit DEADLY times harder than their base damage.
+	g.hazards.clear();ColossusFight.hazard(g,boss.node.position,3.0,1.0,100.0,"annihilation")
+	checks.deadly=g.hazards.size()==1 and is_equal_approx(g.hazards[0].damage,100.0*ColossusFight.DEADLY)
+	g.hazards.clear()
+	# Health potions: three shed round it once a minute, drunk by walking into one.
+	boss.next_potions=g.realm_time-.1;var before_drops=g.consumables.size()
+	ColossusFight.potions(g,boss)
+	var drops=g.consumables.filter(func(d):return d.kind=="health")
+	checks.potions_drop=g.consumables.size()==before_drops+ColossusFight.POTIONS and drops.size()==ColossusFight.POTIONS and float(boss.next_potions)>g.realm_time+50
+	var potion=drops[0] if not drops.is_empty() else {}
+	if not potion.is_empty():
+		g.invulnerable=1e9;g.hp=g.stats.maxHp*.3;var low=g.hp
+		g.player.position=potion.node.position;g.player.velocity=Vector3.ZERO
+		for i in range(6):
+			g.player.position=potion.node.position if is_instance_valid(potion.node) else g.player.position
+			await g.get_tree().process_frame
+		checks.potion_heals=g.hp>low+g.stats.maxHp*.3 and not g.consumables.has(potion)
+	else: checks.potion_heals=false
 	# Phases at 65% and 30% health.
 	g.hurt_enemy(boss,boss.hp-boss.maxHp*.6,"hit")
 	checks.phase_two=ColossusFight.phase(boss)==1 and body.phase_index==1
