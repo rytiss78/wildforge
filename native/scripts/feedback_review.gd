@@ -49,6 +49,9 @@ static func run(game):
 	var restored=CareerProfile.new(game.rules.data,true)
 	checks.last_run_survives_trim=restored.data.lastRun.id=="recent-poor" and not restored.data.scores.any(func(r):return r.id=="recent-poor")
 	checks.deaths_persist=restored.data.lastRun.deaths==2 and restored.data.total.deaths==2
+	# Remove the 100 fixture runs again: later exported reviews share this profile,
+	# and a full table of fixtures pushed their runs out (progression `persisted`).
+	restored.data.scores=restored.data.scores.filter(func(r):return not str(r.id).begins_with("history-fixture-"));restored.save()
 	game.career=restored;game.hud.start_menu()
 	for repeat in range(2):
 		var picks=game.hud.menu_controls().filter(func(c):return c is Button and c.text=="Last run")

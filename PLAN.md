@@ -402,6 +402,7 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
 15. [x] **What the circles are.** The big green circles are Clover Woods heal zones. Every biome zone now has a floating name: `+ HEAL ZONE` (green), `POISON FOG`, `LAVA`, `GRAVITY RIFT` (red), `ICE · SLIPPERY`, `WIND`. biome-review `biome-mechanic-0.png`.
 16. [x] **Sky brighter than the ground.** The sky is drawn brighter than its fog colour (dark skies lifted toward a set brightness, at most 1.6x top, 2.2x horizon); island sun energy 15% lower. The fog keeps its dark horizon so distant ground is not washed out.
 
+- **Exported test order (fixed):** `test-build` failed progression `persisted` because feedback-review, run earlier in the same profile, left 100 fixture high scores that pushed later runs off the table. Build 23 fails the same sequence. feedback-review now removes its fixtures after its own checks.
 - **Known flaky:** integration `biome_gust` fails now and then (also seen on October 24 before these changes); it passed with wide margins on rerun. Cause not found; not loosened.
 
 ## Open issues and limits
