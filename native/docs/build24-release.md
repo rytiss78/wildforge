@@ -1,8 +1,8 @@
 # Wildforge 1.7.0 — Build 24
 
-Build 24 is a Windows alpha. `build-info.json` beside the executable records the exact source commit and artifact hashes. Co-op uses protocol `wildforge-shared-world-16`, so **every player in a party needs Build 24**. Build 23 and Build 24 players cannot join each other's parties.
+Build 24 is a Windows alpha. `build-info.json` beside the executable records the exact source commit and artifact hashes. Co-op uses protocol `wildforge-shared-world-16`, so **every player in a party needs Build 24**. Build 23 and Build 24 players cannot join each other's parties, and co-op now also refuses any different download of the game, so two players can never end up in a desynced party. The main menu shows the build ID (bottom right) to compare.
 
-**Install:** extract the whole ZIP into a folder and run `Wildforge.exe`. Keep `godot_wry.dll` beside it; the video panel needs it. Archive `Wildforge-1.7.0-Windows.zip`, SHA-256 `ARCHIVE_SHA256`.
+**Install:** extract the whole ZIP into a folder and run `Wildforge.exe`. Keep `godot_wry.dll` beside it; the video panel needs it. Archive `Wildforge-1.7.0-Windows.zip`, SHA-256 `b9ddc2ccdaaab687643d7a661b7ccd95fbb6b89ed7437c02ab430060d054e9a3`.
 
 ## New look: everything is a cartoon
 
@@ -47,7 +47,7 @@ Every enemy, boss, hero and weapon has been rebuilt from scratch in a gross-out 
 
 ## Verified
 
-- The export from source commit `SOURCE_COMMIT` passes the startup smoke and every exported review, and reports 1.7.0 / Build 24.
+- The export from source commit `15f0483` passes the startup smoke and every exported review, and reports 1.7.0 / Build 24.
 - The packaged ZIP, unpacked into a fresh folder, starts and passes the startup smoke with its own `Wildforge.exe`.
 - Rendered reviews of the whole cast: `cartoon-review` (all 60 enemies, the mutants, the 25 heroes, the 8 bosses, real spawns in game), `colossus-review`, `boss-review`, `capture-ui`, `weapon-review`, and `crowd-review` for the frame-time comparison.
 - `check`, `integration`, `red-moon-review`, `forge-review`, `hermes-review` and the co-op `shared-review` pass.
