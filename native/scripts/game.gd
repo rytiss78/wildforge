@@ -304,6 +304,7 @@ func _ready():
 	elif OS.get_cmdline_user_args().has("--shorts-review"): preload("res://scripts/shorts_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--hero-numbers-review"): preload("res://scripts/hero_numbers_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--colossus-review"): preload("res://scripts/colossus_review.gd").run.call_deferred(self)
+	elif OS.get_cmdline_user_args().has("--cartoon-review"): preload("res://scripts/cartoon_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--model-review"): preload("res://scripts/model_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--weapon-review"): preload("res://scripts/weapon_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--balance-review"): preload("res://scripts/balance_review.gd").run.call_deferred(self)

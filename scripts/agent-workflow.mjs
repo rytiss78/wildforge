@@ -87,7 +87,7 @@ export function assertCommittedBuild(cwd) {
 }
 
 async function main(action) {
-  if (!['balance-review', 'mutation-balance', 'shared-review', 'shared-review-stress', 'coop-dropin', 'bot-playtest', 'island-review', 'block-drop-review', 'shorts-review', 'hero-numbers-review', 'colossus-review', 'model-review', 'weapon-review', 'hermes-review', 'playfeel-review', 'red-moon-review', 'fresh-import', 'biome-review', 'release-review', 'roster-review', 'bake-roster', 'style-review', 'fx-review', 'boss-review', 'forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'crowd-spells', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
+  if (!['balance-review', 'mutation-balance', 'shared-review', 'shared-review-stress', 'coop-dropin', 'bot-playtest', 'island-review', 'block-drop-review', 'shorts-review', 'hero-numbers-review', 'colossus-review', 'cartoon-review', 'model-review', 'weapon-review', 'hermes-review', 'playfeel-review', 'red-moon-review', 'fresh-import', 'biome-review', 'release-review', 'roster-review', 'bake-roster', 'style-review', 'fx-review', 'boss-review', 'forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'crowd-spells', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
     console.error('Usage: node scripts/agent-workflow.mjs check|smoke|capture|capture-ui|combat-review|pace-review|soak|integration|build|status'); return 2;
   }
   const git = (...args) => spawnSync('git', ['-C', root, ...args], {encoding:'utf8', windowsHide:true}).stdout?.trim() ?? '';
@@ -356,6 +356,13 @@ async function main(action) {
       if(!line) throw new Error('Missing colossus review');report.colossus=JSON.parse(line.slice(16));
       if(Object.values(report.colossus.checks).some(v=>v===false)) throw new Error('Colossus review failed: '+JSON.stringify(report.colossus));
       report.captures=['colossus-intro','colossus-sheet'].map(n=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge',n+'.png'),started));
+    }
+    if (action === 'cartoon-review') {
+      const output=await step('cartoon-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--cartoon-review'],120000);
+      const line=output.split(/\r?\n/).findLast(x=>x.startsWith('CARTOON_REVIEW '));
+      if(!line) throw new Error('Missing cartoon review');report.cartoon=JSON.parse(line.slice(15));
+      if(Object.values(report.cartoon.checks).some(v=>v===false)) throw new Error('Cartoon review failed: '+JSON.stringify(report.cartoon));
+      report.captures=['cartoon-ingame','cartoon-sheet'].map(n=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge',n+'.png'),started));
     }
     if (action === 'hero-numbers-review') {
       const output=await step('hero-numbers-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--hero-numbers-review'],120000);
