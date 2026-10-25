@@ -48,6 +48,19 @@ static func run(g):
 		for rig in rigs: rig.queue_free()
 		await g.get_tree().process_frame
 	checks.roster=sheet.save_png("user://cartoon-roster.png")==OK
+	# The same Clover Woods line seen from behind: the one orb inside shows through.
+	var rear=[]
+	for index in range(CreatureBook.WEIGHTS.size()):
+		var entry=CreatureBook.entry(0,index)
+		var rig=g.world.model(entry.model,entry.height);g.add_child(rig)
+		rig.position=ground(g,origin+Vector3((index%5-2)*2.7,0,-6.0-float(index/5)*3.4))+Vector3.UP*(.8 if entry.flying else 0.0);rig.rotation.y=.25-.05*index;rear.append(rig)
+		checks.orbs=checks.orbs and rig.find_child("RearGlass",true,false)==null and rig.orb_paint.shader.code.contains("stencil_mode read")
+	g.camera.position=origin+Vector3(0,3.0,1.6);g.camera.look_at(origin+Vector3(0,1.0,-7.6))
+	await play(g,rear,.4)
+	await RenderingServer.frame_post_draw
+	checks.rear=g.get_viewport().get_texture().get_image().save_png("user://cartoon-rear.png")==OK
+	for rig in rear: rig.queue_free()
+	await g.get_tree().process_frame
 	# Close-ups of the humanoid mutants, three per biome.
 	var mutants=Image.create(CELL.x*2,CELL.y*3,false,Image.FORMAT_RGBA8)
 	for biome in range(6):

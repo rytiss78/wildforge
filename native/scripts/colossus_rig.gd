@@ -60,7 +60,8 @@ func setup(model_name: String):
 	body=torso;head=head_node
 	if paint_shader==null:
 		paint_shader=load("res://shaders/cartoon_creature.gdshader");ink_shader=load("res://shaders/cartoon_creature_outline.gdshader")
-	paint=ShaderMaterial.new();paint.shader=paint_shader;ink=ShaderMaterial.new();ink.shader=ink_shader;paint.next_pass=ink
+	var ref=OrbXray.next_ref(OrbXray.CAST_BASE)
+	paint=ShaderMaterial.new();paint.shader=OrbXray.creature_shader(ref);ink=ShaderMaterial.new();ink.shader=ink_shader;paint.next_pass=ink
 	for material in [paint,ink]: material.set_shader_parameter("size",MODEL_HEIGHT*.4)
 	# Strong colours, little glow: the giant must not wash out to white.
 	ink.set_shader_parameter("width",.016);paint.set_shader_parameter("self_light",.06);paint.set_shader_parameter("rim_strength",.45)
@@ -79,10 +80,12 @@ func setup(model_name: String):
 	for i in range(3): skins.append(i)
 	paint_phase(0)
 	# The glass health orb sits among the chest eyes, like a heart.
-	var orb=MeshInstance3D.new();orb.name="GlassCore";var sphere=SphereMesh.new();sphere.radius=.42;sphere.height=.84;orb.mesh=sphere
-	orb.position=Vector3(0,2.62,-1.42);orb.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;torso.add_child(orb)
-	orb_paint=ShaderMaterial.new();orb_paint.shader=load("res://shaders/blood_core.gdshader");orb_paint.set_shader_parameter("radius",.42)
-	orb_paint.set_shader_parameter("liquid_color",ORB_COLORS[0]);orb.material_override=orb_paint
+	# One orb inside its chest, seen through the body from front and back (OrbXray).
+	var sphere=SphereMesh.new();sphere.radius=.58;sphere.height=1.16
+	orb_paint=ShaderMaterial.new();orb_paint.shader=OrbXray.orb_shader(ref);orb_paint.set_shader_parameter("radius",.58)
+	orb_paint.set_shader_parameter("liquid_color",ORB_COLORS[0])
+	var orb=MeshInstance3D.new();orb.name="GlassCore";orb.mesh=sphere;orb.position=Vector3(0,2.62,-.5)
+	orb.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;orb.material_override=orb_paint;torso.add_child(orb)
 	add_child(roar_player);roar_player.unit_size=40;roar_player.max_distance=220;roar_player.max_db=4
 	var roar_sound=load("res://assets/audio/colossus/roar.wav")
 	if roar_sound!=null: roar_player.stream=roar_sound

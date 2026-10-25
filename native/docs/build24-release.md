@@ -13,6 +13,7 @@ Every enemy, boss, hero and weapon has been rebuilt from scratch in a gross-out 
 - **New realm bosses.** All eight have new bodies: a TV-headed alien, a crying brass bell, a lantern-headed skeleton, a robe with three masks, a giant eyeball wrapped in tentacles, an anglerfish tower, a walking mouth on chicken legs, and a mossy deer-skull giant.
 - **New heroes.** All 25 are still who they were (Wrench, Count Duck, Tank Potato, Queen Tea, the White Supra...) but are now goofy cartoon characters.
 - **New weapons and icons.** The guns are chunky sci-fi gadgets with glowing cores; turrets stand on tripods and look around with one eye. All 73 weapon icons were redrawn from the new models.
+- **One health orb inside every body**, seen through the body from the front, back and sides (never through walls or other objects), and 1.6x bigger than before.
 - **Same speed.** Each enemy is a single mesh animated on the graphics card. With 125 enemies on screen the frame time is the same as before.
 
 ## Gameplay changes

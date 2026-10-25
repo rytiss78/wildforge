@@ -43,9 +43,14 @@ func make_legs(hip: Vector3,length: float,radius: float,trouser: Color,shoe: Col
 		var m=paint(leg,"LegPaint"+str(i))
 		m.rod(Vector3.ZERO,Vector3(0,-length,0),radius,trouser);m.ball(Vector3(0,-length-radius*.3,-radius*.8),Vector3(radius*2.8,radius*1.4,radius*3.8),shoe)
 
+# One health orb, 1.6x the radius given, set inside the body (a quarter of the way
+# from the centre to the front) and seen through it from every side (OrbXray).
+const ORB_SCALE=1.6
+const ORB_DEPTH=.25
 func orb(position: Vector3,radius: float,parent: Node3D=null):
-	var node=MeshInstance3D.new();node.name="GlassCore";var sphere=SphereMesh.new();sphere.radius=radius;sphere.height=radius*2;sphere.radial_segments=18;sphere.rings=9
-	node.mesh=sphere;node.position=position;(parent if parent!=null else body).add_child(node)
+	var sphere=SphereMesh.new();sphere.radius=radius*ORB_SCALE;sphere.height=radius*ORB_SCALE*2;sphere.radial_segments=18;sphere.rings=9
+	var node=MeshInstance3D.new();node.name="GlassCore";node.mesh=sphere
+	node.position=Vector3(position.x,position.y,position.z*ORB_DEPTH);(parent if parent!=null else body).add_child(node)
 
 func muzzle(position: Vector3,parent: Node3D=null):
 	joint("Muzzle",parent if parent!=null else body,position)
