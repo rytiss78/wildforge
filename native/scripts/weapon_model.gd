@@ -31,26 +31,27 @@ func setup(weapon_id: String):
 	if definition.has("archetype") and not ResourceLoader.exists("res://assets/style3d/weapon_"+id+".glb"):
 		var original=WeaponModel.new();variant_base=original;original.setup(str(definition.archetype));base.add_child(original)
 		muzzle.free();muzzle=original.muzzle
-		var paint=load("res://assets/illustrated/content/textures/"+id+".svg")
+		# Each variant wears bright rounded add-ons in its own colour (cartoon style,
+		# October 25), so it reads apart from its base weapon in the hand and the icon.
 		var recipe=definition.art;var variant=int(recipe.condition)-18
-		var parts=[]
+		var palette=[Color("ff3b6b"),Color("ffd23f"),Color("3bd6ff"),Color("8fff5a"),Color("c97aff"),Color("ff8a2b"),Color("ff6bd5"),Color("2fe0c8"),Color("6b7bff"),Color("ffef5a")]
+		var own: Color=palette[absi(hash(id))%palette.size()];var accent=palette[(absi(hash(id))/palette.size())%palette.size()]
 		if variant==0:
 			for i in range(2+int(recipe.shape)%3):
-				var fin=block(base,Color("e1b867"),Vector3(.19,.16+i*.06,-.12-i*.04),Vector3(.11,.04,.24));fin.rotation.z=.2;parts.append(fin)
-			parts.append(ToonArt.ball(base,PowerIcon.color_for(str(definition.archetype)),Vector3(0,.34,-.1),Vector3(.24,.2,.24)))
+				var fin=CylinderMesh.new();fin.top_radius=0;fin.bottom_radius=.05;fin.height=.2;fin.radial_segments=8
+				var part=ToonArt.part(base,fin,accent,Vector3(.15+i*.04,.2+i*.05,-.1-i*.08));part.rotation=Vector3(-.6,0,-.5)
+			ToonArt.ball(base,own,Vector3(0,.34,-.1),Vector3(.2,.2,.2))
 		else:
-			for side in [-1,1]:
-				var guard=block(base,Color("8db2bb"),Vector3(side*.19,.08,-.25),Vector3(.07,.3,.27));guard.rotation.z=side*.3;parts.append(guard)
-			var hoop=TorusMesh.new();hoop.inner_radius=.14;hoop.outer_radius=.18
-			var ring=ToonArt.part(base,hoop,Color("efd19a"),Vector3(0,.08,-.47));ring.rotation.x=PI*.5;parts.append(ring)
-		for part in parts:
-			var material=part.material_override.duplicate();material.albedo_texture=paint;part.material_override=material
+			for side in [-1,1]: ToonArt.ball(base,accent,Vector3(side*.17,.1,-.22),Vector3(.12,.16,.22))
+			var hoop=TorusMesh.new();hoop.inner_radius=.13;hoop.outer_radius=.18
+			var ring=ToonArt.part(base,hoop,own,Vector3(0,.08,-.47));ring.rotation.x=PI*.5
 		flash=ToonArt.ball(muzzle,Color("ffe6a4"),Vector3.ZERO,Vector3(.16,.16,.26));flash.visible=false
 		return
 	var asset="mint_pistol" if id=="gun" else "weapon_"+id
 	if ResourceLoader.exists("res://assets/style3d/"+asset+".glb"):
 		var solid=StyleModel.new();solid.setup(asset);base.add_child(solid)
-		preload("res://scripts/weapon_identity.gd").apply(id,solid)
+		# The cartoon gadgets (CartoonWeapons) carry their own details.
+		if not CartoonWeapons.has(asset): preload("res://scripts/weapon_identity.gd").apply(id,solid)
 		if id=="saw":
 			for node in solid.model.find_children("*","MeshInstance3D",true,false):
 				if str(node.name).begins_with("Disc") or str(node.name).begins_with("Tooth"): saw_parts.append({"node":node,"rest":node.transform})

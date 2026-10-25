@@ -46,7 +46,10 @@ static func run(g):
 		g.hp=g.stats.maxHp*entry[0];g.update_hero_vitals()
 		g.avatar.solid.set_health(entry[0],true)
 		for enemy in g.enemies:
-			enemy.hp=enemy.maxHp*entry[0];enemy.node.get_meta("rig").solid.set_health(entry[0],true)
+			enemy.hp=enemy.maxHp*entry[0];var rig=enemy.node.get_meta("rig")
+			# Cartoon creatures (October 25) carry their orb themselves; bosses keep StyleModel.
+			if rig is CartoonCreatureRig: rig.set_health(entry[0]);rig.orb_fill=entry[0];rig.orb_paint.set_shader_parameter("fill",entry[0])
+			else: rig.solid.set_health(entry[0],true)
 		checks.orb_states=checks.orb_states and is_equal_approx(float(g.avatar.solid.core_material.get_shader_parameter("fill")),entry[0])
 		checks[entry[1]]=await capture(g,entry[1])
 	g.hp=g.stats.maxHp;g.update_hero_vitals();g.avatar.set_defense(6,2,2)

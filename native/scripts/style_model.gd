@@ -41,6 +41,10 @@ func setup_baked(asset: String, tank: bool):
 	core_material=ShaderMaterial.new();core_material.shader=load("res://shaders/blood_core.gdshader");core_material.set_shader_parameter("radius",data.radius);orb.material_override=core_material;core_materials.append(core_material)
 
 func setup(asset: String, tank: bool = false):
+	# Heroes, bosses and weapons in the cartoon style (October 25) are generated, not imported.
+	var cartoon=CartoonCast.scene(asset)
+	if cartoon!=null:
+		setup_scene(cartoon,asset,tank);outline.set_shader_parameter("width",CartoonCast.outline_width(asset));return
 	if asset.begins_with("creature_") and ResourceLoader.exists("res://assets/style3d/baked/"+asset+".res"):
 		setup_baked(asset,tank);return
 	setup_scene(load("res://assets/style3d/"+asset+".glb").instantiate(),asset,tank)

@@ -62,6 +62,37 @@ static func run(g):
 		for rig in rigs: rig.queue_free()
 		await g.get_tree().process_frame
 	checks.mutants=mutants.save_png("user://cartoon-mutants.png")==OK
+	# The heroes, five to a cell, in the game's own light.
+	var heroes=Image.create(CELL.x*2,CELL.y*3,false,Image.FORMAT_RGBA8)
+	var list=g.rules.data.heroes
+	checks.heroes=true
+	for cell in range(5):
+		var rigs=[]
+		for k in range(5):
+			var index=cell*5+k
+			if index>=list.size(): break
+			var rig=g.world.model(str(list[index].model),1.65);g.add_child(rig)
+			rig.position=ground(g,origin+Vector3((k-2)*1.5,0,-4.0));rig.rotation.y=PI-.2+.1*k;rigs.append(rig)
+			checks.heroes=checks.heroes and rig.solid!=null and rig.solid.core_materials.size()==1 and rig.solid.hand_socket()!=null
+		g.camera.position=origin+Vector3(0,1.6,.6);g.camera.look_at(origin+Vector3(0,.9,-4.0))
+		await play(g,rigs,.4,Vector3(0,0,2.0))
+		heroes.blit_rect(await frame(g),Rect2i(Vector2i.ZERO,CELL),Vector2i((cell%2)*CELL.x,(cell/2)*CELL.y))
+		for rig in rigs: rig.queue_free()
+		await g.get_tree().process_frame
+	checks.hero_sheet=heroes.save_png("user://cartoon-heroes.png")==OK
+	# The eight realm bosses, one at a time.
+	var bosses=Image.create(CELL.x*4,CELL.y*2,false,Image.FORMAT_RGBA8)
+	checks.bosses=true
+	for id in range(8):
+		var entry=BossBook.entry(id)
+		var rig=g.world.model("boss_"+str(id),float(entry.height));g.add_child(rig)
+		rig.position=ground(g,origin+Vector3(0,0,-float(entry.height)*1.25));rig.rotation.y=PI-.35
+		checks.bosses=checks.bosses and rig.solid!=null and rig.solid.core_material!=null and not rig.legs.is_empty()
+		g.camera.position=origin+Vector3(0,float(entry.height)*.45,0);g.camera.look_at(rig.position+Vector3.UP*float(entry.height)*.5)
+		await play(g,[rig],.4,Vector3(0,0,1.5))
+		bosses.blit_rect(await frame(g),Rect2i(Vector2i.ZERO,CELL),Vector2i((id%4)*CELL.x,(id/4)*CELL.y))
+		rig.queue_free();await g.get_tree().process_frame
+	checks.boss_sheet=bosses.save_png("user://cartoon-bosses.png")==OK
 	# The real spawn path, seen through the game camera with the HUD.
 	g.hud.visible=true;g.player.visible=true;g.camera_locked=false;g.set_physics_process(true)
 	g.invulnerable=1e9
