@@ -20,15 +20,19 @@ var colors=PackedColorArray()
 var uvs=PackedVector2Array()
 var uv2s=PackedVector2Array()
 var indices=PackedInt32Array()
-var orb=Vector3(0,.6,-.5)
-var orb_radius=.16
 # True when the design is built around its health orb (the orb is a body part,
-# seen from every side), false for an orb set on the body's front.
+# seen from every side). Once core() has placed it, later placements are ignored.
 var orb_body=false
+var orb=Vector3(0,.6,-.5):
+	set(value):
+		if not orb_body: orb=value
+var orb_radius=.16:
+	set(value):
+		if not orb_body: orb_radius=value
 
 # The big glass health orb as a body part: the belly, torso or whole body.
 func core(center: Vector3,radius: float):
-	orb=center;orb_radius=radius;orb_body=true
+	orb_body=false;orb=center;orb_radius=radius;orb_body=true
 
 static func template(kind: String) -> Array:
 	if templates.has(kind): return templates[kind]

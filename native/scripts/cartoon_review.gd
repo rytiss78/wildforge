@@ -53,7 +53,9 @@ static func run(g):
 			var spot=origin+Vector3((index%5-2)*2.7,0,-6.0-float(index/5)*3.4)
 			rig.position=ground(g,spot)+Vector3.UP*(.8 if entry.flying else 0.0);rig.rotation.y=PI-.25+.08*index
 			rigs.append(rig)
-			checks.species=checks.species and rig is CartoonCreatureRig and rig.species.mesh.get_surface_count()==1
+			# Every species is built around its health orb (October 25).
+			checks.species=checks.species and rig is CartoonCreatureRig and rig.species.mesh.get_surface_count()==1 and rig.species.orb_body
+			if not rig.species.orb_body: print("NOT_ORB_BODY ",entry.model)
 			checks.orbs=checks.orbs and rig.find_child("GlassCore",true,false)!=null
 			checks.materials=checks.materials and rig.batched!=null and rig.batched.next_pass!=null
 		g.camera.position=origin+Vector3(0,3.0,1.6);g.camera.look_at(origin+Vector3(0,1.0,-7.6))

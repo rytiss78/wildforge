@@ -67,10 +67,10 @@ func setup(model_name: String):
 	batched=paint;hit_material=StandardMaterial3D.new()
 	# The skeleton of nodes the actions pose. The jaw is the belly mouth's lower lip.
 	model.add_child(torso);torso.position=Vector3(0,1.2,0)
-	torso.add_child(head_node);head_node.position=Vector3(0,3.75,-.2)
-	torso.add_child(jaw);jaw.position=Vector3(0,1.05,-1.1)
+	torso.add_child(head_node);head_node.position=Vector3(0,4.0,-.2)
+	torso.add_child(jaw);jaw.position=Vector3(0,.3,-1.0)
 	for side in [-1.0,1.0]:
-		var shoulder=Node3D.new();shoulder.position=Vector3(side*1.95,2.9,0);torso.add_child(shoulder);arms_nodes.append(shoulder)
+		var shoulder=Node3D.new();shoulder.position=Vector3(side*1.85,3.2,0);torso.add_child(shoulder);arms_nodes.append(shoulder)
 		var elbow=Node3D.new();elbow.position=Vector3(side*.5,-1.4,-.3);shoulder.add_child(elbow);elbows.append(elbow)
 		var hip=Node3D.new();hip.position=Vector3(side*1.1,1.2,0);model.add_child(hip);legs_nodes.append(hip)
 	var parent: Node3D=torso
@@ -79,10 +79,10 @@ func setup(model_name: String):
 	for i in range(3): skins.append(i)
 	paint_phase(0)
 	# The glass health orb sits among the chest eyes, like a heart.
-	var sphere=SphereMesh.new();sphere.radius=.58;sphere.height=1.16
-	orb_paint=ShaderMaterial.new();orb_paint.shader=load("res://shaders/blood_core.gdshader");orb_paint.set_shader_parameter("radius",.58)
+	var sphere=SphereMesh.new();sphere.radius=1.45;sphere.height=2.9;sphere.radial_segments=32;sphere.rings=16
+	orb_paint=ShaderMaterial.new();orb_paint.shader=load("res://shaders/blood_core.gdshader");orb_paint.set_shader_parameter("radius",1.45)
 	orb_paint.set_shader_parameter("liquid_color",ORB_COLORS[0])
-	var orb=MeshInstance3D.new();orb.name="GlassCore";orb.mesh=sphere;orb.position=Vector3(0,2.62,-1.42)
+	var orb=MeshInstance3D.new();orb.name="GlassCore";orb.mesh=sphere;orb.position=Vector3(0,1.9,0)
 	orb.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;orb.material_override=orb_paint;torso.add_child(orb)
 	add_child(roar_player);roar_player.unit_size=40;roar_player.max_distance=220;roar_player.max_db=4
 	var roar_sound=load("res://assets/audio/colossus/roar.wav")
@@ -96,23 +96,26 @@ static func group(phase: int,name: String) -> ArrayMesh:
 	var body_c=Color(p.body);var belly=Color(p.belly);var spot=Color(p.spot);var spike=Color(p.spike);var glow=Color(p.glow);var limb=Color(p.limb);var little=Color(p.head)
 	match name:
 		"torso":
-			m.ball(Vector3(0,1.9,0),Vector3(4.0,3.6,3.0),body_c);m.ball(Vector3(0,1.55,-.85),Vector3(3.0,2.6,1.4),belly)
-			m.spots(Vector3(0,1.9,0),Vector3(2.0,1.8,1.5),spot,12,.55,808)
-			m.spots(Vector3(0,2.0,.2),Vector3(2.0,1.8,1.5),glow,8,.22,809,true)
-			# The belly mouth: its cavity and upper teeth (the jaw is its own node).
-			m.ball(Vector3(0,1.3,-1.35),Vector3(2.5,1.2,.8),CartoonMesh.MOUTH)
+			# The gut is the big glass health orb (October 25: every model is built
+			# around its orb); a fleshy chest cap above holds the eyes and the arms,
+			# a pelvis below holds the belly mouth and the legs.
+			m.ball(Vector3(0,3.35,0),Vector3(3.6,1.4,2.7),body_c);m.ball(Vector3(0,.55,0),Vector3(3.2,1.1,2.5),body_c)
+			m.spots(Vector3(0,3.35,0),Vector3(1.8,.7,1.35),spot,8,.45,808);m.spots(Vector3(0,3.4,.2),Vector3(1.8,.7,1.35),glow,5,.2,809,true)
+			for side in [-1.0,1.0]: m.rod(Vector3(side*1.5,.8,0),Vector3(side*1.5,3.0,0),.32,body_c)
+			m.ring(Vector3(0,1.9,0),1.47,.14,belly)
+			# The belly mouth sits in the pelvis front (the jaw is its own node).
+			m.ball(Vector3(0,.55,-1.15),Vector3(2.2,.7,.5),CartoonMesh.MOUTH)
 			for i in range(9):
-				var x=-1.0+i*.25;var long=.22+.16*float((i*5)%3)
-				m.spike(Vector3(x,1.82,-1.62),Vector3(x+.03,1.82-long,-1.66),.09,CartoonMesh.TOOTH)
-			# Seven mismatched eyes on the chest, around the orb.
-			for e in [[Vector3(-.75,2.8,-1.3),.42,Vector3(-.3,.1,-1)],[Vector3(.78,2.95,-1.25),.32,Vector3(.4,-.1,-1)],[Vector3(-.2,3.3,-1.15),.2,Vector3(0,.4,-1)],[Vector3(.35,3.35,-1.1),.16,Vector3(.5,.5,-1)],[Vector3(-1.3,2.35,-1.0),.2,Vector3(-.8,0,-1)],[Vector3(1.3,2.4,-1.0),.24,Vector3(.8,.1,-1)],[Vector3(0,2.15,-1.45),.15,Vector3(0,-.5,-1)]]:
+				var x=-.9+i*.225;var long=.18+.12*float((i*5)%3)
+				m.spike(Vector3(x,.88,-1.3),Vector3(x+.03,.88-long,-1.34),.08,CartoonMesh.TOOTH)
+			# Seven mismatched eyes along the chest cap.
+			for e in [[Vector3(-.85,3.4,-1.25),.4,Vector3(-.3,.1,-1)],[Vector3(.85,3.5,-1.2),.32,Vector3(.4,-.1,-1)],[Vector3(-.2,3.75,-1.1),.2,Vector3(0,.4,-1)],[Vector3(.3,3.8,-1.05),.16,Vector3(.5,.5,-1)],[Vector3(-1.45,3.15,-.85),.2,Vector3(-.8,0,-1)],[Vector3(1.45,3.2,-.85),.24,Vector3(.8,.1,-1)],[Vector3(0,3.2,-1.3),.18,Vector3(0,-.5,-1)]]:
 				m.eye(e[0],e[1],e[2],glow,CartoonMesh.BODY,0.0,Vector2(0,1),true)
-			# Two tiny vestigial arms flapping on the chest.
 			for side in [-1.0,1.0]:
-				var root=Vector3(side*.55,2.3,-1.4);var hand=root+Vector3(side*.35,-.25,-.35);var pivot=Vector2(root.y,1.0)
+				var root=Vector3(side*.6,2.95,-1.25);var hand=root+Vector3(side*.35,-.3,-.35);var pivot=Vector2(root.y,1.0)
 				m.rod(root,hand,.07,little,CartoonMesh.TAIL,.5 if side>0 else 0.0,pivot);m.ball(hand,Vector3.ONE*.18,little,CartoonMesh.TAIL,.5 if side>0 else 0.0,pivot)
 			for i in range(6):
-				var at=Vector3(0,3.4-i*.5,.9+i*.25);m.spike(at,at+Vector3(0,.55,.5),.24,spike)
+				var at=Vector3(0,3.9-i*.35,.9+i*.2);m.spike(at,at+Vector3(0,.55,.5),.24,spike)
 		"head":
 			m.ball(Vector3(0,.4,0),Vector3(1.1,1.0,1.0),little)
 			m.eye(Vector3(-.2,.55,-.42),.16,Vector3(-.3,.2,-1));m.eye(Vector3(.22,.5,-.42),.11,Vector3(.5,-.2,-1))
@@ -120,10 +123,10 @@ static func group(phase: int,name: String) -> ArrayMesh:
 			m.ball(Vector3(.12,.12,-.48),Vector3(.05,.16,.05),Color("d4f6ff"),CartoonMesh.TAIL,.3,Vector2(.2,.5))
 			m.antenna(Vector3(0,.85,0),Vector3(.15,1.35,.05),.12,little,glow)
 		"jaw":
-			m.ball(Vector3(0,-.15,-.3),Vector3(2.7,.62,1.0),belly)
+			m.ball(Vector3(0,-.15,-.3),Vector3(2.4,.5,.9),belly)
 			for i in range(8):
-				var x=-.88+i*.25;var long=.18+.14*float((i*7)%3)
-				m.spike(Vector3(x,.05,-.68),Vector3(x,.05+long,-.7),.08,CartoonMesh.TOOTH)
+				var x=-.8+i*.23;var long=.16+.12*float((i*7)%3)
+				m.spike(Vector3(x,.03,-.65),Vector3(x,.03+long,-.67),.07,CartoonMesh.TOOTH)
 			for i in range(6): m.ball(Vector3(.25,-.1-i*.12,-.75-i*.2),Vector3(.55-i*.04,.14,.32),CartoonMesh.TONGUE,CartoonMesh.TAIL,0.0,Vector2(0,.4))
 		"upper_l","upper_r":
 			var s=-1.0 if name=="upper_l" else 1.0
