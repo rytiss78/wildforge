@@ -43,7 +43,8 @@ static func run(g):
 	g.spawn_enemy(9);var enemy=g.enemies[-1];enemy.damage=1;enemy.biome=0;enemy.freeze=999;enemy.contact=999
 	g.player.position=Vector3(0,g.world.height_at(0,0)+.1,0)
 	preload("res://scripts/combat_tactics.gd").ranged_attack(g,enemy,g.player.position)
-	checks.readable_ranged=g.hazards.size()==3 and g.hazards[0].life>=1.0
+	# One mark per shot since October 25 (three filled the ground).
+	checks.readable_ranged=g.hazards.size()==1 and g.hazards[0].life>=1.0
 	var hp=g.hp;g.invulnerable=0;g.update_combat(1.1)
 	checks.ranged_damage=g.hp<=hp-23
 	clear(g.hazards);g.invulnerable=0;hp=g.hp
@@ -89,10 +90,11 @@ static func run(g):
 		for corner in range(8):
 			var point=mesh.global_transform*bounds.get_endpoint(corner)
 			minimum=minimum.min(point);maximum=maximum.max(point)
-	# The Ashen Colossus: the golem model (bind-pose bounds), its animations and skins.
+	# The Ashen Colossus: the cartoon giant, its posed parts and three phase paints.
 	checks.authored_giant=maximum.y-minimum.y>14 and maximum.x-minimum.x>8
 	var colossus=boss.node.get_meta("rig")
-	checks.baron_model=colossus is ColossusRig and colossus.player!=null and ["idle","walk","attack","attack2","flinch","die"].all(func(a):return colossus.player.has_animation(a))
+	# The cartoon Colossus (October 25) poses its own parts instead of playing clips.
+	checks.baron_model=colossus is ColossusRig and colossus.arms_nodes.size()==2 and colossus.legs_nodes.size()==2 and colossus.tail.size()==5 and colossus.parts.has("jaw")
 	checks.steam_budget=colossus.skins.size()==3 and colossus.find_child("GlassCore",true,false)!=null
 	g.player.position=Vector3(0,g.world.height_at(0,28),28);g.pitch=.3
 	checks.small_map=g.world.shore_radius(Vector3.ZERO)==72 and g.hud.map_view.map_extent==85
@@ -142,7 +144,7 @@ static func run(g):
 	var phase_checks=[]
 	for step in [[1,.6],[2,.25]]:
 		boss.open_until=-1;g.hurt_enemy(boss,boss.hp-boss.maxHp*float(step[1]),"shot")
-		phase_checks.append(ColossusFight.phase(boss)==step[0] and rig.phase_index==step[0] and rig.mesh.material_override==rig.skins[step[0]])
+		phase_checks.append(ColossusFight.phase(boss)==step[0] and rig.phase_index==step[0] and rig.parts.torso.mesh==ColossusRig.group(step[0],"torso"))
 	checks.phase_voices=phase_checks.size()==2 and phase_checks.all(func(value):return value)
 	# Calibrate health with real damage application; no mandatory five-minute invulnerability.
 	boss.open_until=-1;var original_hp=boss.hp;g.hurt_enemy(boss,300,"shot");checks.reference_dps=is_equal_approx(original_hp-boss.hp,300)

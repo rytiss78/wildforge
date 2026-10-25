@@ -362,7 +362,7 @@ async function main(action) {
       const line=output.split(/\r?\n/).findLast(x=>x.startsWith('CARTOON_REVIEW '));
       if(!line) throw new Error('Missing cartoon review');report.cartoon=JSON.parse(line.slice(15));
       if(Object.values(report.cartoon.checks).some(v=>v===false)) throw new Error('Cartoon review failed: '+JSON.stringify(report.cartoon));
-      report.captures=['cartoon-ingame','cartoon-sheet'].map(n=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge',n+'.png'),started));
+      report.captures=['cartoon-ingame','cartoon-roster'].map(n=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge',n+'.png'),started));
     }
     if (action === 'hero-numbers-review') {
       const output=await step('hero-numbers-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--hero-numbers-review'],120000);

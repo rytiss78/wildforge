@@ -144,13 +144,17 @@ static func run(g,host: bool):
 		send(g,"magnet")
 		checks.remote_magnet=await wait_for(g,func():return g.update.magnet_active)
 		checks.magnet_mirrored=await wait_for(g,func():return g.coop.test_messages.has("magnet_done"))
-		# Exercise the actual contact entry point and snapshot on two processes.
+		# Exercise the actual contact entry point on two processes: since October 25
+		# touching hurts at once, so the host's enemy touching the guest must reach
+		# the guest as damage.
+		send(g,"contact")
+		checks.contact_ready=await wait_for(g,func():return g.coop.test_messages.has("contact_ready"))
 		g.equipped.clear();g.spawn_enemy(8);var attacker=g.enemies[-1]
 		attacker.node.position=CoopSession.vector(g.coop.members[client_id].position)+Vector3.FORWARD
 		attacker.speed=0;attacker.behavior="chase";attacker.contact=0;attacker.freeze=0;attacker.blind=0
-		g.update_combat(.04);send(g,"contact",{"id":attacker.net_id})
-		checks.remote_warning=await wait_for(g,func():return g.coop.test_messages.has("contact_seen"))
-		checks.remote_warning_visible=g.coop.test_messages.get("contact_seen",{}).get("visible",false)
+		g.update_combat(.04)
+		checks.contact_fired=float(attacker.get("contact",0))>0
+		checks.remote_contact_hurt=await wait_for(g,func():return g.coop.test_messages.has("contact_seen"))
 		# Drop 1: the guest disconnects mid-reward while the host opens another chest.
 		var free_chest=func():
 			var free=g.chests.filter(func(c):return not c.opened)[0];free.mimic=false;free.free=true;free.rolled_free=true
@@ -264,12 +268,9 @@ static func run(g,host: bool):
 		checks.activated=await wait_for(g,func():return g.update.magnet_active)
 		send(g,"magnet_done")
 		checks.contact_instruction=await wait_for(g,func():return g.coop.test_messages.has("contact"))
-		var attack_id=int(g.coop.test_messages.get("contact",{}).get("id",-1))
-		checks.warning_received=await wait_for(g,func():return g.enemies.any(func(e):return e.net_id==attack_id and e.get("contact_windup",0)>0))
-		g.equipped.clear();g.update_combat(.04)
-		var attackers=g.enemies.filter(func(e):return e.net_id==attack_id)
-		checks.warning_visible=not attackers.is_empty() and attackers[0].has("contact_ring") and attackers[0].contact_ring.visible
-		send(g,"contact_seen",{"visible":checks.warning_visible})
+		g.invulnerable=0;var taken_before=g.health_damage;send(g,"contact_ready")
+		checks.contact_damage_received=await wait_for(g,func():return g.health_damage>taken_before)
+		send(g,"contact_seen",{"hurt":checks.contact_damage_received})
 		# Drop 1: disconnect mid-reward; the choice must survive the rejoin.
 		checks.pre_drop_offer=await wait_for(g,func():return g.mode=="offer" and g.offer_source=="chest")
 		g.coop.test_messages.erase("reconnected");send(g,"pre_drop_offer")

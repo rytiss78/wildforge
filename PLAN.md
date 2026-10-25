@@ -325,7 +325,7 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
 ## Final boss remade: the Ashen Colossus (user request, October 24)
 
 - **Request:** "completely remade, Dark Souls style huge monster with phases"; then "use a free asset; an HP orb in it, no HP bar, the orb changes colour per phase".
-- **Model:** OpenGameArt's [Fire/Ice/Stone Golem](https://opengameart.org/content/fireicestone-golem) by umask007, CC-BY 3.0, with textures by yughues (CC0). The user approved the download. Credits are in `assets/boss/golem/CREDITS.txt`, which ships with exports.
+- **Model:** OpenGameArt's [Fire/Ice/Stone Golem](https://opengameart.org/content/fireicestone-golem) by umask007, CC-BY 3.0, with textures by yughues (CC0). The user approved the download. Credits are in `assets/boss/golem/CREDITS.txt`. Replaced by the cartoon giant on October 25; the files are no longer exported.
   - Converted by `scripts/blender/convert_golem.py`, run with Blender scripts disabled: a GLB with the idle, walk, attack, attack2, flinch and die animations, plus the stone, ice and fire textures.
   - Scaled to 17 m (`ColossusRig`). It replaces the old Baron model; `boss_8` stays its id everywhere.
 - **Fight (`ColossusFight`):** it walks the hero down, turns to face its target as each wind-up starts, then commits. Every blow has an animation timed to land as its red marks go off. After heavy blows it is open, taking 1.35x damage while its orb flashes.
@@ -382,6 +382,17 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
 
 - The hero's own numbers now fall from just under the health panel: damage in red, shield damage in blue (a hit that is partly absorbed shows both), healing in green "+N". Healing no longer goes through the enemy-number band. Hits of one kind within 0.3 s add up into one number. The fixed "−N HP" / "SHIELD HIT" label on the damage flash is gone; the red edge and direction arrow stay.
 - **Verified:** `hero-numbers-review` (all three kinds shown below the panel; capture inspected), smoke and integration (`harvest_heal` now checks the hero numbers).
+
+## Cartoon enemies and final boss (user request, October 25)
+
+The user liked the Gloop Gazer test and asked for every enemy and the final boss in the same style: adult sci-fi cartoon inspired (original designs, no show characters), very diverse, health in an orb, easy to see, simple for FPS; then for Cronenberg-style humanoid mutants too.
+
+- **Roster:** `CartoonBook` builds 60 creatures, ten per biome. Slots 0-6 keep their old roles (chaser, swooper, armoured, spitter, skitterer, charger, stalker; flyers have wings, jets or tentacles). Slots 7-9 are new humanoid body-horror mutants: a shambler, a fused brute and a spitter (Melty Mel, Two-Torso Terry, Eyeball Eddie, Leggy Lou, Tentacle Ted, Mirror Mike and others). `CreatureBook` names, weights and stats cover all ten; the mutants take about a quarter of spawns. Colours are chosen against each biome's ground.
+- **Cheap to draw:** each species is one merged mesh (`CartoonMesh`) with paint in vertex colour and animation in UV/UV2; `shaders/cartoon_creature*.gdshader` do the wobble, walk, eye sway, jaw, wing flap and tentacle wave on the GPU, plus a bold ink outline pass. Each enemy has its own small material (tint, Eclipse corruption, death dissolve keep working) and its glass health orb. Measured with crowd-review, 125 enemies, same seed: old creatures frame p50 12.7 ms / p95 16.4 ms / GPU 2.1 ms; cartoon creatures 12.5 / 15.8 / 2.6 ms.
+- **Final boss:** `ColossusRig` is now a cartoon giant (the golem looked bad): a squat flesh mountain with a mouth across its belly, seven glowing eyes around the chest orb, two huge clawed arms and two tiny ones, a spiked tail and a tiny dumb head. Phases repaint it purple, icy blue, magma red. Every action is posed from its parts. The golem files stay in the repository but are no longer exported.
+- **Evidence:** cartoon-review (`cartoon-roster.png`, `cartoon-mutants.png`, `cartoon-ingame.png` through the real spawn path), colossus-review, boss-review, red-moon-review, shared-review, crowd-review, smoke `enemy_roster`, integration.
+- **Spec changes found on the way:** shared-review still expected the old contact wind-up warning; it now checks that a host enemy touching the guest hurts the guest. red-moon-review expected three ranged marks; it now expects one.
+- **Next (user request):** heroes, guns and gun icons remade from scratch in the same style.
 
 ## Player notes: 16 fixes (user list, October 25, after Build 23)
 

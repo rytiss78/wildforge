@@ -102,7 +102,7 @@ static func run(g):
 	checks.baron_spawn=barons.size()==1
 	if not barons.is_empty():
 		var baron=barons[0];var rig=baron.node.get_meta("rig")
-		# The Ashen Colossus (October 24): the 17 m golem with its health orb.
+		# The Ashen Colossus (cartoon giant since October 25): 17 m, with its health orb.
 		checks.baron_scale=baron.height==17.0 and is_equal_approx(baron.radius,4.2) and rig is ColossusRig and rig.identity=="boss_8" and rig.model!=null
 		checks.baron_orb=rig.find_child("GlassCore",true,false)!=null and rig.skins.size()==3
 		var local_shape=baron.node.get_child(0).shape

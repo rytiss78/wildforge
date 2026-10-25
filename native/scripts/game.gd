@@ -2676,7 +2676,8 @@ func run_smoke():
 	checks.main_menu=rebuilt_menu
 	checks.xbox_navigation=navigated;checks.xbox_accept=accepted;checks.pointer_focus_safe=pointer_safe
 	checks.hero_roster=rules.data.heroes.size()==25 and rules.data.heroes.all(func(h):return ResourceLoader.exists("res://assets/style3d/"+("count_duck" if h.model=="rubber_duck_toy" else "hero_"+h.model)+".glb"))
-	checks.enemy_roster=range(6).all(func(b):return range(7).all(func(s):return ResourceLoader.exists("res://assets/style3d/creature_%d_%d.glb" % [b,s])))
+	# Every biome's ten cartoon species build as one merged mesh (CartoonBook).
+	checks.enemy_roster=range(6).all(func(b):return range(CreatureBook.WEIGHTS.size()).all(func(s):return CartoonBook.get_model(b,s).mesh.get_surface_count()==1))
 	checks.painted_terrain=range(6).all(func(i):return ResourceLoader.exists("res://assets/illustrated/terrain-%d.png" % i))
 	checks.painted_weapons=rules.data.weapons.all(func(w):return ResourceLoader.exists("res://assets/illustrated/weapon-icons/"+w.id+".png"))
 	checks.opaque_ui=is_equal_approx(hud.style(Color(0,0,0,.2)).bg_color.a,1.0)

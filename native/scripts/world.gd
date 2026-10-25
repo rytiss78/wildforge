@@ -202,6 +202,9 @@ func model(name: String,height: float) -> Node3D:
 		var colossus=ColossusRig.new();colossus.setup(name);return colossus
 	if name.begins_with("boss_"):
 		var rig=ActorRig.new();rig.setup(name);rig.scale=Vector3.ONE*(height/3.0);return rig
+	# Ordinary enemies are cartoon creatures (CartoonBook), built to their height.
+	if name.begins_with("creature_"):
+		var creature=CartoonCreatureRig.new();creature.setup(name);creature.scale=Vector3.ONE*(height/maxf(.1,creature.model_height));return creature
 	var asset=name if name.begins_with("creature_") else "count_duck" if name=="rubber_duck_toy" else "hero_"+name
 	if ResourceLoader.exists("res://assets/style3d/"+asset+".glb"):
 		var rig=ActorRig.new();rig.setup(name);var reference_height=1.65
