@@ -60,4 +60,4 @@ func statuses(fire: bool,poison: bool,frozen: bool,_blind: bool):
 	var mask=int(fire)+int(poison)*2+int(frozen)*4
 	if mask==previous_status: return
 	previous_status=mask
-	batched.set_shader_parameter("tint",Vector3(.7,1.15,.55) if poison else Vector3(.7,.95,1.3) if frozen else Vector3(1.25,.8,.6) if fire else Vector3.ONE)
+	batched.set_shader_parameter("tint",Vector3(.7,1,.5) if poison else Vector3(.75,1,1.15) if frozen else Vector3(1.25,.8,.6) if fire else Vector3.ONE)
