@@ -37,16 +37,21 @@ static func scene(asset: String) -> Node3D:
 			s.make_arms(Vector3(.2,.95,0),.36,.055,steel,c("ffd23f"));s.make_legs(Vector3(.1,.45,0),.32,.065,steel,c("2a2340"))
 			s.orb(Vector3(0,.84,-.15),.08)
 		"count_duck":
+			# Count Duck: his round belly is a big glass orb; the cape is a high collar,
+			# so the orb shows from behind too.
 			var duck=c("ffd23f");var cape=c("b01e3a")
-			b.ball(Vector3(0,.7,0),Vector3(.75,.65,.75),duck);b.ball(Vector3(0,.62,.25),Vector3(.82,.8,.2),cape);b.ball(Vector3(0,.95,.12),Vector3(.85,.45,.3),cape)
-			var h=s.make_head(Vector3(0,1.15,-.05))
+			b.ball(Vector3(0,.32,0),Vector3(.62,.2,.56),duck);b.ring(Vector3(0,.66,0),.36,.05,c("e8b81f"))
+			b.ball(Vector3(0,.98,0),Vector3(.62,.2,.56),duck)
+			for side in [-1.0,1.0]: b.ball(Vector3(side*.2,1.08,.18),Vector3(.32,.42,.12),cape,CartoonMesh.BODY,0.0,Vector2(0,1),false,Vector3(-.3,0,side*.4))
+			b.spike(Vector3(0,.62,.33),Vector3(0,.72,.55),.08,duck)
+			var h=s.make_head(Vector3(0,1.2,-.02))
 			h.ball(Vector3.ZERO,Vector3(.5,.48,.48),duck);h.ball(Vector3(0,-.05,-.27),Vector3(.26,.08,.22),c("ff8a2b"))
 			h.eye(Vector3(-.1,.07,-.2),.08);h.eye(Vector3(.11,.06,-.2),.07,Vector3(.3,0,-1))
 			for x in [-.1,.11]: h.ball(Vector3(x,.12,-.21),Vector3(.2,.07,.12),c("e8b81f"))
 			h.ball(Vector3(0,.19,.02),Vector3(.5,.16,.46),INK);h.spike(Vector3(0,.2,-.18),Vector3(0,.07,-.25),.05,INK)
 			for x in [-.05,.05]: h.spike(Vector3(x,-.08,-.32),Vector3(x,-.17,-.33),.02,TOOTH)
-			s.make_arms(Vector3(.36,.8,0),.26,.07,duck,duck,1.1);s.make_legs(Vector3(.13,.38,0),.25,.06,c("ff8a2b"),c("ff8a2b"))
-			s.orb(Vector3(0,.64,-.38),.1)
+			s.make_arms(Vector3(.38,.82,0),.26,.07,duck,duck,1.1);s.make_legs(Vector3(.13,.3,0),.18,.06,c("ff8a2b"),c("ff8a2b"))
+			s.orb(Vector3(0,.66,0),.34,null,true)
 		"hero_sweet_potato":
 			var spud=c("c97a42")
 			b.ball(Vector3(0,.8,0),Vector3(.8,1.0,.7),spud)

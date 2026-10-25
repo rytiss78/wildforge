@@ -58,20 +58,24 @@ static func get_model(biome: int,index: int) -> Dictionary:
 	if cache.has(key): return cache[key]
 	var m=CartoonMesh.new()
 	var skin=build(m,biome,index)
-	cache[key]={"mesh":m.commit(),"height":m.height(),"orb":m.orb,"orb_radius":m.orb_radius,"skin":skin}
+	cache[key]={"mesh":m.commit(),"height":m.height(),"orb":m.orb,"orb_radius":m.orb_radius,"orb_body":m.orb_body,"skin":skin}
 	return cache[key]
 
 static func build(m: CartoonMesh,biome: int,index: int) -> Color:
 	match biome*10+index:
-		0:  # Gloop Gazer: a lime blob, three eyes on stalks, a crooked grin.
-			var body=c("a6e04a")
-			m.ball(Vector3(0,.62,0),Vector3(1.25,.95,1.1),body);m.spots(Vector3(0,.62,0),Vector3(.62,.47,.55),c("6aa338"),7,.2,1)
-			m.grin(Vector3(0,.64,-.48),.62,.26,6)
-			m.stalk_eye(Vector3(0,1.0,-.08),Vector3(-.05,1.3,-.12),.19,body,FRONT,Color(0,0,0,0),.1)
-			m.stalk_eye(Vector3(-.3,.92,0),Vector3(-.48,1.16,0),.13,body,Vector3(-.4,.1,-1),Color(0,0,0,0),.5)
-			m.stalk_eye(Vector3(.3,.94,.04),Vector3(.5,1.14,.06),.11,body,Vector3(.5,-.2,-1),Color(0,0,0,0),.8)
-			m.legs([Vector3(-.36,.3,-.22),Vector3(.36,.3,-.22),Vector3(-.34,.3,.26),Vector3(.34,.3,.26)],.2,.1,c("8fd14f"),c("4c8a2b"))
-			m.orb=Vector3(0,.34,-.5);m.orb_radius=.15;return body
+		0:  # Gloop Gazer: a lime blob whose belly is a big glass orb held in a fleshy frame.
+			var body=c("a6e04a");var dark=c("6aa338")
+			m.core(Vector3(0,.66,0),.42)
+			m.ball(Vector3(0,1.1,0),Vector3(1.05,.5,.95),body);m.spots(Vector3(0,1.1,0),Vector3(.52,.25,.47),dark,6,.14,1)
+			m.ball(Vector3(0,.26,0),Vector3(.86,.26,.8),body)
+			for side in [-1.0,1.0]: m.rod(Vector3(side*.43,.28,0),Vector3(side*.43,1.0,0),.06,body)
+			m.ring(Vector3(0,.66,0),.43,.05,dark)
+			m.grin(Vector3(0,1.06,-.45),.58,.22,6)
+			m.stalk_eye(Vector3(0,1.3,-.1),Vector3(-.05,1.55,-.14),.17,body,FRONT,Color(0,0,0,0),.1)
+			m.stalk_eye(Vector3(-.3,1.25,0),Vector3(-.48,1.45,0),.12,body,Vector3(-.4,.1,-1),Color(0,0,0,0),.5)
+			m.stalk_eye(Vector3(.3,1.26,.04),Vector3(.5,1.44,.06),.1,body,Vector3(.5,-.2,-1),Color(0,0,0,0),.8)
+			m.legs([Vector3(-.3,.2,-.2),Vector3(.3,.2,-.2),Vector3(-.3,.2,.22),Vector3(.3,.2,.22)],.13,.09,c("8fd14f"),c("4c8a2b"))
+			return body
 		1:  # Flapjack Flutterface: a flying pancake with one huge eye and bat wings.
 			var body=c("ff9a3c")
 			m.ball(Vector3(0,.72,0),Vector3(1.0,.36,1.0),body);m.spots(Vector3(0,.72,0),Vector3(.5,.18,.5),c("ffd36a"),6,.16,2)
@@ -160,15 +164,17 @@ static func build(m: CartoonMesh,biome: int,index: int) -> Color:
 			m.grin(Vector3(0,.62,-.94),.3,.1,4,false)
 			for z in [-.3,.1,.5]: m.ball(Vector3(-.26,.08,z),Vector3(.12,.08,.16),c("b8ff7a"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
 			m.orb=Vector3(0,1.0,-.38);m.orb_radius=.17;return c("ff8a2b")
-		13:  # Puffboy: a floating pink balloon with a puckered spitting mouth.
-			var body=c("ff7ad9")
-			m.ball(Vector3(0,1.0,0),Vector3.ONE*1.1,body);m.spots(Vector3(0,1.0,0),Vector3.ONE*.55,c("fff0fb"),5,.14,13,true)
-			m.can(Vector3(0,.95,-.48),Vector3(0,.95,-.74),.12,c("d9479e"));m.ball(Vector3(0,.95,-.75),Vector3(.16,.16,.06),MOUTH)
-			for s in [-1.0,1.0]:
-				m.eye(Vector3(s*.22,1.24,-.42),.13);m.ball(Vector3(s*.22,1.33,-.43),Vector3(.3,.14,.28),c("d9479e"))
-			m.ball(Vector3(0,.42,0),Vector3(.18,.14,.18),c("d9479e"))
-			m.tentacles(4,Vector3(0,.5,0),.25,.45,.06,c("ffb3ec"))
-			m.orb=Vector3(0,.66,-.42);m.orb_radius=.13;return body
+		13:  # Puffboy: a floating glass balloon of an orb with a face stuck on the glass.
+			var skin=c("ff7ad9");var dark=c("d9479e")
+			m.core(Vector3(0,1.0,0),.52)
+			m.ring(Vector3(0,1.0,0),.53,.04,dark)
+			m.can(Vector3(0,.92,-.5),Vector3(0,.92,-.72),.11,dark);m.ball(Vector3(0,.92,-.73),Vector3(.15,.15,.06),MOUTH)
+			for side in [-1.0,1.0]:
+				m.eye(Vector3(side*.2,1.2,-.48),.12,Vector3(side*.1,0,-1));m.ball(Vector3(side*.2,1.28,-.49),Vector3(.28,.12,.24),skin)
+			m.ball(Vector3(0,1.52,0),Vector3(.3,.16,.3),skin);m.spike(Vector3(0,1.58,0),Vector3(.12,1.75,0),.06,skin)
+			m.ball(Vector3(0,.47,0),Vector3(.42,.14,.42),skin)
+			m.tentacles(4,Vector3(0,.42,0),.18,.42,.06,c("ffb3ec"))
+			return skin
 		14:  # Gnatquito: an orange mosquito, three eyes and a needle nose.
 			var body=c("ff9a3c")
 			m.ball(Vector3(0,.7,0),Vector3(.4,.4,.5),body);m.ball(Vector3(0,.65,.4),Vector3(.36,.32,.6),c("ffcf3f"));m.ring(Vector3(0,.65,.42),.17,.06,INK,Vector3(PI*.5,0,0))
@@ -317,17 +323,19 @@ static func build(m: CartoonMesh,biome: int,index: int) -> Color:
 			for i in range(6): m.ball(Vector3(0,.3-i*.03,.05+i*.12),Vector3(.16,.08,.08),c("ffe14a") if i%2==0 else c("3b7dff"),CartoonMesh.TAIL,0.0,Vector2(.45,1))
 			m.wings(Vector3(0,.75,.05),.5,.2,c("ffb0b0"),c("c02a2a"),.3)
 			m.orb=Vector3(0,.55,-.08);m.orb_radius=.07;return body
-		35:  # Wurmo: a rearing orange worm with a round mouth full of teeth.
+		35:  # Wurmo: a rearing orange worm; its fattest segment is a big glass orb.
 			var body=c("ff8a2b");var band=c("ffb35a")
-			var segments=[[Vector3(0,.45,1.2),.7],[Vector3(0,.6,.6),.8],[Vector3(0,.9,.05),.9],[Vector3(0,1.3,-.4),1.0]]
-			for i in range(segments.size()): m.ball(segments[i][0],Vector3.ONE*segments[i][1],body if i%2==0 else band)
-			m.ball(Vector3(0,1.75,-.75),Vector3.ONE*1.1,body)
-			m.ring(Vector3(0,1.7,-1.25),.32,.18,c("ff4f6a"),Vector3(PI*.5,0,0));m.ball(Vector3(0,1.7,-1.2),Vector3(.5,.5,.15),MOUTH)
-			for i in range(8): var o=Vector3(cos(i*TAU/8),sin(i*TAU/8),0);m.spike(Vector3(0,1.7,-1.27)+o*.24,Vector3(0,1.7,-1.3)+o*.1,.04,TOOTH)
-			m.eye(Vector3(-.22,2.15,-.95),.09,FRONT,c("1f9aff"));m.eye(Vector3(.22,2.15,-.95),.09,FRONT,c("1f9aff"))
-			for p in [Vector3(0,.12,1.2),Vector3(0,.2,.6)]:
+			m.ball(Vector3(0,.4,1.25),Vector3.ONE*.7,body);m.ball(Vector3(0,.55,.65),Vector3.ONE*.82,band)
+			m.core(Vector3(0,.92,.02),.48)
+			for z in [-.42,.46]: m.ball(Vector3(0,.92,.02+z),Vector3(.78,.78,.16),band)
+			m.ball(Vector3(0,1.38,-.48),Vector3.ONE*.9,band)
+			m.ball(Vector3(0,1.78,-.8),Vector3.ONE*1.05,body)
+			m.ring(Vector3(0,1.72,-1.28),.3,.17,c("ff4f6a"),Vector3(PI*.5,0,0));m.ball(Vector3(0,1.72,-1.24),Vector3(.48,.48,.15),MOUTH)
+			for i in range(8): var o=Vector3(cos(i*TAU/8),sin(i*TAU/8),0);m.spike(Vector3(0,1.72,-1.3)+o*.22,Vector3(0,1.72,-1.33)+o*.09,.04,TOOTH)
+			m.eye(Vector3(-.22,2.16,-.98),.09,FRONT,c("1f9aff"));m.eye(Vector3(.22,2.16,-.98),.09,FRONT,c("1f9aff"))
+			for p in [Vector3(0,.08,1.25),Vector3(0,.16,.65)]:
 				for s in [-1.0,1.0]: m.ball(p+Vector3(s*.25,0,0),Vector3(.15,.12,.2),c("c25a1a"))
-			m.orb=Vector3(0,1.15,-.85);m.orb_radius=.17;return body
+			return body
 		36:  # Stilt Strider: a little yellow bird-body on four long stilts.
 			var body=c("ffd23f")
 			m.ball(Vector3(0,1.35,0),Vector3(.6,.45,.6),body)
@@ -462,13 +470,22 @@ static func build(m: CartoonMesh,biome: int,index: int) -> Color:
 			m.antenna(Vector3(0,1.6,.1),Vector3(.1,2.0,.2),.06,body,c("7dff6a"),.5)
 			m.spider_legs(8,Vector3(0,1.3,0),1.2,.45,.05,c("c94a2a"))
 			m.orb=Vector3(0,1.02,-.4);m.orb_radius=.13;return body
-		7:  # Melty Mel: a person whose face has slid down onto the chest.
-			var skin=c("ffb3a0");var a=person(m,skin,c("2fd3b8"),c("3b4a8a"),c("2a2340"),{"no_face":true,"hunch":.3})
-			m.ball(a.head+Vector3(0,-.12,-.05),Vector3(.36,.5,.34),skin)
-			for i in range(4): m.ball(a.head+Vector3(-.12+i*.08,-.32-float(i%2)*.08,-.12),Vector3(.07,.16,.07),skin,CartoonMesh.TAIL,.2*i,Vector2(a.head.y,.6))
-			m.eye(a.chest+Vector3(-.12,.12,-.2),.07,Vector3(-.3,-.2,-1));m.eye(a.chest+Vector3(.1,.05,-.21),.09,Vector3(.4,.3,-1))
-			m.grin(a.chest+Vector3(0,-.15,-.2),.28,.12,5)
-			m.orb=a.hip+Vector3(0,.02,-.18);m.orb_radius=.09;return skin
+		7:  # Melty Mel: a shambler whose torso is a big glass orb, face melting off its head.
+			var skin=c("ffb3a0");var shirt=c("2fd3b8")
+			var chest=Vector3(0,1.15,-.05)
+			m.core(chest,.34)
+			m.legs([Vector3(-.14,.82,0),Vector3(.14,.82,0)],.68,.11,c("3b4a8a"),c("2a2340"))
+			m.ball(Vector3(0,.86,0),Vector3(.5,.26,.36),c("3b4a8a"))
+			m.ball(chest+Vector3(0,.33,0),Vector3(.72,.18,.42),shirt);m.ring(chest,.35,.05,shirt)
+			for side in [-1.0,1.0]:
+				var shoulder=chest+Vector3(side*.36,.24,0);var hand=shoulder+Vector3(side*.12,-.55,-.15)
+				m.rod(shoulder,hand,.085,shirt,CartoonMesh.LEG,.5 if side>0 else 0.0,Vector2(shoulder.y,.5));m.ball(hand,Vector3.ONE*.18,skin,CartoonMesh.LEG,.5 if side>0 else 0.0,Vector2(shoulder.y,.5))
+			var head=chest+Vector3(0,.66,-.05)
+			m.rod(chest+Vector3(0,.38,0),head,.07,skin);m.ball(head,Vector3(.44,.5,.42),skin)
+			m.eye(head+Vector3(-.1,-.08,-.19),.07,Vector3(-.3,-.3,-1));m.eye(head+Vector3(.09,-.16,-.19),.08,Vector3(.4,.2,-1))
+			m.grin(head+Vector3(0,-.27,-.12),.2,.08,4,false)
+			for i in range(4): m.ball(head+Vector3(-.12+i*.08,-.34-float(i%2)*.08,-.1),Vector3(.07,.16,.07),skin,CartoonMesh.TAIL,.2*i,Vector2(head.y,.6))
+			return skin
 		8:  # Two-Torso Terry: two upper bodies fused onto one pair of legs.
 			var skin=c("ffd27a");var shirt=c("ff5f9e");var pants=c("6b3bb0")
 			m.legs([Vector3(-.16,.86,0),Vector3(.16,.86,0)],.72,.1,pants,c("2a2340"))

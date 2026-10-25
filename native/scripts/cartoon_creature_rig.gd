@@ -26,22 +26,21 @@ func setup(model_name: String):
 	body=Node3D.new();head=body;add_child(body)
 	if paint_shader==null:
 		paint_shader=load("res://shaders/cartoon_creature.gdshader");ink_shader=load("res://shaders/cartoon_creature_outline.gdshader")
-	# The body marks its pixels so the orb inside shows through it (OrbXray).
-	var ref=OrbXray.next_ref(OrbXray.CREATURE_BASE)
-	batched=ShaderMaterial.new();batched.shader=OrbXray.creature_shader(ref)
+	batched=ShaderMaterial.new();batched.shader=paint_shader
 	var ink=ShaderMaterial.new();ink.shader=ink_shader;batched.next_pass=ink
 	for material in [batched,ink]: material.set_shader_parameter("size",model_height)
 	# Set explicitly: other systems read these back (Eclipse corruption, statuses).
 	batched.set_shader_parameter("tint",Vector3.ONE);batched.set_shader_parameter("corruption",0.0)
 	mesh_node=MeshInstance3D.new();mesh_node.mesh=species.mesh;mesh_node.material_override=batched;body.add_child(mesh_node)
 	hit_material=StandardMaterial3D.new()
-	# One orb inside the body, 1.6x larger than first built, seen through the body
-	# from front and back (user request, October 25).
-	var r=float(species.orb_radius)*CartoonScene.ORB_SCALE;var sphere=SphereMesh.new()
-	sphere.radius=r;sphere.height=r*2;sphere.radial_segments=16;sphere.rings=8
-	orb_paint=ShaderMaterial.new();orb_paint.shader=OrbXray.orb_shader(ref);orb_paint.set_shader_parameter("radius",r)
+	# Designs built around their orb (orb_body) use it exactly as drawn: it is the
+	# belly, torso or whole body, seen from every side. Older designs carry a 1.6x
+	# orb on their front.
+	var r=float(species.orb_radius)*(1.0 if species.get("orb_body",false) else CartoonScene.ORB_SCALE);var sphere=SphereMesh.new()
+	sphere.radius=r;sphere.height=r*2;sphere.radial_segments=24;sphere.rings=12
+	orb_paint=ShaderMaterial.new();orb_paint.shader=load("res://shaders/blood_core.gdshader");orb_paint.set_shader_parameter("radius",r)
 	var orb=MeshInstance3D.new();orb.name="GlassCore";orb.mesh=sphere
-	var at: Vector3=species.orb;orb.position=Vector3(at.x,at.y,at.z*CartoonScene.ORB_DEPTH)
+	var at: Vector3=species.orb;orb.position=at
 	orb.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;orb.material_override=orb_paint;body.add_child(orb)
 
 func set_health(fraction: float,_tank: bool=false): health=clampf(fraction,0,1)

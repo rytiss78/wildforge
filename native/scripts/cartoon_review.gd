@@ -29,6 +29,20 @@ static func run(g):
 	await play(g,[],.4)
 	g.hud.visible=false;g.player.visible=false
 	var origin: Vector3=g.player.position
+	# Pilot: designs built around a big health orb, front and back (October 25).
+	var pilot=Image.create(CELL.x*5,CELL.y*2,false,Image.FORMAT_RGBA8)
+	var pilots=[["creature_0_0",1.45],["creature_1_3",1.6],["creature_0_7",1.8],["creature_3_5",2.5],["rubber_duck_toy",1.65]]
+	for i in range(pilots.size()):
+		var rig=g.world.model(pilots[i][0],pilots[i][1]);g.add_child(rig);rig.position=ground(g,origin+Vector3(0,0,-4.0))
+		if i==1: rig.position.y+=.6
+		for side in range(2):
+			rig.rotation.y=PI-.35 if side==0 else -.35
+			var height=float(pilots[i][1])
+			g.camera.position=rig.position+Vector3(0,height*.62,height*1.05+.5);g.camera.look_at(rig.position+Vector3.UP*height*.48)
+			await play(g,[rig],.35,Vector3(0,0,1.0))
+			pilot.blit_rect(await frame(g),Rect2i(Vector2i.ZERO,CELL),Vector2i(i*CELL.x,side*CELL.y))
+		rig.queue_free();await g.get_tree().process_frame
+	checks.pilot=pilot.save_png("user://cartoon-orb-pilot.png")==OK
 	var sheet=Image.create(CELL.x*2,CELL.y*3,false,Image.FORMAT_RGBA8)
 	for biome in range(6):
 		var rigs=[]
@@ -48,13 +62,13 @@ static func run(g):
 		for rig in rigs: rig.queue_free()
 		await g.get_tree().process_frame
 	checks.roster=sheet.save_png("user://cartoon-roster.png")==OK
-	# The same Clover Woods line seen from behind: the one orb inside shows through.
+	# The same Clover Woods line seen from behind: orbs built into the body show.
 	var rear=[]
 	for index in range(CreatureBook.WEIGHTS.size()):
 		var entry=CreatureBook.entry(0,index)
 		var rig=g.world.model(entry.model,entry.height);g.add_child(rig)
 		rig.position=ground(g,origin+Vector3((index%5-2)*2.7,0,-6.0-float(index/5)*3.4))+Vector3.UP*(.8 if entry.flying else 0.0);rig.rotation.y=.25-.05*index;rear.append(rig)
-		checks.orbs=checks.orbs and rig.find_child("RearGlass",true,false)==null and rig.orb_paint.shader.code.contains("stencil_mode read")
+		checks.orbs=checks.orbs and rig.find_child("RearGlass",true,false)==null
 	g.camera.position=origin+Vector3(0,3.0,1.6);g.camera.look_at(origin+Vector3(0,1.0,-7.6))
 	await play(g,rear,.4)
 	await RenderingServer.frame_post_draw

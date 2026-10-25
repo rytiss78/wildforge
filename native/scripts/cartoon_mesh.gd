@@ -22,6 +22,13 @@ var uv2s=PackedVector2Array()
 var indices=PackedInt32Array()
 var orb=Vector3(0,.6,-.5)
 var orb_radius=.16
+# True when the design is built around its health orb (the orb is a body part,
+# seen from every side), false for an orb set on the body's front.
+var orb_body=false
+
+# The big glass health orb as a body part: the belly, torso or whole body.
+func core(center: Vector3,radius: float):
+	orb=center;orb_radius=radius;orb_body=true
 
 static func template(kind: String) -> Array:
 	if templates.has(kind): return templates[kind]

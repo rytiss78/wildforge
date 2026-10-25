@@ -44,14 +44,7 @@ func setup(asset: String, tank: bool = false):
 	# Heroes, bosses and weapons in the cartoon style (October 25) are generated, not imported.
 	var cartoon=CartoonCast.scene(asset)
 	if cartoon!=null:
-		setup_scene(cartoon,asset,tank);outline.set_shader_parameter("width",CartoonCast.outline_width(asset))
-		# Heroes and bosses: one orb inside the body, seen through it (OrbXray).
-		if not CartoonWeapons.has(asset):
-			var ref=OrbXray.next_ref(OrbXray.CAST_BASE)
-			for material in prepared_materials.values():
-				if material is StandardMaterial3D: OrbXray.mark(material,ref)
-			for material in core_materials: material.shader=OrbXray.orb_shader(ref)
-		return
+		setup_scene(cartoon,asset,tank);outline.set_shader_parameter("width",CartoonCast.outline_width(asset));return
 	if asset.begins_with("creature_") and ResourceLoader.exists("res://assets/style3d/baked/"+asset+".res"):
 		setup_baked(asset,tank);return
 	setup_scene(load("res://assets/style3d/"+asset+".glb").instantiate(),asset,tank)
