@@ -802,7 +802,8 @@ func start_menu(focus_hero: bool=false):
 	footer.position=Vector2(120,997)
 	modal.add_child(footer)
 	add_prompts(footer,[["↑↓","D-pad","Navigate"],["Enter","A","Select"]])
-	var version=label("v%s  ·  BUILD %d  ·  DEVELOPMENT ALPHA" % [ProjectSettings.get_setting("application/config/version"),ProjectSettings.get_setting("application/config/build_number",0)],14)
+	# The exact build ID (CoopSession.build_id) so players can check they match.
+	var version=label("v%s  ·  BUILD %d  ·  %s  ·  DEVELOPMENT ALPHA" % [ProjectSettings.get_setting("application/config/version"),ProjectSettings.get_setting("application/config/build_number",0),CoopSession.build_id().left(7)],14)
 	version.name="ReleaseVersion";version.position=Vector2(1280,1026);version.size=Vector2(570,28);version.horizontal_alignment=HORIZONTAL_ALIGNMENT_RIGHT
 	version.add_theme_color_override("font_color",Color("b4c9bc"))
 	modal.add_child(version)

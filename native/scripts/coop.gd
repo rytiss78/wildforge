@@ -8,6 +8,19 @@ var party_seen={}
 # Transport-independent authoritative world. Important events are reliable;
 # poses/snapshots use unreliable ordered delivery. Never deserialize objects.
 const PROTOCOL="wildforge-shared-world-16"
+# The exact build a player runs: the source commit in the build-info.json beside an
+# exported game, "dev" in the editor. Two different downloads with the same
+# PROTOCOL played different games and desynced (user report, October 25), so the
+# host also refuses a different build. Editor runs ("dev") may join any build.
+static var cached_build_id=""
+static func build_id() -> String:
+	if not cached_build_id.is_empty(): return cached_build_id
+	cached_build_id="dev"
+	var path=OS.get_executable_path().get_base_dir().path_join("build-info.json")
+	if not OS.has_feature("editor") and FileAccess.file_exists(path):
+		var info=JSON.parse_string(FileAccess.get_file_as_string(path))
+		if info is Dictionary and str(info.get("source","")).length()>=7: cached_build_id=str(info.source).left(12)
+	return cached_build_id
 # Big fights: only this many XP orbs (nearest any hero) travel in a world packet.
 const XP_SYNC_LIMIT=200
 # World snapshots carry each enemy as ACTOR_STRIDE floats: id, position(3), hp,
@@ -507,7 +520,7 @@ func tick(delta: float):
 			if connection_clock>12:
 				leave();status="Could not reach the party. Check the invite code or address. Over the internet, the host needs the invite code shown when hosting; if their game said internet hosting is unavailable, one of you behind a different connection should host.";return
 		if not hosting and peer.get_connection_status()==MultiplayerPeer.CONNECTION_CONNECTED and not joined:
-			local_id=peer.get_unique_id();send_to(owner_id,{"type":"hello","protocol":PROTOCOL,"token":str(game.career.data.settings.get("coopToken",""))});joined=true
+			local_id=peer.get_unique_id();send_to(owner_id,{"type":"hello","protocol":PROTOCOL,"build":build_id(),"token":str(game.career.data.settings.get("coopToken",""))});joined=true
 		for i in range(mini(128,peer.get_available_packet_count())):
 			var sender=peer.get_packet_peer();var bytes=peer.get_packet()
 			if bytes.size()>60000: push_warning("Co-op packet ignored: %d bytes" % bytes.size())
@@ -754,6 +767,9 @@ func receive(sender: int,message):
 	if hosting:
 		if kind=="hello":
 			if message.get("protocol","")!=PROTOCOL: send_to(sender,{"type":"reject","reason":"Different game version."});return
+			var their_build=str(message.get("build",""))  # missing: an older build
+			if their_build!=build_id() and their_build!="dev" and build_id()!="dev":
+				send_to(sender,{"type":"reject","reason":"Different game build (%s vs %s). Both players need the same download." % [their_build.left(7),build_id().left(7)]});return
 			var token=str(message.get("token","")).left(64);var resume_id=0
 			if game.run_active:
 				for old_id in members:
