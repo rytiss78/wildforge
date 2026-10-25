@@ -29,6 +29,8 @@ func setup(model_name: String):
 	batched=ShaderMaterial.new();batched.shader=paint_shader
 	var ink=ShaderMaterial.new();ink.shader=ink_shader;batched.next_pass=ink
 	for material in [batched,ink]: material.set_shader_parameter("size",model_height)
+	# Set explicitly: other systems read these back (Eclipse corruption, statuses).
+	batched.set_shader_parameter("tint",Vector3.ONE);batched.set_shader_parameter("corruption",0.0)
 	mesh_node=MeshInstance3D.new();mesh_node.mesh=species.mesh;mesh_node.material_override=batched;body.add_child(mesh_node)
 	hit_material=StandardMaterial3D.new()
 	var orb=MeshInstance3D.new();orb.name="GlassCore";var sphere=SphereMesh.new();var r=float(species.orb_radius)
