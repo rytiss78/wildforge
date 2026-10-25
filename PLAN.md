@@ -383,6 +383,27 @@ Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan h
 - The hero's own numbers now fall from just under the health panel: damage in red, shield damage in blue (a hit that is partly absorbed shows both), healing in green "+N". Healing no longer goes through the enemy-number band. Hits of one kind within 0.3 s add up into one number. The fixed "−N HP" / "SHIELD HIT" label on the damage flash is gone; the red edge and direction arrow stay.
 - **Verified:** `hero-numbers-review` (all three kinds shown below the panel; capture inspected), smoke and integration (`harvest_heal` now checks the hero numbers).
 
+## Player notes: 16 fixes (user list, October 25, after Build 23)
+
+1. [x] **Touching a melee enemy hurts at once.** Contact used a 0.45 s wind-up, so brushing past cost nothing. Now the first touch hits, then every 0.7 s while touching; a frozen or blinded enemy does not hit (`CombatTactics.contact_tick`). The old checks that contact "warns before damage" and "can be dodged" described the old spec and were replaced: integration `contact_hits_at_once`, `contact_stops_when_left`, `contact_repeats`, `freeze_cancels_contact`.
+2. [x] **Hero numbers stay longer.** Damage, shield and heal numbers under the health panel fall 70 px over 2.4 s (was 160 px over 1.3 s). hero-numbers-review.
+3. [x] **Bright chests.** Warm orange wood, glowing gold bands and a small warm light (`treasure_chest.gd`); they were dark teal. Seen in `native/docs/golden-scene.png`.
+4. [x] **Dash readout.** `[Shift] DASH · READY / 1.2s` above the slam readout; both turn green when ready. hero-numbers-review capture.
+5. [x] **Armor line.** Shows armor with buffs (`stat("armor")`) and the damage it takes off: `ARMOR 12 · −42% damage`, or `ARMOR 0 · no reduction`. It read `stats.armor`, which ignored potion armor and looked stuck at 0.
+6. [x] **Several levels at once** (a magnet full of XP): you get every level and its card choice, one after another. The gap between banked levels is now 3 s of play (was 8 s), and the XP bar reads `2 LEVELS READY · NEXT IN 3s`. Covered by `level_no_chain`, `level_gap`, `level_banked`.
+7. [x] **Mutations explained.** Cards now say `MUTATION · free bonus attack, fires by itself · Storm`; rules say `BOOSTS YOUR FROST MUTATIONS`, hybrids `COMBO · you carry Ember + Frost mutations`, wild cards `changes all your mutations`. capture-ui `ui-mutation-offers.png`.
+8. [x] **Only bosses slow the hero.** The one hero slow (Cloudwilds contact chill) now comes only from bosses.
+9. [x] **Dangerous, not tanky.** Ordinary enemies have 35% less health and hit 50% harder, in contact and with ranged marks (`ENEMY_HEALTH_SCALE` .65, `ENEMY_DAMAGE_SCALE` 1.5). Bosses unchanged. Not bot-measured yet.
+10. [x] **Run report in the end window.** TRY AGAIN shows the run report beside its buttons; NEW RUN is first and focused. progression-review `game_over_report`, capture-ui `ui-ended.png`.
+11. [x] **Easy achievements retired** (24): the seven "start a run as X", and ones for a single ordinary action (try a locked gate, jump during a boss, buy on sale, interest, walking or hurt coins, upgrade a weapon once, plant a flower, shield block, feedback, roadmap, mixed turret, reconnect, view builds, open run reports, ping, raised route). 93 remain. Their IDs are listed in `scripts/data/achievements.js` `RETIRED`; their three cosmetics are no longer awarded.
+12. [x] **Ranged enemies: one mark per shot, uneven timers.** Three marks per shot filled the ground; now one (radius 1.9), and each shooter waits a random 3.8–6.2 s between shots, starting from a random first delay. `distinct_biome_telegraphs` now expects one mark per shot (styles still differ per biome).
+13. [x] **Turret builds buffed.** Turrets hit 60% harder and fire 25% faster; every turret kind (flames, wells, casts) now gets the turret damage bonus, which only plain shots had; a turret left 30 m behind re-deploys beside the hero.
+14. [x] **Enemy attack sounds.** Enemy shots, enemy marks going off and melee bites have their own low, growling sounds (`scripts/make-enemy-audio.py`: enemy-shot, enemy-impact, enemy-bite); hero blasts keep "blast". Not listened to by a person yet.
+15. [x] **What the circles are.** The big green circles are Clover Woods heal zones. Every biome zone now has a floating name: `+ HEAL ZONE` (green), `POISON FOG`, `LAVA`, `GRAVITY RIFT` (red), `ICE · SLIPPERY`, `WIND`. biome-review `biome-mechanic-0.png`.
+16. [x] **Sky brighter than the ground.** The sky is drawn brighter than its fog colour (dark skies lifted toward a set brightness, at most 1.6x top, 2.2x horizon); island sun energy 15% lower. The fog keeps its dark horizon so distant ground is not washed out.
+
+- **Known flaky:** integration `biome_gust` fails now and then (also seen on October 24 before these changes); it passed with wide margins on rerun. Cause not found; not loosened.
+
 ## Open issues and limits
 
 - **Internet port opening failed on the user's router** (October 23): the "router did not allow automatic port opening" message appeared. UPnP was on in the modem, but no mapping was created. That message covered both "no router answered" and "router refused".

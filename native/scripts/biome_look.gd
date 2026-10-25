@@ -4,21 +4,22 @@ class_name BiomeLook
 # The per-biome half of the art bible (native/docs/art-direction.md): key light,
 # ambient fill, fog reach and ink weight for each biome. Ground stays dark and
 # quiet so heroes, enemies and effects carry the saturation. Islands 2 and 3
-# blend their own grade on top (60%), so they keep their identity.
+# blend their own grade on top (60%), so they keep their identity. Sun energies
+# are 15% lower since October 25, so the ground no longer outshines the sky.
 const LOOK=[
 	# Clover Woods: warm late sun, cool fill, standard ink. The reference biome.
-	{"sun":Color("ffe0ad"),"sun_energy":1.2,"sun_pitch":-42.0,"ambient":Color("a4b8ed"),"ambient_energy":.28,"fog":Vector2(45,165),"ink":Color(.035,.03,.045),"ink_thickness":1.25,"ink_strength":.9,"vignette":.42},
+	{"sun":Color("ffe0ad"),"sun_energy":1.02,"sun_pitch":-42.0,"ambient":Color("a4b8ed"),"ambient_energy":.28,"fog":Vector2(45,165),"ink":Color(.035,.03,.045),"ink_thickness":1.25,"ink_strength":.9,"vignette":.42},
 	# Puffcap Marsh: damp green-white light, teal fill, close fog, slightly heavier ink.
-	{"sun":Color("e8f0c4"),"sun_energy":1.05,"sun_pitch":-40.0,"ambient":Color("a8d8c4"),"ambient_energy":.3,"fog":Vector2(35,140),"ink":Color(.02,.05,.04),"ink_thickness":1.35,"ink_strength":.95,"vignette":.48},
+	{"sun":Color("e8f0c4"),"sun_energy":0.89,"sun_pitch":-40.0,"ambient":Color("a8d8c4"),"ambient_energy":.3,"fog":Vector2(35,140),"ink":Color(.02,.05,.04),"ink_thickness":1.35,"ink_strength":.95,"vignette":.48},
 	# Moon Craters: a low, nearly neutral moon (long shadows), thin grey-blue fill, distant
 	# fog, heavy navy ink. A blue key light turned the whole biome saturated blue.
-	{"sun":Color("eef1f7"),"sun_energy":1.3,"sun_pitch":-26.0,"ambient":Color("8e98b0"),"ambient_energy":.2,"fog":Vector2(60,190),"ink":Color(.02,.03,.08),"ink_thickness":1.55,"ink_strength":1.0,"vignette":.5},
+	{"sun":Color("eef1f7"),"sun_energy":1.1,"sun_pitch":-26.0,"ambient":Color("8e98b0"),"ambient_energy":.2,"fog":Vector2(60,190),"ink":Color(.02,.03,.08),"ink_thickness":1.55,"ink_strength":1.0,"vignette":.5},
 	# Cloudwilds: high bright daylight, soft fill, slate ink.
-	{"sun":Color("fff0d8"),"sun_energy":1.2,"sun_pitch":-48.0,"ambient":Color("d8e6ef"),"ambient_energy":.26,"fog":Vector2(40,150),"ink":Color(.04,.06,.08),"ink_thickness":1.3,"ink_strength":.95,"vignette":.45},
+	{"sun":Color("fff0d8"),"sun_energy":1.02,"sun_pitch":-48.0,"ambient":Color("d8e6ef"),"ambient_energy":.26,"fog":Vector2(40,150),"ink":Color(.04,.06,.08),"ink_thickness":1.3,"ink_strength":.95,"vignette":.45},
 	# Candy Hell: red-orange key over dark ground so the lava owns the brightness; maroon ink.
-	{"sun":Color("ff9466"),"sun_energy":1.15,"sun_pitch":-34.0,"ambient":Color("f0a48a"),"ambient_energy":.22,"fog":Vector2(45,160),"ink":Color(.07,.012,.02),"ink_thickness":1.45,"ink_strength":1.0,"vignette":.52},
+	{"sun":Color("ff9466"),"sun_energy":0.98,"sun_pitch":-34.0,"ambient":Color("f0a48a"),"ambient_energy":.22,"fog":Vector2(45,160),"ink":Color(.07,.012,.02),"ink_thickness":1.45,"ink_strength":1.0,"vignette":.52},
 	# Starfall Space: cool lilac starlight, violet-black ink.
-	{"sun":Color("d8c4ff"),"sun_energy":1.15,"sun_pitch":-38.0,"ambient":Color("b9a8f0"),"ambient_energy":.24,"fog":Vector2(50,175),"ink":Color(.035,.012,.07),"ink_thickness":1.45,"ink_strength":1.0,"vignette":.52},
+	{"sun":Color("d8c4ff"),"sun_energy":0.98,"sun_pitch":-38.0,"ambient":Color("b9a8f0"),"ambient_energy":.24,"fog":Vector2(50,175),"ink":Color(.035,.012,.07),"ink_thickness":1.45,"ink_strength":1.0,"vignette":.52},
 ]
 
 # The Red Moon arena keeps its own original lighting (it reports itself as biome 2).

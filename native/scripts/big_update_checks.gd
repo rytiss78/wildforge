@@ -29,7 +29,7 @@ static func run(game: Node3D):
 	checks.minimap_biome_palette=map_colors.size()==6
 	checks.minimap_interactions=minimap.interactables.any(func(i):return i.kind=="merchant") and minimap.interactables.any(func(i):return i.kind=="supply") and not minimap.interactables.any(func(i):return i.kind=="landmark")
 	checks.rare_boxes=game.rules.chest_price(0)==30 and RunRules.WEAPON_CAP==3
-	checks.achievements=game.career.achievements.size()==117 and game.career.achievements.map(func(a):return a.id).size()==117
+	checks.achievements=game.career.achievements.size()==93 and game.career.achievements.map(func(a):return a.id).size()==93
 	game.clear_entities();game.spawn_formation()
 	var formation=game.enemies.filter(func(enemy):return int(enemy.get("formation_id",-1))>0)
 	checks.enemy_formation=formation.size()==3 and formation.map(func(enemy):return enemy.formation_id).all(func(id):return id==formation[0].formation_id) and formation[0].get("formation_name","") in ["WEDGE","LINE","RING"]

@@ -72,7 +72,8 @@ static func run(game) -> Dictionary:
 		rings=rings and absf(circling.dot(forward))<.001 and is_equal_approx(circling.length(),flank[biome])
 		game.clear_entities();game.spawn_enemy(4);var ranged=game.enemies[-1];ranged.biome=biome;ranged.attack=0
 		game.hazards.clear();tactics.ranged_attack(game,ranged,game.player.position)
-		var expected_marks=3 if biome in [0,3] else 2 if biome in [2,5] else 1
+		# One shooter, one mark since October 25; biomes differ by mark style.
+		var expected_marks=1
 		var expected_style=["roots","toxic","meteor","storm","lava","void"][biome]
 		patterns=patterns and game.hazards.size()==expected_marks and game.hazards.all(func(h):return h.style==expected_style and h.damage>0 and h.life>=1.05)
 		game.clear_entities()

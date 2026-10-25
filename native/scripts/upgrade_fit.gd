@@ -43,7 +43,10 @@ static func describe(game,item: Dictionary) -> Dictionary:
 		var definition=MutationBook.entry(str(item.id).trim_prefix("mut:"))
 		var level=int(game.mutations.get(definition.get("id",""),0))
 		var group=str(definition.get("group",""))
-		var text={"core":"MUTATION · ","rule":"STRAIN RULE · ","hybrid":"HYBRID · "}.get(group,"WILD CARD · changes every mutation")+("" if group=="wild" else MutationBook.family(definition))
+		# Plain words for new players (user request, October 25): a mutation is a
+		# free bonus attack that fires by itself; the others change those attacks.
+		var family=MutationBook.family(definition)
+		var text={"core":"MUTATION · free bonus attack, fires by itself · "+family,"rule":"BOOSTS YOUR "+family.to_upper()+" MUTATIONS","hybrid":"COMBO · you carry "+family+" mutations"}.get(group,"WILD CARD · changes all your mutations")
 		var synergy=SpellSynergy.note_for_strain(game,str(definition.get("strain","")))
 		return {"useful":true,"text":text+(" · owned Lv %d" % level if level>0 else "")+(" · "+synergy if not synergy.is_empty() else "")}
 	var notes=[];var useful=false

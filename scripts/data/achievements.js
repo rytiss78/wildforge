@@ -111,6 +111,10 @@ add("BUILD_SCOUT","Know Your Team","Inspect every teammate’s current build in 
 add("AFTER_ACTION","Study The Run","Open 10 completed run reports.","run_reports_viewed",10,'total','Adventure');
 add("STYLE_COLLECTION","Earned, Not Bought","Unlock three achievement cosmetics.","achievement_cosmetics",3,'total','Collection');
 if(catalog.length!==109)throw new Error(`Expected 109 achievements, got ${catalog.length}`);
-export const ACHIEVEMENTS=Object.freeze(catalog.map(Object.freeze));
+// Retired October 25 (user request): no achievement just for picking a hero, opening
+// a menu or doing one ordinary thing once. Their IDs stay listed here, unused.
+export const RETIRED=Object.freeze(['PLAY_WRENCH','PLAY_DUCK','PLAY_BROCCOLI','PLAY_GRANDMA','PLAY_GOBLIN','PLAY_LOAF','PLAY_FLORIST','LOCKED_GATE','AIRTIME','SALE','INTEREST','WALK_PAY','HURT_PAY','RANK_UP','GARDEN','BUBBLE','FEEDBACK','ROADMAP','MIX_TURRET','WELCOME_BACK','BUILD_SCOUT','AFTER_ACTION'].map(id=>`WF_${id}`));
+export const ACHIEVEMENTS=Object.freeze(catalog.filter(a=>!RETIRED.includes(a.id)).map(Object.freeze));
+if(ACHIEVEMENTS.length!==87)throw new Error(`Expected 87 achievements, got ${ACHIEVEMENTS.length}`);
 export function achievementProgress(a,p){return Math.min(a.target,Math.max(0,Number(p[a.scope]?.[a.key])||0));}
 export function availableAchievements(p){return ACHIEVEMENTS.filter(a=>!p.unlocked[a.id]&&achievementProgress(a,p)>=a.target);}

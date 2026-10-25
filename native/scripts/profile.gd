@@ -6,7 +6,7 @@ var achievements: Array
 var file = "user://career.json"
 var on_unlock: Callable
 var dirty = false
-const COSMETIC_REWARDS={"WF_WEAPON_MASTERY":"mastery_crown","WF_FORMATION_BREAKER":"formation_gold","WF_BIOME_COLLECTOR":"biome_prism","WF_PARTY_PINGS":"ping_star","WF_READY_PARTY":"party_banner","WF_WELCOME_BACK":"comeback_flame","WF_BUILD_SCOUT":"scout_visor","WF_AFTER_ACTION":"recap_medal"}
+const COSMETIC_REWARDS={"WF_WEAPON_MASTERY":"mastery_crown","WF_FORMATION_BREAKER":"formation_gold","WF_BIOME_COLLECTOR":"biome_prism","WF_PARTY_PINGS":"ping_star","WF_READY_PARTY":"party_banner"}
 
 func _init(catalog: Dictionary, smoke: bool = false):
 	achievements = catalog.achievements

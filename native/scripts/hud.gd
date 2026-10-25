@@ -9,8 +9,10 @@ var modal = Control.new()
 var block_drop
 # The hero's own numbers fall from under the health panel (user request, October
 # 24): damage in red, shield damage in blue, healing in green. Enemy and weapon
-# numbers keep their places.
-const HERO_NUMBER_LIFE=1.3
+# numbers keep their places. They fall slowly and stay 2.4 s, long enough to read
+# (user request, October 25).
+const HERO_NUMBER_LIFE=2.4
+const HERO_NUMBER_FALL=70.0
 const HERO_NUMBER_COLORS={"damage":[Color("ff4d4d"),Color("3a0808")],"shield":[Color("6cc8ff"),Color("0a2a44")],"heal":[Color("7dff9a"),Color("0f3a18")]}
 var hero_numbers=[]
 var hero_labels=[]
@@ -36,6 +38,9 @@ var hint_device = ""
 var turret_hints = HBoxContainer.new()
 var turret_status: Label
 var slam_status: Label
+var dash_status: Label
+# Ability readouts turn green when ready.
+const READY_GREEN=Color("7dff9a")
 var damage_feedback: Control
 var prompt: Label
 var alert: Label
@@ -306,6 +311,7 @@ func setup(owner_game):
 	root.add_child(turret_hints)
 	turret_status=label("",14,ThemeTokens.STAR_GOLD);turret_hints.add_child(turret_status)
 	slam_status=label("",14,ThemeTokens.STAR_GOLD);slam_status.position=LOADOUT.position+Vector2(400,56);root.add_child(slam_status)
+	dash_status=label("",14,ThemeTokens.STAR_GOLD);dash_status.position=LOADOUT.position+Vector2(400,34);root.add_child(dash_status)
 	damage_feedback=preload("res://scripts/damage_feedback.gd").new();damage_feedback.game=game;damage_feedback.mouse_filter=Control.MOUSE_FILTER_IGNORE;root.add_child(damage_feedback)
 	prompt = label("",18,ThemeTokens.BIOME_ACCENTS.verdant.petal)
 	prompt.position = Vector2(540,682);prompt.size=Vector2(840,42)
@@ -550,7 +556,9 @@ func update(delta: float):
 	health_orb.shield_fill=clampf(game.shield_hp/maxf(1,game.stats.shield),0,1);health_orb.queue_redraw()
 	shield_text.text="SHIELD  %d / %d" % [ceili(game.shield_hp),ceili(game.stats.shield)]
 	shield_text.visible=true
-	armor_text.text="ARMOR  %d" % ceili(game.stats.armor)
+	# Armor with its buffs, and how much damage it takes off.
+	var armor=game.stat("armor")
+	armor_text.text="ARMOR  %d  ·  −%d%% damage" % [roundi(armor),roundi(100.0-10000.0/(100.0+armor*6.0))] if armor>0 else "ARMOR  0  ·  no reduction"
 	armor_text.visible=true
 	clock.seconds = game.realm_time if game.realm==3 else maxf(0,600.0-game.realm_time)
 	clock.realm = game.realm
@@ -559,7 +567,8 @@ func update(delta: float):
 	xp.max_value = game.xp_target
 	xp.value = game.xp
 	status.text = "LV. %d" % game.level
-	xp_text.text="%d / %d XP" % [floori(game.xp),game.xp_target]
+	var banked=game.banked_levels()
+	xp_text.text="%d / %d XP" % [floori(game.xp),game.xp_target] if banked==0 else "%d LEVEL%s READY  ·  NEXT IN %ds" % [banked,"" if banked==1 else "S",ceili(game.level_choice_cooldown)]
 	if game.xp>=game.xp_target and game.level_choice_cooldown>0:
 		xp_text.text="Level ready in %ds · %d XP saved" % [ceili(game.level_choice_cooldown),floori(game.xp)]
 	# The host is the source of truth for rescue progress; party snapshots
@@ -579,6 +588,10 @@ func update(delta: float):
 	weapons.refresh()
 	slam_status.visible=not modal.visible and game.mode=="playing"
 	slam_status.text="[%s] SLAM · %s" % [ControlBindings.display(game.career.data.settings,"slam","controller" if game.input_kind=="xbox" else "keyboard"),"READY" if game.slam_cooldown<=0 else "%.1fs" % game.slam_cooldown]
+	slam_status.add_theme_color_override("font_color",READY_GREEN if game.slam_cooldown<=0 else ThemeTokens.STAR_GOLD)
+	dash_status.visible=slam_status.visible
+	dash_status.text="[%s] DASH · %s" % [ControlBindings.display(game.career.data.settings,"dash","controller" if game.input_kind=="xbox" else "keyboard"),"READY" if game.dash_cooldown<=0 else "%.1fs" % game.dash_cooldown]
+	dash_status.add_theme_color_override("font_color",READY_GREEN if game.dash_cooldown<=0 else ThemeTokens.STAR_GOLD)
 	var turrets=game.equipped.filter(func(w):return w.turret)
 	turret_hints.visible=not modal.visible and not turrets.is_empty()
 	if turret_hints.visible:
@@ -895,11 +908,23 @@ func pause_menu(ended: bool = false, win: bool = false):
 		extra+=" · %d kills" % game.career.data.total.get("kills",0)
 	var box = open("YOU WON" if win else "TRY AGAIN" if ended else "PAUSED", "%s · %d coins · %d enemies · ★ %d%s" % [game.hero.name,game.gold,game.kills,game.level,extra])
 	if ended: box.add_child(label(game.update.recap(),15))
+	# At the end of a run the run report sits beside the buttons (user request,
+	# October 25), instead of behind a RUN REPORT button.
+	if ended:
+		var columns=HBoxContainer.new();columns.add_theme_constant_override("separation",28);columns.size_flags_vertical=Control.SIZE_EXPAND_FILL;box.add_child(columns)
+		var actions=VBoxContainer.new();actions.add_theme_constant_override("separation",10);actions.custom_minimum_size.x=430;columns.add_child(actions)
+		var report=VBoxContainer.new();report.size_flags_horizontal=Control.SIZE_EXPAND_FILL;columns.add_child(report)
+		report.add_child(label("RUN REPORT  ·  "+run_report_summary(),17))
+		run_report_rows(report_scroll(report))
+		if game.run_recorded and game.run_active: game.career.bump("run_reports_viewed")
+		box=actions
+	# After a run ends, NEW RUN comes first and takes the focus.
+	if ended: box.add_child(button("↻  NEW RUN",game.start_run,true))
 	if not ended: box.add_child(button("▶  CONTINUE",close,true))
 	if not ended: box.add_child(button("▦  BLOCK DROP",block_drop_menu))
 	box.add_child(button("HERO STATS & EQUIPMENT",func():build_menu(true)))
-	box.add_child(button("RUN REPORT",run_report_menu))
-	box.add_child(button("↻  NEW RUN",game.start_run,ended))
+	if not ended: box.add_child(button("RUN REPORT",run_report_menu))
+	if not ended: box.add_child(button("↻  NEW RUN",game.start_run))
 	box.add_child(button("★  ACHIEVEMENTS",func(): career_menu(false)))
 	box.add_child(button("♛  LOCAL SCORES",func(): career_menu(true)))
 	box.add_child(button("♫  SOUND / CONTROLS",settings_menu))
@@ -966,8 +991,8 @@ func update_hero_numbers(delta: float):
 		label.add_theme_color_override("font_color",colors[0]);label.add_theme_color_override("font_outline_color",colors[1])
 		# Starts just under the health panel and falls while it fades.
 		var t=entry.age/HERO_NUMBER_LIFE
-		label.position=Vector2(VITALS.position.x+28+float(entry.lane)*74.0,VITALS.end.y+6+t*160.0)
-		label.modulate.a=1.0-smoothstep(.55,1.0,t)
+		label.position=Vector2(VITALS.position.x+28+float(entry.lane)*74.0,VITALS.end.y+6+t*HERO_NUMBER_FALL)
+		label.modulate.a=1.0-smoothstep(.7,1.0,t)
 
 func block_drop_active() -> bool:
 	return is_instance_valid(block_drop) and block_drop.is_visible_in_tree()
@@ -1204,7 +1229,7 @@ func build_menu(return_to_pause: bool=false,detailed: bool=false):
 	for i in range(game.equipped.size()):
 		var weapon=game.equipped[i]
 		var kind=ContentExpansion.kind(weapon.id)
-		var power=game.stat("damage")*weapon.damage*weapon.power*float(game.stats.get(kind+"Power",1))*(game.stat("turretDamage") if weapon.turret else 1.)
+		var power=game.stat("damage")*weapon.damage*weapon.power*float(game.stats.get(kind+"Power",1))*(game.stat("turretDamage")*game.TURRET_POWER if weapon.turret else 1.)
 		var rate=weapon.rate*game.stat("turretRate" if weapon.turret else "rate")
 		var reach=weapon.range*game.stat("range")/18.*(game.stat("turretRange") if weapon.turret else 1.)
 		icon_text_row(rows,weapon.id,true,"%s · Rank %d" % [weapon.name,weapon.rank])
@@ -1224,14 +1249,21 @@ func build_menu(return_to_pause: bool=false,detailed: bool=false):
 		icon_text_row(rows,icon_key(item),false,item.name+(" · "+game.rules.describe(item.effects[0]) if detailed else ""))
 	var back=button("BACK",func():pause_menu(game.run_recorded) if return_to_pause else close(),true);box.add_child(back);back.grab_focus()
 
-func run_report_menu():
-	game.mode="build"
-	if game.run_recorded and game.run_active: game.career.bump("run_reports_viewed")
+func run_report_summary() -> String:
 	var score=game.career.data.scores.filter(func(entry):return entry.id==game.run_id)
 	var summary="%d:%02d played · %d kills · %d gold · Deaths %d" % [int(game.elapsed)/60,int(game.elapsed)%60,game.kills,game.gold,game.death_count]
 	if not score.is_empty():
 		summary+=" · Score %d · Local rank #%d" % [score[0].score,game.career.data.scores.find(score[0])+1]
-	var box=open("RUN REPORT",summary);var rows=report_scroll(box)
+	return summary
+
+func run_report_menu():
+	game.mode="build"
+	if game.run_recorded and game.run_active: game.career.bump("run_reports_viewed")
+	var score=game.career.data.scores.filter(func(entry):return entry.id==game.run_id)
+	var box=open("RUN REPORT",run_report_summary());run_report_rows(report_scroll(box))
+	var back=button("BACK",func():pause_menu(game.run_recorded,not score.is_empty() and score[0].win),true);box.add_child(back);back.grab_focus()
+
+func run_report_rows(rows: VBoxContainer):
 	rows.add_child(label("SURVIVED %02d:%02d · %d BOSS PHASES · %d REVIVES · %d RESCUES" % [int(game.elapsed)/60,int(game.elapsed)%60,game.boss_phases_reached,game.update.run_revives,game.update.run_rescues],16))
 	rows.add_child(label("YOUR CONTRIBUTION · %d damage · PARTY TOTAL %d damage" % [game.update.run_damage,game.update.party_damage],15))
 	rows.add_child(label("YOUR DAMAGE BY WEAPON / EFFECT",18))
@@ -1253,7 +1285,6 @@ func run_report_menu():
 	else:
 		for key in game.kill_types: rows.add_child(label("%s · %d" % [key,game.kill_types[key]],16))
 	rows.add_child(label("Score: 20×kills + gold + 2×seconds + level/boss/chest/victory bonuses.",14))
-	var back=button("BACK",func():pause_menu(game.run_recorded,not score.is_empty() and score[0].win),true);box.add_child(back);back.grab_focus()
 
 func party_builds_menu():
 	if not game.coop.active: return
@@ -1275,7 +1306,6 @@ func party_builds_menu():
 		rows.add_child(label("WEAPONS · "+(" · ".join(weapon_names) if not weapon_names.is_empty() else "None yet"),16))
 		rows.add_child(label("SKILLS · "+(" · ".join(build.get("skills",[])) if not build.get("skills",[]).is_empty() else "None yet"),15))
 	if not complete and members.size()>1: rows.add_child(label("Waiting for a teammate’s next status update…",14))
-	rows.add_child(label("Achievement: inspect every teammate’s build · %d / 1" % int(game.career.data.total.get("party_builds_viewed",0)),14))
 	var back=button("BACK",func():close(),true);box.add_child(back);back.grab_focus()
 
 func last_run_menu():

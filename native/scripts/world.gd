@@ -67,6 +67,14 @@ const SKY_TOP=[Color("111a2b"),Color("151b28"),Color("18234d"),Color("254459"),C
 # Horizons (and so fog) for biomes 2-5 were darkened in the October 23 per-biome pass:
 # pale horizons washed the ground out through the fog.
 const SKY_HORIZON=[Color("293b48"),Color("405149"),Color("34405e"),Color("5f8288"),Color("6a2a24"),Color("392c5a")]
+# Dark skies are lifted toward these brightnesses (luminance), by at most 1.6x at
+# the top and 2.2x at the horizon; skies already that bright stay as they are.
+const SKY_TOP_LIFT=Vector2(.13,1.6)
+const SKY_HORIZON_LIFT=Vector2(.42,2.2)
+
+static func scaled(color: Color,lift: Vector2) -> Color:
+	var factor=clampf(lift.x/maxf(.01,color.get_luminance()),1.0,lift.y)
+	return Color(minf(1,color.r*factor),minf(1,color.g*factor),minf(1,color.b*factor),color.a)
 
 static func coast_radius(angle: float,world_seed: int,world_realm: int) -> float:
 	if world_realm==3: return 72.0
@@ -110,7 +118,10 @@ func weather_tick(delta: float,p: Vector3):
 	sky_top=sky_top.lerp(Color("21192f") if eclipse else SKY_TOP[biome],1-exp(-delta*.6));sky_horizon=sky_horizon.lerp(Color("77556c") if eclipse else SKY_HORIZON[biome],1-exp(-delta*.6))
 	var grade: Dictionary=GRADE[realm]
 	if grade.mix>0 and not eclipse: sky_top=sky_top.lerp(grade.top,grade.mix*(1-exp(-delta*.6))*4.0);sky_horizon=sky_horizon.lerp(grade.horizon,grade.mix*(1-exp(-delta*.6))*4.0)
-	sky_paint.set_shader_parameter("top_color",sky_top);sky_paint.set_shader_parameter("horizon_color",sky_horizon)
+	# The sky itself is drawn brighter than its fog colour (user request, October 25:
+	# the sunlit ground outshone a near-black sky). The fog keeps the darker horizon,
+	# so distant ground still is not washed out, and sits as a dark band under the sky.
+	sky_paint.set_shader_parameter("top_color",scaled(sky_top,SKY_TOP_LIFT));sky_paint.set_shader_parameter("horizon_color",scaled(sky_horizon,SKY_HORIZON_LIFT))
 	for pair in [["moon_strength",biome==2],["space_strength",biome==5],["fire_strength",biome==4]]:
 		var parameter=sky_paint.get_shader_parameter(pair[0]);var previous=float(parameter) if parameter!=null else 0.0;sky_paint.set_shader_parameter(pair[0],lerpf(previous,1.0 if pair[1] else 0.0,1-exp(-delta*.6)))
 	environment.fog_light_color=sky_horizon

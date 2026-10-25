@@ -19,6 +19,7 @@ const KINDS={
 	4:{"id":"lava","every":8.0,"warn":1.6,"life":8.0,"radius":4.5,"color":Color("ff7a2a"),"intro":"LAVA VENTS · pools spread and burn everyone inside"},
 	5:{"id":"rift","every":12.0,"warn":1.2,"life":3.0,"radius":6.5,"color":Color("b38cff"),"intro":"GRAVITY RIFTS · pulled in, then the rift implodes on enemies"},
 }
+const LABELS={"clover":"+ HEAL ZONE","spores":"POISON FOG","ice":"ICE · SLIPPERY","gust":"WIND","lava":"LAVA","rift":"GRAVITY RIFT"}
 const MAX_ZONES=8
 static var disc_paints={}
 
@@ -69,12 +70,20 @@ static func spawn(g,event: Dictionary):
 	if zone.has("mark"): zone.mark.material_override.set_shader_parameter("flash_from",clampf(1.0-.25/maxf(.3,zone.warn),0,1))
 	if zone.kind=="lava": zone.built=1.0
 	zone.node=disc(g,at,1.0 if zone.kind=="lava" else zone.radius,info.color,biome)
+	name_tag(zone)
 	g.biome_zones.append(zone)
 	# The first event of each kind in a run says what it does.
 	var seen: Dictionary=g.get_meta("biome_seen_mechanics",{})
 	if not seen.has(zone.kind):
 		seen[zone.kind]=true;g.set_meta("biome_seen_mechanics",seen)
 		g.hud.tell(RealmWorld.BIOMES[biome].to_upper()+" · "+str(info.intro),4)
+
+# A floating name says what the circle is (user request, October 25: "green
+# circles on the ground, what are they?"). Green for help, red for harm.
+static func name_tag(zone: Dictionary):
+	var tag=Label3D.new();tag.text=LABELS[zone.kind];tag.font_size=44;tag.outline_size=10;tag.billboard=BaseMaterial3D.BILLBOARD_ENABLED
+	tag.modulate=Color("8dff7a") if zone.kind=="clover" else DangerMark.DANGER.lightened(.25) if hurts_hero(int(zone.biome)) else Color("e8f4ff")
+	tag.pixel_size=.018;tag.outline_modulate=Color(0,0,0,.85);tag.position.y=2.6;tag.visibility_range_end=45;zone.node.add_child(tag)
 
 # A terrain-hugging disc in the zone's colour; lava and ice are opaque-ish
 # floors, the rest glow faintly. Spores and rifts add their existing area looks.
@@ -189,7 +198,7 @@ static func look(g,zone: Dictionary,delta: float):
 	# A spreading pool is rebuilt at its new size: scaling would lift the
 	# terrain-following disc off the slope or sink it into the ground.
 	if zone.kind=="lava" and absf(zone_radius(zone)-float(zone.get("built",zone.radius)))>.3:
-		zone.built=zone_radius(zone);zone.node.queue_free();zone.node=disc(g,zone.pos,zone.built,KINDS[4].color,4)
+		zone.built=zone_radius(zone);zone.node.queue_free();zone.node=disc(g,zone.pos,zone.built,KINDS[4].color,4);name_tag(zone)
 	if zone.fx>0 or not live(zone): return
 	zone.fx=.18/maxf(.25,EffectDetail.particles)
 	var color: Color=KINDS[zone.biome].color

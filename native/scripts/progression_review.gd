@@ -67,4 +67,8 @@ static func run(game):
 	checks.persisted=loaded.data.scores.any(func(r):return r.id==game.run_id and r.get("damageSources",{}).get("gun",0)==10 and not r.get("killTypes",{}).is_empty())
 	game.hud.run_report_menu();checks.recap_capture=await capture(game,"recap")
 	checks.recap_detail=game.career.data.total.get("run_reports_viewed",0)==1 and game.hud.modal.find_children("*","Label",true,false).any(func(node):return node.text.contains("BOSS PHASES") and node.text.contains("REVIVES"))
+	# The end-of-run window carries the report beside its buttons (October 25).
+	game.hud.pause_menu(true);checks.game_over_capture=await capture(game,"game-over")
+	var over_labels=game.hud.modal.find_children("*","Label",true,false)
+	checks.game_over_report=over_labels.any(func(node):return node.text.begins_with("RUN REPORT")) and over_labels.any(func(node):return node.text.contains("BOSS PHASES")) and not game.hud.modal.find_children("*","Button",true,false).any(func(node):return node.text=="RUN REPORT")
 	print("PROGRESSION_REVIEW "+JSON.stringify({"checks":checks,"jump_rolls":jumps,"rolls":12000}));game.get_tree().quit(0 if checks.values().all(func(v):return v) else 1)

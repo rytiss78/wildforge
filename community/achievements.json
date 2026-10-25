@@ -1,20 +1,7 @@
 {
   "schemaVersion": 1,
-  "count": 117,
+  "count": 93,
   "achievements": [
-    {
-      "apiName": "WF_PLAY_WRENCH",
-      "displayName": "Meet Wrench",
-      "description": "Start a run as Wrench.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_play_wrench-unlocked.png",
-      "iconLocked": "achievement-icons/wf_play_wrench-locked.png",
-      "condition": {
-        "key": "play_wrench",
-        "target": 1,
-        "scope": "total"
-      }
-    },
     {
       "apiName": "WF_WIN_WRENCH",
       "displayName": "Wrench Beats The Odds",
@@ -24,19 +11,6 @@
       "iconLocked": "achievement-icons/wf_win_wrench-locked.png",
       "condition": {
         "key": "win_wrench",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
-      "apiName": "WF_PLAY_DUCK",
-      "displayName": "Meet Count Duck",
-      "description": "Start a run as Count Duck.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_play_duck-unlocked.png",
-      "iconLocked": "achievement-icons/wf_play_duck-locked.png",
-      "condition": {
-        "key": "play_duck",
         "target": 1,
         "scope": "total"
       }
@@ -55,19 +29,6 @@
       }
     },
     {
-      "apiName": "WF_PLAY_BROCCOLI",
-      "displayName": "Meet Tank Potato",
-      "description": "Start a run as Tank Potato.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_play_broccoli-unlocked.png",
-      "iconLocked": "achievement-icons/wf_play_broccoli-locked.png",
-      "condition": {
-        "key": "play_broccoli",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
       "apiName": "WF_WIN_BROCCOLI",
       "displayName": "Tank Potato Beats The Odds",
       "description": "Win a run as Tank Potato.",
@@ -76,19 +37,6 @@
       "iconLocked": "achievement-icons/wf_win_broccoli-locked.png",
       "condition": {
         "key": "win_broccoli",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
-      "apiName": "WF_PLAY_GRANDMA",
-      "displayName": "Meet Stone Granny",
-      "description": "Start a run as Stone Granny.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_play_grandma-unlocked.png",
-      "iconLocked": "achievement-icons/wf_play_grandma-locked.png",
-      "condition": {
-        "key": "play_grandma",
         "target": 1,
         "scope": "total"
       }
@@ -107,19 +55,6 @@
       }
     },
     {
-      "apiName": "WF_PLAY_GOBLIN",
-      "displayName": "Meet Tax Rat",
-      "description": "Start a run as Tax Rat.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_play_goblin-unlocked.png",
-      "iconLocked": "achievement-icons/wf_play_goblin-locked.png",
-      "condition": {
-        "key": "play_goblin",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
       "apiName": "WF_WIN_GOBLIN",
       "displayName": "Tax Rat Beats The Odds",
       "description": "Win a run as Tax Rat.",
@@ -133,19 +68,6 @@
       }
     },
     {
-      "apiName": "WF_PLAY_LOAF",
-      "displayName": "Meet Sir Loaf",
-      "description": "Start a run as Sir Loaf.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_play_loaf-unlocked.png",
-      "iconLocked": "achievement-icons/wf_play_loaf-locked.png",
-      "condition": {
-        "key": "play_loaf",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
       "apiName": "WF_WIN_LOAF",
       "displayName": "Sir Loaf Beats The Odds",
       "description": "Win a run as Sir Loaf.",
@@ -154,19 +76,6 @@
       "iconLocked": "achievement-icons/wf_win_loaf-locked.png",
       "condition": {
         "key": "win_loaf",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
-      "apiName": "WF_PLAY_FLORIST",
-      "displayName": "Meet Florist",
-      "description": "Start a run as Florist.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_play_florist-unlocked.png",
-      "iconLocked": "achievement-icons/wf_play_florist-locked.png",
-      "condition": {
-        "key": "play_florist",
         "target": 1,
         "scope": "total"
       }
@@ -770,19 +679,6 @@
       }
     },
     {
-      "apiName": "WF_LOCKED_GATE",
-      "displayName": "Wrong Door",
-      "description": "Try a gate before its bosses are defeated.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_locked_gate-unlocked.png",
-      "iconLocked": "achievement-icons/wf_locked_gate-locked.png",
-      "condition": {
-        "key": "event_LOCKED_GATE",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
       "apiName": "WF_RUINS",
       "displayName": "Tourist With Teeth",
       "description": "Visit all four ruins in one world.",
@@ -835,19 +731,6 @@
       }
     },
     {
-      "apiName": "WF_AIRTIME",
-      "displayName": "Frequent Flyer",
-      "description": "Jump while a boss is alive.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_airtime-unlocked.png",
-      "iconLocked": "achievement-icons/wf_airtime-locked.png",
-      "condition": {
-        "key": "event_AIRTIME",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
       "apiName": "WF_FREE_KEY",
       "displayName": "On The House",
       "description": "Open a normal chest free using a Key.",
@@ -869,58 +752,6 @@
       "iconLocked": "achievement-icons/wf_last_coin-locked.png",
       "condition": {
         "key": "event_LAST_COIN",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
-      "apiName": "WF_SALE",
-      "displayName": "Sale Of The Century",
-      "description": "Buy a chest with a discount.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_sale-unlocked.png",
-      "iconLocked": "achievement-icons/wf_sale-locked.png",
-      "condition": {
-        "key": "event_SALE",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
-      "apiName": "WF_INTEREST",
-      "displayName": "Money Tree",
-      "description": "Earn interest on saved coins.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_interest-unlocked.png",
-      "iconLocked": "achievement-icons/wf_interest-locked.png",
-      "condition": {
-        "key": "event_INTEREST",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
-      "apiName": "WF_WALK_PAY",
-      "displayName": "Professional Walker",
-      "description": "Earn coins by walking.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_walk_pay-unlocked.png",
-      "iconLocked": "achievement-icons/wf_walk_pay-locked.png",
-      "condition": {
-        "key": "event_WALK_PAY",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
-      "apiName": "WF_HURT_PAY",
-      "displayName": "Paid For Pain",
-      "description": "Earn coins from taking damage.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_hurt_pay-unlocked.png",
-      "iconLocked": "achievement-icons/wf_hurt_pay-locked.png",
-      "condition": {
-        "key": "event_HURT_PAY",
         "target": 1,
         "scope": "total"
       }
@@ -986,32 +817,6 @@
       "iconLocked": "achievement-icons/wf_replace-locked.png",
       "condition": {
         "key": "event_REPLACE",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
-      "apiName": "WF_RANK_UP",
-      "displayName": "Old Reliable",
-      "description": "Upgrade the same weapon.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_rank_up-unlocked.png",
-      "iconLocked": "achievement-icons/wf_rank_up-locked.png",
-      "condition": {
-        "key": "event_RANK_UP",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
-      "apiName": "WF_GARDEN",
-      "displayName": "Groundskeeper",
-      "description": "Plant a flower by moving.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_garden-unlocked.png",
-      "iconLocked": "achievement-icons/wf_garden-locked.png",
-      "condition": {
-        "key": "event_GARDEN",
         "target": 1,
         "scope": "total"
       }
@@ -1147,19 +952,6 @@
       }
     },
     {
-      "apiName": "WF_BUBBLE",
-      "displayName": "Soft Landing",
-      "description": "Let your shield absorb a hit.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_bubble-unlocked.png",
-      "iconLocked": "achievement-icons/wf_bubble-locked.png",
-      "condition": {
-        "key": "event_BUBBLE",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
       "apiName": "WF_REVIVE",
       "displayName": "Death Has Bad Timing",
       "description": "Use an extra life.",
@@ -1233,45 +1025,6 @@
       "iconLocked": "achievement-icons/wf_no_hit_boss-locked.png",
       "condition": {
         "key": "event_NO_HIT_BOSS",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
-      "apiName": "WF_FEEDBACK",
-      "displayName": "Dear Developers",
-      "description": "Save a suggestion in the Community Lab.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_feedback-unlocked.png",
-      "iconLocked": "achievement-icons/wf_feedback-locked.png",
-      "condition": {
-        "key": "event_FEEDBACK",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
-      "apiName": "WF_ROADMAP",
-      "displayName": "Crystal Ball",
-      "description": "Read the Community Lab roadmap.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_roadmap-unlocked.png",
-      "iconLocked": "achievement-icons/wf_roadmap-locked.png",
-      "condition": {
-        "key": "event_ROADMAP",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
-      "apiName": "WF_MIX_TURRET",
-      "displayName": "Shared Workshop",
-      "description": "Equip a turret and another kind of weapon.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_mix_turret-unlocked.png",
-      "iconLocked": "achievement-icons/wf_mix_turret-locked.png",
-      "condition": {
-        "key": "event_MIX_TURRET",
         "target": 1,
         "scope": "total"
       }
@@ -1368,45 +1121,6 @@
       }
     },
     {
-      "apiName": "WF_WELCOME_BACK",
-      "displayName": "Back In The Forge",
-      "description": "Reconnect to an active co-op run.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_welcome_back-unlocked.png",
-      "iconLocked": "achievement-icons/wf_welcome_back-locked.png",
-      "condition": {
-        "key": "coop_reconnects",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
-      "apiName": "WF_BUILD_SCOUT",
-      "displayName": "Know Your Team",
-      "description": "Inspect every teammate’s current build in co-op.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_build_scout-unlocked.png",
-      "iconLocked": "achievement-icons/wf_build_scout-locked.png",
-      "condition": {
-        "key": "party_builds_viewed",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
-      "apiName": "WF_AFTER_ACTION",
-      "displayName": "Study The Run",
-      "description": "Open 10 completed run reports.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_after_action-unlocked.png",
-      "iconLocked": "achievement-icons/wf_after_action-locked.png",
-      "condition": {
-        "key": "run_reports_viewed",
-        "target": 10,
-        "scope": "total"
-      }
-    },
-    {
       "apiName": "WF_STYLE_COLLECTION",
       "displayName": "Earned, Not Bought",
       "description": "Unlock three achievement cosmetics.",
@@ -1485,19 +1199,6 @@
       }
     },
     {
-      "apiName": "WF_ping",
-      "displayName": "Over There",
-      "description": "Send a contextual exploration ping.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_ping-unlocked.png",
-      "iconLocked": "achievement-icons/wf_ping-locked.png",
-      "condition": {
-        "key": "event_PING",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
       "apiName": "WF_banana",
       "displayName": "Slippery Business",
       "description": "Slip an enemy with Banana Business.",
@@ -1506,19 +1207,6 @@
       "iconLocked": "achievement-icons/wf_banana-locked.png",
       "condition": {
         "key": "event_BANANA",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
-      "apiName": "WF_terrace",
-      "displayName": "Taking the High Road",
-      "description": "Explore a raised biome route.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_terrace-unlocked.png",
-      "iconLocked": "achievement-icons/wf_terrace-locked.png",
-      "condition": {
-        "key": "event_TERRACE",
         "target": 1,
         "scope": "total"
       }

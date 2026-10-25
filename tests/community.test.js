@@ -16,7 +16,7 @@ test('edited player feedback reopens review without losing its prior text or dup
 });
 test('native achievements have no generic kill-count goals and every build has content',()=>{
   const catalog=JSON.parse(readFileSync('native/data/catalog.json','utf8'));
-  assert.equal(ACHIEVEMENTS.length,109);
+  assert.equal(ACHIEVEMENTS.length,87);
   assert.ok(ACHIEVEMENTS.every(a=>!a.key.toLowerCase().includes('kill')));
   for(const a of ACHIEVEMENTS.filter(a=>a.key.startsWith('family_'))){
     assert.ok(catalog.loot.some(item=>item.family===a.key.slice(7)),a.id);

@@ -52,7 +52,9 @@ const WEAPON_SFX=["gun","shotgun","turret","rocket","rocket-turret","bomb","mete
 
 func setup(options: Dictionary):
 	settings = options
-	for id in ["slam","dash","hit","shield-hit","deploy","switch","jump","land","freeze","heal","blast","nova"]:
+	# enemy-*: the enemies' own low, growling attack sounds (scripts/make-enemy-audio.py),
+	# never used for a hero, so a player can tell by ear who is attacking.
+	for id in ["slam","dash","hit","shield-hit","deploy","switch","jump","land","freeze","heal","blast","nova","enemy-shot","enemy-impact","enemy-bite"]:
 		effect_samples[id]=load("res://assets/audio/effects/"+id+".wav")
 	for id in WEAPON_SFX:
 		weapon_samples[id]=load("res://assets/audio/weapons/"+id+".wav")

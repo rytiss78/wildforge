@@ -77,7 +77,7 @@ static func run(game):
 		heights.append({"species":index,"asset_height":mesh.get_aabb().size.y,"requested_height":CreatureBook.HEIGHTS[index]})
 	var result={"bottom_band_clear":band_clear,"damage_rises":rises,"damage_fades":fades,"damage_hidden_in_menu":modal_clear,"static_memory_bytes":Performance.get_monitor(Performance.MEMORY_STATIC),"damage_aggregated":aggregated,"damage_bounded":bounded,"damage_cleared":cleared,"damage_labels_reused":reused,"p50_ms":frames[frames.size()/2],"p95_ms":frames[int(frames.size()*.95)],"frames":frames.size(),"nodes":nodes,"enemies":game.enemies.size(),"kills":game.kills,"draw_calls":Performance.get_monitor(Performance.RENDER_TOTAL_DRAW_CALLS_IN_FRAME),"mesh_heights":heights,"renderer":RenderingServer.get_video_adapter_name()}
 	var file=FileAccess.open("user://combat-review.json",FileAccess.WRITE);file.store_string(JSON.stringify(result,"  "));file.close()
-	# Capture the actual contact entry point with simulation paused mid-warning.
+	# Capture the actual contact entry point: touching hurts at once (October 25).
 	game.set_process(false);game.set_physics_process(false);game.clear_entities();game.equipped.clear()
 	# The species follows the spawn biome, which varies with the frame count of the
 	# soak above. Flyers hover out of reach and wall-crawlers use another contact
@@ -89,13 +89,15 @@ static func run(game):
 		attacker.node.queue_free();game.enemies.pop_back()
 	attacker.node.position=game.player.position+Vector3.FORWARD;attacker.behavior="chase";attacker.speed=0
 	attacker.freeze=0;attacker.blind=0;attacker.contact=0
+	game.invulnerable=0;var before_contact=game.hp
 	game.update_combat(.04)
+	var contact_hit=game.hp<before_contact
 	game.camera.position=game.player.position+Vector3(5,5,7);game.camera.look_at(game.player.position+Vector3.UP*.6)
 	await game.get_tree().process_frame
 	await game.get_tree().process_frame
 	await RenderingServer.frame_post_draw
-	result.contact_attacker={"model":str(attacker.get("model","")),"behavior":str(attacker.get("behavior","")),"radius":float(attacker.get("radius",0)),"windup":float(attacker.get("contact_windup",0))}
-	result.contact_warning_saved=game.get_viewport().get_texture().get_image().save_png("user://contact-warning.png")==OK and attacker.get("contact_windup",0)>0
+	result.contact_attacker={"model":str(attacker.get("model","")),"behavior":str(attacker.get("behavior","")),"radius":float(attacker.get("radius",0)),"hit":contact_hit}
+	result.contact_warning_saved=game.get_viewport().get_texture().get_image().save_png("user://contact-warning.png")==OK and contact_hit
 	result.minimap_camera_alignment=true
 	for degrees in [0,90,180,270]:
 		var heading=deg_to_rad(degrees)

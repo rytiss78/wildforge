@@ -18284,30 +18284,10 @@
   ],
   "achievements": [
     {
-      "id": "WF_PLAY_WRENCH",
-      "name": "Meet Wrench",
-      "description": "Start a run as Wrench.",
-      "key": "play_wrench",
-      "target": 1,
-      "scope": "total",
-      "group": "Adventure",
-      "hidden": false
-    },
-    {
       "id": "WF_WIN_WRENCH",
       "name": "Wrench Beats The Odds",
       "description": "Win a run as Wrench.",
       "key": "win_wrench",
-      "target": 1,
-      "scope": "total",
-      "group": "Adventure",
-      "hidden": false
-    },
-    {
-      "id": "WF_PLAY_DUCK",
-      "name": "Meet Count Duck",
-      "description": "Start a run as Count Duck.",
-      "key": "play_duck",
       "target": 1,
       "scope": "total",
       "group": "Adventure",
@@ -18324,30 +18304,10 @@
       "hidden": false
     },
     {
-      "id": "WF_PLAY_BROCCOLI",
-      "name": "Meet Tank Potato",
-      "description": "Start a run as Tank Potato.",
-      "key": "play_broccoli",
-      "target": 1,
-      "scope": "total",
-      "group": "Adventure",
-      "hidden": false
-    },
-    {
       "id": "WF_WIN_BROCCOLI",
       "name": "Tank Potato Beats The Odds",
       "description": "Win a run as Tank Potato.",
       "key": "win_broccoli",
-      "target": 1,
-      "scope": "total",
-      "group": "Adventure",
-      "hidden": false
-    },
-    {
-      "id": "WF_PLAY_GRANDMA",
-      "name": "Meet Stone Granny",
-      "description": "Start a run as Stone Granny.",
-      "key": "play_grandma",
       "target": 1,
       "scope": "total",
       "group": "Adventure",
@@ -18364,16 +18324,6 @@
       "hidden": false
     },
     {
-      "id": "WF_PLAY_GOBLIN",
-      "name": "Meet Tax Rat",
-      "description": "Start a run as Tax Rat.",
-      "key": "play_goblin",
-      "target": 1,
-      "scope": "total",
-      "group": "Adventure",
-      "hidden": false
-    },
-    {
       "id": "WF_WIN_GOBLIN",
       "name": "Tax Rat Beats The Odds",
       "description": "Win a run as Tax Rat.",
@@ -18384,30 +18334,10 @@
       "hidden": false
     },
     {
-      "id": "WF_PLAY_LOAF",
-      "name": "Meet Sir Loaf",
-      "description": "Start a run as Sir Loaf.",
-      "key": "play_loaf",
-      "target": 1,
-      "scope": "total",
-      "group": "Adventure",
-      "hidden": false
-    },
-    {
       "id": "WF_WIN_LOAF",
       "name": "Sir Loaf Beats The Odds",
       "description": "Win a run as Sir Loaf.",
       "key": "win_loaf",
-      "target": 1,
-      "scope": "total",
-      "group": "Adventure",
-      "hidden": false
-    },
-    {
-      "id": "WF_PLAY_FLORIST",
-      "name": "Meet Florist",
-      "description": "Start a run as Florist.",
-      "key": "play_florist",
       "target": 1,
       "scope": "total",
       "group": "Adventure",
@@ -18874,16 +18804,6 @@
       "hidden": false
     },
     {
-      "id": "WF_LOCKED_GATE",
-      "name": "Wrong Door",
-      "description": "Try a gate before its bosses are defeated.",
-      "key": "event_LOCKED_GATE",
-      "target": 1,
-      "scope": "total",
-      "group": "Challenges",
-      "hidden": false
-    },
-    {
       "id": "WF_RUINS",
       "name": "Tourist With Teeth",
       "description": "Visit all four ruins in one world.",
@@ -18924,16 +18844,6 @@
       "hidden": false
     },
     {
-      "id": "WF_AIRTIME",
-      "name": "Frequent Flyer",
-      "description": "Jump while a boss is alive.",
-      "key": "event_AIRTIME",
-      "target": 1,
-      "scope": "total",
-      "group": "Challenges",
-      "hidden": false
-    },
-    {
       "id": "WF_FREE_KEY",
       "name": "On The House",
       "description": "Open a normal chest free using a Key.",
@@ -18948,46 +18858,6 @@
       "name": "No Change Needed",
       "description": "Spend your last coin on a chest.",
       "key": "event_LAST_COIN",
-      "target": 1,
-      "scope": "total",
-      "group": "Challenges",
-      "hidden": false
-    },
-    {
-      "id": "WF_SALE",
-      "name": "Sale Of The Century",
-      "description": "Buy a chest with a discount.",
-      "key": "event_SALE",
-      "target": 1,
-      "scope": "total",
-      "group": "Challenges",
-      "hidden": false
-    },
-    {
-      "id": "WF_INTEREST",
-      "name": "Money Tree",
-      "description": "Earn interest on saved coins.",
-      "key": "event_INTEREST",
-      "target": 1,
-      "scope": "total",
-      "group": "Challenges",
-      "hidden": false
-    },
-    {
-      "id": "WF_WALK_PAY",
-      "name": "Professional Walker",
-      "description": "Earn coins by walking.",
-      "key": "event_WALK_PAY",
-      "target": 1,
-      "scope": "total",
-      "group": "Challenges",
-      "hidden": false
-    },
-    {
-      "id": "WF_HURT_PAY",
-      "name": "Paid For Pain",
-      "description": "Earn coins from taking damage.",
-      "key": "event_HURT_PAY",
       "target": 1,
       "scope": "total",
       "group": "Challenges",
@@ -19038,26 +18908,6 @@
       "name": "New Favourite",
       "description": "Upgrade each of your three weapons in the same run.",
       "key": "event_REPLACE",
-      "target": 1,
-      "scope": "total",
-      "group": "Challenges",
-      "hidden": false
-    },
-    {
-      "id": "WF_RANK_UP",
-      "name": "Old Reliable",
-      "description": "Upgrade the same weapon.",
-      "key": "event_RANK_UP",
-      "target": 1,
-      "scope": "total",
-      "group": "Challenges",
-      "hidden": false
-    },
-    {
-      "id": "WF_GARDEN",
-      "name": "Groundskeeper",
-      "description": "Plant a flower by moving.",
-      "key": "event_GARDEN",
       "target": 1,
       "scope": "total",
       "group": "Challenges",
@@ -19164,16 +19014,6 @@
       "hidden": false
     },
     {
-      "id": "WF_BUBBLE",
-      "name": "Soft Landing",
-      "description": "Let your shield absorb a hit.",
-      "key": "event_BUBBLE",
-      "target": 1,
-      "scope": "total",
-      "group": "Challenges",
-      "hidden": false
-    },
-    {
       "id": "WF_REVIVE",
       "name": "Death Has Bad Timing",
       "description": "Use an extra life.",
@@ -19228,36 +19068,6 @@
       "name": "Not A Scratch",
       "description": "Defeat a boss without losing health during that fight.",
       "key": "event_NO_HIT_BOSS",
-      "target": 1,
-      "scope": "total",
-      "group": "Challenges",
-      "hidden": false
-    },
-    {
-      "id": "WF_FEEDBACK",
-      "name": "Dear Developers",
-      "description": "Save a suggestion in the Community Lab.",
-      "key": "event_FEEDBACK",
-      "target": 1,
-      "scope": "total",
-      "group": "Challenges",
-      "hidden": false
-    },
-    {
-      "id": "WF_ROADMAP",
-      "name": "Crystal Ball",
-      "description": "Read the Community Lab roadmap.",
-      "key": "event_ROADMAP",
-      "target": 1,
-      "scope": "total",
-      "group": "Challenges",
-      "hidden": false
-    },
-    {
-      "id": "WF_MIX_TURRET",
-      "name": "Shared Workshop",
-      "description": "Equip a turret and another kind of weapon.",
-      "key": "event_MIX_TURRET",
       "target": 1,
       "scope": "total",
       "group": "Challenges",
@@ -19334,36 +19144,6 @@
       "hidden": false
     },
     {
-      "id": "WF_WELCOME_BACK",
-      "name": "Back In The Forge",
-      "description": "Reconnect to an active co-op run.",
-      "key": "coop_reconnects",
-      "target": 1,
-      "scope": "total",
-      "group": "Co-op",
-      "hidden": false
-    },
-    {
-      "id": "WF_BUILD_SCOUT",
-      "name": "Know Your Team",
-      "description": "Inspect every teammate’s current build in co-op.",
-      "key": "party_builds_viewed",
-      "target": 1,
-      "scope": "total",
-      "group": "Co-op",
-      "hidden": false
-    },
-    {
-      "id": "WF_AFTER_ACTION",
-      "name": "Study The Run",
-      "description": "Open 10 completed run reports.",
-      "key": "run_reports_viewed",
-      "target": 10,
-      "scope": "total",
-      "group": "Adventure",
-      "hidden": false
-    },
-    {
       "id": "WF_STYLE_COLLECTION",
       "name": "Earned, Not Bought",
       "description": "Unlock three achievement cosmetics.",
@@ -19419,28 +19199,10 @@
       "hidden": false
     },
     {
-      "id": "WF_ping",
-      "name": "Over There",
-      "description": "Send a contextual exploration ping.",
-      "key": "event_PING",
-      "target": 1,
-      "scope": "total",
-      "hidden": false
-    },
-    {
       "id": "WF_banana",
       "name": "Slippery Business",
       "description": "Slip an enemy with Banana Business.",
       "key": "event_BANANA",
-      "target": 1,
-      "scope": "total",
-      "hidden": false
-    },
-    {
-      "id": "WF_terrace",
-      "name": "Taking the High Road",
-      "description": "Explore a raised biome route.",
-      "key": "event_TERRACE",
       "target": 1,
       "scope": "total",
       "hidden": false

@@ -44,6 +44,9 @@ var xp = 0.0
 var xp_target = 41
 var level_choice_cooldown=0.0
 const LEVEL_CHOICE_GAP=8.0
+# Several levels at once (a magnet full of XP): every level and its cards still
+# come, one at a time, BANKED_LEVEL_GAP seconds of play apart.
+const BANKED_LEVEL_GAP=3.0
 var hp = 100.0
 var health_damage = 0.0
 var death_count = 0
@@ -700,6 +703,7 @@ func level_up():
 	level_choice_cooldown=LEVEL_CHOICE_GAP
 	level += 1
 	xp_target = rules.next_xp(level)
+	if xp>=xp_target: level_choice_cooldown=BANKED_LEVEL_GAP
 	# Levels feel like milestones: heal and reveal a weapon/skill choice, not a tiny stat pop.
 	heal(stats.maxHp*.15)
 	shield_hp = stats.shield
@@ -815,6 +819,13 @@ func replace_weapon(index: int, item: Dictionary):
 	equip_weapon(item)
 	if coop.active: coop.publish_reward_choice(item,offer_source)
 	hud.close()
+
+# Turret builds were weak (user request, October 25): turrets hit 60% harder, fire
+# 25% faster, and one left more than TURRET_FOLLOW metres behind re-deploys
+# beside the hero by itself.
+const TURRET_POWER=1.6
+const TURRET_RATE=1.25
+const TURRET_FOLLOW=30.0
 
 func deploy_turret(weapon: Dictionary):
 	if is_instance_valid(weapon.get("node")): weapon.node.queue_free()
@@ -1057,11 +1068,11 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 		glow_ring.material_override=material(Color("ff6633"),2.5);glow_ring.scale=Vector3(1,.01,1);node.add_child(glow_ring);node.set_meta("elite_ring",glow_ring)
 	var max_health = ((500+realm*500+realm_time*3) if boss else (35+realm*22+realm_time*.12))*realm_difficulty
 	max_health *= 1+biome*.18
-	if not boss: max_health*=species.health*pow(body_scale,1.5)*(.60 if species.behavior=="spit" else 1.0)
+	if not boss: max_health*=species.health*pow(body_scale,1.5)*(.60 if species.behavior=="spit" else 1.0)*ENEMY_HEALTH_SCALE
 	# x20 (October 24, user request): five times the earlier x4 for every boss.
 	if boss: max_health*=20
 	if elite: max_health*=2.5
-	var enemy = {"biome":biome,"elite":elite,"node":node,"hp":max_health,"maxHp":max_health,"speed":(2.9+realm*.35+randf()*0.6)*ENEMY_SPEED_SCALE,"boss":boss,"fire":0.0,"poison":0.0,"status_time":0.0,"freeze":0.0,"blind":0.0,"slow":0.0,"attack":2.5*realm_difficulty,"telegraph":0.0,"dead":false,"contact":0.0,"phase":1,"startDamage":health_damage,"formation_id":formation_id}
+	var enemy = {"biome":biome,"elite":elite,"node":node,"hp":max_health,"maxHp":max_health,"speed":(2.9+realm*.35+randf()*0.6)*ENEMY_SPEED_SCALE,"boss":boss,"fire":0.0,"poison":0.0,"status_time":0.0,"freeze":0.0,"blind":0.0,"slow":0.0,"attack":2.5*realm_difficulty*randf_range(.6,1.6),"telegraph":0.0,"dead":false,"contact":0.0,"phase":1,"startDamage":health_damage,"formation_id":formation_id}
 	enemy.guardian=guardian
 	enemy.merge(species);enemy.speed*=species.speed/pow(body_scale,.6)*(.9 if elite else 1.0)
 	enemy.height=height;enemy.radius=radius_value;enemy.flying=species.flying and not boss and not structure
@@ -1089,6 +1100,16 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 # faster, one more enemy per wave and waves 15% closer together.
 const XP_SCALE=.75
 const ENEMY_SPEED_SCALE=1.1
+# Dangerous, not tanky (user request, October 25): ordinary enemies have 35% less
+# health and hit 50% harder, in contact and with ranged marks. Bosses keep theirs.
+const ENEMY_HEALTH_SCALE=.65
+const ENEMY_DAMAGE_SCALE=1.5
+
+# Levels the current XP already pays for, still to be chosen.
+func banked_levels() -> int:
+	var count=0;var left=float(xp);var target=xp_target
+	while left>=target and count<20: left-=target;count+=1;target=rules.next_xp(level+count)
+	return count
 
 func enemy_xp_reward(enemy: Dictionary) -> float:
 	# Sublinear strength scaling prevents late high-HP enemies multiplying XP bursts.
@@ -1321,6 +1342,8 @@ func fire(weapon: Dictionary, origin: Vector3):
 	var shot_count = (3 if kind == "shotgun" else 1)+int(mods.get("extraShots",0))+mini(7,int(stats.multishot))
 	var aim = ((melee_contact(target,origin) if kind=="horn" else enemy_center(target))-origin).normalized()
 	var base_damage=stat("damage")*weapon.damage*float(weapon.get("power",1.0))*stats.get(kind+"Power",1.0)*(1+stats.get("airDamage",0.0) if not player.is_on_floor() else 1.0)
+	# Every turret kind (shots, flames, wells, casts) gets the turret bonuses.
+	if weapon.turret: base_damage*=stat("turretDamage")*TURRET_POWER
 	if weapon.get("evolved",false) and (kind in SkillBook.KINDS or kind in ["horn","gravity","meteor"]): WeaponEvolution.flare(self,enemy_center(target))
 	if SkillBook.cast(self,weapon,kind,origin,target,base_damage): return
 	if kind=="horn":
@@ -1363,7 +1386,7 @@ func fire(weapon: Dictionary, origin: Vector3):
 		var critical = rules.rng.randf()<stat("crit")
 		if critical: career.bump("crits")
 		var rage = 1+stats.berserk*(1-hp/stats.maxHp)
-		var damage = base_damage*(stat("turretDamage") if weapon.turret else 1.0)*rage*(stat("critPower") if critical else 1.0)
+		var damage = base_damage*rage*(stat("critPower") if critical else 1.0)
 		projectiles.append({"node":node,"velocity":aim.rotated(Vector3.UP,spread)*stat("projectileSpeed"),"damage":damage,"critical":critical,"life":2.0 if kind=="boomerang" else float(mods.get("fuse",1)) if kind=="bomb" else effective_range/stat("projectileSpeed")+0.25,"kind":kind,"weapon_id":weapon.id,"payload":mods.get("payload",""),"area_scale":mods.get("areaScale",1),"hit":[],"hit_radius":.1*minf(2.5,stat("size"))*float(mods.get("shotScale",1)),"pierce":int(stats.pierce)+int(mods.get("extraPierce",0))+(8 if kind=="rail" else 3 if kind=="harpoon" else 2+int(stats.boomerangPierce) if kind=="boomerang" else 0),"bounce":int(stats.ricochet)+int(mods.get("extraBounce",0))+(3+int(stats.discBounces) if kind=="disc" else 0),"return":stats.boomerang>0 or kind=="boomerang" or mods.get("returning",false),"return_clock":.55})
 		projectiles[-1].evolved=weapon.get("evolved",false)
 		ShotFx.launch(projectiles[-1],kind,critical)
@@ -1891,9 +1914,9 @@ func update_pickups(delta: float):
 func burst(p: Vector3,color: Color,count: int):
 	CombatInk.burst(self,p,color,count)
 
-func explosion_fx(p: Vector3, radius_value: float):
+func explosion_fx(p: Vector3, radius_value: float, enemy_attack: bool=false):
 	if effects.size()>220: return
-	sound.effect("blast",p)
+	sound.effect("enemy-impact" if enemy_attack else "blast",p)
 	CombatInk.blast(self,p,radius_value)
 
 func beam(from: Vector3,to: Vector3,color: Color):
@@ -1967,6 +1990,8 @@ func update_combat(delta: float):
 		var origin = player.position+Vector3.UP*.9
 		if weapon.turret:
 			if not is_instance_valid(weapon.node): deploy_turret(weapon)
+			# A turret left far behind walks back to the hero by itself.
+			elif weapon.node.position.distance_to(player.position)>TURRET_FOLLOW: deploy_turret(weapon)
 			origin = weapon.node.position+Vector3.UP*.9
 			var target = nearest_enemy(origin,weapon.range)
 			if not target.is_empty(): weapon.node.rotation.y=atan2(origin.x-target.node.position.x,origin.z-target.node.position.z)
@@ -1976,7 +2001,7 @@ func update_combat(delta: float):
 			weapon.node.get_meta("model").rank=weapon.rank;weapon.node.get_meta("model").tick(delta)
 		if weapon.clock<=0:
 			fire(weapon,origin)
-			weapon.clock = 1.0/(weapon.rate*(stat("turretRate") if weapon.turret else stat("rate")))
+			weapon.clock = 1.0/(weapon.rate*(stat("turretRate")*TURRET_RATE if weapon.turret else stat("rate")))
 	for enemy in enemies:
 		if enemy.dead: continue
 		# Stagger large crowds; bosses and contact-range actors retain 30 Hz.
@@ -2134,11 +2159,13 @@ func update_combat(delta: float):
 		if preload("res://scripts/combat_tactics.gd").contact_tick(self,enemy,target_player,touching,enemy_delta):
 			enemy.node.get_meta("rig").attack=.25
 			# The Eclipse hits harder island by island: 1.5x, 2x, then 2.5x contact damage.
-			coop.damage_player(target_player.id,(18+realm*5 if enemy.boss else 11+realm*4)*enemy.damage*(1+enemy.get("biome",0)*.12)*((1.5+mini(realm,2)*.5) if events.get("eclipse",false) else 1.0),enemy.node.position,enemy.sound)
+			coop.damage_player(target_player.id,(18+realm*5 if enemy.boss else (11+realm*4)*ENEMY_DAMAGE_SCALE)*enemy.damage*(1+enemy.get("biome",0)*.12)*((1.5+mini(realm,2)*.5) if events.get("eclipse",false) else 1.0),enemy.node.position,enemy.sound)
 			if target_player.id==coop.local_id:
+				sound.effect("enemy-bite",enemy.node.position)
 				if enemy.get("biome",0)==1 and not buffs.has("poison"): player_poison=3
 				if enemy.get("biome",0)==4 and not buffs.has("fire"): player_fire=3
-				if enemy.get("biome",0)==3: player_chill=2
+				# Only bosses slow the hero, so a slow always has a visible cause.
+				if enemy.get("biome",0)==3 and enemy.boss: player_chill=2
 				if enemy.get("biome",0)==5: player_blind=2
 		if enemy.boss:
 			enemy.phase = 2 if enemy.hp<enemy.maxHp*.5 else 1
@@ -2228,7 +2255,7 @@ func update_combat(delta: float):
 				for id in coop.members:
 					if CoopSession.vector(coop.members[id].get("position",[])).distance_to(hazard.node.position)<hazard.radius: coop.damage_player(id,hazard.damage,hazard.node.position,"blast","poison" if hazard.get("style","")=="toxic" else "")
 			burst(hazard.node.position+Vector3.UP,Color("f69559"),10)
-			explosion_fx(hazard.node.position,hazard.radius)
+			explosion_fx(hazard.node.position,hazard.radius,not hazard.get("friendly",false))
 			match hazard.get("style",""):
 				"annihilation","orbital":
 					var titans=enemies.filter(func(e):return not e.dead and e.get("boss_id",-1)==8)
@@ -2919,7 +2946,7 @@ func run_smoke():
 	var report=FileAccess.open("user://smoke-results.json",FileAccess.WRITE)
 	if report!=null: report.store_string(JSON.stringify(checks,"  "));report.close()
 	print("NATIVE_SMOKE "+JSON.stringify(checks))
-	var failure = not checks.main_menu or not checks.opaque_ui or not checks.illustrated_icons or not checks.selection_preview or not checks.weapon_cards_fit or not checks.item_cards_fit or not checks.camera_look or not checks.menu_blocks_look or not checks.weapon_rank or not checks.weapon_mechanics or not checks.mouse_camera or not checks.xbox_prompts or not checks.settings_fit or checks.initial_enemies<6 or checks.chests!=24 or checks.first_price!=30 or checks.achievements!=117 or not checks.paid_once or not checks.one_item or not checks.weapon_limit or not checks.disk_save or not checks.free_price or not checks.garden or not checks.garden_goals or not checks.realm_preserves or not checks.three_realms or not checks.standalone
+	var failure = not checks.main_menu or not checks.opaque_ui or not checks.illustrated_icons or not checks.selection_preview or not checks.weapon_cards_fit or not checks.item_cards_fit or not checks.camera_look or not checks.menu_blocks_look or not checks.weapon_rank or not checks.weapon_mechanics or not checks.mouse_camera or not checks.xbox_prompts or not checks.settings_fit or checks.initial_enemies<6 or checks.chests!=24 or checks.first_price!=30 or checks.achievements!=93 or not checks.paid_once or not checks.one_item or not checks.weapon_limit or not checks.disk_save or not checks.free_price or not checks.garden or not checks.garden_goals or not checks.realm_preserves or not checks.three_realms or not checks.standalone
 	for key in checks:
 		if checks[key] is bool and not checks[key]: failure=true
 	get_tree().quit(1 if failure else 0)

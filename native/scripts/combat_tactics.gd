@@ -40,23 +40,29 @@ static func charge_movement(g,enemy: Dictionary,aim: Vector3,distance: float,del
 
 static func ranged_attack(g,enemy: Dictionary,target: Vector3):
 	if g.coop.active and not g.coop.hosting: return
-	enemy.attack=4.2+float(enemy.net_id%3)*.35
+	# Uneven timers, so a group of shooters does not fire in one volley.
+	enemy.attack=g.rules.rng.randf_range(3.8,6.2)
 	enemy.ranged_recovery=.65
 	enemy.node.get_meta("rig").attack=.8
+	g.sound.effect("enemy-shot",enemy.node.position)
 	var forward=(target-enemy.node.position).normalized();forward.y=0
 	var side=forward.cross(Vector3.UP).normalized()
-	var damage=(24+g.realm*7)*enemy.damage*g.realm_difficulty
+	var damage=(24+g.realm*7)*enemy.damage*g.realm_difficulty*g.ENEMY_DAMAGE_SCALE
 	var style=["roots","toxic","meteor","storm","lava","void"][enemy.biome]
+	# One shooter, one mark on the ground (user request, October 25: three marks per
+	# shot filled the ground at the start of an island).
 	var points=[target]
-	if enemy.biome in [0,3]: points.append(target+side*3.4);points.append(target-side*3.4)
-	elif enemy.biome in [2,5]: points.append(target+forward*3.8)
 	for i in range(points.size()):
 		var p=points[i];p.y=g.world.height_at(p.x,p.z)
 		var delay=1.05+i*.2
-		g.warn_at(p,1.7,delay,damage,style)
+		g.warn_at(p,1.9,delay,damage,style)
 		if g.coop.active: g.coop.broadcast({"type":"hazard","realm":g.realm,"position":CoopSession.array(p),"radius":1.7,"delay":delay,"damage":damage,"style":style})
 
-# Host-owned contact attacks commit to one target and can miss or be interrupted.
+# Host-owned contact attacks. Touching a melee enemy hurts at once (user request,
+# October 25: brushing past one used to cost nothing during its 0.45 s wind-up),
+# then again every CONTACT_REPEAT seconds while touching. Frozen or blinded
+# enemies do not hit.
+const CONTACT_REPEAT=.7
 static func contact_tick(g,enemy: Dictionary,target: Dictionary,touching: bool,delta: float) -> bool:
 	enemy.contact=maxf(0,float(enemy.get("contact",0))-delta)
 	var remaining=float(enemy.get("contact_windup",0))
@@ -71,9 +77,8 @@ static func contact_tick(g,enemy: Dictionary,target: Dictionary,touching: bool,d
 			enemy.contact=.7
 			return touching and int(enemy.get("contact_target",-1))==int(target.id)
 	elif touching and enemy.contact<=0:
-		enemy.contact_windup=.45;enemy.contact_target=target.id
-		enemy.node.get_meta("rig").attack=.45
-		contact_warning(enemy)
+		enemy.contact=CONTACT_REPEAT;enemy.contact_target=target.id
+		return true
 	return false
 
 static var contact_mesh: TorusMesh
