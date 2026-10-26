@@ -398,6 +398,9 @@ The user liked the Gloop Gazer test and asked for every enemy and the final boss
 - **Known flaky:** smoke `head_stomp` failed once (random spawned species, probably a shielded elite absorbing the stomp); passed on two reruns.
 - **Spell weapons** (tornado, black hole, thunderstorm, inferno and the like) keep their simple wand models; not remade.
 
+## Final boss: a giant floating head (user request, October 26)
+
+The user asked for a final boss like the floating heads of Rick and Morty S2E5, with the eyes as health orbs. Those are show characters, so this is an original design in that spirit (`ColossusRig`): a bald giant head floating out of a glowing portal ring, big ears, bulbous nose, wrinkled brow, a wide mouth of square teeth, and two giant floating hands. Its two huge bulging glass eyes are its health orbs (one liquid, black pupils, lids that blink and otherwise stay rolled back); they turn red, blue, orange with the phases, and the skin repaints. The hands do the sweeps and slams; the head head-butts (stomp), spins (tail), lunges, gapes (breath) and roars. The fight itself (ColossusFight) is unchanged. Evidence: colossus-review (all checks, `colossus-intro.png`, `colossus-sheet.png`), red-moon-review (now checks two hands, two eyes sharing the orb liquid, and the per-phase head and eye colour), boss-review, smoke.
 ## Player notes: 16 fixes (user list, October 25, after Build 23)
 
 1. [x] **Touching a melee enemy hurts at once.** Contact used a 0.45 s wind-up, so brushing past cost nothing. Now the first touch hits, then every 0.7 s while touching; a frozen or blinded enemy does not hit (`CombatTactics.contact_tick`). The old checks that contact "warns before damage" and "can be dodged" described the old spec and were replaced: integration `contact_hits_at_once`, `contact_stops_when_left`, `contact_repeats`, `freeze_cancels_contact`.

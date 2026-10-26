@@ -93,8 +93,9 @@ static func run(g):
 	# The Ashen Colossus: the cartoon giant, its posed parts and three phase paints.
 	checks.authored_giant=maximum.y-minimum.y>14 and maximum.x-minimum.x>8
 	var colossus=boss.node.get_meta("rig")
-	# The cartoon Colossus (October 25) poses its own parts instead of playing clips.
-	checks.baron_model=colossus is ColossusRig and colossus.arms_nodes.size()==2 and colossus.legs_nodes.size()==2 and colossus.tail.size()==5 and colossus.parts.has("jaw")
+	# The floating head (October 26): two hands, two eyes that are its health orbs
+	# sharing one liquid, and a jaw.
+	checks.baron_model=colossus is ColossusRig and colossus.hands.size()==2 and colossus.eyes.size()==2 and colossus.eyes.all(func(e):return e.material_override==colossus.orb_paint) and colossus.parts.has("jaw")
 	checks.steam_budget=colossus.skins.size()==3 and colossus.find_child("GlassCore",true,false)!=null
 	g.player.position=Vector3(0,g.world.height_at(0,28),28);g.pitch=.3
 	checks.small_map=g.world.shore_radius(Vector3.ZERO)==72 and g.hud.map_view.map_extent==85
@@ -144,7 +145,7 @@ static func run(g):
 	var phase_checks=[]
 	for step in [[1,.6],[2,.25]]:
 		boss.open_until=-1;g.hurt_enemy(boss,boss.hp-boss.maxHp*float(step[1]),"shot")
-		phase_checks.append(ColossusFight.phase(boss)==step[0] and rig.phase_index==step[0] and rig.parts.torso.mesh==ColossusRig.group(step[0],"torso"))
+		phase_checks.append(ColossusFight.phase(boss)==step[0] and rig.phase_index==step[0] and rig.parts.head.mesh==ColossusRig.group(step[0],"head") and rig.orb_paint.get_shader_parameter("liquid_color")==ColossusRig.ORB_COLORS[step[0]])
 	checks.phase_voices=phase_checks.size()==2 and phase_checks.all(func(value):return value)
 	# Calibrate health with real damage application; no mandatory five-minute invulnerability.
 	boss.open_until=-1;var original_hp=boss.hp;g.hurt_enemy(boss,300,"shot");checks.reference_dps=is_equal_approx(original_hp-boss.hp,300)
