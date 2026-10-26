@@ -4,9 +4,11 @@
 
 A vivid 3D survival game where a duck, a loaf of bread and an angry granny are perfectly reasonable hero choices. Explore strange places, grab unpredictable upgrades and become outrageously overpowered before the monsters catch you.
 
-**[Download Build 24 for Windows](https://github.com/rytiss78/wildforge/releases/tag/build-24)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
+**[Download Build 25 for Windows](https://github.com/rytiss78/wildforge/releases/tag/build-25)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
 
-**Build 24 (1.7.0) is now available as an alpha release.** Everything is a cartoon now: 60 original enemies including body-horror humanoid mutants, a new final boss, new realm bosses, new heroes, new weapons and weapon icons, all with health in glass orbs. Enemies hit harder but die faster, melee contact hurts at once, and danger zones are labelled. Everyone in a co-op party needs Build 24. [Build 24 notes and limits](native/docs/build24-release.md).
+**Build 25 (1.8.0) is now available as an alpha release.** The final boss is The Grand Noggin, a giant floating head whose eyes are its health. Mid-fight it demands a performance: dodge every mark for a big damage window, or watch it heal. Also new: the Rift Dash card, gibberish voices for every creature, and cartoon spell weapons. Everyone in a co-op party needs Build 25. [Build 25 notes and limits](native/docs/build25-release.md).
+
+**Build 24 (1.7.0)** made everything a cartoon: 60 original enemies including body-horror humanoid mutants, new realm bosses, new heroes, new weapons and weapon icons, all with health in glass orbs. Enemies hit harder but die faster, melee contact hurts at once, and danger zones are labelled. [Build 24 notes](native/docs/build24-release.md).
 
 **Build 21 (1.4.0)** brought weapon evolutions into gilded new forms, named spell-and-mutation synergies, and a fight mechanic for every biome: clover rings, spore fog, ice floors, wind gusts, lava vents and gravity rifts. Enemies dissolve into ink or shatter, every attack warning speaks one danger-red language, and each biome has its own light and ink. [Build 21 notes](native/docs/build21-release.md) · [Build 20 notes](native/docs/build20-release.md).
 
@@ -60,7 +62,7 @@ node scripts/native.mjs
 ./scripts/test-coop.ps1 -Packaged -RenderedClient
 ```
 
-Published downloads use sequential build numbers. This release is `Wildforge 1.7.0 — Build 24`, tag `build-24`, archive `Wildforge-1.7.0-Windows.zip` (with `godot_wry.dll` and its license, needed beside the executable for the video panel). The game remains a development alpha. Packaging includes `build-info.json` and a version-specific SHA-256 checksum. Pass `-BuildDirectory` and its exact `-SourceCommit` when packaging a verified staging directory.
+Published downloads use sequential build numbers. This release is `Wildforge 1.8.0 — Build 25`, tag `build-25`, archive `Wildforge-1.8.0-Windows.zip` (with `godot_wry.dll` and its license, needed beside the executable for the video panel). The game remains a development alpha. Packaging includes `build-info.json` and a version-specific SHA-256 checksum. Pass `-BuildDirectory` and its exact `-SourceCommit` when packaging a verified staging directory.
 
 WASD / left stick moves; mouse / right stick looks; Space / A jumps; Shift / RT dashes; Ctrl / B slams; E / X interacts; B / Y opens your build; Escape / Menu pauses. Weapons attack automatically. Florist plants while moving.
 
