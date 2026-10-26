@@ -9,7 +9,8 @@ const REFERENCE_DPS=300.0
 # 37.5 (October 24, user request): five times the Colossus's health.
 const HEALTH_MULTIPLIER=37.5
 const INTRO_SECONDS=3.6
-# The final boss is the Ashen Colossus (ColossusFight, ColossusRig): three phases.
+# The final boss is The Grand Noggin, a giant floating head (ColossusFight,
+# ColossusRig): three phases.
 const PHASE_NAMES=ColossusFight.PHASES
 
 static func setup(g):
@@ -99,7 +100,7 @@ static func defeated(g):
 	g.events.final_defeated=true;g.events.eclipse=true;g.events.eclipse_started=g.realm_time;g.events.eclipse_stage=0
 	g.events.final_ceremony=true;g.events.final_ceremony_until=g.realm_time+3.5;g.events.final_ceremony_announced=false
 	g.events.eclipse_started=g.events.final_ceremony_until;g.spawn_clock=99999
-	g.Journey.announce(g,"THE COLOSSUS FALLS","The Red Moon cracks beneath it.")
+	g.Journey.announce(g,"THE NOGGIN FALLS","The Red Moon cracks beneath it.")
 	CombatInk.wave(g,Vector3(0,g.world.height_at(0,0)+.2,0),58,Color("ffd16c"))
 	for i in range(8):
 		var x=cos(i*TAU/8)*16;var z=sin(i*TAU/8)*16
@@ -121,14 +122,14 @@ static func tick(g):
 			titan.node.position.y=lerpf(ground-11,ground,eased);titan.node.scale=Vector3.ONE*lerpf(.08,1.0,eased)
 		if progress>=1:
 			g.events.final_intro=false;g.world.environment.ambient_light_energy=.36;g.world.environment.adjustment_brightness=1.0
-			g.hud.tell("THE ASHEN COLOSSUS RISES",3)
+			g.hud.tell("THE GRAND NOGGIN DESCENDS",3)
 			var body=ColossusFight.rig(titan) if not titan.is_empty() else null
 			if body!=null: body.play("roar",.9,1.4,.9)
 	if replica:return
 	if g.events.get("final_defeated",false):
 		if g.events.get("final_ceremony",false) and g.realm_time>=float(g.events.final_ceremony_until):
 			g.events.final_ceremony=false;g.events.final_ceremony_announced=true;g.spawn_clock=0
-			g.Journey.announce(g,"ENDLESS ECLIPSE","The Colossus has fallen. Survive until the last light falls.")
+			g.Journey.announce(g,"ENDLESS ECLIPSE","The Noggin has fallen. Survive until the last light falls.")
 			for crack in g.events.get("final_cracks",[]):
 				if is_instance_valid(crack) and crack.material_override is StandardMaterial3D:
 					crack.material_override.albedo_color=Color(1,.62,.16,.96);crack.material_override.emission=Color("ffc357");crack.material_override.emission_energy_multiplier=4.0

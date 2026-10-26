@@ -135,7 +135,7 @@ func cosmetic_style(id: String) -> Dictionary:
 
 func set_boss_focus(id: int,name: String):
 	game.events.boss_focus_id=id;game.events.boss_focus_until=game.elapsed+4.0
-	game.hud.tell("THE COLOSSUS MARKS "+clean_player_name(name)+" · MOVE",3.0)
+	game.hud.tell("THE NOGGIN MARKS "+clean_player_name(name)+" · MOVE",3.0)
 	sync_local_nameplate()
 
 func name_changed():

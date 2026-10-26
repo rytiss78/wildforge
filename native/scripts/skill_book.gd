@@ -208,31 +208,12 @@ static func nova(g,point: Vector3) -> Node3D:
 		root.add_child(part)
 	return root
 
-# Held focus for each spell, built from the shared toon primitives so it can be
-# rendered into the weapon icon like every other weapon.
+# Held focus for each spell: a cartoon wand-gadget (CartoonWeapons "spell_<id>",
+# October 26) through StyleModel like every other weapon, so it gets the same toon
+# shading and ink outline, and is rendered into its weapon icon.
 static func build_model(model: WeaponModel) -> bool:
 	if not model.id in KINDS: return false
-	var gold=Color("dab377");var root=model.base;var tip=Vector3(0,.42,-.2)
-	ToonArt.tube(root,Color("6b4a35"),Vector3(0,.08,-.1),.04,.05,.5)
-	ToonArt.tube(root,gold,Vector3(0,.32,-.15),.07,.07,.05)
-	match model.id:
-		"tornado":
-			# A funnel of thin, offset layers widening upward.
-			for i in range(6): ToonArt.tube(root,Color("e4fbf5").darkened(.05+(i%2)*.14),tip+Vector3(sin(i*1.3)*.035,i*.065-.1,cos(i*1.3)*.02),.035+i*.04,.028+i*.04,.055)
-		"blackhole":
-			ToonArt.ball(root,Color("17121f"),tip,Vector3(.24,.24,.24))
-			var hoop=TorusMesh.new();hoop.inner_radius=.19;hoop.outer_radius=.24
-			var ring=ToonArt.part(root,hoop,COLORS.blackhole,tip);ring.rotation=Vector3(.5,0,.3)
-		"thunderstorm":
-			ToonArt.ball(root,Color("bfe8ff"),tip,Vector3(.16,.16,.16))
-			for i in range(3): ToonArt.ball(root,Color("8d97a8"),tip+Vector3((i-1)*.13,.13,0),Vector3(.13,.1,.12))
-			var bolt=BoxMesh.new();bolt.size=Vector3(.035,.2,.035)
-			var spark=ToonArt.part(root,bolt,Color("ffe36a"),tip+Vector3(.05,-.14,0));spark.rotation.z=.4
-		"inferno":
-			ToonArt.ball(root,Color("ffb347"),tip,Vector3(.18,.18,.18))
-			for i in range(6):
-				var flame=CylinderMesh.new();flame.top_radius=0;flame.bottom_radius=.05;flame.height=.16;flame.radial_segments=6
-				var ray=ToonArt.part(root,flame,Color("ff6a1c"),tip+Vector3(cos(i*TAU/6),sin(i*TAU/6),0)*.2);ray.rotation.z=i*TAU/6-PI/2
-	model.muzzle.position=tip;root.add_child(model.muzzle)
+	var solid=StyleModel.new();solid.setup("spell_"+model.id);model.base.add_child(solid)
+	model.muzzle.free();model.muzzle=solid.muzzle()
 	model.flash=ToonArt.ball(model.muzzle,COLORS[model.id].lightened(.2),Vector3.ZERO,Vector3(.16,.16,.16));model.flash.visible=false
 	return true

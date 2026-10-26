@@ -8,7 +8,7 @@ class_name CartoonWeapons
 # these models (render_weapon_icons.gd). Every other weapon builds on one of these.
 
 const INK=CartoonMesh.INK
-const ASSETS=["mint_pistol","weapon_shotgun","weapon_flame","weapon_poison","weapon_ice","weapon_rail","weapon_lightning","weapon_saw","weapon_rocket","weapon_ghost","weapon_flowers","weapon_turret","weapon_fire-turret","weapon_ice-turret","weapon_poison-turret","weapon_lightning-turret","weapon_rocket-turret","weapon_boomerang","weapon_disc","weapon_harpoon","weapon_gravity","weapon_horn","weapon_bubble","weapon_meteor","weapon_bomb","weapon_ninja-shuriken","weapon_smoke-censer","weapon_bottle-barrage","weapon_supra-backfire"]
+const ASSETS=["mint_pistol","weapon_shotgun","weapon_flame","weapon_poison","weapon_ice","weapon_rail","weapon_lightning","weapon_saw","weapon_rocket","weapon_ghost","weapon_flowers","weapon_turret","weapon_fire-turret","weapon_ice-turret","weapon_poison-turret","weapon_lightning-turret","weapon_rocket-turret","weapon_boomerang","weapon_disc","weapon_harpoon","weapon_gravity","weapon_horn","weapon_bubble","weapon_meteor","weapon_bomb","weapon_ninja-shuriken","weapon_smoke-censer","weapon_bottle-barrage","weapon_supra-backfire","spell_tornado","spell_blackhole","spell_thunderstorm","spell_inferno"]
 
 static func c(hex: String) -> Color: return Color(hex)
 
@@ -26,10 +26,37 @@ static func gadget(m: CartoonMesh,body: Color,glow: Color,barrel_end: float=-.55
 
 static func scene(asset: String) -> Node3D:
 	var s=CartoonScene.new();var m=s.paint(s.body,"WeaponPaint")
-	var id="gun" if asset=="mint_pistol" else asset.trim_prefix("weapon_")
+	var id="gun" if asset=="mint_pistol" else asset.trim_prefix("weapon_").trim_prefix("spell_")
 	var hue: Color=PowerIcon.color_for(id.trim_suffix("-turret") if id.ends_with("-turret") else id)
 	var muzzle=Vector3(0,.08,-.59)
-	if id.ends_with("-turret") or id=="turret":
+	if asset.begins_with("spell_"):
+		# The spells (SkillBook) are wand-gadgets: a grip, a shaft and a goofy little
+		# character at the tip, where the spell comes out.
+		var tip=Vector3(0,.42,-.2)
+		m.rod(Vector3(0,.08,-.02),Vector3(0,.3,-.15),.04,c("6b4a8a"));m.ring(Vector3(0,.3,-.15),.07,.04,c("ffd23f"),Vector3(.45,0,0))
+		m.ball(Vector3(0,.06,-.01),Vector3.ONE*.09,c("ffd23f"))
+		match id:
+			"tornado":
+				for i in range(5): m.ring(tip+Vector3(sin(i*1.3)*.02,i*.06-.08,0),.04+i*.035,.035,c("dffbff") if i%2==0 else c("9fe9ff"))
+				m.ball(tip+Vector3(0,-.02,0),Vector3.ONE*.08,c("7dfffb"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
+				m.eye(tip+Vector3(-.06,.18,-.15),.04);m.eye(tip+Vector3(.06,.17,-.15),.035,Vector3(.4,0,-1))
+			"blackhole":
+				m.ball(tip,Vector3.ONE*.24,c("17121f"));m.ring(tip,.2,.04,c("c97aff"),Vector3(.5,0,.3))
+				m.spots(tip,Vector3.ONE*.2,c("ff6bd5"),5,.04,61,true,false)
+				for k in range(3): var a=k*TAU/3;m.spike(Vector3(0,.3,-.15)+Vector3(cos(a),0,sin(a))*.05,tip+Vector3(cos(a),-.3,sin(a))*.14,.02,c("c0c0c8"))
+			"thunderstorm":
+				for q in [Vector3(-.09,0,0),Vector3(.09,.01,0),Vector3(0,.07,0),Vector3(0,-.02,.05)]: m.ball(tip+q,Vector3(.17,.14,.15),c("8d97a8"))
+				m.eye(tip+Vector3(-.05,.02,-.1),.03);m.eye(tip+Vector3(.05,.02,-.1),.03)
+				for side in [-1.0,1.0]: m.box(tip+Vector3(side*.05,.06,-.11),Vector3(.06,.012,.012),CartoonMesh.INK,CartoonMesh.BODY,Vector3(0,0,side*.5))
+				m.spike(tip+Vector3(.02,-.08,-.02),tip+Vector3(-.04,-.24,-.04),.035,c("ffe36a"),CartoonMesh.BODY,0.0,Vector2(0,1))
+			"inferno":
+				m.ball(tip,Vector3.ONE*.2,c("ffb347"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
+				for i in range(6):
+					var o=Vector3(cos(i*TAU/6),sin(i*TAU/6),0);m.spike(tip+o*.09,tip+o*.2,.045,c("ff6a1c"))
+				m.eye(tip+Vector3(-.04,.03,-.09),.025);m.eye(tip+Vector3(.04,.03,-.09),.025)
+				m.grin(tip+Vector3(0,-.04,-.08),.08,.03,3,false)
+		muzzle=tip
+	elif id.ends_with("-turret") or id=="turret":
 		# A tripod sentry with one eye; its gun sits on top.
 		for i in range(3):
 			var a=i*TAU/3+PI*.5;m.rod(Vector3(0,-.05,0),Vector3(cos(a)*.3,-.42,sin(a)*.3),.03,c("3a3040"))

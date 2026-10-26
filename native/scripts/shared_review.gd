@@ -309,7 +309,7 @@ static func run(g,host: bool):
 		send(g,"drop2_done",drop2)
 		checks.final_realm=await wait_for(g,func():return g.realm==3 and g.enemies.any(func(e):return e.get("boss_id",-1)==8))
 		var bosses=g.enemies.filter(func(e):return e.get("boss_id",-1)==8)
-		# The Ashen Colossus (October 24) replaced the Baron.
+		# The final boss (ColossusRig; The Grand Noggin since October 26) replaced the Baron.
 		checks.baron_model=not bosses.is_empty() and bosses[0].node.get_meta("rig") is ColossusRig
 		var intro_line=g.coop.test_messages.get("boss_phase_0",{})
 		checks.baron_intro_voice=intro_line.get("name","")==ColossusFight.PHASES[0]

@@ -1,7 +1,8 @@
 extends RefCounted
 class_name ColossusFight
 
-# The Ashen Colossus fight (user request, October 24): a huge monster in the Dark
+# The final boss fight (user request, October 24; since October 26 the boss is The
+# Grand Noggin, a giant floating head, ColossusRig): a huge monster in the Dark
 # Souls manner. It walks the hero down and commits to heavy, readable blows: every
 # attack has a body wind-up and red ground marks timed to the impact, and heavy
 # blows leave it open (OPEN_DAMAGE) while its core flares.
@@ -11,8 +12,8 @@ class_name ColossusFight
 # Phase changes roar, blast a shockwave and ignite the body. The host decides;
 # guests replay the same actions from "colossus_action" messages.
 
-const NAME="THE ASHEN COLOSSUS"
-const PHASES=["I · THE COLOSSUS WAKES","II · THE ASHES BURN","III · THE LAST EMBER"]
+const NAME="THE GRAND NOGGIN"
+const PHASES=["I · THE NOGGIN DESCENDS","II · THE NOGGIN BOILS","III · THE LAST TANTRUM"]
 const THRESHOLDS=[.65,.30]
 const OPEN_DAMAGE=1.35
 const SPEED=[1.0,.88,.75]
@@ -129,7 +130,7 @@ static func potions(g,enemy: Dictionary):
 	for i in range(POTIONS):
 		var at=enemy.node.position+Vector3.RIGHT.rotated(Vector3.UP,turn+i*TAU/POTIONS)*g.rules.rng.randf_range(9.0,14.0)
 		g.drop_consumable(on_arena(g,at),true,"health")
-	g.hud.tell("THE COLOSSUS SHEDS HEALTH POTIONS",3)
+	g.hud.tell("THE NOGGIN SHEDS HEALTH POTIONS",3)
 
 # Keep impacts and landings on the playable ground of the arena.
 static func on_arena(g,at: Vector3) -> Vector3:

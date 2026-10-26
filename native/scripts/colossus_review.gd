@@ -1,6 +1,6 @@
 extends RefCounted
 
-# The Ashen Colossus: the real Red Moon entry, its rise, every action with its red
+# The final boss (The Grand Noggin): the real Red Moon entry, its rise, every action with its red
 # marks, lunge and leap movement, both phase changes, the open-window damage bonus
 # and the boss bar. Rendered captures: colossus-intro.png and colossus-sheet.png
 # (seven actions caught mid-blow, plus phase III).

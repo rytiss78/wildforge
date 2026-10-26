@@ -14,7 +14,7 @@ const ROSTER=[
 ]
 
 static func entry(id: int) -> Dictionary:
-	if id==8: return {"name":"The Ashen Colossus","height":17.0,"radius":4.2,"speed":3.0,"cooldown":3.0,"style":"annihilation","role":"Ashen colossus · heavy committed blows, openings after the big ones, three phases"}
+	if id==8: return {"name":"The Grand Noggin","height":17.0,"radius":4.2,"speed":3.0,"cooldown":3.0,"style":"annihilation","role":"Giant floating head · its eyes show its health; heavy committed blows, openings after the big ones, three phases"}
 	return ROSTER[clampi(id,0,ROSTER.size()-1)]
 
 static func choose(seed_value: int,realm: int,biome: int,history: Array) -> int:

@@ -90,7 +90,7 @@ static func run(g):
 		for corner in range(8):
 			var point=mesh.global_transform*bounds.get_endpoint(corner)
 			minimum=minimum.min(point);maximum=maximum.max(point)
-	# The Ashen Colossus: the cartoon giant, its posed parts and three phase paints.
+	# The Grand Noggin: the floating head, its posed parts and three phase paints.
 	checks.authored_giant=maximum.y-minimum.y>14 and maximum.x-minimum.x>8
 	var colossus=boss.node.get_meta("rig")
 	# The floating head (October 26): two hands, two eyes that are its health orbs
@@ -151,7 +151,7 @@ static func run(g):
 	boss.open_until=-1;var original_hp=boss.hp;g.hurt_enemy(boss,300,"shot");checks.reference_dps=is_equal_approx(original_hp-boss.hp,300)
 	g.hurt_enemy(boss,boss.hp+1000,"shot")
 	checks.death_eclipse=g.events.get("final_defeated",false) and g.events.get("eclipse",false) and g.mode=="playing"
-	checks.baron_fall_event=g.events.get("final_ceremony",false) and g.events.announcement=="THE COLOSSUS FALLS"
+	checks.baron_fall_event=g.events.get("final_ceremony",false) and g.events.announcement=="THE NOGGIN FALLS"
 	g.realm_time=float(g.events.get("final_ceremony_until",0))+.01;g.Journey.tick(g)
 	checks.eclipse_transition=not g.events.get("final_ceremony",true) and g.events.announcement=="ENDLESS ECLIPSE" and int(g.events.eclipse_stage)>=1 and g.events.final_cracks.all(func(crack):return crack.material_override.emission.g>.5)
 	g.realm_time=660;g.Journey.tick(g)
