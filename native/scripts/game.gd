@@ -1614,6 +1614,7 @@ func hurt_enemy(enemy: Dictionary, damage: float, cause: String,mechanic: String
 		enemy.last_local_hit=elapsed
 		damage=MutationBook.modify_damage(self,enemy,damage)
 	if cause in ["hit","crit","melee","coop","sonic","lightning","explosion","meteor","burrow","stomp"]: blood_hit(enemy)
+	if cause not in ["poison","fire"]: CreatureVoice.hurt(self,enemy)
 	# Hit flash on enemy
 	if enemy.node.has_meta("rig"): enemy.node.set_meta("flash_timer",0.05)
 	# Status effect start sounds
@@ -1658,6 +1659,7 @@ func kill_enemy(enemy: Dictionary, cause: String):
 	enemy.hp=0;enemy.node.get_meta("rig").set_health(0,enemy.boss or enemy.health>=1.8)
 	coop.died(enemy,cause)
 	enemy.dead = true
+	CreatureVoice.died(self,enemy)
 	if is_instance_valid(enemy.get("charge_lane")): enemy.charge_lane.queue_free()
 	StatusFx.death(self,enemy)
 	if enemy.has("modifier"): EliteMods.died(self,enemy)
@@ -1779,6 +1781,48 @@ func take_damage(amount: float, source: Vector3=Vector3.ZERO, voice_type: String
 		elif coop.active: update.knocked_down()
 		else: hp=0;end_run(false)
 
+# Rift Dash (October 26): the dash opens a portal and the hero pops out RIFT_REACH
+# metres ahead (more per rank), stopping short of walls, with a blast at both ends.
+const RIFT_REACH=6.0
+const RIFT_BLAST=20.0
+var rift_paint: StandardMaterial3D
+
+func rift_dash(rank: int):
+	var start=player.position;var flat=Vector3(dash_direction.x,0,dash_direction.z).normalized()
+	if flat.length()<.5: return
+	var motion=flat*(RIFT_REACH+2.0*rank)
+	# Like the dash itself, the rift passes enemy bodies (layer 3) but not the world.
+	# The probe starts 0.6 m up so the ground the hero stands on does not stop it.
+	var lift=Vector3.UP*.6
+	var mask=player.collision_mask;player.collision_mask=mask&~4;player.position+=lift
+	var blocked=player.move_and_collide(motion,true)
+	player.collision_mask=mask;player.position=start
+	if blocked!=null: motion=blocked.get_travel()*.9
+	var end=start+motion
+	end.y=maxf(end.y,world.height_at(end.x,end.z)+.1)
+	player.position=end;player.reset_physics_interpolation()
+	for at in [start,end]:
+		damage_area(at,4.0,RIFT_BLAST*rank,"explosion")
+		rift_portal(at+Vector3.UP*1.1)
+	sound.effect("nova",end)
+
+# A glowing green portal (ring and swirl) turned to the camera, fading out.
+func rift_portal(at: Vector3):
+	if rift_paint==null:
+		rift_paint=StandardMaterial3D.new();rift_paint.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED;rift_paint.albedo_color=Color("7dff6a")
+		rift_paint.emission_enabled=true;rift_paint.emission=Color("7dff6a");rift_paint.emission_energy_multiplier=2.0
+		var swirl=StandardMaterial3D.new();swirl.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED;swirl.albedo_color=Color(.3,1,.45,.45)
+		swirl.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA;swirl.cull_mode=BaseMaterial3D.CULL_DISABLED;rift_paint.set_meta("swirl",swirl)
+	var hoop=TorusMesh.new();hoop.inner_radius=.85;hoop.outer_radius=1.1;hoop.rings=24;hoop.ring_segments=6
+	var ring=MeshInstance3D.new();ring.mesh=hoop;ring.material_override=rift_paint;ring.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var disc=CylinderMesh.new();disc.top_radius=.88;disc.bottom_radius=.88;disc.height=.02;disc.radial_segments=24;disc.rings=1
+	var fill=MeshInstance3D.new();fill.mesh=disc;fill.material_override=rift_paint.get_meta("swirl");fill.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;ring.add_child(fill)
+	add_child(ring);ring.position=at
+	var view=camera.global_position-at
+	if view.length()>.1 and absf(view.normalized().y)<.98: ring.basis=Basis.looking_at(-view.normalized(),Vector3.UP)*Basis(Vector3.RIGHT,PI*.5)
+	effects.append({"node":ring,"life":.6,"velocity":Vector3.ZERO,"stationary":true})
+	burst(at,Color("7dff6a"),10)
+
 func dash():
 	if dash_cooldown>0: return
 	dash_direction=preload("res://scripts/combat_tactics.gd").dash_vector(Input.get_vector("move_left","move_right","move_forward","move_back",.18),yaw,direction)
@@ -1793,6 +1837,7 @@ func dash():
 		if boss_active(): achievement_event("GHOST_DANGER")
 	if stats.burrow>0: burrow_time=.4;career.bump("burrows")
 	if stats.dashBlast>0: damage_area(player.position,4.5,stats.dashBlast,"explosion")
+	if stats.get("riftDash",0)>0: rift_dash(int(stats.riftDash))
 	MutationBook.event(self,"dash",player.position)
 	CombatInk.beam(self,player.position+Vector3.UP*.6,player.position+Vector3.UP*.6-dash_direction*3,Color("43eaff"))
 	burst(player.position+Vector3.UP*.5,Color("43eaff"),7)
@@ -2228,6 +2273,7 @@ func update_combat(delta: float):
 	SkillBook.tick(self,delta)
 	BiomeMechanics.tick(self,delta)
 	DeathFx.tick(self,delta)
+	CreatureVoice.tick(self)
 	if profile_crowd:
 		if not crowd_sections.has("skills"): crowd_sections.skills=[]
 		crowd_sections.skills.append((Time.get_ticks_usec()-skills_start)/1000.0)
@@ -2251,10 +2297,15 @@ func update_combat(delta: float):
 			player.move_and_collide((hazard.node.position-player.position).normalized()*delta*2)
 		if hazard.life<=0:
 			if hazard.get("friendly",false): damage_area(hazard.node.position,hazard.radius,hazard.damage,"meteor",{},str(hazard.get("weapon_id","meteor")))
-			elif not hazard.get("visual_only",false) and player.position.distance_to(hazard.node.position)<hazard.radius: take_damage(hazard.damage,hazard.node.position,"blast")
+			elif not hazard.get("visual_only",false) and player.position.distance_to(hazard.node.position)<hazard.radius:
+				take_damage(hazard.damage,hazard.node.position,"blast")
+				# A mark of the Noggin's performance found a player: the show is ruined.
+				if hazard.get("perform",false): ColossusFight.perform_hit(self)
 			if not hazard.get("friendly",false) and coop.active and coop.hosting:
 				for id in coop.members:
-					if CoopSession.vector(coop.members[id].get("position",[])).distance_to(hazard.node.position)<hazard.radius: coop.damage_player(id,hazard.damage,hazard.node.position,"blast","poison" if hazard.get("style","")=="toxic" else "")
+					if CoopSession.vector(coop.members[id].get("position",[])).distance_to(hazard.node.position)<hazard.radius:
+						coop.damage_player(id,hazard.damage,hazard.node.position,"blast","poison" if hazard.get("style","")=="toxic" else "")
+						if hazard.get("perform",false): ColossusFight.perform_hit(self)
 			burst(hazard.node.position+Vector3.UP,Color("f69559"),10)
 			explosion_fx(hazard.node.position,hazard.radius,not hazard.get("friendly",false))
 			match hazard.get("style",""):

@@ -996,6 +996,7 @@ func receive(sender: int,message):
 			ColossusFight.show_phase(game,clampi(int(message.get("phase",0)),0,2))
 			if test_mode:test_messages["boss_phase_"+str(int(message.get("phase",-1))) ]={"name":str(message.get("name","")),"index":int(message.get("index",-1))}
 		elif kind=="colossus_action" and int(message.get("realm",-1))==game.realm: ColossusFight.replay(game,message)
+		elif kind=="noggin_perform" and int(message.get("realm",-1))==game.realm: ColossusFight.show_perform(game,str(message.get("stage","")))
 		elif kind=="boss_voice" and int(message.get("realm",-1))==game.realm:
 			game.sound.boss_curse(vector(message.get("position",[])),int(message.get("index",10)),true)
 		elif kind=="damage":

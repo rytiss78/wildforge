@@ -56,6 +56,8 @@ var active=.4
 var recover=1.0
 var exposed=false
 var open_after=false
+# Seconds left of cracked eyes after a successful performance (they flash, open).
+var crack_time=0.0
 var roar_player=AudioStreamPlayer3D.new()
 
 func setup(model_name: String):
@@ -175,6 +177,10 @@ func play(name: String,windup_seconds: float,active_seconds: float,recover_secon
 func roar():
 	if roar_player.stream!=null: roar_player.play()
 
+# A successful performance cracks its eyes: they flash and stay wide open.
+func crack(seconds: float):
+	crack_time=seconds
+
 # Wind-up 0 -> 1, strike 0 -> 1, then recovery 1 -> 0.
 func stages() -> Vector3:
 	var t=action_time
@@ -215,6 +221,10 @@ func animate(delta: float,movement: Vector3,_on_floor: bool=true,_slamming: bool
 		pose(stages())
 		exposed=open_after and action_time>windup+active
 		if action_time>=windup+active+recover: action="";exposed=false
+	crack_time=maxf(0,crack_time-delta)
+	if crack_time>0:
+		exposed=true
+		for lid in lids: lid.rotation.x=1.2
 	orb_fill=move_toward(orb_fill,health,delta*.6)
 	orb_paint.set_shader_parameter("fill",orb_fill)
 	orb_paint.set_shader_parameter("hit",clampf(hurt*4.0+(.35+.25*sin(clock*12.0) if exposed else 0.0),0,1))
@@ -247,6 +257,16 @@ func pose(k: Vector3):
 			# The whole head spins round with its hands out like blades.
 			model.rotation.y=-TAU*s+.4*w
 			for i in range(2): hands[i].position.x=HAND_REST[i].x*(1.0+.5*maxf(w,s))
+		"perform":
+			# It conducts the show: hands beat time, the head bobs, the mouth sings.
+			var beat=maxf(w,s)
+			for i in range(2):
+				var side=-1.0 if i==0 else 1.0
+				hands[i].position=HAND_REST[i].lerp(Vector3(side*2.6,3.6+sin(action_time*4.83+i*PI)*1.2,-2.2),beat)
+				hands[i].rotation.z=side*sin(action_time*4.83)*.4*beat
+			floater.position.y+=absf(sin(action_time*4.83))*.35*beat
+			head_node.rotation.z=sin(action_time*2.4)*.12*beat
+			jaw.rotation.x=.08+(.3+.25*sin(action_time*9.66))*beat
 		"roar":
 			jaw.rotation.x=.05+.9*maxf(w,s);head_node.rotation.z=sin(clock*30.0)*.06*maxf(w,s)
 			for i in range(2): hands[i].position.y=HAND_REST[i].y+2.0*maxf(w,s)

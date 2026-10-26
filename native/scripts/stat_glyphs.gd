@@ -36,7 +36,7 @@ const STATS={
 	"interest":["fortune","coin"],"discount":["fortune","tag"],"keyPower":["fortune","key"],"coinRadius":["fortune","magnet"],
 	"chestBonus":["fortune","chest"],"luck":["fortune","clover"],"banana":["fortune","banana"],
 	"xpGain":["arcane","xp"],"pickup":["arcane","magnet"],"potionDuration":["arcane","potion"],"potionPower":["arcane","potion"],
-	"potionChance":["arcane","potion"],"auraDamage":["arcane","ring"],"nova":["arcane","ring"],"enemyPull":["arcane","pull"],
+	"potionChance":["arcane","potion"],"auraDamage":["arcane","ring"],"nova":["arcane","ring"],"enemyPull":["arcane","pull"],"riftDash":["arcane","pull"],
 	"enemyPush":["arcane","push"],"orbitDamage":["arcane","ring"],"drones":["engineering","turret"],
 	"turretDamage":["engineering","turret"],"turretRate":["engineering","turret"],"turretRange":["engineering","turret"],
 	"turretCount":["engineering","turret"],"turretLife":["engineering","turret"],"repair":["engineering","wrench"],

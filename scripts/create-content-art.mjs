@@ -109,6 +109,7 @@ const semantic={
  banana:'<path d="M32 20q40 91 75 30-1 67-52 54Q17 90 32 20z"/><path d="M36 40q-7 56 43 60" fill="none"/>',
  enemyPull:'<path d="M19 39l27 25-27 25M111 39 84 64l27 25M18 64h34M112 64H78" fill="none"/><circle cx="65" cy="64" r="12"/>',
  enemyPush:'<path d="m46 39-27 25 27 25M84 39l27 25-27 25M18 64h34M112 64H78" fill="none"/><circle cx="65" cy="64" r="12"/>',
+ riftDash:'<ellipse cx="30" cy="64" rx="13" ry="32" fill="none"/><ellipse cx="100" cy="64" rx="13" ry="32" fill="none"/><path d="M42 64h40m-12-13 13 13-13 13" fill="none"/>',
  potionPower:'<path d="M52 21h27v30l23 39q6 23-36 23-41 0-35-23l21-39z"/><path d="M43 76h45M62 83v22M51 94h22M49 31h32" fill="none"/>'
 };
 const aliases={execute:'bossDamage',berserk:'damage',salvage:'repair',coinRadius:'pickup',airControl:'speed',fallThreshold:'armor',jumpShield:'shield',fallGuard:'armor',landingHeal:'maxHp',slamHeal:'maxHp',potionChance:'luck',potionDuration:'rate',enemyPull:'enemyPull',enemyPush:'enemyPush'};

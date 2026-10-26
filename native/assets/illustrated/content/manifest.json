@@ -3114,6 +3114,15 @@
     "sha256": "9b91db789a7143490fdf09dbbdeb5f5cd0ee1d5006d676a99c06bc73bf90db98"
   },
   {
+    "id": "rift-dash-skill",
+    "path": "res://assets/illustrated/content/rift-dash-skill.svg",
+    "semantic": "riftDash",
+    "shape": -1,
+    "condition": "skill",
+    "source": "Original semantic vector geometry; intentional shared effect symbols",
+    "sha256": "91b4f5fa99e76f6e39d03ac5e77eac3338385e947df6f9dd6ca1d86a82ad4d62"
+  },
+  {
     "id": "augment-air-damage",
     "path": "res://assets/illustrated/content/augment-air-damage.svg",
     "semantic": "augment-air-damage",

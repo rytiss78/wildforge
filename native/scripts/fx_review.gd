@@ -300,6 +300,20 @@ static func run(g: Node3D):
 	charger.contact_windup=.4;preload("res://scripts/combat_tactics.gd").contact_warning(charger);charger.node.position=g.player.position+forward*3.0
 	await step(g,2);telegraphs.append(await frame(g,true))
 	checks.telegraph_sheet=sheet(telegraphs,"telegraphs")
+	# Rift Dash (October 26) through the real dash: a portal ring at each end of the
+	# jump, seen just after and a moment later.
+	for enemy in g.enemies:
+		if is_instance_valid(enemy.node): enemy.node.queue_free()
+	g.enemies.clear();clear_effects(g);await step(g,20)
+	var rifts=[];var rift_start=g.player.position
+	g.stats.riftDash=1.0;g.dash_cooldown=0.0;g.direction=side;g.dash()
+	var rings=g.effects.filter(func(e):return e.node is MeshInstance3D and e.node.mesh is TorusMesh).size()
+	await step(g,2);rifts.append(await frame(g,true))
+	await step(g,14);rifts.append(await frame(g,true))
+	checks.rift_portals=rings==2 and Vector2(g.player.position.x-rift_start.x,g.player.position.z-rift_start.z).length()>=4.0
+	await step(g,40)
+	checks.rift_portals_fade=not g.effects.any(func(e):return is_instance_valid(e.node) and e.node is MeshInstance3D and e.node.mesh is TorusMesh)
+	checks.rift_sheet=sheet(rifts,"rift");g.stats.riftDash=0.0
 	for weapon in g.equipped:
 		if is_instance_valid(weapon.get("node")): weapon.node.queue_free()
 	g.equipped.clear()

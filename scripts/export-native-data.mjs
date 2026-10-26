@@ -143,6 +143,10 @@ stats.banana=0;labels.banana='Banana Business';
 for(const kind of ['item','skill']) loot.push({id:'banana-'+kind,name:'Banana Business',title:'Banana Business',family:'Mobility',kind,effects:[{key:'banana',amount:.12,mode:'add'}]});
 stats.enemyPull=0;stats.enemyPush=0;labels.enemyPull='Attraction Pulse';labels.enemyPush='Repulsion Pulse';
 for(const [id,title,key,amount] of [['attraction-pulse','Attraction Pulse','enemyPull',2],['repulsion-pulse','Repulsion Pulse','enemyPush',3]]) loot.push({id:id+'-skill',name:title,title,family:'Arcane',kind:'skill',effects:[{key,amount,mode:'add'}]});
+// Rift Dash (October 26): each dash opens a portal and pops you out further ahead,
+// with a blast at both ends. Each copy adds a rank: farther jump, bigger blasts.
+stats.riftDash=0;labels.riftDash='Rift Dash';
+loot.push({id:'rift-dash-skill',name:'Rift Dash',title:'Rift Dash',family:'Mobility',kind:'skill',effects:[{key:'riftDash',amount:1,mode:'add'}]});
 const discoveries=[['BEACON','Signal Served','Defend an explored supply beacon.'],['MERCHANT','Window Shopping','Buy a positive upgrade from the wandering merchant.'],['MIMIC','Running Refund','Discover a fleeing mimic and its bonus coins.'],['REACTION','Questionable Chemistry','Trigger an elemental reaction.'],['RESCUE','Helping Hand','Rescue a downed party member.'],['BANANA','Slippery Business','Slip an enemy with Banana Business.']].map(([key,name,description])=>({id:'WF_'+key.toLowerCase(),name,description,key:'event_'+key,target:1,scope:'total',hidden:false}));
 // Template cards used to be named after their stat ("Power", "Health"), so up to
 // twelve identical names appeared in the pool. Each card is now named after its own

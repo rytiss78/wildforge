@@ -24,6 +24,21 @@ const DEADLY=2.5
 const POTIONS=3
 const POTION_SECONDS=60.0
 const POTION_HEAL=.4
+# The Noggin's performance (user request, October 26): about once a minute it stops
+# attacking and demands a show. A 3x3 grid of marks falls round every player on
+# each beat, one outer square left safe (shown in the gold of safe areas); the next wave follows the
+# player. If nobody is hit, its eyes crack and it takes PERFORM_BONUS damage for
+# PERFORM_OPEN seconds; if anyone is hit, it heals PERFORM_HEAL of its health.
+const PERFORM_FIRST=35.0
+const PERFORM_EVERY=60.0
+const PERFORM_WAVES=7
+const PERFORM_BEAT=1.3
+const PERFORM_WARN=1.2
+const PERFORM_CELL=4.2
+const PERFORM_DAMAGE=40.0
+const PERFORM_BONUS=2.0
+const PERFORM_OPEN=8.0
+const PERFORM_HEAL=.04
 
 static func phase(enemy: Dictionary) -> int:
 	return int(enemy.get("colossus_phase",0))
@@ -35,6 +50,7 @@ static func is_open(g,enemy: Dictionary) -> bool:
 	return g.realm_time>=float(enemy.get("open_from",-1)) and g.realm_time<float(enemy.get("open_until",-1))
 
 static func damage_scale(g,enemy: Dictionary) -> float:
+	if g.realm_time<float(enemy.get("perform_bonus_until",-1)): return PERFORM_BONUS
 	return OPEN_DAMAGE if is_open(g,enemy) else 1.0
 
 # Host: the attack clock ran out; pick the next blow for the target's distance.
@@ -148,6 +164,9 @@ static func tick(g,enemy: Dictionary):
 		enemy.node.position=at
 		if f>=1:
 			enemy.erase("colossus_move");g.hit_shake=maxf(g.hit_shake,.6)
+	perform_tick(g,enemy)
+	# No vents or meteors during a performance: the dodge pattern is the whole test.
+	if enemy.has("performing"): return
 	var p=phase(enemy)
 	if p>=1 and g.realm_time>=float(enemy.get("next_vents",g.realm_time+6)):
 		enemy.next_vents=g.realm_time+15.0
@@ -161,6 +180,76 @@ static func tick(g,enemy: Dictionary):
 			for i in range(5):
 				var offset=Vector3.RIGHT.rotated(Vector3.UP,g.rules.rng.randf()*TAU)*g.rules.rng.randf_range(0,9)
 				hazard(g,hero+offset,2.8,1.6+i*.2,70,"meteor")
+
+# Host, every frame: start the performance when it is due, drop its waves on the
+# beat, and judge it when the last wave has gone off.
+static func perform_tick(g,enemy: Dictionary):
+	if enemy.dead: return
+	if not enemy.has("next_perform"): enemy.next_perform=g.realm_time+PERFORM_FIRST;return
+	var show: Dictionary=enemy.get("performing",{})
+	if show.is_empty():
+		if g.realm_time>=float(enemy.next_perform) and not enemy.has("colossus_move") and g.realm_time>=float(enemy.get("recovery",0)): start_perform(g,enemy)
+		return
+	if int(show.waves_left)>0 and g.realm_time>=float(show.next_wave):
+		show.waves_left=int(show.waves_left)-1;show.next_wave=float(show.next_wave)+PERFORM_BEAT
+		for hero in heroes(g): perform_wave(g,hero)
+	if g.realm_time>=float(show.end): finish_perform(g,enemy)
+
+static func start_perform(g,enemy: Dictionary):
+	var length=PERFORM_WAVES*PERFORM_BEAT+PERFORM_WARN
+	enemy.performing={"waves_left":PERFORM_WAVES,"next_wave":g.realm_time+1.0,"end":g.realm_time+1.0+length,"failed":false}
+	enemy.colossus_queue=[];enemy.attack=length+3.0;enemy.recovery=g.realm_time+length+1.0;enemy.open_until=-1
+	var body=rig(enemy)
+	if body!=null: body.play("perform",.6,length,.6)
+	if g.coop.active and g.coop.hosting: g.coop.broadcast({"type":"colossus_action","realm":g.realm,"action":"perform","windup":.6,"active":length,"recover":.6,"open":false,"turn":enemy.node.rotation.y})
+	broadcast_perform(g,"start")
+
+# One beat: a 3x3 grid of marks round a hero, one outer square left safe.
+static func perform_wave(g,hero: Vector3):
+	var cells=[]
+	for dx in [-1,0,1]:
+		for dz in [-1,0,1]: cells.append(Vector2(dx,dz))
+	var safe=cells[[0,1,2,3,5,6,7,8][g.rules.rng.randi_range(0,7)]]
+	for cell in cells:
+		var at=hero+Vector3(cell.x,0,cell.y)*PERFORM_CELL
+		if cell==safe:
+			g.warn_at(on_arena(g,at),PERFORM_CELL*.45,PERFORM_WARN,0.0,"ally",true)
+			continue
+		hazard(g,at,PERFORM_CELL*.55,PERFORM_WARN,PERFORM_DAMAGE,"annihilation")
+		g.hazards[-1].perform=true
+
+# Host: a performance mark hit a player.
+static func perform_hit(g):
+	for enemy in g.enemies:
+		if enemy.get("boss_id",-1)==8 and enemy.has("performing"): enemy.performing.failed=true
+
+static func finish_perform(g,enemy: Dictionary):
+	var failed=bool(enemy.performing.failed);enemy.erase("performing")
+	enemy.next_perform=g.realm_time+PERFORM_EVERY;enemy.attack=2.0
+	if failed:
+		enemy.hp=minf(enemy.maxHp,enemy.hp+enemy.maxHp*PERFORM_HEAL)
+	else:
+		enemy.perform_bonus_until=g.realm_time+PERFORM_OPEN
+		enemy.open_from=g.realm_time;enemy.open_until=g.realm_time+PERFORM_OPEN
+		enemy.attack=PERFORM_OPEN*.6
+	broadcast_perform(g,"fail" if failed else "success")
+
+static func broadcast_perform(g,stage: String):
+	show_perform(g,stage)
+	if g.coop.active and g.coop.hosting: g.coop.broadcast({"type":"noggin_perform","realm":g.realm,"stage":stage})
+
+# Every machine: the call, the verdict, and the cracked eyes on a success.
+static func show_perform(g,stage: String):
+	match stage:
+		"start": g.Journey.announce(g,"THE NOGGIN DEMANDS A PERFORMANCE","Dodge every mark · stand on the gold square")
+		"success": g.Journey.announce(g,"BRAVO!","Its eyes crack · hit them now for double damage")
+		"fail": g.Journey.announce(g,"BOO!","The Noggin is disappointed and heals")
+	speak(g,{"start":"sing","success":"bravo","fail":"boo"}.get(stage,""))
+	if stage=="success":
+		for enemy in g.enemies:
+			if enemy.get("boss_id",-1)==8 and not enemy.dead:
+				var body=rig(enemy)
+				if body!=null: body.crack(PERFORM_OPEN)
 
 static func heroes(g) -> Array:
 	var result=[g.player.position]
@@ -195,7 +284,14 @@ static func show_phase(g,next: int):
 			var body=rig(enemy)
 			if body!=null: body.set_phase(next)
 	g.hit_shake=maxf(g.hit_shake,1.0)
-	if next>0: g.Journey.announce(g,NAME,PHASES[clampi(next,0,2)])
+	if next>0: g.Journey.announce(g,NAME,PHASES[clampi(next,0,2)]);speak(g,"roar")
+
+# Every machine: one of the Noggin's booming lines (CreatureVoice), from its head.
+static func speak(g,cue: String):
+	if cue.is_empty(): return
+	for enemy in g.enemies:
+		if enemy.get("boss_id",-1)==8 and not enemy.dead:
+			CreatureVoice.noggin(g,cue,enemy.node.position+Vector3.UP*4.2);return
 
 # Guest: replay the host's action on the local body.
 static func replay(g,message: Dictionary):

@@ -83,9 +83,41 @@ static func run(g):
 			await g.get_tree().process_frame
 		checks.potion_heals=g.hp>low+g.stats.maxHp*.3 and not g.consumables.has(potion)
 	else: checks.potion_heals=false
+	# The performance (October 26), through the real tick: standing still gets hit, so
+	# it fails and the Noggin heals; leaving every wave's marks wins it.
+	g.hazards.clear();boss.recovery=0;boss.erase("colossus_move");boss.hp=boss.maxHp*.8
+	var hp_before=boss.hp;boss.next_perform=g.realm_time-.1
+	await wait(g,.2)
+	checks.perform_starts=boss.has("performing") and body.action=="perform"
+	checks.noggin_sings=g.sound.noggin_voice.stream!=null and g.sound.noggin_voice.stream.resource_path.ends_with("noggin-sing.wav")
+	await wait(g,2.2)
+	g.get_viewport().get_texture().get_image().save_png("user://colossus-perform.png")
+	var show_length=ColossusFight.PERFORM_WAVES*ColossusFight.PERFORM_BEAT+ColossusFight.PERFORM_WARN+1.5
+	await wait(g,show_length-2.2)
+	checks.perform_fail_heals=not boss.has("performing") and boss.hp>hp_before
+	checks.noggin_boos=g.sound.noggin_voice.stream.resource_path.ends_with("noggin-boo.wav")
+	g.hazards.clear();boss.recovery=0;boss.next_perform=g.realm_time-.1
+	var spots=[ColossusFight.on_arena(g,Vector3(-25,0,15)),ColossusFight.on_arena(g,Vector3(25,0,15))];var spot=0;var started=false
+	var waves_seen=ColossusFight.PERFORM_WAVES
+	g.player.position=spots[0]+Vector3.UP*.5
+	var end=Time.get_ticks_msec()+(show_length+1.0)*1000
+	while Time.get_ticks_msec()<end and (boss.has("performing") or not started):
+		if g.mode=="paused": g.hud.close()
+		g.invulnerable=1e9;g.hp=g.stats.maxHp
+		if boss.has("performing"):
+			started=true
+			# A new wave fell round the hero: step out of it before it goes off.
+			if int(boss.performing.waves_left)<waves_seen:
+				waves_seen=int(boss.performing.waves_left);spot=1-spot
+				g.player.position=spots[spot]+Vector3.UP*.5;g.player.velocity=Vector3.ZERO
+		await g.get_tree().process_frame
+	checks.perform_success=not boss.has("performing") and is_equal_approx(ColossusFight.damage_scale(g,boss),ColossusFight.PERFORM_BONUS) and body.crack_time>0
+	checks.noggin_bravo=g.sound.noggin_voice.stream.resource_path.ends_with("noggin-bravo.wav")
+	boss.perform_bonus_until=-1;boss.open_until=-1
 	# Phases at 65% and 30% health.
 	g.hurt_enemy(boss,boss.hp-boss.maxHp*.6,"hit")
 	checks.phase_two=ColossusFight.phase(boss)==1 and body.phase_index==1
+	checks.noggin_roars=g.sound.noggin_voice.stream.resource_path.ends_with("noggin-roar.wav")
 	await wait(g,3.5)
 	g.hurt_enemy(boss,boss.hp-boss.maxHp*.25,"hit")
 	checks.phase_three=ColossusFight.phase(boss)==2 and body.phase_index==2

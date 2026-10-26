@@ -11,6 +11,9 @@ static func dummy(game: Node3D,offset: Vector3) -> Dictionary:
 
 static func setup(game: Node3D):
 	game.clear_entities();game.spawn_clock=1e9;game.mode="playing";game.realm_time=0.0;game.invulnerable=0.0
+	setup_hero(game)
+
+static func setup_hero(game: Node3D):
 	game.player.position=Vector3(0,game.world.height_at(0,0)+.05,0);game.player.velocity=Vector3.ZERO;game.knock_velocity=Vector3.ZERO
 
 static func event(game: Node3D,biome: int,at: Vector3,dir: Vector3=Vector3.RIGHT) -> Dictionary:
@@ -40,6 +43,11 @@ static func run(game: Node3D) -> Dictionary:
 	# Ice: the hero keeps sliding with no input; outside, they stop. Enemies slow.
 	setup(game);game.player.velocity=Vector3(8,0,0);run_frames(game,30,true);var dry=Vector2(game.player.velocity.x,game.player.velocity.z).length()
 	setup(game);var skater=dummy(game,Vector3(-2,0,0))
+	# The skater's body reaches the physics server only at the engine's next physics
+	# flush (these ticks are synchronous). Until then it stood at its random spawn
+	# spot, sometimes on the hero, who was lifted onto it and off the ice.
+	await game.get_tree().physics_frame
+	setup_hero(game)
 	var ice=event(game,2,game.player.position);run_frames(game,int(ice.warn*60)+5)
 	game.player.velocity=Vector3(8,0,0);run_frames(game,30,true);var icy=Vector2(game.player.velocity.x,game.player.velocity.z).length()
 	checks.biome_ice=icy>dry+2.0 and float(skater.slow)>=.45

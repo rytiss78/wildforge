@@ -132,7 +132,32 @@ static func run(game: Node3D):
 	var through=game.player.collision_mask&4==0
 	for i in range(20): game._physics_process(1.0/60.0)
 	checks.dash_through_enemies=through and game.player.collision_mask==5
+	# Rift Dash (October 26): the dash pops the hero out well ahead and blasts the start.
+	game.spawn_enemy(8);var rift_target=game.enemies[-1];var rift_start=game.player.position
+	rift_target.node.position=rift_start+Vector3(.8,0,.8);rift_target.hp=1e6;rift_target.maxHp=1e6;rift_target.freeze=5
+	game.stats.riftDash=1.0;game.dash_cooldown=0.0;game.invulnerable=5.0;var effects_before=game.effects.size()
+	game.dash()
+	var rift_moved=Vector2(game.player.position.x-rift_start.x,game.player.position.z-rift_start.z).length()
+	checks.rift_dash=rift_moved>=4.0 and rift_target.hp<1e6 and game.effects.size()>=effects_before+2
+	game.stats.riftDash=0.0
+	for i in range(20): game._physics_process(1.0/60.0)
 	game.invulnerable=0.0
+	# Creature voices (October 26): every species speaks, every line loads, bosses
+	# keep their own voices, and a kill through the real path plays a death line.
+	var voiced=true
+	for index in range(60): voiced=voiced and not CreatureVoice.voice_of({"model":"creature_%d_%d" % [index/10,index%10]}).is_empty()
+	var lines=true
+	for voice in ["squeak","gibber","burp","growl","honk","hiss","warble","groan"]:
+		for cue in ["chat","hurt","die"]:
+			for n in range(2):
+				var line=load(CreatureVoice.PATH+"%s-%s-%d.wav" % [voice,cue,n])
+				lines=lines and line is AudioStreamWAV and line.get_length()>.1 and line.get_length()<2.0
+	for cue in ["roar","sing","bravo","boo"]: lines=lines and load(CreatureVoice.PATH+"noggin-"+cue+".wav") is AudioStreamWAV
+	checks.creature_voices=voiced and lines and CreatureVoice.voice_of({"model":"creature_0_0","boss":true}).is_empty()
+	game.spawn_enemy(6);var talker=game.enemies[-1]
+	for channel in game.sound.creature_pool: channel.stop();channel.stream=null
+	game.kill_enemy(talker,"hit")
+	checks.creature_death_voice=game.sound.creature_pool.any(func(c):return c.stream!=null and c.stream.resource_path.contains("-die-"))
 	# Elite modifiers, each forced on a fresh elite through the real spawn path.
 	var elite_checks={}
 	for id in EliteMods.ORDER:
@@ -281,7 +306,7 @@ static func run(game: Node3D):
 	checks.merge(preload("res://scripts/mutation_checks.gd").run(game))
 	checks.merge(preload("res://scripts/evolution_checks.gd").run(game))
 	checks.merge(preload("res://scripts/synergy_checks.gd").run(game))
-	checks.merge(preload("res://scripts/biome_checks.gd").run(game))
+	checks.merge(await preload("res://scripts/biome_checks.gd").run(game))
 	checks.merge(preload("res://scripts/net_size_checks.gd").run(game))
 	var result={"checks":checks,"route_max_slope":worst_slope,"passed":checks.values().all(func(v):return bool(v))}
 	var file=FileAccess.open("user://big-update-results.json",FileAccess.WRITE);file.store_string(JSON.stringify(result,"  "));file.close()

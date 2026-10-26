@@ -6751,6 +6751,20 @@
       ]
     },
     {
+      "id": "rift-dash-skill",
+      "name": "Rift Dash",
+      "title": "Rift Dash",
+      "family": "Mobility",
+      "kind": "skill",
+      "effects": [
+        {
+          "key": "riftDash",
+          "amount": 1,
+          "mode": "add"
+        }
+      ]
+    },
+    {
       "id": "augment-air-damage",
       "name": "Skybound Gauntlet",
       "title": "Skybound Gauntlet",
@@ -14464,6 +14478,7 @@
     "banana": 0,
     "enemyPull": 0,
     "enemyPush": 0,
+    "riftDash": 0,
     "augment-air-damage": 0,
     "augment-air-rate": 0,
     "augment-air-speed": 0,
@@ -14970,6 +14985,7 @@
     "banana": "Banana Business",
     "enemyPull": "Attraction Pulse",
     "enemyPush": "Repulsion Pulse",
+    "riftDash": "Rift Dash",
     "augment-air-damage": "Skybound Gauntlet",
     "augment-air-rate": "Skybound Metronome",
     "augment-air-speed": "Skybound Boots",

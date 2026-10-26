@@ -35,6 +35,10 @@ var genre = "metal"
 var cache = {}
 var sfx_pool=[]
 var sfx_index=0
+# Creature gibberish (CreatureVoice): a few short-range voices plus one far-reaching
+# voice for The Grand Noggin.
+var creature_pool=[]
+var noggin_voice=AudioStreamPlayer3D.new()
 var pending_biome=""
 var weapon_loops={}
 var boss_voice=AudioStreamPlayer3D.new()
@@ -80,6 +84,9 @@ func setup(options: Dictionary):
 	voice.pitch_scale = 1.0
 	for i in range(12):
 		var channel=AudioStreamPlayer3D.new();channel.unit_size=7;channel.max_distance=75;channel.max_db=0;add_child(channel);sfx_pool.append(channel)
+	for i in range(4):
+		var channel=AudioStreamPlayer3D.new();channel.unit_size=5;channel.max_distance=40;channel.max_db=0;add_child(channel);creature_pool.append(channel)
+	noggin_voice.unit_size=18;noggin_voice.max_distance=140;noggin_voice.max_db=3;add_child(noggin_voice)
 
 func stream(name: String) -> AudioStream:
 	if not cache.has(name): cache[name] = load("res://assets/music/" + name + ".wav")
@@ -389,6 +396,25 @@ func effect(id: String,position: Vector3=Vector3.ZERO):
 	var channel=sfx_pool[sfx_index%sfx_pool.size()];sfx_index+=1
 	channel.global_position=get_parent().player.position if position==Vector3.ZERO else position
 	channel.stream=cache[key];channel.pitch_scale=rng.randf_range(.95,1.04) if weapon_samples.has(id) else 1.0;channel.volume_db=linear_to_db(float(settings.sfx));channel.play()
+
+# One creature voice line at a position. A free channel is used; an urgent line (a
+# death, the Noggin) takes the oldest busy one instead of being dropped. Returns
+# whether it played.
+func creature(path: String,position: Vector3,pitch: float,urgent: bool=false,boost_db: float=0.0) -> bool:
+	if float(settings.sfx)<=0 or creature_pool.is_empty(): return false
+	if not cache.has(path):
+		if not ResourceLoader.exists(path): return false
+		cache[path]=load(path)
+	var channel: AudioStreamPlayer3D=noggin_voice if path.contains("/noggin-") else null
+	if channel==null:
+		for candidate in creature_pool:
+			if not candidate.playing: channel=candidate;break
+	if channel==null:
+		if not urgent: return false
+		channel=creature_pool[0];creature_pool.push_back(creature_pool.pop_front())
+	channel.global_position=position;channel.stream=cache[path];channel.pitch_scale=clampf(pitch,.5,2.0)
+	channel.volume_db=linear_to_db(maxf(.0001,float(settings.sfx)))-4+boost_db;channel.play()
+	return true
 
 func weapon_loop(id: String,enabled: bool,position: Vector3):
 	if float(settings.sfx)<=0:
