@@ -748,6 +748,7 @@ func apply_reward_choice(player_id: int,reward_id: String,selected_id: String,se
 
 func receive(sender: int,message):
 	if not message is Dictionary or not message.get("type","") is String: return
+	if ExplosiveBarrels.receive(game,sender,message): return
 	if game.update.receive(sender,message): return
 	var kind=message.type
 	if kind=="test_shared":

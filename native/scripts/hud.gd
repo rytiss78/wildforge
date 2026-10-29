@@ -39,6 +39,7 @@ var turret_hints = HBoxContainer.new()
 var turret_status: Label
 var slam_status: Label
 var dash_status: Label
+var combo: ComboMeter
 # Ability readouts turn green when ready.
 const READY_GREEN=Color("7dff9a")
 var damage_feedback: Control
@@ -312,6 +313,8 @@ func setup(owner_game):
 	turret_status=label("",14,ThemeTokens.STAR_GOLD);turret_hints.add_child(turret_status)
 	slam_status=label("",14,ThemeTokens.STAR_GOLD);slam_status.position=LOADOUT.position+Vector2(400,56);root.add_child(slam_status)
 	dash_status=label("",14,ThemeTokens.STAR_GOLD);dash_status.position=LOADOUT.position+Vector2(400,34);root.add_child(dash_status)
+	# The combo meter on the right edge, under the map and timer.
+	combo=ComboMeter.new();combo.position=Vector2(1660,470);root.add_child(combo)
 	damage_feedback=preload("res://scripts/damage_feedback.gd").new();damage_feedback.game=game;damage_feedback.mouse_filter=Control.MOUSE_FILTER_IGNORE;root.add_child(damage_feedback)
 	prompt = label("",18,ThemeTokens.BIOME_ACCENTS.verdant.petal)
 	prompt.position = Vector2(540,682);prompt.size=Vector2(840,42)
@@ -644,6 +647,7 @@ func update(delta: float):
 	if toast_time > 0:
 		toast_time -= delta
 		if toast_time <= 0: toast.text = ""
+	combo.visible=not modal.visible and game.mode=="playing";combo.tick(delta)
 	update_hero_numbers(delta)
 	# Render damage numbers (2D UI - rise from bottom)
 	for damage_label in damage_labels: damage_label.visible=false
@@ -907,7 +911,7 @@ func pause_menu(ended: bool = false, win: bool = false):
 		extra+=" · Best run %02d:%02d" % [int(game.career.data.best.get("best_seconds",0))/60,int(game.career.data.best.get("best_seconds",0))%60]
 		extra+=" · Level %d" % game.career.data.best.get("max_level",0)
 		extra+=" · %d kills" % game.career.data.total.get("kills",0)
-	var box = open("YOU WON" if win else "TRY AGAIN" if ended else "PAUSED", "%s · %d coins · %d enemies · ★ %d%s" % [game.hero.name,game.gold,game.kills,game.level,extra])
+	var box = open("YOU WON" if win else "TRY AGAIN" if ended else "PAUSED", "%s · %d coins · %d enemies · best combo x%d · ★ %d%s" % [game.hero.name,game.gold,game.kills,combo.best,game.level,extra])
 	if ended: box.add_child(label(game.update.recap(),15))
 	# At the end of a run the run report sits beside the buttons (user request,
 	# October 25), instead of behind a RUN REPORT button.
@@ -1252,7 +1256,7 @@ func build_menu(return_to_pause: bool=false,detailed: bool=false):
 
 func run_report_summary() -> String:
 	var score=game.career.data.scores.filter(func(entry):return entry.id==game.run_id)
-	var summary="%d:%02d played · %d kills · %d gold · Deaths %d" % [int(game.elapsed)/60,int(game.elapsed)%60,game.kills,game.gold,game.death_count]
+	var summary="%d:%02d played · %d kills · best combo x%d · %d gold · Deaths %d" % [int(game.elapsed)/60,int(game.elapsed)%60,game.kills,combo.best,game.gold,game.death_count]
 	if not score.is_empty():
 		summary+=" · Score %d · Local rank #%d" % [score[0].score,game.career.data.scores.find(score[0])+1]
 	return summary

@@ -89,6 +89,7 @@ var pickups = []
 var chests = []
 var pots = []
 var harvestables = []
+var barrels = []  # ExplosiveBarrels
 var harvest_buffs={}
 var pools = []
 var skills = [] # active SkillBook casts
@@ -412,7 +413,7 @@ func clear_entities():
 	for drop in consumables:
 		if is_instance_valid(drop.node): drop.node.queue_free()
 	consumables.clear()
-	for list in [enemies,projectiles,pickups,chests,pots,harvestables,pools,effects,hazards,flowers,skills]:
+	for list in [enemies,projectiles,pickups,chests,pots,harvestables,pools,effects,hazards,flowers,skills,barrels]:
 		for item in list:
 			if is_instance_valid(item.node): item.node.queue_free()
 		list.clear()
@@ -457,6 +458,7 @@ func start_run(shared_seed: int=-1):
 	health_damage = 0
 	death_count = 0
 	kills = 0
+	if is_instance_valid(hud) and hud.combo: hud.combo.reset()
 	gold = 0
 	paid_chests = 0
 	run_bosses = 0
@@ -526,6 +528,7 @@ func enter_realm(index: int,broadcast_transition: bool=true):
 	if realm<3:
 		make_chests()
 		make_harvestables()
+		ExplosiveBarrels.setup(self)
 	make_gate()
 	update.realm_started()
 	if realm<3: Hunt.setup(self)
@@ -1666,6 +1669,7 @@ func kill_enemy(enemy: Dictionary, cause: String):
 	Hunt.defeated(self,enemy)
 	if enemy.boss or enemy.get("elite",false) or rules.rng.randf()<.03: drop_consumable(enemy.node.position,enemy.boss)
 	kills += 1
+	if hud.combo: hud.combo.kill()
 	var enemy_kind="Boss" if enemy.boss else str(enemy.get("name",enemy.get("model","Unknown")))
 	kill_types[enemy_kind]=int(kill_types.get(enemy_kind,0))+1
 	career.bump("kills")
@@ -1717,6 +1721,7 @@ func kill_enemy(enemy: Dictionary, cause: String):
 	DeathFx.start(self,enemy,cause,landing)
 
 func damage_area(origin: Vector3,radius: float,damage: float,cause: String,excluded: Dictionary = {},source: String=""):
+	if cause in ["explosion","slam","meteor","burrow","lightning","stomp"] and not barrels.is_empty(): ExplosiveBarrels.area(self,origin,radius)
 	for enemy in enemies.duplicate():
 		if enemy != excluded and not enemy.dead and origin.distance_to(melee_contact(enemy,origin)) < radius:
 			if cause=="slam": update_reaction(enemy,"slam",damage)
@@ -1746,6 +1751,7 @@ func take_damage(amount: float, source: Vector3=Vector3.ZERO, voice_type: String
 	# Prevent sudden unavoidable one-hit deaths without weakening repeated attacks.
 	if hp>=stats.maxHp*.95 and taken>=hp: taken=stats.maxHp*.85
 	hp -= taken
+	if taken>0 and hud.combo: hud.combo.hit()
 	hud.hero_number(absorbed,"shield");hud.hero_number(taken,"damage")
 	last_damage_taken=taken;damage_feedback_time=.65
 	damage_feedback_strength=clampf((taken+absorbed*.3)/maxf(1,stats.maxHp)*3,.22,1)
@@ -2234,6 +2240,7 @@ func update_combat(delta: float):
 			if shot.node.position.distance_to(player.position+Vector3.UP*.9)<.6: shot.life=0
 		var shot_start: Vector3=shot.node.position
 		shot.node.position += shot.velocity*delta
+		if not barrels.is_empty(): ExplosiveBarrels.shot(self,shot_start,shot.node.position)
 		ShotFx.follow(self,shot,shot.velocity,delta)
 		if ShotShapes.faces_camera(str(shot.get("weapon_id",""))):
 			# Thrown stars turn their face to the camera and spin around it, or the low
@@ -2274,6 +2281,7 @@ func update_combat(delta: float):
 	BiomeMechanics.tick(self,delta)
 	DeathFx.tick(self,delta)
 	CreatureVoice.tick(self)
+	ExplosiveBarrels.tick(self,delta)
 	if profile_crowd:
 		if not crowd_sections.has("skills"): crowd_sections.skills=[]
 		crowd_sections.skills.append((Time.get_ticks_usec()-skills_start)/1000.0)

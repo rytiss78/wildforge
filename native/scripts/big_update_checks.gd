@@ -158,6 +158,32 @@ static func run(game: Node3D):
 	for channel in game.sound.creature_pool: channel.stop();channel.stream=null
 	game.kill_enemy(talker,"hit")
 	checks.creature_death_voice=game.sound.creature_pool.any(func(c):return c.stream!=null and c.stream.resource_path.contains("-die-"))
+	# Combo meter (October 29): real kills raise it, a hit that costs health breaks it,
+	# the best of the run stays.
+	game.hud.combo.reset()
+	for i in range(4):
+		game.spawn_enemy(6);game.kill_enemy(game.enemies[-1],"hit")
+	var combo_up=game.hud.combo.count==4 and game.hud.combo.number.visible
+	var combo_dodge=game.stats.get("dodge",0.0);game.stats.dodge=0.0;game.shield_hp=0.0
+	game.invulnerable=0.0;var combo_hp=game.hp;game.take_damage(1.0,game.player.position+Vector3(2,0,0));game.stats.dodge=combo_dodge
+	checks.combo_meter=combo_up and game.hp<combo_hp and game.hud.combo.count==0 and game.hud.combo.best==4 and game.hud.combo.lost.text.contains("4")
+	game.hp=combo_hp;game.invulnerable=5.0
+	# Red barrels (October 29): placed on the island; a shot lights one, its blast
+	# hurts an enemy and the hero, and sets off the barrel beside it.
+	var placed=game.barrels.size()
+	if placed<2: ExplosiveBarrels.setup(game)
+	placed=game.barrels.size()
+	var first_barrel=game.barrels[0];var second_barrel=game.barrels[1];var spot=game.player.position+Vector3(3.5,0,0)
+	first_barrel.node.position=spot;second_barrel.node.position=spot+Vector3(4.5,0,0)
+	game.spawn_enemy(6);var blasted=game.enemies[-1];blasted.node.position=spot+Vector3(0,0,1.5);blasted.hp=1e6;blasted.maxHp=1e6
+	game.stats.dodge=0.0;game.shield_hp=0.0;game.invulnerable=0.0;var barrel_hp=game.hp
+	ExplosiveBarrels.shot(game,spot+Vector3(-2,.6,0),spot+Vector3(2,.6,0))
+	var lit=float(first_barrel.fuse)>=0
+	for i in range(40):
+		ExplosiveBarrels.tick(game,1.0/60.0)
+		game.invulnerable=0.0
+	checks.barrels=placed>=ExplosiveBarrels.SPOTS and lit and blasted.hp<1e6 and game.hp<barrel_hp and not game.barrels.has(first_barrel) and not game.barrels.has(second_barrel)
+	game.stats.dodge=combo_dodge;game.hp=combo_hp;game.invulnerable=5.0
 	# Elite modifiers, each forced on a fresh elite through the real spawn path.
 	var elite_checks={}
 	for id in EliteMods.ORDER:

@@ -237,8 +237,9 @@ static func run(g: Node3D):
 			await step(g,60)
 	MutationBook.reset(g)
 	checks.synergy_sheet=sheet(synergies,"synergies")
-	# Deaths: ink dissolve (plain hit, poison) and shatter (frost, crit), each
-	# early and late in the effect; then everything must clean up.
+	# Deaths: creature styles (plain hit, poison; October 29, they replaced the ink
+	# dissolve for creatures) and shatter (frost, crit), each early and late in the
+	# effect; then everything must clean up.
 	var deaths=[];var dissolving=false
 	for enemy in g.enemies:
 		if is_instance_valid(enemy.node): enemy.node.queue_free()
@@ -262,8 +263,25 @@ static func run(g: Node3D):
 			var at=g.camera.unproject_position(spot)*shot_size/g.get_viewport().get_visible_rect().size-Vector2(shot_size.x*.14,shot_size.y*.17)
 			at=at.clamp(Vector2.ZERO,shot_size*.72);image=image.get_region(Rect2i(Vector2i(at),Vector2i(shot_size*Vector2(.28,.34))));image.resize(CELL.x,CELL.y,Image.INTERPOLATE_LANCZOS);deaths.append(image)
 			if moment==8:
-				dissolving=dissolving or g.death_fx.any(func(e):return e.kind=="ink" and e.paint!=null and float(e.paint.get_shader_parameter("dissolve"))>0.1)
-				checks["death_"+cause]=g.death_fx.any(func(e):return e.kind==("shard" if cause in ["ice","crit"] else "ink"))
+				checks["death_"+cause]=g.death_fx.any(func(e):return (e.kind=="shard") if cause in ["ice","crit"] else DeathFx.STYLE_LIFE.has(e.kind))
+	await step(g,150)
+	# The four creature styles side by side (pop, deflate, melt, splat), each
+	# victim given a species whose voice has that style.
+	var style_models={"pop":"creature_0_3","deflate":"creature_1_3","melt":"creature_1_9","splat":"creature_0_0"}
+	var styled=[];var seen={}
+	for style in style_models:
+		g.spawn_enemy(12);var enemy=g.enemies[-1]
+		var p=g.player.position+forward*6.0+side*(float(styled.size())-1.5)*2.6;p.y=g.world.height_at(p.x,p.z)
+		enemy.node.position=p;enemy.speed=0.0;enemy.attack=1e9;enemy.contact=1e9;enemy.damage=0.0;enemy.hp=1e6;enemy.maxHp=1e6;enemy.freeze=0.0;enemy.model=style_models[style]
+		styled.append(enemy)
+	await step(g,20)
+	for enemy in styled: g.kill_enemy(enemy,"hit")
+	for e in g.death_fx: seen[e.kind]=true
+	for moment in [5,12,28]:
+		await step(g,moment);deaths.append(await frame(g,true))
+		for e in g.death_fx:
+			if e.kind=="splat" and e.paint!=null and float(e.paint.get_shader_parameter("dissolve"))>0.1: dissolving=true
+	checks.death_styles=style_models.keys().all(func(k):return seen.has(k))
 	checks.death_dissolve_shader=dissolving
 	await step(g,150)
 	checks.death_cleanup=g.death_fx.is_empty()
@@ -314,6 +332,18 @@ static func run(g: Node3D):
 	await step(g,40)
 	checks.rift_portals_fade=not g.effects.any(func(e):return is_instance_valid(e.node) and e.node is MeshInstance3D and e.node.mesh is TorusMesh)
 	checks.rift_sheet=sheet(rifts,"rift");g.stats.riftDash=0.0
+	# Red barrels (October 29): a pair in view, then the shot one and its chain.
+	if g.barrels.size()<2: ExplosiveBarrels.setup(g)
+	var keg=g.barrels[0];var keg_two=g.barrels[1]
+	var keg_at=g.player.position+forward*7.0;keg_at.y=g.world.height_at(keg_at.x,keg_at.z)
+	keg.node.position=keg_at;keg_two.node.position=keg_at+side*2.4;keg_two.node.position.y=g.world.height_at(keg_two.node.position.x,keg_two.node.position.z)
+	await step(g,6);var kegs=[await frame(g,true)]
+	g.invulnerable=1e9;ExplosiveBarrels.shot(g,keg_at+Vector3(-2,.6,0),keg_at+Vector3(2,.6,0))
+	await step(g,8);kegs.append(await frame(g,true))
+	await step(g,8);kegs.append(await frame(g,true))
+	await step(g,10);kegs.append(await frame(g,true))
+	checks.barrel_chain=not g.barrels.has(keg) and not g.barrels.has(keg_two)
+	checks.barrel_sheet=sheet(kegs,"barrels")
 	for weapon in g.equipped:
 		if is_instance_valid(weapon.get("node")): weapon.node.queue_free()
 	g.equipped.clear()
