@@ -66,5 +66,6 @@ static func tick(game: Node3D):
 	if not near.is_empty(): speak(game,near[randi()%near.size()],"chat")
 
 # The Grand Noggin's booming lines: roar, sing, bravo, boo.
-static func noggin(game: Node3D,cue: String,position: Vector3):
-	game.sound.creature(PATH+"noggin-"+cue+".wav",position,1.0,true,6.0)
+# boost_db: the intro plays them quieter (user report, October 29: deafening).
+static func noggin(game: Node3D,cue: String,position: Vector3,boost_db: float=0.0):
+	game.sound.creature(PATH+"noggin-"+cue+".wav",position,1.0,true,boost_db)

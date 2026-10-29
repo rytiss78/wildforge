@@ -89,9 +89,9 @@ func _process(delta: float):
 	noggin.animate(delta,Vector3.ZERO,true)
 	if time>=ROAR and not roared:
 		roared=true;noggin.play("roar",.2,1.4,.8)
-		CreatureVoice.noggin(game,"roar",game.camera.position+Vector3(0,0,-6))
+		CreatureVoice.noggin(game,"roar",noggin.global_position+Vector3.UP*4.2,-8.0)
 	if time>=TITLE and not titled:
-		titled=true;CreatureVoice.noggin(game,"bravo",game.camera.position+Vector3(0,0,-6))
+		titled=true;CreatureVoice.noggin(game,"bravo",noggin.global_position+Vector3.UP*4.2,-8.0)
 	# The title slams in from big, then settles with a bounce.
 	var slam=clampf((time-TITLE)/.35,0,1)
 	var bounce=sin(clampf(time-TITLE-.35,0,1)*PI*3.0)*.06 if slam>=1.0 else 0.0

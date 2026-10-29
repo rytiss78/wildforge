@@ -86,7 +86,7 @@ func setup(options: Dictionary):
 		var channel=AudioStreamPlayer3D.new();channel.unit_size=7;channel.max_distance=75;channel.max_db=0;add_child(channel);sfx_pool.append(channel)
 	for i in range(4):
 		var channel=AudioStreamPlayer3D.new();channel.unit_size=5;channel.max_distance=40;channel.max_db=0;add_child(channel);creature_pool.append(channel)
-	noggin_voice.unit_size=18;noggin_voice.max_distance=140;noggin_voice.max_db=3;add_child(noggin_voice)
+	noggin_voice.unit_size=12;noggin_voice.max_distance=140;noggin_voice.max_db=0;add_child(noggin_voice)
 
 func stream(name: String) -> AudioStream:
 	if not cache.has(name): cache[name] = load("res://assets/music/" + name + ".wav")
