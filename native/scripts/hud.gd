@@ -40,6 +40,7 @@ var turret_status: Label
 var slam_status: Label
 var dash_status: Label
 var combo: ComboMeter
+var rescue_code: RescueCode
 # Ability readouts turn green when ready.
 const READY_GREEN=Color("7dff9a")
 var damage_feedback: Control
@@ -315,6 +316,8 @@ func setup(owner_game):
 	dash_status=label("",14,ThemeTokens.STAR_GOLD);dash_status.position=LOADOUT.position+Vector2(400,34);root.add_child(dash_status)
 	# The combo meter on the right edge, under the map and timer.
 	combo=ComboMeter.new();combo.position=Vector2(1660,470);root.add_child(combo)
+	# The co-op rescue code, centred above the interaction prompt.
+	rescue_code=RescueCode.new();rescue_code.position=Vector2(960-rescue_code.size.x*.5,610);root.add_child(rescue_code)
 	damage_feedback=preload("res://scripts/damage_feedback.gd").new();damage_feedback.game=game;damage_feedback.mouse_filter=Control.MOUSE_FILTER_IGNORE;root.add_child(damage_feedback)
 	prompt = label("",18,ThemeTokens.BIOME_ACCENTS.verdant.petal)
 	prompt.position = Vector2(540,682);prompt.size=Vector2(840,42)
@@ -585,7 +588,7 @@ func update(delta: float):
 	if rescue_visible:
 		var progress=float(game.update.rescue_progress.get(rescue_id,game.update.rescue_progress.get(str(rescue_id),0.0)))
 		rescue_meter.value=clampf(progress,0,3)
-		rescue_text.text=("BEING REVIVED" if game.update.downed else "REVIVING FRIEND")+"  ·  %.1f / 3.0s" % progress
+		rescue_text.text=("BEING REVIVED" if game.update.downed else "REVIVING FRIEND")+"  ·  CODE %d / %d" % [roundi(progress/3.0*RescueCode.LENGTH),RescueCode.LENGTH]
 	coins.text = "%d gold  ·  Chest %d  ·  %d left" % [game.gold,game.rules.chest_price(game.paid_chests,game.stats.discount),game.chests.filter(func(c):return not c.opened and not c.get("destroyed",false)).size()]
 	box_counter.visible=false
 	weapons.refresh()
@@ -648,6 +651,7 @@ func update(delta: float):
 		toast_time -= delta
 		if toast_time <= 0: toast.text = ""
 	combo.visible=not modal.visible and game.mode=="playing";combo.tick(delta)
+	rescue_code.visible=not modal.visible and game.mode=="playing" and rescue_code.target!=0
 	update_hero_numbers(delta)
 	# Render damage numbers (2D UI - rise from bottom)
 	for damage_label in damage_labels: damage_label.visible=false

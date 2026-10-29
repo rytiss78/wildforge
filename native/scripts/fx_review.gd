@@ -344,6 +344,12 @@ static func run(g: Node3D):
 	await step(g,10);kegs.append(await frame(g,true))
 	checks.barrel_chain=not g.barrels.has(keg) and not g.barrels.has(keg_two)
 	checks.barrel_sheet=sheet(kegs,"barrels")
+	# The co-op rescue code (October 29) beside a downed friend, two arrows in.
+	var friend=990;g.coop.members[friend]={"position":CoopSession.array(g.player.position+side*1.5),"hp":0.0}
+	g.update.downed_ids[friend]=true;g.update.rescue_interrupt_until=-1.0;g.update.rescue_tick(1.0/60.0)
+	for i in range(2): g.hud.rescue_code.press(g.hud.rescue_code.code[i])
+	await step(g,2);checks.rescue_code_shown=g.hud.rescue_code.visible;checks.rescue_sheet=sheet([await frame(g,true)],"rescue")
+	g.coop.members.erase(friend);g.update.downed_ids.erase(friend);g.update.rescue_tick(1.0/60.0)
 	for weapon in g.equipped:
 		if is_instance_valid(weapon.get("node")): weapon.node.queue_free()
 	g.equipped.clear()

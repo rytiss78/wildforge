@@ -184,6 +184,25 @@ static func run(game: Node3D):
 		game.invulnerable=0.0
 	checks.barrels=placed>=ExplosiveBarrels.SPOTS and lit and blasted.hp<1e6 and game.hp<barrel_hp and not game.barrels.has(first_barrel) and not game.barrels.has(second_barrel)
 	game.stats.dodge=combo_dodge;game.hp=combo_hp;game.invulnerable=5.0
+	# Rescue code (October 29): beside a downed friend the code appears; half of it
+	# shows half progress, a wrong arrow starts over, a hit resets it, and the full
+	# code revives through the host's tick.
+	var friend=990;var friend_at=game.player.position+Vector3(1.5,0,0)
+	game.coop.members[friend]={"position":CoopSession.array(friend_at),"hp":0.0}
+	game.update.downed_ids[friend]=true;game.mode="playing";game.update.rescue_interrupt_until=-1.0
+	game.update.rescue_tick(1.0/60.0)
+	var pad: RescueCode=game.hud.rescue_code
+	var shown=pad.target==friend and pad.code.size()==RescueCode.LENGTH
+	for i in range(3): pad.press(pad.code[i])
+	game.update.rescue_tick(1.0/60.0);game.update.host_tick(1.0/60.0)
+	var halfway=is_equal_approx(float(game.update.rescue_progress.get(friend,0)),1.5)
+	var wrong=RescueCode.DIRS.filter(func(d):return d!=pad.code[3])[0]
+	var restarted=pad.press(wrong)=="wrong" and pad.step==0
+	pad.press(pad.code[0]);pad.interrupt();var reset_by_hit=pad.step==0
+	for i in range(RescueCode.LENGTH): pad.press(pad.code[i])
+	game.update.rescue_tick(1.0/60.0);game.update.host_tick(1.0/60.0)
+	checks.rescue_code=shown and halfway and restarted and reset_by_hit and not game.update.downed_ids.has(friend)
+	game.coop.members.erase(friend);game.update.downed_ids.erase(friend);game.update.rescue_tick(1.0/60.0)
 	# Elite modifiers, each forced on a fresh elite through the real spawn path.
 	var elite_checks={}
 	for id in EliteMods.ORDER:

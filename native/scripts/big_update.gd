@@ -4,7 +4,9 @@ var game
 var banish_charges=5
 var focused_offer=0
 var downed=false
-var rescue_hold=false
+var rescue_hold=false  # the helper's rescue code is complete
+var rescue_step=0  # arrows of the code entered so far
+var rescue_coding=false  # holding E / X at a downed friend: movement keys enter the code
 var rescue_progress={}
 var downed_ids={}
 var merchant: Node3D
@@ -134,8 +136,8 @@ func banish(index: int):
 func hint() -> String:
 	if downed:
 		var seconds=float(rescue_progress.get(game.coop.local_id,rescue_progress.get(str(game.coop.local_id),0)))
-		return "DOWNED · RESCUE %.1f / 3 s · FRIEND HOLDS E / X" % seconds
-	if rescue_target(game.player.position,game.coop.local_id)>0: return "HOLD E / X · RESCUE FRIEND · 3 s"
+		return "DOWNED · RESCUE CODE %d / %d · A FRIEND IS ENTERING IT" % [roundi(seconds/3.0*RescueCode.LENGTH),RescueCode.LENGTH]
+	if rescue_target(game.player.position,game.coop.local_id)>0: return "HOLD E / X + MOVE KEYS · ENTER THE RESCUE CODE"
 	if is_instance_valid(merchant) and game.player.position.distance_to(merchant.position)<3.5: return "E / X · WANDERING MERCHANT"
 	if is_instance_valid(beacon) and game.player.position.distance_to(beacon_position)<4 and beacon_state=="idle": return "E / X · ACTIVATE SUPPLY · DEFEND 25 s"
 	if beacon_state=="defending": return "SUPPLY · %d s · STAY WITHIN 14 m" % ceili(25-beacon_seconds)
@@ -299,7 +301,7 @@ func knocked_down():
 	if downed: return
 	downed=true;game.hp=0;game.player.velocity=Vector3.ZERO
 	game.melee_attacks.clear();game.avatar.finish_melee();game.avatar.body.rotation.z=.9
-	game.hud.tell("DOWNED · FRIENDS CAN HOLD E / X TO RESCUE",6)
+	game.hud.tell("DOWNED · A FRIEND CAN ENTER THE RESCUE CODE",6)
 	if game.coop.hosting: downed_ids[game.coop.local_id]=true
 	else: game.coop.send_to(game.coop.owner_id,{"type":"big_action","action":"down","realm":game.realm})
 
@@ -319,17 +321,20 @@ func revived():
 func host_tick(delta: float):
 	for id in downed_ids.keys():
 		if int(id)!=game.coop.local_id and not game.coop.members.has(int(id)): downed_ids.erase(id);rescue_progress.erase(id)
-	var helpers=game.coop.members.duplicate(true);helpers[game.coop.local_id]={"position":CoopSession.array(game.player.position),"hp":game.hp,"rescue_hold":rescue_hold}
+	var helpers=game.coop.members.duplicate(true);helpers[game.coop.local_id]={"position":CoopSession.array(game.player.position),"hp":game.hp,"rescue_hold":rescue_hold,"rescue_step":rescue_step}
 	var working={}
 	for helper in helpers:
 		var member=helpers[helper]
-		if float(member.get("hp",0))<=0 or not member.get("rescue_hold",false) or game.elapsed<float(member.get("rescue_interrupt_until",0)): continue
+		# Progress is the helper's share of the rescue code (shown as 0-3 like the
+		# old 3 s hold); a complete code revives.
+		var step=int(member.get("rescue_step",0));var done=bool(member.get("rescue_hold",false))
+		if float(member.get("hp",0))<=0 or (step<=0 and not done) or game.elapsed<float(member.get("rescue_interrupt_until",0)): continue
 		var target=rescue_target(CoopSession.vector(member.get("position",[])),int(helper))
 		if target<=0: continue
-		if working.has(target): continue
+		var share=3.0*clampf(float(step)/RescueCode.LENGTH,0,1)
+		rescue_progress[target]=maxf(share,float(rescue_progress.get(target,0)) if working.has(target) else 0.0)
 		working[target]=true
-		rescue_progress[target]=float(rescue_progress.get(target,0))+delta
-		if rescue_progress[target]>=3:
+		if done:
 			revive(target)
 			if int(helper)==game.coop.local_id: run_rescues+=1;note("RESCUE")
 			else: game.coop.send_to(int(helper),{"type":"big_memory","key":"RESCUE"})
@@ -409,9 +414,27 @@ func receive(sender: int,message: Dictionary) -> bool:
 		elif type=="big_purchase_rejected": pending_purchase=-1;game.hud.tell("Purchase unavailable");merchant_menu()
 	return true
 
+# The helper's side of a rescue: next to a downed friend, holding E / X turns the
+# movement keys into the rescue code (RescueCode on the HUD).
+func rescue_tick(delta: float):
+	var code: RescueCode=game.hud.rescue_code
+	var target=0 if downed or game.mode!="playing" else rescue_target(game.player.position,game.coop.local_id)
+	if target<=0:
+		if code.target!=0: code.clear_code()
+	elif code.target!=target: code.begin(target)
+	rescue_coding=target>0 and Input.is_action_pressed("interact") and game.elapsed>=rescue_interrupt_until
+	if rescue_coding and not code.complete():
+		match code.read_input():
+			"ok": game.sound.ui_effect("reel_tick")
+			"wrong": game.sound.effect("hit",game.player.position);game.hud.tell("WRONG ARROW · START THE CODE AGAIN",1.5)
+			"done": game.sound.effect("level",game.player.position)
+	code.tick(delta)
+	rescue_step=code.step if target>0 else 0
+	rescue_hold=target>0 and code.complete()
+
 func tick(delta: float):
 	ping_clock=maxf(0,ping_clock-delta);quip_clock=maxf(0,quip_clock-delta)
-	rescue_hold=Input.is_action_pressed("interact") and not downed and game.elapsed>=rescue_interrupt_until
+	rescue_tick(delta)
 	if not game.coop.active or game.coop.hosting: host_tick(delta)
 	for ping in pings:
 		ping.life-=delta

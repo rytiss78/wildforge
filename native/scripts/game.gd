@@ -1737,6 +1737,7 @@ func take_damage(amount: float, source: Vector3=Vector3.ZERO, voice_type: String
 	update.rescue_hold=false
 	update.rescue_interrupt_until=elapsed+.4
 	update.rescue_progress.clear()
+	if hud.rescue_code: hud.rescue_code.interrupt()
 	if invulnerable>0 or mode != "playing": return
 	if rules.rng.randf()<stat("dodge"): invulnerable=.18;return
 	var absorbed = minf(shield_hp,amount)
@@ -2408,6 +2409,8 @@ func _physics_process(delta: float):
 	elapsed+=delta
 	realm_time+=delta
 	var movement = Input.get_vector("move_left","move_right","move_forward","move_back",.18)
+	# Entering a rescue code: the movement keys are the arrows, the hero stays put.
+	if update.rescue_coding: movement=Vector2.ZERO
 	if network_test_role=="client" and player.position.x<4: movement=Vector2.RIGHT
 	var look=Input.get_vector("look_left","look_right","look_up","look_down",.18)
 	if look.length()>.01: camera_look(look*Vector2(2,.65)*delta)
