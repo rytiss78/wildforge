@@ -347,6 +347,9 @@ func _ready():
 	elif OS.get_cmdline_user_args().has("--forge-review"): preload("res://scripts/forge_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--combat-review"): preload("res://scripts/combat_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--golden-scene"): call_deferred("golden_scene")
+	elif OS.get_cmdline_user_args().has("--intro-review"): TitleIntro.play.call_deferred(self,true)
+	# A normal launch opens with the title intro (TitleIntro), then the menu.
+	elif OS.get_cmdline_user_args().is_empty() and not smoke: TitleIntro.play.call_deferred(self)
 	elif smoke: call_deferred("export_hero_art" if OS.get_cmdline_user_args().has("--art") else "run_soak" if OS.get_cmdline_user_args().has("--soak") else "run_smoke")
 
 func configure_inputs():

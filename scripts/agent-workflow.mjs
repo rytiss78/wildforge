@@ -87,7 +87,7 @@ export function assertCommittedBuild(cwd) {
 }
 
 async function main(action) {
-  if (!['balance-review', 'mutation-balance', 'shared-review', 'shared-review-stress', 'coop-dropin', 'bot-playtest', 'island-review', 'block-drop-review', 'shorts-review', 'hero-numbers-review', 'colossus-review', 'cartoon-review', 'model-review', 'weapon-review', 'hermes-review', 'playfeel-review', 'red-moon-review', 'fresh-import', 'biome-review', 'release-review', 'roster-review', 'bake-roster', 'style-review', 'fx-review', 'boss-review', 'forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'crowd-spells', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
+  if (!['balance-review', 'mutation-balance', 'shared-review', 'shared-review-stress', 'coop-dropin', 'bot-playtest', 'island-review', 'block-drop-review', 'shorts-review', 'hero-numbers-review', 'colossus-review', 'cartoon-review', 'model-review', 'weapon-review', 'hermes-review', 'playfeel-review', 'red-moon-review', 'fresh-import', 'biome-review', 'release-review', 'roster-review', 'bake-roster', 'style-review', 'fx-review', 'intro-review', 'boss-review', 'forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'crowd-spells', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
     console.error('Usage: node scripts/agent-workflow.mjs check|smoke|capture|capture-ui|combat-review|pace-review|soak|integration|build|status'); return 2;
   }
   const git = (...args) => spawnSync('git', ['-C', root, ...args], {encoding:'utf8', windowsHide:true}).stdout?.trim() ?? '';
@@ -206,6 +206,13 @@ async function main(action) {
       if(!line) throw new Error('Missing style review');report.style=JSON.parse(line.slice(13));
       if(Object.values(report.style.checks).some(v=>v===false)) throw new Error('Style review assertions failed');
       report.capture=['idle','warning','impact','expansion','recovery','electric','gravity','poison'].map(n=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','style-'+n+'.png'),started));
+    }
+    if (action === 'intro-review') {
+      const output=await step('intro-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--intro-review'],120000);
+      const line=output.split(/\r?\n/).findLast(x=>x.startsWith('INTRO_REVIEW '));
+      if(!line) throw new Error('Missing intro review');report.intro=JSON.parse(line.slice(13));
+      if(Object.values(report.intro.checks).some(v=>v===false)) throw new Error('Intro review assertions failed');
+      report.capture=['intro-1','intro-2','intro-3','intro-4'].map(n=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge',n+'.png'),started));
     }
     if (action === 'fx-review') {
       const output=await step('fx-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--fx-review'],240000);
