@@ -227,6 +227,23 @@ static func run(game: Node3D):
 	checks.hats=hats_build and locked_off and worn!=null and worn.global_position.y>game.player.global_position.y+float(game.hero.get("height",1.65))*.55
 	if not had: game.career.data.unlocked.erase("WF_TRIPLE_WEAPON")
 	game.career.data.settings.hat=old_hat;game.wear_hat()
+	# Hero tricks (October 29): every hero has one, and each does something you can
+	# see through the real use(): hurts or stuns a nearby enemy, heals, boosts or
+	# moves the hero, or raises the shield.
+	var trick_hero=game.hero;var tricked=[];var trick_hp=game.hp
+	for hero_def in game.rules.data.heroes:
+		game.hero=hero_def;game.clear_entities();game.mode="playing";game.update.downed=false
+		game.player.position=Vector3(0,game.world.height_at(0,0)+.1,0);game.player.velocity=Vector3.ZERO
+		game.spawn_enemy(6);var target=game.enemies[-1];target.node.position=game.player.position+Vector3(2.2,0,0);target.hp=1e6;target.maxHp=1e6;target.speed=0.0;target.freeze=0.0;target.blind=0.0
+		game.hp=game.stats.maxHp*.5;game.shield_hp=0.0;game.trick_cooldown=0.0;game.trick_boosts.clear();game.direction=Vector3.RIGHT
+		var start_at=game.player.position;var hp_at=game.hp
+		var used=HeroTricks.use(game)
+		for i in range(60): HeroTricks.tick(game,1.0/60.0);game.player.velocity.y-=0.4;game.player.move_and_slide()
+		var effect=target.hp<1e6 or float(target.freeze)>0 or float(target.blind)>0 or float(target.get("bubble",0))>0 or game.hp>hp_at or game.shield_hp>0 or game.stat("rate")>game.stats.rate*1.01 or game.stat("speed")>game.stats.speed*1.01 or game.player.position.distance_to(start_at)>3.0
+		if not (used and effect and game.trick_cooldown>0): tricked.append(hero_def.id)
+	checks.hero_tricks=tricked.is_empty() and game.rules.data.heroes.all(func(h):return HeroTricks.TRICKS.has(h.id))
+	if not tricked.is_empty(): print("HERO_TRICKS_FAILED "+JSON.stringify(tricked))
+	game.hero=trick_hero;game.hp=trick_hp;game.clear_entities();game.trick_boosts.clear();game.trick_roll={};game.trick_leap={};game.trick_cooldown=0.0
 	# Elite modifiers, each forced on a fresh elite through the real spawn path.
 	var elite_checks={}
 	for id in EliteMods.ORDER:

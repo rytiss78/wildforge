@@ -91,6 +91,11 @@ var pots = []
 var harvestables = []
 var barrels = []  # ExplosiveBarrels
 var pet: Pet
+# HeroTricks state: cooldown, a roll or leap in progress, timed stat boosts.
+var trick_cooldown=0.0
+var trick_roll={}
+var trick_leap={}
+var trick_boosts={}
 var harvest_buffs={}
 var pools = []
 var skills = [] # active SkillBook casts
@@ -473,6 +478,7 @@ func start_run(shared_seed: int=-1):
 	kills = 0
 	if is_instance_valid(hud) and hud.combo: hud.combo.reset()
 	# A fresh pet each run; co-op players get different ones from the same seed.
+	trick_cooldown=0.0;trick_roll={};trick_leap={};trick_boosts.clear()
 	if is_instance_valid(pet): pet.queue_free()
 	pet=Pet.create(self,player,Pet.pick(seed_value+coop.local_id));pet.facing=avatar
 	gold = 0
@@ -986,6 +992,7 @@ func _input(event):
 	if event.is_action_pressed("interact"): interact()
 	if event.is_action_pressed("build"): hud.build_menu()
 	if event.is_action_pressed("dash"): dash()
+	if event.is_action_pressed("trick"): HeroTricks.use(self)
 	if event.is_action_pressed("jump"): try_jump()
 	if event.is_action_pressed("slam"): try_slam()
 	if event.is_action_pressed("deploy"):
@@ -1640,6 +1647,9 @@ func hurt_enemy(enemy: Dictionary, damage: float, cause: String,mechanic: String
 	if cause=="poison" and enemy.poison<=0: enemy.poison=4;enemy.status_time=4 # Cloud/DOT hits are silent; the firing sound marks the attack.
 	elif cause=="fire" and enemy.fire<=0: enemy.fire=3;enemy.status_time=4;sound.effect("fire",enemy.node.position)
 	elif cause=="ice" and enemy.freeze<=0: enemy.freeze=3;enemy.status_time=4;sound.effect("freeze",enemy.node.position)
+	# Hero tricks (HeroTricks): a stun is a short freeze; a blind lasts 4 s.
+	elif cause=="stun": enemy.freeze=maxf(float(enemy.freeze),.4 if enemy.boss else 1.8);enemy.status_time=maxf(float(enemy.status_time),2.0)
+	elif cause=="blind": enemy.blind=maxf(float(enemy.blind),2.0 if enemy.boss else 4.0);enemy.slow=maxf(float(enemy.slow),.3);enemy.status_time=maxf(float(enemy.status_time),4.0)
 	if coop.active and not coop.hosting:
 		coop.hit(enemy,damage,mechanic if not mechanic.is_empty() else cause,mechanic_origin,cause);enemy.node.get_meta("rig").hurt=.18;return
 	# The Colossus roars on its own; the spoken curses belong to the other bosses.
@@ -1810,13 +1820,11 @@ const RIFT_REACH=6.0
 const RIFT_BLAST=20.0
 var rift_paint: StandardMaterial3D
 
-func rift_dash(rank: int):
-	var start=player.position;var flat=Vector3(dash_direction.x,0,dash_direction.z).normalized()
-	if flat.length()<.5: return
-	var motion=flat*(RIFT_REACH+2.0*rank)
-	# Like the dash itself, the rift passes enemy bodies (layer 3) but not the world.
-	# The probe starts 0.6 m up so the ground the hero stands on does not stop it.
-	var lift=Vector3.UP*.6
+# Moves the hero by motion at once (Rift Dash, the Smoke Step trick), stopping
+# short of walls but passing enemy bodies (layer 3), like the dash. The probe
+# starts 0.6 m up so the ground the hero stands on does not stop it.
+func rift_dash_move(motion: Vector3) -> Vector3:
+	var start=player.position;var lift=Vector3.UP*.6
 	var mask=player.collision_mask;player.collision_mask=mask&~4;player.position+=lift
 	var blocked=player.move_and_collide(motion,true)
 	player.collision_mask=mask;player.position=start
@@ -1824,6 +1832,12 @@ func rift_dash(rank: int):
 	var end=start+motion
 	end.y=maxf(end.y,world.height_at(end.x,end.z)+.1)
 	player.position=end;player.reset_physics_interpolation()
+	return end
+
+func rift_dash(rank: int):
+	var start=player.position;var flat=Vector3(dash_direction.x,0,dash_direction.z).normalized()
+	if flat.length()<.5: return
+	var end=rift_dash_move(flat*(RIFT_REACH+2.0*rank))
 	for at in [start,end]:
 		damage_area(at,4.0,RIFT_BLAST*rank,"explosion")
 		rift_portal(at+Vector3.UP*1.1)
@@ -2408,6 +2422,7 @@ func _physics_process(delta: float):
 	if condition_clock<=0: ContentExpansion.refresh(self);condition_clock=.1
 	update.tick(delta)
 	if not update.downed: MutationBook.tick(self,delta)
+	HeroTricks.tick(self,delta)
 	update.contact_shadows()
 	if update.downed:
 		# Preserve gravity after a co-op knockout. Otherwise an airborne hero
@@ -3486,7 +3501,10 @@ func drop_consumable(p: Vector3, force: bool=false, kind: String=""):
 	consumables.append({"node":node,"kind":kind,"title":title,"base_y":node.position.y,"age":0.0})
 
 func stat(key: String) -> float:
-	return HarvestBook.value(self,key,ContentExpansion.value(self,key,PotionBook.value(key,float(stats.get(key,0)),buffs,float(stats.get("potionPower",1.0)))))
+	var value=HarvestBook.value(self,key,ContentExpansion.value(self,key,PotionBook.value(key,float(stats.get(key,0)),buffs,float(stats.get("potionPower",1.0)))))
+	# A hero trick's timed boost (HeroTricks frenzy).
+	if trick_boosts.has(key) and elapsed<float(trick_boosts[key][1]): value*=float(trick_boosts[key][0])
+	return value
 
 func slam_wave():
 	CombatInk.wave(self,player.position,4*stats.slamRadius,Color("ffbd35"))

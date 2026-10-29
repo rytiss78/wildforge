@@ -372,6 +372,14 @@ static func run(g: Node3D):
 	checks.hat_sheet=sheet([await frame(g,true)],"hats")
 	checks.hats_worn=hatters.find_children("Hat","",true,false).size()==HatBook.HATS.size()
 	hatters.queue_free()
+	# Hero tricks (October 29): Count Duck's QUACK! and Stone Granny's Handbag Quake.
+	var own_hero=g.hero;var tricks=[]
+	for id in ["duck","grandma"]:
+		g.hero=g.rules.data.heroes.filter(func(h):return h.id==id)[0];g.trick_cooldown=0.0
+		checks["trick_"+id]=HeroTricks.use(g)
+		await step(g,6);tricks.append(await frame(g,true))
+	g.hero=own_hero;g.trick_cooldown=0.0
+	checks.trick_sheet=sheet(tricks,"tricks")
 	for weapon in g.equipped:
 		if is_instance_valid(weapon.get("node")): weapon.node.queue_free()
 	g.equipped.clear()
