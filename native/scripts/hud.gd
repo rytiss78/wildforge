@@ -1369,6 +1369,18 @@ func settings_menu():
 	picker.disabled=picker.item_count==1
 	picker.item_selected.connect(func(index):game.career.data.settings.cosmetic=str(picker.get_item_metadata(index));game.career.dirty=true;game.career.save();game.coop.sync_local_nameplate())
 	cosmetic_row.add_child(picker)
+	# Achievement hats (October 29): owned ones to pick, locked ones say how to earn them.
+	var hat_row=HBoxContainer.new();box.add_child(hat_row)
+	var hats_owned=HatBook.HATS.filter(func(h):return HatBook.owned(game.career.data.unlocked,h.id))
+	hat_row.add_child(label("HAT · %d / %d UNLOCKED" % [hats_owned.size(),HatBook.HATS.size()],16))
+	var hat_picker=OptionButton.new();hat_picker.add_item("No hat");hat_picker.set_item_metadata(0,"")
+	for hat in HatBook.HATS:
+		var owned=HatBook.owned(game.career.data.unlocked,hat.id)
+		hat_picker.add_item(hat.name if owned else "LOCKED · %s · %s" % [hat.name,hat.how]);hat_picker.set_item_metadata(hat_picker.item_count-1,hat.id)
+		hat_picker.set_item_disabled(hat_picker.item_count-1,not owned)
+		if owned and hat.id==str(game.career.data.settings.get("hat","")): hat_picker.select(hat_picker.item_count-1)
+	hat_picker.item_selected.connect(func(index):game.career.data.settings.hat=str(hat_picker.get_item_metadata(index));game.career.dirty=true;game.career.save();game.wear_hat())
+	hat_row.add_child(hat_picker)
 	var rumble = CheckButton.new()
 	rumble.text = "Xbox vibration"
 	rumble.add_theme_color_override("font_color",ink)

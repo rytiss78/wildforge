@@ -215,7 +215,9 @@ func _ready():
 	camera_locked=OS.get_cmdline_user_args().has("--golden-scene") or OS.get_cmdline_user_args().has("--ui-review")
 	career = ProfileScript.new(rules.data,smoke)
 	if network_test_role!="": career.file="user://coop-test-"+network_test_role+".json"
-	career.on_unlock = func(achievement): hud.show_achievement_notification(achievement.name,achievement.description)
+	career.on_unlock = func(achievement):
+		var hats=HatBook.unlocked_by(str(achievement.get("id","")))
+		hud.show_achievement_notification(achievement.name,achievement.description+("  ·  NEW HAT: "+hats[0].name if not hats.is_empty() else ""))
 	stats = rules.data.stats.duplicate(true)
 	hero = rules.data.heroes[1]
 	add_child(world)
@@ -402,6 +404,13 @@ func select_hero(item: Dictionary):
 			child.position.y=height*.5
 	avatar.rotation.y=PI
 	player.add_child(avatar)
+	wear_hat()
+	if is_instance_valid(pet): pet.facing=avatar
+
+# The chosen achievement hat on the local hero (HatBook), if still owned.
+func wear_hat():
+	var id=str(career.data.settings.get("hat",""))
+	HatBook.wear(avatar,id if HatBook.owned(career.data.unlocked,id) else "")
 
 func clear_entities():
 	coop.clear_flower_visuals();flower_serial=0

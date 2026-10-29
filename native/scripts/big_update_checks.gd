@@ -216,6 +216,17 @@ static func run(game: Node3D):
 	checks.pet_fetch=pet_ok and game.gold>gold_before and pet.fetched==Pet.EVOLVE_AT[1]
 	checks.pet_evolves=pet.stage==1 and is_instance_valid(pet.model)
 	pet.stage=0;pet.fetched=0;pet.rebuild()
+	# Hats (October 29): every hat builds; an owned hat sits on top of the hero's
+	# head; a locked one is not worn.
+	var hats_build=HatBook.HATS.all(func(h):var hat_node=HatBook.build(h.id);var ok=hat_node.find_children("*","MeshInstance3D",true,false).size()>0;hat_node.free();return ok)
+	var had=game.career.data.unlocked.has("WF_TRIPLE_WEAPON");var old_hat=game.career.data.settings.get("hat","")
+	game.career.data.settings.hat="party";game.career.data.unlocked.erase("WF_TRIPLE_WEAPON");game.wear_hat()
+	var locked_off=game.avatar.find_child("Hat",true,false)==null
+	game.career.data.unlocked["WF_TRIPLE_WEAPON"]=true;game.wear_hat()
+	var worn: Node3D=game.avatar.find_child("Hat",true,false)
+	checks.hats=hats_build and locked_off and worn!=null and worn.global_position.y>game.player.global_position.y+float(game.hero.get("height",1.65))*.55
+	if not had: game.career.data.unlocked.erase("WF_TRIPLE_WEAPON")
+	game.career.data.settings.hat=old_hat;game.wear_hat()
 	# Elite modifiers, each forced on a fresh elite through the real spawn path.
 	var elite_checks={}
 	for id in EliteMods.ORDER:

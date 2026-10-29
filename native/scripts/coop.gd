@@ -621,7 +621,7 @@ func pose() -> Dictionary:
 		if weapon.turret and is_instance_valid(weapon.get("node")): state.placement=array(weapon.node.position)
 		weapons.append(state)
 	var build={"weapons":weapons,"skills":game.owned.filter(func(item):return item.kind in ["skill","mutation"]).map(func(item):return str(item.name).left(48))}
-	return {"type":"pose","flower_realm":game.realm,"flowers":flower_state(),"position":array(game.player.position),"yaw":game.avatar.rotation.y,"model":game.hero.model,"name":player_name(),"cosmetic":str(game.career.data.settings.get("cosmetic","")),"mode":"ended" if game.run_recorded else game.mode,"weapons":weapons,"build":build,"hp":game.hp,"shield_hp":game.shield_hp,"gold":game.gold,"rescue_hold":game.update.rescue_hold,"rescue_step":game.update.rescue_step,"pet":game.pet.label() if is_instance_valid(game.pet) else ""}
+	return {"type":"pose","flower_realm":game.realm,"flowers":flower_state(),"position":array(game.player.position),"yaw":game.avatar.rotation.y,"model":game.hero.model,"name":player_name(),"cosmetic":str(game.career.data.settings.get("cosmetic","")),"mode":"ended" if game.run_recorded else game.mode,"weapons":weapons,"build":build,"hp":game.hp,"shield_hp":game.shield_hp,"gold":game.gold,"rescue_hold":game.update.rescue_hold,"rescue_step":game.update.rescue_step,"pet":game.pet.label() if is_instance_valid(game.pet) else "","hat":str(game.career.data.settings.get("hat","")) if HatBook.owned(game.career.data.unlocked,str(game.career.data.settings.get("hat",""))) else ""}
 
 # Everything a client needs to construct a replica of a host enemy.
 func actor_descriptor(enemy: Dictionary) -> Dictionary:
@@ -838,7 +838,7 @@ func receive(sender: int,message):
 			if members[sender].get("disconnected",false): return
 			var p=vector(message.get("position",[]))
 			if not p.is_finite() or maxf(absf(p.x),absf(p.z))>RealmWorld.EXTENT+10: return
-			for key in ["position","yaw","model","name","cosmetic","mode","weapons","build","hp","shield_hp","stats","gold","rescue_hold","rescue_step","pet","flower_realm","flowers"]:
+			for key in ["position","yaw","model","name","cosmetic","mode","weapons","build","hp","shield_hp","stats","gold","rescue_hold","rescue_step","pet","hat","flower_realm","flowers"]:
 				if message.has(key): members[sender][key]=message[key]
 			if message.has("name"): members[sender].name=clean_player_name(message.name)
 			if game.run_active: ensure_avatar(sender,members[sender])
@@ -1077,6 +1077,8 @@ func ensure_avatar(id: int,state: Dictionary):
 		if state.has("position"): node.position=vector(state.position)
 	update_avatar_vitals(avatars[id].get_meta("rig"),state)
 	sync_pet(avatars[id],str(state.get("pet","")))
+	var hat=str(state.get("hat",""))
+	if str(avatars[id].get_meta("hat",""))!=hat: avatars[id].set_meta("hat",hat);HatBook.wear(avatars[id].get_meta("rig"),hat)
 	var wanted={}
 	for weapon in state.get("weapons",[]):
 		if not weapon is Dictionary or not weapon.has("placement") or not game.rules.data.weapons.any(func(w):return w.id==weapon.get("id","") and w.turret): continue

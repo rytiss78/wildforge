@@ -360,6 +360,18 @@ static func run(g: Node3D):
 			pet_model.position=at;pet_model.look_at(Vector3(g.camera.global_position.x,at.y,g.camera.global_position.z),Vector3.UP)
 	await step(g,4);checks.pet_sheet=sheet([await frame(g,true)],"pets");lineup.queue_free()
 	checks.pet_follows=is_instance_valid(g.pet) and g.pet.position.distance_to(g.player.position)<6.0
+	# Hats (October 29): thirteen heroes in a row, each wearing one of the hats.
+	var hatters=Node3D.new();g.add_child(hatters)
+	for i in range(HatBook.HATS.size()):
+		var hero_def=g.rules.data.heroes[i%g.rules.data.heroes.size()]
+		var hero_model=g.world.model(hero_def.model,float(hero_def.get("height",1.65)));hatters.add_child(hero_model)
+		var at=g.player.position+forward*(3.2+(i/7)*1.8)+side*((i%7-3)*1.0+(i/7)*.5);at.y=g.world.height_at(at.x,at.z)
+		hero_model.position=at;hero_model.look_at(Vector3(g.camera.global_position.x,at.y,g.camera.global_position.z),Vector3.UP);hero_model.rotate_y(PI)
+		HatBook.wear(hero_model,HatBook.HATS[i].id)
+	await step(g,4);await RenderingServer.frame_post_draw;g.get_viewport().get_texture().get_image().save_png("user://fx-hats-full.png")
+	checks.hat_sheet=sheet([await frame(g,true)],"hats")
+	checks.hats_worn=hatters.find_children("Hat","",true,false).size()==HatBook.HATS.size()
+	hatters.queue_free()
 	for weapon in g.equipped:
 		if is_instance_valid(weapon.get("node")): weapon.node.queue_free()
 	g.equipped.clear()
