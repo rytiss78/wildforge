@@ -350,6 +350,16 @@ static func run(g: Node3D):
 	for i in range(2): g.hud.rescue_code.press(g.hud.rescue_code.code[i])
 	await step(g,2);checks.rescue_code_shown=g.hud.rescue_code.visible;checks.rescue_sheet=sheet([await frame(g,true)],"rescue")
 	g.coop.members.erase(friend);g.update.downed_ids.erase(friend);g.update.rescue_tick(1.0/60.0)
+	# Pets (October 29): the three species at stages 1-3, in rows, plus the hero's own.
+	clear_effects(g);await step(g,90)
+	var lineup=Node3D.new();g.add_child(lineup)
+	for k in range(3):
+		for st in range(3):
+			var pet_model=Pet.build(Pet.KINDS[k],st);lineup.add_child(pet_model)
+			var at=g.player.position+forward*(2.5+k*1.5)+side*((st-1)*1.5);at.y=g.world.height_at(at.x,at.z);pet_model.scale*=1.6
+			pet_model.position=at;pet_model.look_at(Vector3(g.camera.global_position.x,at.y,g.camera.global_position.z),Vector3.UP)
+	await step(g,4);checks.pet_sheet=sheet([await frame(g,true)],"pets");lineup.queue_free()
+	checks.pet_follows=is_instance_valid(g.pet) and g.pet.position.distance_to(g.player.position)<6.0
 	for weapon in g.equipped:
 		if is_instance_valid(weapon.get("node")): weapon.node.queue_free()
 	g.equipped.clear()

@@ -90,6 +90,7 @@ var chests = []
 var pots = []
 var harvestables = []
 var barrels = []  # ExplosiveBarrels
+var pet: Pet
 var harvest_buffs={}
 var pools = []
 var skills = [] # active SkillBook casts
@@ -459,6 +460,9 @@ func start_run(shared_seed: int=-1):
 	death_count = 0
 	kills = 0
 	if is_instance_valid(hud) and hud.combo: hud.combo.reset()
+	# A fresh pet each run; co-op players get different ones from the same seed.
+	if is_instance_valid(pet): pet.queue_free()
+	pet=Pet.create(self,player,Pet.pick(seed_value+coop.local_id));pet.facing=avatar
 	gold = 0
 	paid_chests = 0
 	run_bosses = 0
@@ -1881,7 +1885,7 @@ func merge_xp_orbs():
 	# Grounded, compatible and same elevation; ownership stays on this client.
 	var buckets={}
 	for pickup in pickups:
-		if not pickup.settled or pickup.attracted or pickup.age<0 or (coop.active and not coop.hosting and pickup.kind=="xp"): continue
+		if not pickup.settled or pickup.attracted or pickup.get("carried",false) or pickup.age<0 or (coop.active and not coop.hosting and pickup.kind=="xp"): continue
 		var p: Vector3=pickup.node.position
 		var cell=Vector3i(floori(p.x/6),floori(p.y/6),floori(p.z/6))
 		var survivor={}
@@ -1912,6 +1916,7 @@ func update_pickups(delta: float):
 		merge_xp_orbs();pickup_merge_clock=.25
 	for pickup in pickups:
 		if pickup.age<0: continue
+		if pickup.get("carried",false): continue  # in the pet's mouth
 		if pickup.kind=="xp" and coop.active and not coop.hosting:
 			pickup.node.position=pickup.node.position.lerp(pickup.get("target_position",pickup.node.position),1-exp(-delta*20))
 			continue

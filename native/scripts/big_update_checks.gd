@@ -203,6 +203,19 @@ static func run(game: Node3D):
 	game.update.rescue_tick(1.0/60.0);game.update.host_tick(1.0/60.0)
 	checks.rescue_code=shown and halfway and restarted and reset_by_hit and not game.update.downed_ids.has(friend)
 	game.coop.members.erase(friend);game.update.downed_ids.erase(friend);game.update.rescue_tick(1.0/60.0)
+	# Pets (October 29): the run's pet fetches a coin lying beyond the hero's reach,
+	# brings it back to be collected, and evolves after enough fetches.
+	var pet: Pet=game.pet
+	var pet_ok=is_instance_valid(pet) and Pet.KINDS.has(pet.kind) and pet.stage==0
+	var coin_at=game.player.position+Vector3(9,0,0);coin_at.y=game.world.height_at(coin_at.x,coin_at.z)+.27
+	game.spawn_pickup(coin_at,"gold",5.0);var fetch=game.pickups[-1];fetch.node.position=coin_at;fetch.settled=true;fetch.velocity=Vector3.ZERO
+	var gold_before=game.gold;pet.fetched=Pet.EVOLVE_AT[1]-1;pet.state="follow";pet.scan=0.0
+	for i in range(400):
+		pet._process(1.0/60.0);game.update_pickups(1.0/60.0)
+		if game.gold>gold_before: break
+	checks.pet_fetch=pet_ok and game.gold>gold_before and pet.fetched==Pet.EVOLVE_AT[1]
+	checks.pet_evolves=pet.stage==1 and is_instance_valid(pet.model)
+	pet.stage=0;pet.fetched=0;pet.rebuild()
 	# Elite modifiers, each forced on a fresh elite through the real spawn path.
 	var elite_checks={}
 	for id in EliteMods.ORDER:
