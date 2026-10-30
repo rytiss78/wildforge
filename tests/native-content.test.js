@@ -41,9 +41,9 @@ test('all stable local achievements have paired valid illustrated 256px icons',(
  }
  assert.equal(hashes.size,steam.achievements.length);
 });
-test('all six first-discovery announcements have original text and rendered audio',()=>{
+test('all seven first-discovery announcements have original text and rendered audio',()=>{
  const provenance=JSON.parse(readFileSync(new URL('native/assets/voices/voice-provenance.json',root),'utf8'));
- for(let i=0;i<6;i++){
+ for(let i=0;i<7;i++){
   const line=provenance.lines.find(line=>line.id==='biome_'+i);
   assert.ok(line&&line.duration>1&&line.sha256.length===64);
   assert.ok(existsSync(new URL('native/assets/voices/biome_'+i+'.wav',root)));

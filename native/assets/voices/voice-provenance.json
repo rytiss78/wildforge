@@ -149,6 +149,12 @@
       "voice": "alba",
       "duration": 1.195,
       "sha256": "fc51f6018e8ddc5436b80babaf91fe4e2405721cc23b3e8e72d4ae5ce76abc94"
+    },
+    {
+      "id": "biome_6",
+      "text": "Junkyard Planet. Mind the rust, and the crusher.",
+      "duration": 2.709,
+      "sha256": "44ca5feab188c1cde9441687c88f3bd0b2d9ac5bd2aa9ae022aa89c754a2edf3"
     }
   ]
 }

@@ -434,7 +434,7 @@ Not released yet (Build 25 is the latest public build).
   - toughness tier 3 of 0–5 (`RealmWorld.BIOME_TIER`), so it is not the hardest slice;
   - achievement now "Seven Worlds, One Map" (7 biomes).
   - Evidence: check, smoke, integration (three runs), `biome-review` (captures `biome-6`, `biome-mechanic-6`) and `cartoon-review` (roster and mutants sheets, now 2×4) on `2026-10-30`.
-  - **Gap:** no announcer line for Junkyard Planet yet. The text is in `scripts/generate-neural-voices.py`, but the Kokoro voice environment needs Python 3.12 and this machine now has only 3.15; `say("biome_6")` stays silent until it is rendered.
+  - Announcer line "Junkyard Planet. Mind the rust, and the crusher." (`biome_6.wav`, Kokoro af_heart via Python 3.12, other voice lines left untouched).
 
 ## Player notes: 16 fixes (user list, October 25, after Build 23)
 

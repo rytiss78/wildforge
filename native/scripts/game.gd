@@ -3000,7 +3000,7 @@ func run_smoke():
 	checks.level_celebration=mode=="level_reveal" and level==before_level+1 and offers.size()==5
 	level_reveal=.01;_process(.02)
 	checks.level_choice=mode=="offer"
-	checks.biome_voices=range(6).all(func(i):return ResourceLoader.exists("res://assets/voices/biome_"+str(i)+".wav"))
+	checks.biome_voices=range(RealmWorld.BIOME_COUNT).all(func(i):return ResourceLoader.exists("res://assets/voices/biome_"+str(i)+".wav"))
 	checks.achievement_art=rules.data.achievements.all(func(a):return ResourceLoader.exists("res://assets/illustrated/achievements/"+a.id+".svg"))
 	clear_entities()
 	mode="playing";spawn_enemy(12)
