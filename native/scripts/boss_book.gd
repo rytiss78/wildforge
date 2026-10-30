@@ -3,13 +3,13 @@ class_name BossBook
 
 # Original silhouettes and attack roles. Models are authored at 3 m reference height.
 const ROSTER=[
- {"name":"The Last Receiver","height":12.0,"radius":1.8,"speed":1.9,"cooldown":5.0,"biomes":[2,5],"style":"storm","role":"Line pulses · leave the marked corridor"},
+ {"name":"The Last Receiver","height":12.0,"radius":1.8,"speed":1.9,"cooldown":5.0,"biomes":[2,5,6],"style":"storm","role":"Line pulses · leave the marked corridor"},
  {"name":"Mourning Bell","height":10.5,"radius":2.3,"speed":1.7,"cooldown":5.8,"biomes":[0,3],"style":"storm","role":"Tolling rings · use the gaps between marks"},
  {"name":"Lantern Ossuary","height":9.0,"radius":2.2,"speed":2.2,"cooldown":4.8,"biomes":[4,5],"style":"meteor","role":"Crossfire · move diagonally out of the cross"},
  {"name":"The Hollow Procession","height":9.5,"radius":2.5,"speed":1.6,"cooldown":5.7,"biomes":[0,1],"style":"roots","role":"Marching lanes · leave the parallel trails"},
  {"name":"Witness of Knots","height":8.0,"radius":3.3,"speed":2.7,"cooldown":4.8,"biomes":[1,2],"style":"toxic","role":"Triangulation · leave the locked marks"},
  {"name":"The Drowned Spire","height":11.5,"radius":2.0,"speed":1.5,"cooldown":5.8,"biomes":[1,3],"style":"storm","role":"Spiral tide · move through the open center"},
- {"name":"Gallows Appetite","height":10.0,"radius":2.9,"speed":2.0,"cooldown":5.2,"biomes":[4,5],"style":"lava","role":"Closing jaws · retreat behind the crescent"},
+ {"name":"Gallows Appetite","height":10.0,"radius":2.9,"speed":2.0,"cooldown":5.2,"biomes":[4,5,6],"style":"lava","role":"Closing jaws · retreat behind the crescent"},
  {"name":"Antler Reliquary","height":11.0,"radius":2.6,"speed":1.7,"cooldown":5.8,"biomes":[0,2],"style":"roots","role":"Root spokes · move between the three branches"}
 ]
 

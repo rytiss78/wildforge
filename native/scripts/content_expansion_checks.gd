@@ -7,12 +7,12 @@ static func run(game) -> Dictionary:
 	checks.content_count=data.loot.size()==747 and data.weapons.size()==73 and data.augments.size()==400
 	checks.unique_ids=(data.loot+data.weapons).map(func(i):return i.id).size()==820
 	var positions=game.chests.map(func(c):return c.node.position)
-	var per_biome=[0,0,0,0,0,0];var spacing=1000.0
+	var per_biome=[];per_biome.resize(RealmWorld.BIOME_COUNT);per_biome.fill(0);var spacing=1000.0
 	for p in positions:
 		per_biome[game.world.biome_at(p)]+=1
 		for q in positions:
 			if p!=q: spacing=minf(spacing,Vector2(p.x-q.x,p.z-q.z).length())
-	checks.chest_distribution=positions.size()==24 and per_biome.all(func(n):return n==4) and spacing>25
+	checks.chest_distribution=positions.size()==4*RealmWorld.BIOME_COUNT and per_biome.all(func(n):return n==4) and spacing>25
 	# Equal bonuses share art intentionally. Every distinct augment condition/stat
 	# pair must still render differently; all catalogue entries must load.
 	var hashes={};var icons=true;var augment_icons=true
@@ -59,10 +59,10 @@ static func run(game) -> Dictionary:
 	game.equipped=originals;game.avatar.finish_melee();game.avatar.sync_equipment(game.equipped)
 	# Keep ranged encounter rings and telegraph shapes distinct by biome.
 	var tactics=preload("res://scripts/combat_tactics.gd")
-	var preferred=[12.0,10.0,17.0,14.0,11.0,16.0]
-	var flank=[.2,.45,.08,.5,.3,.6]
+	var preferred=[12.0,10.0,17.0,14.0,11.0,16.0,13.0]
+	var flank=[.2,.45,.08,.5,.3,.6,.35]
 	var approach=true;var retreats=true;var rings=true;var patterns=true
-	for biome in range(6):
+	for biome in range(RealmWorld.BIOME_COUNT):
 		var mover={"biome":biome,"net_id":biome+1}
 		var forward=Vector3.FORWARD
 		var closing=tactics.ranged_movement(mover,forward,preferred[biome]+4,true)
@@ -75,7 +75,7 @@ static func run(game) -> Dictionary:
 		game.hazards.clear();tactics.ranged_attack(game,ranged,game.player.position)
 		# One shooter, one mark since October 25; biomes differ by mark style.
 		var expected_marks=1
-		var expected_style=["roots","toxic","meteor","storm","lava","void"][biome]
+		var expected_style=["roots","toxic","meteor","storm","lava","void","meteor"][biome]
 		patterns=patterns and game.hazards.size()==expected_marks and game.hazards.all(func(h):return h.style==expected_style and h.damage>0 and h.life>=1.05)
 		game.clear_entities()
 	checks.biome_ranged_approach=approach;checks.biome_ranged_retreat=retreats;checks.biome_distinct_firing_rings=rings;checks.distinct_biome_telegraphs=patterns

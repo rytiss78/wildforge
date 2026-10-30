@@ -5,8 +5,8 @@ static func run(g: Node3D):
 	for i in range(150): await g.get_tree().process_frame
 	g.set_process(false);g.set_physics_process(false);g.clear_entities();g.hud.modal.visible=false
 	var checks={"camera":g.camera_distance==12 and g.camera.fov==70 and is_equal_approx(g.pitch,.3),"biomes":true,"streaming":true,"captures":true}
-	checks.natural_landmarks=range(6).all(func(i):return g.world.get_node("Landmark_"+str(i)).get_meta("natural_landmark",false))
-	for biome in range(6):
+	checks.natural_landmarks=range(RealmWorld.BIOME_COUNT).all(func(i):return g.world.get_node("Landmark_"+str(i)).get_meta("natural_landmark",false))
+	for biome in range(RealmWorld.BIOME_COUNT):
 		var p=g.world.landmarks[biome]+Vector3(0,0,14);p.y=g.world.height_at(p.x,p.z)+.1
 		g.player.position=p;g.player.velocity=Vector3.ZERO;g.yaw=0;g.world.stream(p)
 		for i in range(240):
@@ -35,7 +35,7 @@ static func run(g: Node3D):
 			g.spawn_enemy(6);var enemy=g.enemies[-1];var spot=at+forward.rotated(Vector3.UP,i*1.6)*2.0;spot.y=g.world.height_at(spot.x,spot.z)
 			enemy.node.position=spot;enemy.speed=0.0;enemy.attack=1e9;enemy.contact=1e9;enemy.damage=0.0;enemy.hp=1e6;enemy.maxHp=1e6;enemy.behavior="chase";enemy.home=spot
 		g.mode="playing";BiomeMechanics.spawn(g,{"type":"biome_event","realm":g.realm,"biome":biome,"pos":[at.x,at.z],"dir":[forward.cross(Vector3.UP).x,forward.cross(Vector3.UP).z]})
-		var zone=g.biome_zones[-1];var wait=zone.warn+{0:1.5,1:1.5,2:1.2,3:.6,4:3.5,5:1.6}[biome]
+		var zone=g.biome_zones[-1];var wait=zone.warn+{0:1.5,1:1.5,2:1.2,3:.6,4:3.5,5:1.6,6:.15}[biome]
 		var t=0.0
 		while t<wait:
 			g.realm_time=0.0;g.update_combat(1.0/60.0);g._process(1.0/60.0);t+=1.0/60.0

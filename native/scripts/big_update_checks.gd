@@ -20,13 +20,13 @@ static func run(game: Node3D):
 	var minimap=game.hud.map_view
 	checks.minimap_no_fog=minimap.terrain!=null
 	var map_colors={}
-	for biome in range(6):
-		var angle=(biome+.5)*TAU/6-float(game.world.seed_value%23)*.03-game.realm*.4
+	for biome in range(RealmWorld.BIOME_COUNT):
+		var angle=(biome+.5)*RealmWorld.BIOME_ARC-float(game.world.seed_value%23)*.03-game.realm*.4
 		var pixel=Vector2(cos(angle),sin(angle))*56+Vector2(128,128)
 		var color=minimap.terrain.get_image().get_pixel(int(pixel.x),int(pixel.y))
 		checks.minimap_no_fog=checks.minimap_no_fog and color.a==1 and color.get_luminance()>.025
 		map_colors[color.to_html()]=true
-	checks.minimap_biome_palette=map_colors.size()==6
+	checks.minimap_biome_palette=map_colors.size()==RealmWorld.BIOME_COUNT
 	checks.minimap_interactions=minimap.interactables.any(func(i):return i.kind=="merchant") and minimap.interactables.any(func(i):return i.kind=="supply") and not minimap.interactables.any(func(i):return i.kind=="landmark")
 	checks.rare_boxes=game.rules.chest_price(0)==30 and RunRules.WEAPON_CAP==3
 	checks.achievements=game.career.achievements.size()==93 and game.career.achievements.map(func(a):return a.id).size()==93
@@ -367,8 +367,8 @@ static func run(game: Node3D):
 	checks.recap=game.update.recap().contains("SURVIVED") and game.update.recap().contains("YOUR CONTRIBUTION") and game.update.recap().contains("PARTY DAMAGE")
 	# All biome scenes, route slopes, and map edges in one rendered traversal.
 	var worst_slope=0.0
-	for biome in range(6):
-		var angle=float(biome)*TAU/6-float(game.seed_value%23)*.03
+	for biome in range(RealmWorld.BIOME_COUNT):
+		var angle=float(biome)*RealmWorld.BIOME_ARC-float(game.seed_value%23)*.03
 		for radius in range(90,350,8):
 			var p=Vector3(cos(angle)*radius,0,sin(angle)*radius);var q=Vector3(cos(angle)*(radius+4),0,sin(angle)*(radius+4))
 			worst_slope=maxf(worst_slope,absf(game.world.height_at(p.x,p.z)-game.world.height_at(q.x,q.z))/4)

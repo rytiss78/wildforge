@@ -1,9 +1,9 @@
 extends RefCounted
 class_name MassiveArchitecture
 
-const TITLES=["Verdant Archive","Drowned Pumpworks","Lunar Observatory","Cloud Exchange","Ember Foundry","Astral Hangar"]
-const STONE=[Color("304d44"),Color("3b4149"),Color("354459"),Color("4d646b"),Color("442c35"),Color("39334f")]
-const GLOW=[Color("75edac"),Color("c692f2"),Color("78cfff"),Color("f8d17c"),Color("ff713b"),Color("ab8fff")]
+const TITLES=["Verdant Archive","Drowned Pumpworks","Lunar Observatory","Cloud Exchange","Ember Foundry","Astral Hangar","Crusher Works"]
+const STONE=[Color("304d44"),Color("3b4149"),Color("354459"),Color("4d646b"),Color("442c35"),Color("39334f"),Color("4a3a2c")]
+const GLOW=[Color("75edac"),Color("c692f2"),Color("78cfff"),Color("f8d17c"),Color("ff713b"),Color("ab8fff"),Color("b6ff3a")]
 
 static func box(root: Node3D,color: Color,p: Vector3,size: Vector3,solid: bool=true):
 	var node=BiomeLandmarks.box(root,color,p,size)
@@ -13,8 +13,8 @@ static func box(root: Node3D,color: Color,p: Vector3,size: Vector3,solid: bool=t
 	return node
 
 static func build(world: RealmWorld):
-	for biome in range(6):
-		var angle=(float(biome)+.5)*TAU/6-float(world.seed_value%23)*.03-world.realm*.4
+	for biome in range(RealmWorld.BIOME_COUNT):
+		var angle=(float(biome)+.5)*RealmWorld.BIOME_ARC-float(world.seed_value%23)*.03-world.realm*.4
 		var p=Vector3(cos(angle)*248,0,sin(angle)*248)
 		var root=Node3D.new();root.name="GreatHall_"+str(biome);world.add_child(root)
 		root.rotation.y=atan2(p.x,p.z)
@@ -86,6 +86,15 @@ static func build(world: RealmWorld):
 					ToonArt.part(root,roof,stone.lightened(.12),Vector3(side*20,24,0))
 				var orbit=BiomeLandmarks.ring(root,bronze,Vector3(0,25,-11),8);orbit.rotation.x=PI/2;orbit.rotation.z=.4
 				ToonArt.ball(root,glow,Vector3(0,25,-11),Vector3(4,4,4)).name="SpectralFlameCore"
+			6:
+				# Crusher Works: smokestacks and a hanging crusher plate over the gallery.
+				for side in [-1,1]:
+					for z in [-10,10]:
+						ToonArt.tube(root,Color("6a3a24"),Vector3(side*22,27,z),2.2,2.8,16)
+						box(root,ink,Vector3(side*22,35.2,z),Vector3(5.2,.8,5.2),false)
+				box(root,Color("c9a23a"),Vector3(0,27,-11),Vector3(26,1.6,3))
+				box(root,STONE[6].lightened(.18),Vector3(0,23,-11),Vector3(9,4,6))
+				box(root,glow,Vector3(0,20.8,-11),Vector3(7,.3,4),false).name="SpectralFlameCrusher"
 		for side in [-1,1]:
 			var light=OmniLight3D.new();root.add_child(light);light.position=Vector3(side*9,8,13)
 			light.light_color=glow;light.light_energy=2;light.omni_range=20;light.shadow_enabled=true

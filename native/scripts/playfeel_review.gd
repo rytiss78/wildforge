@@ -97,7 +97,7 @@ static func run(g):
 		if g.rules.rarity(.75)==3:lucky+=1
 	metrics.legendary_base=float(ordinary)/30000;metrics.legendary_max_luck=float(lucky)/30000
 	checks.drop_rates=metrics.legendary_base>.009 and metrics.legendary_base<.017 and metrics.legendary_max_luck>.05 and metrics.legendary_max_luck<.065
-	checks.natural_landmark_count=g.world.landmarks.size()==6 and g.world.building_sites.is_empty()
+	checks.natural_landmark_count=g.world.landmarks.size()==RealmWorld.BIOME_COUNT and g.world.building_sites.is_empty()
 	g.equipped.clear()
 	for biome in range(6):
 		var root=g.world.get_node("Landmark_"+str(biome))

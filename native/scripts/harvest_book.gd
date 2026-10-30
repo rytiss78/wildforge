@@ -8,7 +8,8 @@ const TYPES=[
 	{"name":"Moon Quartz","color":"89cbf0","description":"Shield-bearing crystals from Moon Craters.","effect":"+2 shield capacity this run","key":"shield","bonus":2.0,"duration":0},
 	{"name":"Cloud Blossom","color":"d8f6ff","description":"A buoyant flower found in Cloud City.","effect":"+1 air jump for 20s","key":"airJumps","bonus":1.0,"duration":20},
 	{"name":"Ember Pepper","color":"ff9355","description":"A fiery seed pod from Candy Hell.","effect":"+15% damage for 20s","key":"damage","bonus":.15,"duration":20},
-	{"name":"Starfall Pearl","color":"d6b3ff","description":"A star-shaped shell holding a luminous pearl.","effect":"+25% enemy gold for 20s","key":"goldGain","bonus":.25,"duration":20}
+	{"name":"Starfall Pearl","color":"d6b3ff","description":"A star-shaped shell holding a luminous pearl.","effect":"+25% enemy gold for 20s","key":"goldGain","bonus":.25,"duration":20},
+	{"name":"Scrap Battery","color":"b6ff3a","description":"A leaking battery that still buzzes, from Junkyard Planet.","effect":"+20% attack speed for 20s","key":"rate","bonus":.2,"duration":20}
 ]
 
 static func value(game,key: String,base: float) -> float:
@@ -25,7 +26,7 @@ static func tick(game,delta: float):
 		if game.harvest_buffs[id]<=0: game.harvest_buffs.erase(id)
 
 static func spawn(game):
-	for biome in range(6):
+	for biome in range(RealmWorld.BIOME_COUNT):
 		var placed=0
 		for attempt in range(1200):
 			if placed>=8: break
@@ -69,5 +70,13 @@ static func pick(game,harvest: Dictionary):
 
 static func make_model(id: int) -> Node3D:
 	var root=Node3D.new();root.name="Harvest"+str(id)
+	if id==6:
+		# Scrap Battery: a fat leaking cell with a glowing terminal (no glTF yet).
+		ToonArt.tube(root,Color("2e3a2e"),Vector3(0,.42,0),.24,.26,.8)
+		ToonArt.tube(root,Color("c9a23a"),Vector3(0,.62,0),.27,.27,.12)
+		var glow=ToonArt.tube(root,Color("b6ff3a"),Vector3(0,.9,0),.08,.08,.16);glow.name="SpectralFlameTerminal"
+		var paint: StandardMaterial3D=StandardMaterial3D.new();paint.albedo_color=Color("b6ff3a");paint.emission_enabled=true;paint.emission=Color("b6ff3a");paint.emission_energy_multiplier=2.5;glow.material_override=paint
+		ToonArt.ball(root,Color("b6ff3a"),Vector3(.18,.04,.1),Vector3(.5,.04,.36))
+		return root
 	var model=StyleModel.new();model.setup("harvest_"+str(id));root.add_child(model)
 	return root

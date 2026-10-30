@@ -574,9 +574,9 @@ func enter_realm(index: int,broadcast_transition: bool=true):
 func make_chests():
 	# Four stratified radial bands in each biome, with independent deterministic jitter.
 	var rng=RandomNumberGenerator.new();rng.seed=seed_value+realm*1777
-	for biome in range(6):
+	for biome in range(RealmWorld.BIOME_COUNT):
 		for band in range(4):
-			var angle=(biome+.2+rng.randf()*.6)*TAU/6-float(seed_value%23)*.03-realm*.4
+			var angle=(biome+.2+rng.randf()*.6)*RealmWorld.BIOME_ARC-float(seed_value%23)*.03-realm*.4
 			var radius=[75,145,210,280][band]+rng.randf_range(0,15)
 			if band==3: radius=RealmWorld.coast_radius(angle,seed_value,realm)-26-rng.randf_range(0,8)
 			if biome==0 and band==0: radius=38+rng.randf_range(0,7)
@@ -1094,7 +1094,7 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 		var glow_ring=MeshInstance3D.new();glow_ring.mesh=ring;glow_ring.position=Vector3(0,height*.55,0)
 		glow_ring.material_override=material(Color("ff6633"),2.5);glow_ring.scale=Vector3(1,.01,1);node.add_child(glow_ring);node.set_meta("elite_ring",glow_ring)
 	var max_health = ((500+realm*500+realm_time*3) if boss else (35+realm*22+realm_time*.12))*realm_difficulty
-	max_health *= 1+biome*.18
+	max_health *= 1+RealmWorld.BIOME_TIER[biome]*.18
 	if not boss: max_health*=species.health*pow(body_scale,1.5)*(.60 if species.behavior=="spit" else 1.0)*ENEMY_HEALTH_SCALE
 	# x20 (October 24, user request): five times the earlier x4 for every boss.
 	if boss: max_health*=20
@@ -1303,7 +1303,7 @@ func blood_hit(enemy: Dictionary):
 	if blood_count>6: return
 	enemy.blood_time=now
 	var position_value=melee_contact(enemy,player.position+Vector3.UP*.95)
-	var color=[Color("83b74c"),Color("b88ade"),Color("b1c8e8"),Color("bce8f2"),Color("efa978"),Color("bd98e5")][enemy.biome] if not enemy.boss else Color("df4d48")
+	var color=[Color("83b74c"),Color("b88ade"),Color("b1c8e8"),Color("bce8f2"),Color("efa978"),Color("bd98e5"),Color("c9a23a")][enemy.biome] if not enemy.boss else Color("df4d48")
 	for i in range(5):
 		var drop=update.effect_node(orb_mesh,material(color),position_value);drop.scale=Vector3(.14,.10,.14)
 		effects.append({"node":drop,"life":.38,"velocity":Vector3(randf_range(-2,2),randf_range(1,3),randf_range(-2,2)),"blood":true,"base_scale":drop.scale})
@@ -1703,7 +1703,7 @@ func kill_enemy(enemy: Dictionary, cause: String):
 	if cause != "hit" and cause != "melee": career.bump(cause+"Kills")
 	var p = enemy.node.position
 	spawn_pickup(p+Vector3.UP*.35,"xp",float(enemy.get("xp_reward",enemy_xp_reward(enemy))))
-	spawn_pickup(p+Vector3.UP*.4,"gold",roundi((1+enemy.get("biome",0)*.2)*(40 if enemy.boss else (2+realm)*(3 if enemy.get("elite",false) else 1))*stat("goldGain")))
+	spawn_pickup(p+Vector3.UP*.4,"gold",roundi((1+RealmWorld.BIOME_TIER[int(enemy.get("biome",0))]*.2)*(40 if enemy.boss else (2+realm)*(3 if enemy.get("elite",false) else 1))*stat("goldGain")))
 	# Kill feedback: elite/boss get big explosion, regular get dust puff
 	# Multi-kill tracking
 	if enemy.get("elite",false) or enemy.boss:
@@ -2243,7 +2243,7 @@ func update_combat(delta: float):
 		if preload("res://scripts/combat_tactics.gd").contact_tick(self,enemy,target_player,touching,enemy_delta):
 			enemy.node.get_meta("rig").attack=.25
 			# The Eclipse hits harder island by island: 1.5x, 2x, then 2.5x contact damage.
-			coop.damage_player(target_player.id,(18+realm*5 if enemy.boss else (11+realm*4)*ENEMY_DAMAGE_SCALE)*enemy.damage*(1+enemy.get("biome",0)*.12)*((1.5+mini(realm,2)*.5) if events.get("eclipse",false) else 1.0),enemy.node.position,enemy.sound)
+			coop.damage_player(target_player.id,(18+realm*5 if enemy.boss else (11+realm*4)*ENEMY_DAMAGE_SCALE)*enemy.damage*(1+RealmWorld.BIOME_TIER[int(enemy.get("biome",0))]*.12)*((1.5+mini(realm,2)*.5) if events.get("eclipse",false) else 1.0),enemy.node.position,enemy.sound)
 			if target_player.id==coop.local_id:
 				sound.effect("enemy-bite",enemy.node.position)
 				if enemy.get("biome",0)==1 and not buffs.has("poison"): player_poison=3
@@ -2771,7 +2771,7 @@ func run_smoke():
 	checks.xbox_navigation=navigated;checks.xbox_accept=accepted;checks.pointer_focus_safe=pointer_safe
 	checks.hero_roster=rules.data.heroes.size()==25 and rules.data.heroes.all(func(h):return ResourceLoader.exists("res://assets/style3d/"+("count_duck" if h.model=="rubber_duck_toy" else "hero_"+h.model)+".glb"))
 	# Every biome's ten cartoon species build as one merged mesh (CartoonBook).
-	checks.enemy_roster=range(6).all(func(b):return range(CreatureBook.WEIGHTS.size()).all(func(s):return CartoonBook.get_model(b,s).mesh.get_surface_count()==1))
+	checks.enemy_roster=range(RealmWorld.BIOME_COUNT).all(func(b):return range(CreatureBook.WEIGHTS.size()).all(func(s):return CartoonBook.get_model(b,s).mesh.get_surface_count()==1))
 	checks.painted_terrain=range(6).all(func(i):return ResourceLoader.exists("res://assets/illustrated/terrain-%d.png" % i))
 	checks.painted_weapons=rules.data.weapons.all(func(w):return ResourceLoader.exists("res://assets/illustrated/weapon-icons/"+w.id+".png"))
 	checks.opaque_ui=is_equal_approx(hud.style(Color(0,0,0,.2)).bg_color.a,1.0)
@@ -2968,7 +2968,7 @@ func run_smoke():
 	var detected={}
 	for i in range(36):
 		var p=Vector3(cos(i*TAU/36)*300,0,sin(i*TAU/36)*300);detected[world.biome_at(p)]=true
-	checks.six_biomes=detected.size()==6
+	checks.six_biomes=detected.size()==RealmWorld.BIOME_COUNT
 	checks.large_world=RealmWorld.EXTENT==400
 	checks.enemy_size=enemies.all(func(e):return e.node is CharacterBody3D and e.node.get_child(0).shape.height+.0001>=e.height and is_equal_approx(e.node.get_child(0).shape.radius,e.radius))
 	player.position=Vector3(0,8,0);player.velocity=Vector3.ZERO;air_jumps=0;try_jump()
@@ -3042,7 +3042,7 @@ func run_smoke():
 	var report=FileAccess.open("user://smoke-results.json",FileAccess.WRITE)
 	if report!=null: report.store_string(JSON.stringify(checks,"  "));report.close()
 	print("NATIVE_SMOKE "+JSON.stringify(checks))
-	var failure = not checks.main_menu or not checks.opaque_ui or not checks.illustrated_icons or not checks.selection_preview or not checks.weapon_cards_fit or not checks.item_cards_fit or not checks.camera_look or not checks.menu_blocks_look or not checks.weapon_rank or not checks.weapon_mechanics or not checks.mouse_camera or not checks.xbox_prompts or not checks.settings_fit or checks.initial_enemies<6 or checks.chests!=24 or checks.first_price!=30 or checks.achievements!=93 or not checks.paid_once or not checks.one_item or not checks.weapon_limit or not checks.disk_save or not checks.free_price or not checks.garden or not checks.garden_goals or not checks.realm_preserves or not checks.three_realms or not checks.standalone
+	var failure = not checks.main_menu or not checks.opaque_ui or not checks.illustrated_icons or not checks.selection_preview or not checks.weapon_cards_fit or not checks.item_cards_fit or not checks.camera_look or not checks.menu_blocks_look or not checks.weapon_rank or not checks.weapon_mechanics or not checks.mouse_camera or not checks.xbox_prompts or not checks.settings_fit or checks.initial_enemies<6 or checks.chests!=4*RealmWorld.BIOME_COUNT or checks.first_price!=30 or checks.achievements!=93 or not checks.paid_once or not checks.one_item or not checks.weapon_limit or not checks.disk_save or not checks.free_price or not checks.garden or not checks.garden_goals or not checks.realm_preserves or not checks.three_realms or not checks.standalone
 	for key in checks:
 		if checks[key] is bool and not checks[key]: failure=true
 	get_tree().quit(1 if failure else 0)
@@ -3526,9 +3526,9 @@ func run_soak():
 		if mode=="replace": replace_weapon(0,offers[0])
 		if mode=="reveal": finish_reveal()
 		if mode!="playing": continue
-		var region=mini(5,int(seconds/6))
+		var region=mini(RealmWorld.BIOME_COUNT-1,int(seconds/6))
 		if region>=next_region:
-			var angle=(region+.5)*TAU/6-float(seed_value%23)*.03
+			var angle=(region+.5)*RealmWorld.BIOME_ARC-float(seed_value%23)*.03
 			var route_radius=RealmWorld.coast_radius(angle,seed_value,realm)-45
 			player.position=Vector3(cos(angle)*route_radius,0,sin(angle)*route_radius);world.ensure_ground(player.position)
 			player.position.y=world.height_at(player.position.x,player.position.z)+.2;player.velocity=Vector3.ZERO;landing_ready=false;last_safe=player.position

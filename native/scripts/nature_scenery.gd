@@ -1,9 +1,9 @@
 extends RefCounted
 class_name NatureScenery
 
-const GLOW=[Color("59edb9"),Color("b7e76b"),Color("75caff"),Color("8ee9ed"),Color("ff8451"),Color("cf8fff")]
-const BARK=[Color("506b57"),Color("675471"),Color("587b9c"),Color("547b86"),Color("603f4b"),Color("71507e")]
-const BLOOM=[Color("ef619b"),Color("e784be"),Color("b1a0f2"),Color("c5a7ef"),Color("f3ac4b"),Color("eb71bc")]
+const GLOW=[Color("59edb9"),Color("b7e76b"),Color("75caff"),Color("8ee9ed"),Color("ff8451"),Color("cf8fff"),Color("b6ff3a")]
+const BARK=[Color("506b57"),Color("675471"),Color("587b9c"),Color("547b86"),Color("603f4b"),Color("71507e"),Color("7a4a2c")]
+const BLOOM=[Color("ef619b"),Color("e784be"),Color("b1a0f2"),Color("c5a7ef"),Color("f3ac4b"),Color("eb71bc"),Color("ffc93a")]
 static var meshes={}
 
 static func stone(root: Node3D,color: Color,p: Vector3,size: Vector3,glow: bool=false):
@@ -32,7 +32,9 @@ static func mesh(world: Node3D,biome: int,variant: int) -> ArrayMesh:
 	var root=Node3D.new();world.add_child(root)
 	var glow=GLOW[biome];var bark=BARK[biome]
 	var height=[9.0,6.0,3.0][variant]
-	if variant==2 and biome in [0,3,5]:
+	if biome==6:
+		junk(root,variant,height,glow,bark)
+	elif variant==2 and biome in [0,3,5]:
 		for i in range(5):
 			var tip=Vector3(cos(i*2.4)*1.3,1.1+float(i%3)*.55,sin(i*2.4)*1.3)
 			branch(root,tip*Vector3(1,0,1),tip,.07,Color("4f9a73"))
@@ -95,10 +97,54 @@ static func mesh(world: Node3D,biome: int,variant: int) -> ArrayMesh:
 	var result=PaintedBatch.merge(root,parts);root.free();meshes[key]=result
 	return result
 
+static func cube(root: Node3D,color: Color,p: Vector3,size: Vector3,turn: float=0.0,tilt: float=0.0) -> MeshInstance3D:
+	var shape=BoxMesh.new();var node=ToonArt.part(root,shape,color,p,size)
+	node.rotation=Vector3(tilt,turn,tilt*.5)
+	return node
+
+# Junkyard Planet scenery: 0 a leaning tower of crushed cars under a crane arm with
+# a toxic warning lamp, 1 a tyre stack beside a rusted car hulk, 2 a small scrap
+# heap round a leaking drum. No trees grow here.
+static func junk(root: Node3D,variant: int,height: float,glow: Color,rust: Color):
+	var paints=[Color("c9a23a"),Color("4f7a8a"),Color("9a3f35"),Color("6d7a4a"),Color("5b5f63")]
+	var tyre=Color("2b2a2c")
+	match variant:
+		0:
+			var y=0.0
+			for i in range(5):
+				var size=Vector3(2.6-i*.18,1.0,1.6-i*.08)
+				cube(root,paints[i%paints.size()] if i%2==0 else rust,Vector3(sin(i*1.3)*.25,y+.5,cos(i*.9)*.2),size,i*.45,(i%2-.5)*.08)
+				y+=.95
+			# Crane: a mast from the heap and a long arm with a hanging hook.
+			var mast_top=Vector3(.3,height,0)
+			branch(root,Vector3(.3,y,0),mast_top,.18,Color("d9a531"),1.0)
+			branch(root,mast_top,mast_top+Vector3(3.2,.3,0),.12,Color("d9a531"),1.0)
+			branch(root,mast_top+Vector3(3.0,.3,0),mast_top+Vector3(3.0,-2.6,0),.03,Color("2b2a2c"),1.0)
+			stone(root,Color("5b5f63"),mast_top+Vector3(3.0,-2.8,0),Vector3(.35,.45,.35))
+			stone(root,glow,mast_top+Vector3(0,.35,0),Vector3(.4,.4,.4),true)
+		1:
+			for i in range(4):
+				var ring=TorusMesh.new();ring.inner_radius=.28;ring.outer_radius=.62;ring.rings=12;ring.ring_segments=6
+				ToonArt.part(root,ring,tyre,Vector3(-1.2+sin(i)*.08,.2+i*.42,.1),Vector3(1,1.35,1))
+			# A car hulk: body, cabin, two flat wheels and glowing smashed headlights.
+			var car=Vector3(1.0,0,0)
+			cube(root,paints[1],car+Vector3(0,.65,0),Vector3(2.8,.8,1.5),.25,.05)
+			cube(root,rust,car+Vector3(.15,1.25,0),Vector3(1.4,.6,1.3),.25,-.06)
+			for s in [-1.0,1.0]:
+				stone(root,tyre,car+Vector3(s*.95,.3,.8).rotated(Vector3.UP,.25),Vector3(.6,.6,.3))
+				stone(root,glow,car+Vector3(s*.42,.7,-.78).rotated(Vector3.UP,.25),Vector3(.24,.18,.12),true)
+		_:
+			for i in range(6):
+				var p=Vector3(cos(i*2.4)*.9,.15+float(i%3)*.12,sin(i*2.4)*.9)
+				cube(root,paints[i%paints.size()] if i%2==0 else rust,p,Vector3(.9,.35,.6),i*1.1,.3)
+			branch(root,Vector3(0,0,0),Vector3(0,1.1,0),.42,Color("b33a2a"),1.0)
+			stone(root,glow,Vector3(.2,.05,-.55),Vector3(.9,.06,.6),true)
+			stone(root,glow,Vector3(0,1.12,0),Vector3(.5,.08,.5),true)
+
 static func collision(parent: Node3D,biome: int,variant: int,scale_value: float):
 	var body=StaticBody3D.new();body.collision_layer=1;body.set_meta("natural_obstacle",true);parent.add_child(body)
 	var collider=CollisionShape3D.new();var trunk=CylinderShape3D.new()
-	trunk.radius=(1.1 if biome==2 else .3 if variant==2 else .65)*scale_value;trunk.height=[9.0,6.0,3.0][variant]*scale_value
+	trunk.radius=(1.1 if biome==2 or biome==6 and variant<2 else .3 if variant==2 else .65)*scale_value;trunk.height=[9.0,6.0,3.0][variant]*scale_value
 	collider.shape=trunk;collider.position.y=trunk.height*.5;body.add_child(collider)
 
 static func light(parent: Node3D,biome: int,height: float=1.5,large: bool=false):

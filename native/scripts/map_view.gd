@@ -23,9 +23,9 @@ func configure(seed_value: int,realm: int):
 	for y in range(256):
 		for x in range(256):
 			var p=Vector2((x+.5)/256.0*map_extent*2-map_extent,(y+.5)/256.0*map_extent*2-map_extent)
-			var biome=2 if realm==3 else 0 if p.length()<65 else int(floor(fposmod(atan2(p.y,p.x)+phase,TAU)/(TAU/6)))
+			var biome=2 if realm==3 else 0 if p.length()<65 else mini(RealmWorld.BIOME_COUNT-1,int(floor(fposmod(atan2(p.y,p.x)+phase,TAU)/RealmWorld.BIOME_ARC)))
 			var coast=RealmWorld.coast_radius(atan2(p.y,p.x),seed_value,realm)
-			var color=Color.TRANSPARENT if p.length()>=coast else Color("806f53") if p.length()>coast-14 else [Color("294b42"),Color("37443f"),Color("3b465d"),Color("657179"),Color("63403c"),Color("443653")][biome]
+			var color=Color.TRANSPARENT if p.length()>=coast else Color("806f53") if p.length()>coast-14 else [Color("294b42"),Color("37443f"),Color("3b465d"),Color("657179"),Color("63403c"),Color("443653"),Color("5a4a2e")][biome]
 			image.set_pixel(x,y,color)
 	terrain=ImageTexture.create_from_image(image)
 

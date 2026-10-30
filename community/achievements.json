@@ -1083,14 +1083,14 @@
     },
     {
       "apiName": "WF_BIOME_COLLECTOR",
-      "displayName": "Six Worlds, One Map",
-      "description": "Discover all six biomes across your runs.",
+      "displayName": "Seven Worlds, One Map",
+      "description": "Discover all seven biomes across your runs.",
       "hidden": false,
       "iconUnlocked": "achievement-icons/wf_biome_collector-unlocked.png",
       "iconLocked": "achievement-icons/wf_biome_collector-locked.png",
       "condition": {
         "key": "biomes_discovered",
-        "target": 6,
+        "target": 7,
         "scope": "best"
       }
     },

@@ -61,7 +61,7 @@ Prefix every action below with `node scripts/agent-workflow.mjs`.
 | `forge-review` | Representative overhaul scene, orb snapshot and camera checks | Rendered; inspect full/half/low/empty/remote/reward captures |
 | `fresh-import` | Import an isolated copy with no `.godot` cache, then smoke-test | Preserves the working project cache |
 | `roster-review` | Hero/enemy orbs, scenery and full catalogue contact sheets | Inspect the rendered sheets |
-| `biome-review` | Stream and render all six biomes with combat | Normal camera, isolated profile |
+| `biome-review` | Stream and render all seven biomes with combat | Normal camera, isolated profile |
 | `release-review` | Exported 720p/1080p menus and 810p forge/combat/boss/biome captures | Uses the latest successful staged build |
 | `bake-roster` | Rebuild all baked enemy/prop resources | After Forge generators |
 | `style-review` | Short lighting and combat-art iteration | Eight rendered captures; actual explosion damage, effect expiry and unchanged camera checks. Full regression/export testing remains separate. |

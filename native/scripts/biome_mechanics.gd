@@ -8,6 +8,8 @@ class_name BiomeMechanics
 #   3 Cloudwilds      wind gusts: a telegraphed gust shoves heroes and enemies
 #   4 Candy Hell      lava vents: erupt into a spreading pool that burns everyone
 #   5 Starfall Space  gravity rifts: pull everything in, then implode on enemies
+#   6 Junkyard Planet scrap crushers: a press plate drops on a marked circle and
+#                     flattens everyone under it, enemies too
 # The host (or a solo game) rolls each event and broadcasts it, so every player
 # sees the same zone; each player applies its effect to their own hero, and only
 # the host moves, statuses and damages enemies. Not on the Red Moon.
@@ -18,15 +20,17 @@ const KINDS={
 	3:{"id":"gust","every":10.0,"warn":1.4,"life":2.5,"radius":9.0,"color":Color("e6f6ff"),"intro":"WIND GUSTS · watch the streaks; the gust shoves everyone"},
 	4:{"id":"lava","every":8.0,"warn":1.6,"life":8.0,"radius":4.5,"color":Color("ff7a2a"),"intro":"LAVA VENTS · pools spread and burn everyone inside"},
 	5:{"id":"rift","every":12.0,"warn":1.2,"life":3.0,"radius":6.5,"color":Color("b38cff"),"intro":"GRAVITY RIFTS · pulled in, then the rift implodes on enemies"},
+	6:{"id":"crusher","every":9.0,"warn":1.6,"life":1.2,"radius":3.6,"color":Color("ffb43a"),"intro":"SCRAP CRUSHERS · get out from under the falling plate; it flattens enemies too"},
 }
-const LABELS={"clover":"+ HEAL ZONE","spores":"POISON FOG","ice":"ICE · SLIPPERY","gust":"WIND","lava":"LAVA","rift":"GRAVITY RIFT"}
+const LABELS={"clover":"+ HEAL ZONE","spores":"POISON FOG","ice":"ICE · SLIPPERY","gust":"WIND","lava":"LAVA","rift":"GRAVITY RIFT","crusher":"CRUSHER"}
+const CRUSH_HEIGHT=9.0
 const MAX_ZONES=8
 static var disc_paints={}
 
 # Spore fog poisons, lava burns and a rift implodes on whoever is at its centre: these
 # zones wear the danger red. Clover heals, ice and wind only move you.
 static func hurts_hero(biome: int) -> bool:
-	return biome in [1,4,5]
+	return biome in [1,4,5,6]
 
 static func active(g) -> bool:
 	return g.run_active and g.realm<3 and g.mode=="playing"
@@ -66,10 +70,11 @@ static func spawn(g,event: Dictionary):
 	var biome=int(event.biome);var info=KINDS[biome]
 	var at=Vector3(float(event.pos[0]),0,float(event.pos[1]));at.y=g.world.height_at(at.x,at.z)
 	var zone={"kind":info.id,"biome":biome,"pos":at,"dir":Vector3(float(event.dir[0]),0,float(event.dir[1])).normalized(),"age":0.0,"warn":float(info.warn),"life":float(info.warn)+float(info.life),"radius":float(info.radius),"fx":0.0}
-	if zone.warn>0: zone.mark=preload("res://scripts/danger_mark.gd").make(g,at,zone.radius,{"spores":"toxic","ice":"caution","gust":"caution","lava":"lava","rift":"void"}.get(zone.kind,"ally"))
+	if zone.warn>0: zone.mark=preload("res://scripts/danger_mark.gd").make(g,at,zone.radius,{"spores":"toxic","ice":"caution","gust":"caution","lava":"lava","rift":"void","crusher":"meteor"}.get(zone.kind,"ally"))
 	if zone.has("mark"): zone.mark.material_override.set_shader_parameter("flash_from",clampf(1.0-.25/maxf(.3,zone.warn),0,1))
 	if zone.kind=="lava": zone.built=1.0
 	zone.node=disc(g,at,1.0 if zone.kind=="lava" else zone.radius,info.color,biome)
+	if zone.kind=="crusher": crusher_plate(zone)
 	name_tag(zone)
 	g.biome_zones.append(zone)
 	# The first event of each kind in a run says what it does.
@@ -101,7 +106,7 @@ static func disc(g,at: Vector3,radius: float,color: Color,biome: int) -> Node3D:
 		var paint=StandardMaterial3D.new();paint.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED;paint.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA
 		var fill: Color=Color("ffc24a") if biome==4 else color
 		if hurts_hero(biome): fill=fill.lerp(DangerMark.DANGER,.45)
-		paint.albedo_color=Color(fill,{0:.42,1:.22,2:.55,3:.0,4:.92,5:.25}[biome]);paint.cull_mode=BaseMaterial3D.CULL_DISABLED
+		paint.albedo_color=Color(fill,{0:.42,1:.22,2:.55,3:.0,4:.92,5:.25,6:.3}[biome]);paint.cull_mode=BaseMaterial3D.CULL_DISABLED
 		if biome==4: paint.emission_enabled=true;paint.emission=Color("ffb02e");paint.emission_energy_multiplier=2.4
 		disc_paints[key]=paint
 	floor_disc.material_override=disc_paints[key];root.add_child(floor_disc)
@@ -121,6 +126,20 @@ static func disc(g,at: Vector3,radius: float,color: Color,biome: int) -> Node3D:
 	if biome==5: AreaVisual.make(root,"gravity",radius*.55,Vector3.ZERO)
 	floor_disc.visible=biome!=3
 	return root
+
+# The press plate hangs high over the marked circle on a chain and drops as the
+# warning runs out (Junkyard Planet).
+static func crusher_plate(zone: Dictionary):
+	var plate=Node3D.new();plate.name="Plate";plate.position.y=CRUSH_HEIGHT;zone.node.add_child(plate)
+	var slab=BoxMesh.new();slab.size=Vector3(zone.radius*1.7,.7,zone.radius*1.7)
+	var paint=StandardMaterial3D.new();paint.albedo_color=Color("5b5f63");paint.roughness=1.0
+	var body=MeshInstance3D.new();body.mesh=slab;body.material_override=paint;plate.add_child(body)
+	# Hazard stripes wrap the sides only, so the grey slab reads from above.
+	var stripe=BoxMesh.new();stripe.size=Vector3(zone.radius*1.72,.22,zone.radius*1.72)
+	var hazard=StandardMaterial3D.new();hazard.albedo_color=Color("ffc93a");hazard.emission_enabled=true;hazard.emission=Color("ffb43a");hazard.emission_energy_multiplier=.8
+	var band=MeshInstance3D.new();band.mesh=stripe;band.material_override=hazard;band.position.y=0.0;plate.add_child(band)
+	var chain=CylinderMesh.new();chain.top_radius=.08;chain.bottom_radius=.08;chain.height=14.0
+	var link=MeshInstance3D.new();link.mesh=chain;link.material_override=paint;link.position.y=7.3;plate.add_child(link)
 
 static func inside(zone: Dictionary,p: Vector3) -> bool:
 	return Vector2(p.x-zone.pos.x,p.z-zone.pos.z).length()<zone_radius(zone)
@@ -144,6 +163,7 @@ static func tick(g,delta: float):
 			zone.mark.material_override.set_shader_parameter("progress",clampf(zone.age/maxf(.01,zone.warn),0,1))
 			if zone.age>=zone.warn: zone.mark.queue_free();zone.erase("mark")
 		look(g,zone,delta)
+		if zone.kind=="crusher": crusher_tick(g,zone,authority)
 		if not live(zone): continue
 		var hero=g.player.position
 		match zone.kind:
@@ -184,6 +204,22 @@ static func tick(g,delta: float):
 			if is_instance_valid(zone.get("node")): zone.node.queue_free()
 			if is_instance_valid(zone.get("mark")): zone.mark.queue_free()
 	g.biome_zones=g.biome_zones.filter(func(zone):return zone.life>0)
+
+# The plate falls with an accelerating ease and strikes once, the moment the
+# warning ends: heroes inside take a heavy hit, enemies inside take a big blow.
+static func crusher_tick(g,zone: Dictionary,authority: bool):
+	var plate=zone.node.get_node_or_null("Plate") if is_instance_valid(zone.get("node")) else null
+	var t=clampf(zone.age/maxf(.01,zone.warn),0,1)
+	# Down with an accelerating fall, rests a moment, then winches back up.
+	var lift=clampf((zone.age-zone.warn-.45)/maxf(.1,KINDS[6].life-.45),0,1)
+	if plate!=null: plate.position.y=lerpf(CRUSH_HEIGHT,.35,t*t*t)+lift*lift*CRUSH_HEIGHT
+	if zone.age<zone.warn or zone.get("struck",false): return
+	zone.struck=true
+	CombatInk.wave(g,zone.pos,zone.radius*1.3,KINDS[6].color);CombatInk.star(g,zone.pos+Vector3.UP*.6,zone.radius*1.2,Color("ffd27a"),8.0,.35)
+	g.sound.effect("slam",zone.pos)
+	g.hit_shake=maxf(g.hit_shake,.3)
+	if inside(zone,g.player.position): g.take_damage(18.0+g.realm*6.0+g.stats.maxHp*.12,zone.pos,"blast")
+	if authority: g.damage_area(zone.pos,zone.radius,g.stat("damage")*3.0+30.0,"stomp")
 
 static func near(g,zone: Dictionary,scale: float=1.0) -> Array:
 	var r=zone_radius(zone)*scale
@@ -237,4 +273,4 @@ static func steer(g,desired: Vector3,previous: Vector3,delta: float) -> Vector3:
 
 # Zones that hurt the hero, for the playtest bot's steering.
 static func harmful(g) -> Array:
-	return g.biome_zones.filter(func(zone):return zone.kind in ["spores","lava"] and zone.age>=zone.warn*.5)
+	return g.biome_zones.filter(func(zone):return zone.kind in ["spores","lava","crusher"] and zone.age>=zone.warn*.5)

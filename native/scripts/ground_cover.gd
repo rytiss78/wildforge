@@ -1,7 +1,7 @@
 extends RefCounted
 class_name GroundCover
 
-const COLORS=[Color("278b68"),Color("568e8b"),Color("648ab9"),Color("62bab2"),Color("b05a40"),Color("8f62ae")]
+const COLORS=[Color("278b68"),Color("568e8b"),Color("648ab9"),Color("62bab2"),Color("b05a40"),Color("8f62ae"),Color("5e5d58")]
 static var tufts={}
 static var paints={}
 
@@ -54,8 +54,9 @@ static func build(world,root: Node3D,cell: Vector2i,rng: RandomNumberGenerator):
 		p.y=world.height_at(p.x,p.z)
 		if absf(world.height_at(p.x+.6,p.z)-p.y)>.55 or absf(world.height_at(p.x,p.z+.6)-p.y)>.55: continue
 		if biome==2 and i%2!=0: continue
-		if biome==5 and i%2!=0: continue
-		var kind=2 if biome in [2,4,5] else 1 if biome in [1,3] else 0
+		if biome in [5,6] and i%2!=0: continue
+		# Junkyard: shards of scrap and bolts rather than grass.
+		var kind=2 if biome in [2,4,5,6] else 1 if biome in [1,3] else 0
 		var scale_value=rng.randf_range(1.15,1.75) if kind==2 else rng.randf_range(.78,1.28)
 		var basis=Basis(Vector3.UP,rng.randf()*TAU).scaled(Vector3.ONE*scale_value)
 		if not groups.has(kind): groups[kind]={"transforms":[],"colors":[]}

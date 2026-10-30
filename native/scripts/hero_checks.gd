@@ -48,7 +48,7 @@ static func run(game: Node3D):
 	checks.octopus_extra_shot=game.projectiles.size()-shot_count==4
 	var rng=RandomNumberGenerator.new();rng.seed=407
 	var flying_ok=true;var spawn_rates=[]
-	for biome in range(6):
+	for biome in range(RealmWorld.BIOME_COUNT):
 		var count=0;var old_weight=0
 		for index in CreatureBook.FLYING[biome]: old_weight+=CreatureBook.WEIGHTS[index]
 		for sample in range(6000):

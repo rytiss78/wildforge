@@ -1,8 +1,8 @@
 extends RefCounted
 class_name BiomeLandmarks
 
-const NAMES=["Heartroot Grove","Glowcap Hollow","Moonshard Thicket","The Weeping Sky","Emberroot Hollow","Astral Reef"]
-const COLORS=[Color("285b50"),Color("563661"),Color("344962"),Color("42626b"),Color("612b36"),Color("443465")]
+const NAMES=["Heartroot Grove","Glowcap Hollow","Moonshard Thicket","The Weeping Sky","Emberroot Hollow","Astral Reef","The Scrap Crown"]
+const COLORS=[Color("285b50"),Color("563661"),Color("344962"),Color("42626b"),Color("612b36"),Color("443465"),Color("5a3a24")]
 
 static func cut_stone(root: Node3D,color: Color,p: Vector3,dimensions: Vector3) -> MeshInstance3D:
 	var mesh=SphereMesh.new();mesh.radial_segments=7;mesh.rings=3;mesh.radius=.5;mesh.height=1

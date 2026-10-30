@@ -103,7 +103,7 @@ add("FULL_EXPLORER","Cartographer In A Panic","Reveal thirty map tiles in one wo
 add("GHOST_DANGER","Excuse Me, Coming Through","Ghost dash while a boss is alive.","event_GHOST_DANGER",1,'total','Challenges');
 add("WEAPON_MASTERY","Workshop Legend","Reach mastery rank 3 with five different weapons.","weapon_mastery_count",5,'best','Mastery');
 add("FORMATION_BREAKER","Break Their Ranks","Defeat 100 members of enemy formations.","formation_breaks",100,'total','Challenges');
-add("BIOME_COLLECTOR","Six Worlds, One Map","Discover all six biomes across your runs.","biomes_discovered",6,'best','Exploration');
+add("BIOME_COLLECTOR","Seven Worlds, One Map","Discover all seven biomes across your runs.","biomes_discovered",7,'best','Exploration');
 add("PARTY_PINGS","Good Call","Send 25 useful pings while playing co-op.","coop_pings",25,'total','Co-op');
 add("READY_PARTY","All Together","Start 10 co-op runs after every player readies up.","ready_runs",10,'total','Co-op');
 add("WELCOME_BACK","Back In The Forge","Reconnect to an active co-op run.","coop_reconnects",1,'total','Co-op');

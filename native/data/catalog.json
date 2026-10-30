@@ -19131,10 +19131,10 @@
     },
     {
       "id": "WF_BIOME_COLLECTOR",
-      "name": "Six Worlds, One Map",
-      "description": "Discover all six biomes across your runs.",
+      "name": "Seven Worlds, One Map",
+      "description": "Discover all seven biomes across your runs.",
       "key": "biomes_discovered",
-      "target": 6,
+      "target": 7,
       "scope": "best",
       "group": "Exploration",
       "hidden": false

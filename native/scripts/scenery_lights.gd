@@ -1,7 +1,7 @@
 extends RefCounted
 
 static func add_lamp(parent: Node3D,biome: int):
-	var colors=[Color("34efaa"),Color("91e24b"),Color("70baff"),Color("ffe0a0"),Color("ff5428"),Color("bc74ff")]
+	var colors=[Color("34efaa"),Color("91e24b"),Color("70baff"),Color("ffe0a0"),Color("ff5428"),Color("bc74ff"),Color("b6ff3a")]
 	var lamp=OmniLight3D.new();lamp.name="SceneryLantern";lamp.position=Vector3(0,2.8,0)
 	lamp.light_color=colors[biome];lamp.light_energy=1.7;lamp.omni_range=10
 	lamp.shadow_enabled=true;lamp.distance_fade_enabled=true;lamp.distance_fade_begin=27;lamp.distance_fade_length=12

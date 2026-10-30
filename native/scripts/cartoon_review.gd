@@ -43,8 +43,8 @@ static func run(g):
 			pilot.blit_rect(await frame(g),Rect2i(Vector2i.ZERO,CELL),Vector2i(i*CELL.x,side*CELL.y))
 		rig.queue_free();await g.get_tree().process_frame
 	checks.pilot=pilot.save_png("user://cartoon-orb-pilot.png")==OK
-	var sheet=Image.create(CELL.x*2,CELL.y*3,false,Image.FORMAT_RGBA8)
-	for biome in range(6):
+	var sheet=Image.create(CELL.x*2,CELL.y*4,false,Image.FORMAT_RGBA8)
+	for biome in range(RealmWorld.BIOME_COUNT):
 		var rigs=[]
 		for index in range(CreatureBook.WEIGHTS.size()):
 			var entry=CreatureBook.entry(biome,index)
@@ -78,8 +78,8 @@ static func run(g):
 	for rig in rear: rig.queue_free()
 	await g.get_tree().process_frame
 	# Close-ups of the humanoid mutants, three per biome.
-	var mutants=Image.create(CELL.x*2,CELL.y*3,false,Image.FORMAT_RGBA8)
-	for biome in range(6):
+	var mutants=Image.create(CELL.x*2,CELL.y*4,false,Image.FORMAT_RGBA8)
+	for biome in range(RealmWorld.BIOME_COUNT):
 		var rigs=[]
 		for index in [7,8,9]:
 			var entry=CreatureBook.entry(biome,index)

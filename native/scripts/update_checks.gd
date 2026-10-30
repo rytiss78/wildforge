@@ -70,10 +70,10 @@ static func run(game: Node3D):
 	game.clear_entities();game.select_hero(game.rules.data.heroes[1]);game.mode="playing";game.hud.close();game.hud.update(0)
 	game.buffs.clear();game.spawn_clock=999
 	if DisplayServer.get_name()!="headless":
-		for biome in range(6):
+		for biome in range(RealmWorld.BIOME_COUNT):
 			var point=Vector3.ZERO
 			if biome>0:
-				var angle=(biome+.5)*TAU/6-float(game.world.seed_value%23)*.03-game.realm*.4
+				var angle=(biome+.5)*RealmWorld.BIOME_ARC-float(game.world.seed_value%23)*.03-game.realm*.4
 				point=Vector3(cos(angle)*260,0,sin(angle)*260)
 			point.y=game.world.height_at(point.x,point.z);game.world.ensure_ground(point)
 			game.player.position=point+Vector3.UP*.1

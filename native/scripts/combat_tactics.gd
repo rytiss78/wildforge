@@ -10,12 +10,12 @@ static func ranged_movement(enemy: Dictionary,toward: Vector3,distance: float,vi
 	# Walk closer when terrain blocks the shot; never kite forever beyond range.
 	var forward=toward.normalized()
 	if not visible or distance>21: return forward
-	var preferred=[12.0,10.0,17.0,14.0,11.0,16.0][enemy.biome]+float(enemy.net_id%3)-1.0
+	var preferred=[12.0,10.0,17.0,14.0,11.0,16.0,13.0][enemy.biome]+float(enemy.net_id%3)-1.0
 	if distance<preferred-2: return -forward*.75
 	if distance>preferred+2: return forward*.8
 	if enemy.get("ranged_recovery",0)>0: return Vector3.ZERO
 	var side=forward.cross(Vector3.UP)*(1 if int(enemy.net_id)%2==0 else -1)
-	return side*[.2,.45,.08,.5,.3,.6][enemy.biome]
+	return side*[.2,.45,.08,.5,.3,.6,.35][enemy.biome]
 
 static func charge_movement(g,enemy: Dictionary,aim: Vector3,distance: float,delta: float) -> Vector3:
 	# A rush commits when the warning starts. Dodging sideways then matters.
@@ -48,7 +48,7 @@ static func ranged_attack(g,enemy: Dictionary,target: Vector3):
 	var forward=(target-enemy.node.position).normalized();forward.y=0
 	var side=forward.cross(Vector3.UP).normalized()
 	var damage=(24+g.realm*7)*enemy.damage*g.realm_difficulty*g.ENEMY_DAMAGE_SCALE
-	var style=["roots","toxic","meteor","storm","lava","void"][enemy.biome]
+	var style=["roots","toxic","meteor","storm","lava","void","meteor"][enemy.biome]
 	# One shooter, one mark on the ground (user request, October 25: three marks per
 	# shot filled the ground at the start of an island).
 	var points=[target]

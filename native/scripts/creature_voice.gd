@@ -15,7 +15,8 @@ const VOICES=[
 	["growl",.9],["warble",1.1],["growl",.75],["warble",1.25],["squeak",1.15],["honk",.85],["gibber",.85],["gibber",1.15],["groan",.9],["squeak",.9],
 	["warble",1.2],["honk",1.15],["burp",.9],["warble",1.0],["squeak",1.1],["growl",1.0],["hiss",1.1],["gibber",1.2],["honk",1.0],["honk",1.25],
 	["gibber",1.1],["hiss",.9],["growl",.85],["squeak",1.05],["squeak",1.3],["burp",.8],["hiss",.85],["warble",.9],["groan",.8],["gibber",1.0],
-	["gibber",.95],["warble",.85],["honk",1.3],["hiss",1.2],["squeak",1.4],["growl",.8],["warble",1.3],["burp",1.05],["groan",.85],["gibber",1.25]]
+	["gibber",.95],["warble",.85],["honk",1.3],["hiss",1.2],["squeak",1.4],["growl",.8],["warble",1.3],["burp",1.05],["groan",.85],["gibber",1.25],
+	["burp",1.1],["honk",1.4],["growl",.7],["hiss",.8],["squeak",1.5],["growl",.7],["warble",.75],["groan",1.05],["gibber",.75],["hiss",1.3]]
 const HURT_CHANCE=.35
 const HURT_EVERY=1.5  # one enemy's hurt yelps, at most
 const GAP=.12  # between any two creature voices

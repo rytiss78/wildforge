@@ -8,7 +8,7 @@ Evidence folders are under `.build-staging/agent-workflow/`. Run folders older t
 
 ## The game today
 
-- **Run:** three islands of six biomes each (island 2 is "Blighted Highlands", island 3 "Ashen Reach"). Each island has a 10-minute clock, two wardens and a portal. Then the Red Moon arena with the Baron, then an endless Eclipse.
+- **Run:** three islands of seven biomes each (island 2 is "Blighted Highlands", island 3 "Ashen Reach"). Each island has a 10-minute clock, two wardens and a portal. Then the Red Moon arena with the Baron, then an endless Eclipse.
 - **Content:** 25 heroes, 73 weapons (including four screen-filling spells), 746 upgrade cards, 102 mutations, elite modifiers (shielded, splitting, blinking, berserk), hunts, supply beacons, magnet events, a merchant, rerolls and banishes, and 117 achievements with earned cosmetics.
 - **Co-op:** up to four players over LAN, or over the internet with UPnP invite codes. Drop-in join, reconnect (missed rewards are replayed), shared XP with each player's own reward cards, and party combos (Crossfire, Overload). The world travels in packets under the MTU. Protocol `wildforge-shared-world-16` (Build 24: ten enemy species per biome and the cartoon cast; 15 was Build 23).
 - **Difficulty:** tuned with the playtest bot (island step 0.45, Baron health x7.5). The last 24 runs had 71% clear island 1, 42% reach the Baron and 25% beat him, against a target of about 70 / 25 / 10. Bot runs vary by about 20 points (see "Difficulty retune").
@@ -414,6 +414,27 @@ The user asked for a final boss like the floating heads of Rick and Morty S2E5, 
 - [x] **Creature voices** (`CreatureVoice`, sounds from `scripts/make-creature-voices.py`). Eight gibberish voices (squeak, gibber, burp, growl, honk, hiss, warble, groan) with chatter, hurt and death lines, two takes each. Each of the 60 species has a voice and pitch (elites deeper). Creatures yelp on some hits (35%, at most every 1.5 s each), always on death, and one nearby creature babbles every 2.5–5 s. The Noggin booms its own lines: a roar on each phase and sing, bravo and boo for the performance. integration `creature_voices`, `creature_death_voice`; colossus-review `noggin_sings`, `noggin_boos`, `noggin_bravo`, `noggin_roars`. **Not listened to by a person yet**; the levels and lengths were measured only.
 - **Published as Build 25 (1.8.0)**, tag `build-25` on source commit `d5e8d23` (user request, October 26). Archive `Wildforge-1.8.0-Windows.zip` (85,253,662 bytes, SHA-256 `b64afbdb…b2b43c492bc`). The unpacked ZIP passes the startup smoke and, as two copies, the co-op shared-review. Notes: `native/docs/build25-release.md`.
 - **`biome_ice` flake, fixed in the check:** the ice check moved its dummy with `node.position` and ticked synchronously. With physics interpolation, the body reaches the physics server only at the engine's next physics flush. So it stayed at its random spawn spot, sometimes right on the hero, who was lifted onto it and off the ice. Neither `force_update_transform` nor `body_set_state` moved it there. The check now waits one physics frame after placing the dummy. Four integration runs passed afterwards (it had failed about half the time).
+
+## Nine picks from the idea list (user picks 11, 13, 16, 17, 18, 20, 22, 25, 27; October 29–30)
+
+Not released yet (Build 25 is the latest public build).
+
+- [x] **Combo meter** (meter only, no rewards), **exploding red barrels** (hurt enemies and heroes, chain, synced in co-op) and **death animations per creature type** (`c694187`).
+- [x] **Co-op rescue code:** enter an arrow code to revive a downed friend (`53b9454`).
+- [x] **Pets:** a run companion that fetches far coins and evolves (`bd73488`).
+- [x] **Achievement hats:** thirteen hats, each unlocked by an achievement (`8019116`).
+- [x] **Title intro:** the Noggin crashes the heroes' photo before the menu (`2ba52ee`); Noggin voice quieter, much quieter in the intro (`64e1eae`).
+- [x] **Hero tricks:** a unique trick for each of the 25 heroes on V / left trigger (`aaac705`).
+- [x] **New biome: Junkyard Planet** (biome 6). The island is now seven slices (`RealmWorld.BIOME_COUNT`, `BIOME_ARC`; terrain shader divides by TAU/7):
+  - rust-and-oil ground with scrap mounds, a smoggy mustard sky, rust flakes drifting down;
+  - scenery: crushed-car towers under crane arms with toxic warning lamps, tyre stacks by car hulks, scrap heaps round leaking drums; grey scrap shards for ground cover; landmark "The Scrap Crown"; great hall "Crusher Works";
+  - ten original cartoon creatures built round their orbs: Trashcan Stan, Propeller Pidge, Tank Tortoise, Hose Nose, Bolt Bug, Bulldozer Bruno, Lamp Lurker, and the mutants Wrenchhand Wendy, Tire Torso Tony and Battery Betty, each with a voice;
+  - fight mechanic **scrap crushers**: a press plate on a chain drops on a red circle after 1.6 s, hits heroes inside hard (18 + 6 per island + 12% max HP) and enemies for 3× damage + 30, then winches back up;
+  - harvestable **Scrap Battery** (+20% attack speed for 20 s); two bosses (The Last Receiver, Gallows Appetite) favour it;
+  - toughness tier 3 of 0–5 (`RealmWorld.BIOME_TIER`), so it is not the hardest slice;
+  - achievement now "Seven Worlds, One Map" (7 biomes).
+  - Evidence: check, smoke, integration (three runs), `biome-review` (captures `biome-6`, `biome-mechanic-6`) and `cartoon-review` (roster and mutants sheets, now 2×4) on `2026-10-30`.
+  - **Gap:** no announcer line for Junkyard Planet yet. The text is in `scripts/generate-neural-voices.py`, but the Kokoro voice environment needs Python 3.12 and this machine now has only 3.15; `say("biome_6")` stays silent until it is rendered.
 
 ## Player notes: 16 fixes (user list, October 25, after Build 23)
 

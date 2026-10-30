@@ -16,7 +16,8 @@ const NAMES=[
 	["Crater Clod","Moonray","Gorbo Block","Saucer Sam","Glowworm Zip","Ram Moonbeast","The Watcher Stack","Crab Hands Craig","Moonhead Morris","Eyeball Eddie"],
 	["Sunpuff","Beakface","Snowslug Gus","Jellyfloat","Kitebat","Wurmo","Stilt Strider","Leggy Lou","Puffer Pete","Beakmouth Bea"],
 	["Gumdrop Goon","Taffy Snapper","Jawbreaker Joe","Lollipop Larry","Frostfly","Bubblegut","Cinder Grinner","Gummy Gary","Fistbody Frank","Tongue Tina"],
-	["Brainy Blorp","Orbitopus","Ringthing","Mantoid Zap","Twinkle Tick","Crabzilla Jr.","Antenna Annie","Tentacle Ted","Brainbuster Bob","Mirror Mike"]]
+	["Brainy Blorp","Orbitopus","Ringthing","Mantoid Zap","Twinkle Tick","Crabzilla Jr.","Antenna Annie","Tentacle Ted","Brainbuster Bob","Mirror Mike"],
+	["Trashcan Stan","Propeller Pidge","Tank Tortoise","Hose Nose","Bolt Bug","Bulldozer Bruno","Lamp Lurker","Wrenchhand Wendy","Tire Torso Tony","Battery Betty"]]
 const UP=Vector3.UP
 const FRONT=Vector3.FORWARD
 const INK=CartoonMesh.INK
@@ -662,4 +663,101 @@ static func build(m: CartoonMesh,biome: int,index: int) -> Color:
 			m.eye(a.chest+Vector3(-.09,.12,-.2),.06,Vector3.FORWARD,c("7dff6a"),CartoonMesh.BODY,0.0,Vector2(0,1),true);m.eye(a.chest+Vector3(.09,.12,-.2),.06,Vector3.FORWARD,c("7dff6a"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
 			m.grin(a.chest+Vector3(0,-.08,-.2),.24,.1,5)
 			m.orb=a.hip+Vector3(0,0,-.18);m.orb_radius=.09;return c("ff6bd5")
+		# Junkyard Planet (biome 6, October 27): scrap-built critters in bright paint,
+		# so they read against the rust-brown ground.
+		60:  # Trashcan Stan: a dented teal bin whose middle is a glass orb; the lid is a toothy mouth.
+			var tin=c("3fd0c9");var dark=c("23857f")
+			m.core(Vector3(0,.72,0),.4)
+			m.can(Vector3(0,.2,0),Vector3(0,.36,0),.46,tin);m.ring(Vector3(0,.72,0),.43,.06,dark);m.can(Vector3(0,1.06,0),Vector3(0,1.2,0),.46,tin)
+			m.ball(Vector3(0,1.3,-.08),Vector3(1.0,.14,.95),dark,CartoonMesh.TAIL,0.0,Vector2(1.25,.6),false,Vector3(-.25,0,0))
+			m.grin(Vector3(0,1.17,-.44),.62,.16,7)
+			m.stalk_eye(Vector3(-.18,1.28,-.1),Vector3(-.28,1.6,-.2),.14,c("ff9a3c"),FRONT,c("2b2bff"),.2)
+			m.stalk_eye(Vector3(.2,1.28,-.08),Vector3(.34,1.55,-.16),.11,c("ff9a3c"),Vector3(.4,0,-1),c("2b2bff"),.6)
+			m.ball(Vector3(.3,1.38,.2),Vector3(.3,.08,.2),c("c9e85a"))  # a banana peel on the lid
+			m.legs([Vector3(-.24,.2,-.15),Vector3(.24,.2,-.15),Vector3(0,.2,.25)],.16,.08,c("ff9a3c"),c("8a4a2a"))
+			return tin
+		61:  # Propeller Pidge: a flying glass orb with a rusty propeller cap, a beak and bolt eyes.
+			var paint=c("ffcf3a")
+			m.core(Vector3(0,.8,0),.34)
+			m.ring(Vector3(0,.8,0),.36,.07,c("c4542a"))
+			m.ball(Vector3(0,1.12,0),Vector3(.5,.18,.5),paint);m.rod(Vector3(0,1.2,0),Vector3(0,1.4,0),.04,c("5b5f63"))
+			for i in range(3): m.box(Vector3(0,1.42,0)+Vector3(cos(i*TAU/3),0,sin(i*TAU/3))*.35,Vector3(.7,.03,.12),c("c4542a"),CartoonMesh.TAIL,Vector3(0,-i*TAU/3,.15))
+			m.spike(Vector3(0,.82,-.32),Vector3(0,.76,-.62),.11,c("ff8a2b"))
+			m.eye(Vector3(-.14,.98,-.26),.09,FRONT,c("5b5f63"));m.eye(Vector3(.14,.98,-.26),.08,Vector3(.3,0,-1),c("5b5f63"))
+			m.wings(Vector3(0,.84,.05),.7,.45,c("9fe0ff"),c("4f7a8a"),.4)
+			return paint
+		62:  # Tank Tortoise: a riveted hull around a big glass orb, treads for legs, a periscope eye.
+			var hull=c("6fd06a");var plate=c("3e8a3a")
+			m.core(Vector3(0,.95,.1),.6)
+			m.ring(Vector3(0,.62,.1),.62,.18,plate);m.ring(Vector3(0,.95,.1),.62,.06,hull,Vector3(PI*.5,0,0))
+			for i in range(8): var d=Vector3(cos(i*TAU/8),0,sin(i*TAU/8));m.ball(Vector3(0,.62,.1)+d*.62,Vector3.ONE*.08,c("dfe3e6"))
+			for s in [-1.0,1.0]: m.box(Vector3(s*.66,.28,.1),Vector3(.32,.36,1.5),c("2b2a2c"),CartoonMesh.LEG)
+			m.ball(Vector3(0,.62,-.72),Vector3(.6,.5,.55),c("ffd23f"))
+			m.eye(Vector3(-.12,.76,-.95),.08);m.eye(Vector3(.13,.74,-.96),.1,Vector3(.3,0,-1))
+			m.grin(Vector3(0,.52,-.96),.3,.1,4,false)
+			m.rod(Vector3(0,1.5,.1),Vector3(0,1.95,.1),.06,c("5b5f63"));m.eye(Vector3(0,2.0,0),.12,FRONT,c("ff3b3b"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
+			return hull
+		63:  # Hose Nose: a glass orb on a tripod, a long ribbed hose snout ending in a brass nozzle.
+			var body=c("ff7ab0")
+			m.core(Vector3(0,.82,0),.36)
+			m.ball(Vector3(0,1.22,0),Vector3(.62,.3,.56),body);m.ring(Vector3(0,.82,0),.38,.06,c("c4467e"))
+			for i in range(6): m.ring(Vector3(0,1.15-i*.02,-.32-i*.1),.09,.04,c("4fd0ff") if i%2==0 else c("2b8ad6"),Vector3(PI*.5,0,0))
+			m.can(Vector3(0,1.03,-.95),Vector3(0,1.0,-1.12),.08,c("e0b52f"))
+			m.eye(Vector3(-.15,1.36,-.2),.1);m.eye(Vector3(.16,1.34,-.2),.08,Vector3(.4,0,-1))
+			m.legs([Vector3(-.25,.5,-.15),Vector3(.25,.5,-.15),Vector3(0,.5,.28)],.42,.06,c("5b5f63"),c("2b2a2c"))
+			return body
+		64:  # Bolt Bug: a tiny buzzing glass orb on wire legs with spark-plug antennae.
+			var shell=c("ff9a3c")
+			m.core(Vector3(0,.62,0),.28)
+			m.ball(Vector3(0,.86,0),Vector3(.44,.16,.4),shell);m.ring(Vector3(0,.62,0),.29,.05,c("2b2a2c"))
+			for x in [-.12,.12]: m.eye(Vector3(x,.88,-.18),.07,FRONT,c("7dfffb"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
+			m.antenna(Vector3(-.1,.94,-.05),Vector3(-.22,1.2,-.12),.06,c("5b5f63"),c("b6ff3a"),.2);m.antenna(Vector3(.1,.94,-.05),Vector3(.22,1.2,-.12),.06,c("5b5f63"),c("b6ff3a"),.7)
+			m.wings(Vector3(0,.84,.08),.45,.3,c("e6fbff"),c("9ab8c4"),.5)
+			m.spider_legs(6,Vector3(0,.5,0),.42,.18,.025,c("5b5f63"))
+			return shell
+		65:  # Bulldozer Bruno: a huge glass-orb gut behind a dozer blade, an exhaust stack for a horn.
+			var paint=c("ffd23f");var rust=c("b0552c")
+			m.core(Vector3(0,.95,0),.6)
+			m.ball(Vector3(0,1.6,.1),Vector3(1.3,.75,1.1),paint);m.ring(Vector3(0,.95,0),.61,.07,rust)
+			m.box(Vector3(0,.55,-.82),Vector3(1.7,.7,.12),c("5b5f63"),CartoonMesh.BODY,Vector3(-.2,0,0))
+			for s in [-1.0,1.0]: m.rod(Vector3(s*.55,.8,-.45),Vector3(s*.6,.6,-.78),.08,rust)
+			m.can(Vector3(.35,1.9,.3),Vector3(.38,2.45,.3),.1,c("2b2a2c"));m.ball(Vector3(.38,2.55,.3),Vector3(.22,.14,.22),c("8f8f8f"),CartoonMesh.TAIL)
+			m.eye(Vector3(-.22,1.82,-.42),.11,FRONT,c("ff3b3b"));m.eye(Vector3(.2,1.8,-.42),.1,FRONT,c("ff3b3b"))
+			m.grin(Vector3(0,1.5,-.5),.7,.24,6)
+			m.legs([Vector3(-.45,.4,0),Vector3(.45,.4,0)],.3,.22,rust,c("2b2a2c"))
+			return paint
+		66:  # Lamp Lurker: a tall bent street lamp whose lantern is the glass orb, one bulb eye.
+			var pole=c("4fd0ff")
+			m.core(Vector3(0,2.0,-.35),.3)
+			m.rod(Vector3(0,.15,0),Vector3(0,1.6,.1),.09,pole);m.rod(Vector3(0,1.6,.1),Vector3(0,2.35,-.1),.08,pole)
+			m.ring(Vector3(0,2.0,-.35),.31,.05,c("2b8ad6"));m.ball(Vector3(0,2.36,-.35),Vector3(.5,.16,.5),c("2b8ad6"))
+			m.eye(Vector3(0,1.98,-.68),.12,FRONT,c("fff36a"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
+			m.grin(Vector3(0,1.72,-.62),.3,.1,4,false)
+			m.legs([Vector3(-.22,.25,0),Vector3(.22,.25,0)],.2,.08,pole,c("2b2a2c"))
+			return pole
+		67:  # Wrenchhand Wendy: a shambling mechanic whose hands are giant wrenches.
+			var skin=c("ffb07a");var a=person(m,skin,c("3b7dff"),c("2a4a8a"),c("2a2340"),{"no_arms":true,"hunch":.2})
+			for i in range(2):
+				var tip=a.hands[i]+Vector3((-1.0 if i==0 else 1.0)*.05,-.05,-.12)
+				m.rod(a.shoulders[i],tip,.075,c("3b7dff"),CartoonMesh.LEG,.5*float(i),Vector2(a.shoulders[i].y,.5))
+				m.rod(tip,tip+Vector3(0,-.35,-.1),.06,c("c9ced6"),CartoonMesh.LEG,.5*float(i),Vector2(a.shoulders[i].y,.5))
+				m.ring(tip+Vector3(0,-.42,-.12),.11,.05,c("c9ced6"),Vector3(PI*.5,0,0),CartoonMesh.LEG)
+			m.ball(a.head+Vector3(0,.2,0),Vector3(.46,.12,.46),c("ff3b3b"))  # a red cap
+			m.orb=a.chest+Vector3(0,0,-.2);m.orb_radius=.09;return c("3b7dff")
+		68:  # Tire Torso Tony: two heads fused on one body, a giant tyre round the glass-orb belly.
+			var skin=c("8fff5a");var a=person(m,skin,c("ff4fd8"),c("2a2340"),c("1a1a2a"),{"no_head":true,"fat":.5})
+			m.ring(a.chest+Vector3(0,-.1,0),.52,.14,c("2b2a2c"))
+			for s in [-1.0,1.0]:
+				var head=a.neck+Vector3(s*.18,.22,0)
+				m.ball(head,Vector3(.34,.38,.34),skin);m.eye(head+Vector3(-.05,.04,-.15),.045);m.eye(head+Vector3(.05,.04,-.15),.05,Vector3(s*.4,0,-1))
+				m.grin(head+Vector3(0,-.09,-.15),.14,.05,3,false,.3)
+			return c("ff4fd8")
+		69:  # Battery Betty: a battery for a head that spits acid, a glowing terminal on top.
+			var skin=c("ffe14a");var a=person(m,skin,c("b6ff3a"),c("2a2340"),c("2a2340"),{"no_head":true})
+			var head=a.neck+Vector3(0,.3,0)
+			m.can(head-Vector3(0,.2,0),head+Vector3(0,.2,0),.2,c("2e3a2e"));m.ring(head+Vector3(0,.12,0),.21,.05,c("c9a23a"))
+			m.can(head+Vector3(0,.2,0),head+Vector3(0,.28,0),.07,c("b6ff3a"));m.ball(head+Vector3(0,.3,0),Vector3.ONE*.1,c("b6ff3a"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
+			m.eye(head+Vector3(-.07,.03,-.19),.05);m.eye(head+Vector3(.07,.03,-.19),.05)
+			m.grin(head+Vector3(0,-.09,-.19),.16,.06,4,false,.3)
+			m.orb=a.chest+Vector3(0,0,-.2);m.orb_radius=.09;return c("b6ff3a")
 	return Color.WHITE

@@ -3,7 +3,7 @@ extends RefCounted
 static func run(game) -> Dictionary:
 	game.start_run(611);game.set_physics_process(false);game.spawn_clock=99999
 	var checks={}
-	checks.harvest_biome=game.harvestables.size()==48 and game.harvestables.all(func(h):return game.world.biome_at(h.node.position)==h.biome)
+	checks.harvest_biome=game.harvestables.size()==8*RealmWorld.BIOME_COUNT and game.harvestables.all(func(h):return game.world.biome_at(h.node.position)==h.biome)
 	checks.harvest_descriptions=HarvestBook.TYPES.all(func(t):return not t.description.is_empty() and not t.effect.is_empty())
 	var damage=game.stat("damage");var permanent=game.stats.damage
 	var pepper=game.harvestables.filter(func(h):return h.biome==4)[0]

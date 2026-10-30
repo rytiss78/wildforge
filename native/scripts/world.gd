@@ -24,9 +24,16 @@ const GRADE=[
 	{"shape":Vector3(8,22,-22),"mix":.68,"corruption":1.0,"top":Color("240806"),"horizon":Color("b2401f"),"ambient":Color("f3a888"),"ambient_energy":.27,"sun":Color("ff7448"),"sun_energy":.95,"vein":Color("ff5a14"),"tint":Color("4e3a34"),"scenery":Vector3(.7,.56,.5),"air":Color("b9aea6"),"air_rises":false,"title":"Ash and fire · the hardest island"},
 	{"shape":Vector3.ZERO,"mix":0.0,"corruption":0.0},
 ]
-const BIOMES=["Clover Woods","Puffcap Marsh","Moon Craters","Cloudwilds","Candy Hell","Starfall Space"]
-const CREATURES=["acorn","toad","crab","penguin","lizard","beetle"]
-const COLORS=[Color("326849"),Color("91b3ab"),Color("b4c5df"),Color("d9eaed"),Color("e69479"),Color("ab96c5")]
+# Seven biomes: six slices of the island plus Junkyard Planet (biome 6, user
+# request October 27: a new biome), a rust-and-scrap slice under a smog sky.
+const BIOME_COUNT=7
+const BIOME_ARC=TAU/BIOME_COUNT
+# Toughness and reward tier per biome (enemy health, damage, gold). Biomes 0-5
+# keep their index; Junkyard Planet sits mid-pack instead of becoming the hardest.
+const BIOME_TIER=[0,1,2,3,4,5,3]
+const BIOMES=["Clover Woods","Puffcap Marsh","Moon Craters","Cloudwilds","Candy Hell","Starfall Space","Junkyard Planet"]
+const CREATURES=["acorn","toad","crab","penguin","lizard","beetle","rat"]
+const COLORS=[Color("326849"),Color("91b3ab"),Color("b4c5df"),Color("d9eaed"),Color("e69479"),Color("ab96c5"),Color("a8824e")]
 var realm=0
 var seed_value=0
 var noise=FastNoiseLite.new()
@@ -63,10 +70,10 @@ var edge_near=false
 var eclipse=false
 var island_air: GPUParticles3D
 static var prop_meshes={}
-const SKY_TOP=[Color("111a2b"),Color("151b28"),Color("18234d"),Color("254459"),Color("301824"),Color("16132d")]
+const SKY_TOP=[Color("111a2b"),Color("151b28"),Color("18234d"),Color("254459"),Color("301824"),Color("16132d"),Color("1f2614")]
 # Horizons (and so fog) for biomes 2-5 were darkened in the October 23 per-biome pass:
 # pale horizons washed the ground out through the fog.
-const SKY_HORIZON=[Color("293b48"),Color("405149"),Color("34405e"),Color("5f8288"),Color("6a2a24"),Color("392c5a")]
+const SKY_HORIZON=[Color("293b48"),Color("405149"),Color("34405e"),Color("5f8288"),Color("6a2a24"),Color("392c5a"),Color("5e5526")]
 # Dark skies are lifted toward these brightnesses (luminance), by at most 1.6x at
 # the top and 2.2x at the horizon; skies already that bright stay as they are.
 const SKY_TOP_LIFT=Vector2(.13,1.6)
@@ -98,16 +105,17 @@ func weather_tick(delta: float,p: Vector3):
 		active_biome=biome
 		for cloud in clouds: cloud.visible=biome in [1,3]
 		stars.visible=biome in [2,5];moon.visible=biome==2
-		weather.emitting=biome in [0,1,3,4,5]
-		weather.amount=240 if biome==1 else 80 if biome in [3,4,5] else 38
+		weather.emitting=biome in [0,1,3,4,5,6]
+		weather.amount=240 if biome==1 else 80 if biome in [3,4,5,6] else 38
 		var material: ParticleProcessMaterial=weather.process_material
 		# Marsh: rain in wind; cloud: drifting motes; hell: rising sparks.
-		material.gravity=Vector3(3,-13,1) if biome==1 else Vector3(2,-.5,1) if biome==3 else Vector3(-2,4,0) if biome==4 else Vector3(-2,.7,0)
+		# Junkyard: rust flakes drifting down through the smog.
+		material.gravity=Vector3(3,-13,1) if biome==1 else Vector3(2,-.5,1) if biome==3 else Vector3(-2,4,0) if biome==4 else Vector3(1.5,-1.6,.6) if biome==6 else Vector3(-2,.7,0)
 		material.initial_velocity_min=1.5;material.initial_velocity_max=4.0 if biome==1 else 2.5
-		var paint=StandardMaterial3D.new();paint.albedo_color=Color("b5dfec") if biome==1 else Color("fff8ed") if biome==3 else Color("ffcb88") if biome==4 else Color("bd9af0") if biome==5 else Color("a0c681")
+		var paint=StandardMaterial3D.new();paint.albedo_color=Color("b5dfec") if biome==1 else Color("fff8ed") if biome==3 else Color("ffcb88") if biome==4 else Color("bd9af0") if biome==5 else Color("d8925a") if biome==6 else Color("a0c681")
 		paint.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED
 		var mesh=SphereMesh.new();mesh.radius=.02 if biome==1 else .015 if biome==0 else .05;mesh.height=.9 if biome==1 else .06 if biome==0 else .18;mesh.material=paint;weather.draw_pass_1=mesh
-	weather.emitting=not eclipse and biome in [0,1,3,4,5]
+	weather.emitting=not eclipse and biome in [0,1,3,4,5,6]
 	weather.position=p+Vector3.UP*8
 	for i in range(low_mist.size()):
 		var mist=low_mist[i];mist.visible=biome in [1,3] and not eclipse
@@ -142,12 +150,12 @@ func weather_tick(delta: float,p: Vector3):
 func biome_at(p: Vector3) -> int:
 	if realm==3: return 2
 	if Vector2(p.x,p.z).length()<65: return 0
-	return int(floor(fposmod(atan2(p.z,p.x)+float(seed_value%23)*.03+realm*.4,TAU)/(TAU/6)))
+	return mini(BIOME_COUNT-1,int(floor(fposmod(atan2(p.z,p.x)+float(seed_value%23)*.03+realm*.4,TAU)/BIOME_ARC)))
 
 func crossing_distance(p: Vector3) -> float:
 	var radius=Vector2(p.x,p.z).length()
-	var angle=fposmod(atan2(p.z,p.x)+float(seed_value%23)*.03+realm*.4,TAU/6)
-	return minf(absf(radius-65),radius*sin(minf(angle,TAU/6-angle)))
+	var angle=fposmod(atan2(p.z,p.x)+float(seed_value%23)*.03+realm*.4,BIOME_ARC)
+	return minf(absf(radius-65),radius*sin(minf(angle,BIOME_ARC-angle)))
 
 func height_at(x: float,z: float) -> float:
 	# Match the actual four-metre terrain triangles used by collision exactly.
@@ -171,17 +179,17 @@ func compute_height_at(x: float,z: float) -> float:
 		return 1.3+sin(x*.06)*cos(z*.06)*.4-maxf(0,distance-64)*.45
 	var p=Vector3(x,0,z)
 	var biome=biome_at(p)
-	var angle=fposmod(atan2(z,x)+float(seed_value%23)*.03+realm*.4,TAU)/(TAU/6)
+	var angle=fposmod(atan2(z,x)+float(seed_value%23)*.03+realm*.4,TAU)/BIOME_ARC
 	# Reduced terrain amplitudes to keep slopes navigable for enemies.
-	var amplitudes=[6.0,4.0,6.0,8.0,6.0,6.0]
-	var index=int(floor(angle))
-	var amplitude=lerpf(amplitudes[index],amplitudes[(index+1)%6],smoothstep(0.0,1.0,fposmod(angle,1.0)))
+	var amplitudes=[6.0,4.0,6.0,8.0,6.0,6.0,5.0]
+	var index=mini(BIOME_COUNT-1,int(floor(angle)))
+	var amplitude=lerpf(amplitudes[index],amplitudes[(index+1)%BIOME_COUNT],smoothstep(0.0,1.0,fposmod(angle,1.0)))
 	# Smooth amplitudes near angular boundaries; no invisible height discontinuities.
 	var base=noise.get_noise_2d(x,z)*6+sin(x*.012)*cos(z*.012)*3
 	var mountain=maxf(0,noise.get_noise_2d(x+790,z-530))*12
 	var blend=smoothstep(65.0,120.0,Vector2(x,z).length())
-	var terrain=[sin(x*.06)*cos(z*.06)*1.5,-absf(sin(x*.025)*sin(z*.035))*3,-pow(maxf(0,noise.get_noise_2d(x*2,z*2)),2)*6,sin(x*.025)*cos(z*.025)*7,absf(sin(x*.032)+cos(z*.041))*4,sin(x*.018)*cos(z*.022)*9]
-	var relief=lerpf(terrain[index],terrain[(index+1)%6],smoothstep(0.0,1.0,fposmod(angle,1.0)))
+	var terrain=[sin(x*.06)*cos(z*.06)*1.5,-absf(sin(x*.025)*sin(z*.035))*3,-pow(maxf(0,noise.get_noise_2d(x*2,z*2)),2)*6,sin(x*.025)*cos(z*.025)*7,absf(sin(x*.032)+cos(z*.041))*4,sin(x*.018)*cos(z*.022)*9,maxf(0.0,sin(x*.05+cos(z*.03))*cos(z*.045))*5.0-1.0]
+	var relief=lerpf(terrain[index],terrain[(index+1)%BIOME_COUNT],smoothstep(0.0,1.0,fposmod(angle,1.0)))
 	var original=base+mountain*blend*(amplitude/28.0)+relief*blend
 	var terrace=floorf(original/5.0)*5.0+smoothstep(.62,1.0,fposmod(original,5.0)/5.0)*5.0
 	var route=1.0-smoothstep(4.0,12.0,crossing_distance(p))
@@ -248,7 +256,7 @@ func make_material():
 	var grade: Dictionary=GRADE[realm]
 	terrain_material.set_shader_parameter("shape",grade.shape);terrain_material.set_shader_parameter("corruption",grade.corruption)
 	if grade.has("vein"): terrain_material.set_shader_parameter("vein_color",grade.vein);terrain_material.set_shader_parameter("blight_tint",grade.tint)
-	for i in range(6): terrain_material.set_shader_parameter("t"+str(i),load("res://assets/illustrated/forge-basalt-moss.png" if i==0 else "res://assets/illustrated/terrain-moss-v2.png" if i==1 else "res://assets/illustrated/terrain-stone-v2.png"))
+	for i in range(BIOME_COUNT): terrain_material.set_shader_parameter("t"+str(i),load("res://assets/illustrated/forge-basalt-moss.png" if i==0 else "res://assets/illustrated/terrain-moss-v2.png" if i==1 else "res://assets/illustrated/terrain-stone-v2.png"))
 	scenery_material=PaintedBatch.material()
 	if GRADE[realm].has("scenery"): scenery_material.set_shader_parameter("tint",GRADE[realm].scenery)
 	scenery_material.set_shader_parameter("fade_near",true)
@@ -264,7 +272,7 @@ func make_chunk(cell: Vector2i):
 		for z in range(resolution):
 			var ox=cell.x*CHUNK+x*step;var oz=cell.y*CHUNK+z*step
 			for v in [Vector2(ox,oz),Vector2(ox+step,oz),Vector2(ox,oz+step),Vector2(ox+step,oz),Vector2(ox+step,oz+step),Vector2(ox,oz+step)]:
-				var color=Color.WHITE;color.a=float(biome_at(Vector3(v.x,0,v.y)))/5
+				var color=Color.WHITE;color.a=float(biome_at(Vector3(v.x,0,v.y)))/float(BIOME_COUNT-1)
 				surface.set_color(color);surface.set_uv(v*.12)
 				surface.add_vertex(Vector3(v.x-root.position.x,raw_height_at(v.x,v.y),v.y-root.position.z))
 	surface.generate_normals()
@@ -315,7 +323,7 @@ func make_chunk(cell: Vector2i):
 # Render into terrain chunks so distant geometry is discarded with the chunk.
 func lava_center(radius: float,lane: int) -> Vector3:
 	var phase=float(seed_value%23)*.03+realm*.4
-	var angle=4.5*TAU/6-phase+float(lane)*.17+sin(radius*.024+lane*1.7)*.035
+	var angle=4.5*BIOME_ARC-phase+float(lane)*.17+sin(radius*.024+lane*1.7)*.035
 	return Vector3(cos(angle)*radius,0,sin(angle)*radius)
 
 func lava_at(p: Vector3) -> bool:
@@ -466,8 +474,8 @@ func make_island_air(grade: Dictionary):
 func make_landmarks():
 	if realm==3:
 		landmarks.append(Vector3.ZERO);return
-	for biome in range(6):
-		var angle=(biome+.5)*TAU/6-float(seed_value%23)*.03-realm*.4
+	for biome in range(BIOME_COUNT):
+		var angle=(biome+.5)*BIOME_ARC-float(seed_value%23)*.03-realm*.4
 		var p=Vector3(cos(angle)*175,0,sin(angle)*175)
 		p.y=height_at(p.x,p.z)
 		landmarks.append(p)

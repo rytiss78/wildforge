@@ -1554,7 +1554,7 @@ func update_skill_strip():
 func about_menu():
 	var box=open("ABOUT WILDFORGE", "Grow strange. Fight hard. Start again.")
 	box.add_child(label("Version %s · Build %d" % [ProjectSettings.get_setting("application/config/version"),ProjectSettings.get_setting("application/config/build_number",0)],24,ThemeTokens.STAR_GOLD))
-	for text in ["25 heroes · 69 weapons · %d mutations · 738 upgrades · 6 biomes · 9 bosses" % MutationBook.all().size(), "Original angular artwork, engraved icons and vivid combat effects.", "Hero and enemy health is shown in glass orbs. Your camera controls stay familiar.", "Created by Rytis with AI-assisted code and original procedural artwork.", "Original synthesized achievement chime. Voice attribution and licenses ship with the game."]:
+	for text in ["25 heroes · 69 weapons · %d mutations · 738 upgrades · 7 biomes · 9 bosses" % MutationBook.all().size(), "Original angular artwork, engraved icons and vivid combat effects.", "Hero and enemy health is shown in glass orbs. Your camera controls stay familiar.", "Created by Rytis with AI-assisted code and original procedural artwork.", "Original synthesized achievement chime. Voice attribution and licenses ship with the game."]:
 		var line=label(text,20);line.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;box.add_child(line)
 	box.add_child(button("BACK",start_menu,true));box.get_child(box.get_child_count()-1).grab_focus()
 

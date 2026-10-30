@@ -63,7 +63,7 @@ func record_weapon_mastery(weapon_id: String,rank: int):
 	dirty=true
 
 func discover_biome(index: int):
-	if index<0 or index>=6: return
+	if index<0 or index>=RealmWorld.BIOME_COUNT: return
 	var key="biome_"+str(index)
 	if float(data.best.get(key,0))>=1: return
 	best(key,1)

@@ -20,6 +20,8 @@ const LOOK=[
 	{"sun":Color("ff9466"),"sun_energy":0.98,"sun_pitch":-34.0,"ambient":Color("f0a48a"),"ambient_energy":.22,"fog":Vector2(45,160),"ink":Color(.07,.012,.02),"ink_thickness":1.45,"ink_strength":1.0,"vignette":.52},
 	# Starfall Space: cool lilac starlight, violet-black ink.
 	{"sun":Color("d8c4ff"),"sun_energy":0.98,"sun_pitch":-38.0,"ambient":Color("b9a8f0"),"ambient_energy":.24,"fog":Vector2(50,175),"ink":Color(.035,.012,.07),"ink_thickness":1.45,"ink_strength":1.0,"vignette":.52},
+	# Junkyard Planet: a hazy mustard sun through smog, olive fill, rust-brown ink.
+	{"sun":Color("ffd98a"),"sun_energy":0.95,"sun_pitch":-36.0,"ambient":Color("c8c08a"),"ambient_energy":.24,"fog":Vector2(40,155),"ink":Color(.06,.035,.015),"ink_thickness":1.45,"ink_strength":1.0,"vignette":.5},
 ]
 
 # The Red Moon arena keeps its own original lighting (it reports itself as biome 2).
@@ -27,7 +29,7 @@ const RED_MOON={"sun":Color("ffe0ad"),"sun_energy":1.2,"sun_pitch":-42.0,"ambien
 
 # Eases the world toward the biome's look; `rate` 1.0 snaps (used on arrival).
 static func apply(world,biome: int,grade: Dictionary,rate: float):
-	var look: Dictionary=RED_MOON if world.realm==3 else LOOK[clampi(biome,0,5)]
+	var look: Dictionary=RED_MOON if world.realm==3 else LOOK[clampi(biome,0,LOOK.size()-1)]
 	var sun_color: Color=look.sun;var sun_energy=float(look.sun_energy);var ambient: Color=look.ambient;var ambient_energy=float(look.ambient_energy)
 	if grade.has("sun"): sun_color=sun_color.lerp(grade.sun,.6);sun_energy=lerpf(sun_energy,float(grade.sun_energy),.6)
 	if grade.has("ambient"): ambient=ambient.lerp(grade.ambient,.6);ambient_energy=lerpf(ambient_energy,float(grade.ambient_energy),.6)

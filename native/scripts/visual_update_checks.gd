@@ -7,7 +7,7 @@ static func run(game: Node3D):
 	var checks={}
 	checks.stronger_colour=game.world.environment.adjustment_saturation>1.1 and game.world.environment.adjustment_contrast>1
 	checks.clear_foreground=game.world.environment.fog_mode==Environment.FOG_MODE_DEPTH and game.world.environment.fog_depth_begin>=18
-	checks.six_distinct_landmarks=game.world.landmarks.size()==6 and range(6).all(func(i):return game.world.has_node("Landmark_"+str(i)))
+	checks.six_distinct_landmarks=game.world.landmarks.size()==RealmWorld.BIOME_COUNT and range(RealmWorld.BIOME_COUNT).all(func(i):return game.world.has_node("Landmark_"+str(i)))
 	checks.skill_art_not_guns=game.rules.data.loot.all(func(item):
 		var texture=IllustratedIcons.texture(item.effects[0].key)
 		return texture is Texture2D and texture.resource_path.begins_with("res://assets/illustrated/effects/")
@@ -59,7 +59,7 @@ static func run(game: Node3D):
 	checks.range_extends_flight=not game.projectiles.is_empty() and game.projectiles[-1].life>baseline*1.5
 	game.clear_entities();game.stats.range=18;game.stats.thorns=0
 	if DisplayServer.get_name()!="headless":
-		for biome in range(6):
+		for biome in range(RealmWorld.BIOME_COUNT):
 			var p: Vector3=game.world.landmarks[biome]
 			for x in range(-1,2):
 				for z in range(-1,2): game.world.ensure_ground(p+Vector3(x*64,0,z*64))
