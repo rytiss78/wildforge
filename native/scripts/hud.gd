@@ -812,6 +812,18 @@ func start_menu(focus_hero: bool=false):
 	var mechanics=label(WeaponDetails.describe(game.hero.weapon),16)
 	mechanics.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	bio.add_child(mechanics)
+	# Pet choice (October 30): one of three, each with its own job; Pet Treats from
+	# elites and bosses evolve it twice during a run.
+	var current_pet=Pet.chosen(game.career.data.settings)
+	bio.add_child(label("YOUR PET",13))
+	var pet_row=HBoxContainer.new();pet_row.add_theme_constant_override("separation",8);bio.add_child(pet_row)
+	for kind in Pet.KINDS:
+		var pick_pet=button(Pet.NAMES[kind],func():game.career.data.settings.pet=kind;game.career.dirty=true;game.career.save();start_menu(true))
+		pick_pet.name="Pet_"+kind
+		if kind==current_pet: pick_pet.add_theme_stylebox_override("normal",style(ThemeTokens.BIOME_ACCENTS.verdant.blossom,ThemeTokens.EARTH_TERRACOTTA))
+		pet_row.add_child(pick_pet)
+	var pet_job=label("%s · %s Feed it Pet Treats to evolve it twice." % [Pet.ROLES[current_pet],Pet.JOBS[current_pet]],14)
+	pet_job.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;bio.add_child(pet_job)
 	# Keep hero selection focused on the selected hero; repeat rules in Help only.
 	var footer=HBoxContainer.new()
 	footer.position=Vector2(120,997)

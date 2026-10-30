@@ -477,10 +477,11 @@ func start_run(shared_seed: int=-1):
 	death_count = 0
 	kills = 0
 	if is_instance_valid(hud) and hud.combo: hud.combo.reset()
-	# A fresh pet each run; co-op players get different ones from the same seed.
+	# The pet chosen on the hero screen, fresh each run (stage 1, no treats).
 	trick_cooldown=0.0;trick_roll={};trick_leap={};trick_boosts.clear()
 	if is_instance_valid(pet): pet.queue_free()
-	pet=Pet.create(self,player,Pet.pick(seed_value+coop.local_id));pet.facing=avatar
+	pet=Pet.create(self,player,Pet.chosen(career.data.settings));pet.facing=avatar
+	if is_instance_valid(hud) and not coop.active: hud.tell("PET · %s the %s · %s" % [Pet.NAMES[pet.kind],Pet.ROLES[pet.kind].to_lower(),Pet.JOBS[pet.kind]],5)
 	gold = 0
 	paid_chests = 0
 	run_bosses = 0
@@ -1704,6 +1705,9 @@ func kill_enemy(enemy: Dictionary, cause: String):
 	var p = enemy.node.position
 	spawn_pickup(p+Vector3.UP*.35,"xp",float(enemy.get("xp_reward",enemy_xp_reward(enemy))))
 	spawn_pickup(p+Vector3.UP*.4,"gold",roundi((1+RealmWorld.BIOME_TIER[int(enemy.get("biome",0))]*.2)*(40 if enemy.boss else (2+realm)*(3 if enemy.get("elite",false) else 1))*stat("goldGain")))
+	# Pet Treats feed the pet: bosses drop three, elites usually one, others rarely.
+	var treat_chance=1.0 if enemy.boss else .6 if enemy.get("elite",false) else .025
+	if randf()<treat_chance: spawn_pickup(p+Vector3.UP*.5,"treat",3.0 if enemy.boss else 1.0)
 	# Kill feedback: elite/boss get big explosion, regular get dust puff
 	# Multi-kill tracking
 	if enemy.get("elite",false) or enemy.boss:
@@ -1886,13 +1890,15 @@ func spawn_pickup(p: Vector3, kind: String, value: float, replicated: bool=false
 	var node = MeshInstance3D.new()
 	node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	node.mesh = coin_mesh if kind == "gold" else orb_mesh
-	node.material_override = material(Color("edc361") if kind == "gold" else Color("88cfe2"),.3)
-	if kind=="xp":
-		node.material_override=node.material_override.duplicate();node.material_override.emission_enabled=true;node.material_override.emission=Color("88cfe2");node.material_override.emission_energy_multiplier=1.8
+	node.material_override = material(Color("edc361") if kind == "gold" else Color("ff8ad0") if kind=="treat" else Color("88cfe2"),.3)
+	if kind in ["xp","treat"]:
+		var glow=Color("ff8ad0") if kind=="treat" else Color("88cfe2")
+		node.material_override=node.material_override.duplicate();node.material_override.emission_enabled=true;node.material_override.emission=glow;node.material_override.emission_energy_multiplier=1.8
+	if kind=="treat": node.scale=Vector3.ONE*2.2
 	node.position = p
 	var direction=Vector3.RIGHT.rotated(Vector3.UP,rules.rng.randf()*TAU)
 	var velocity=direction*.45+Vector3.UP*1.5
-	if kind == "gold":
+	if kind in ["gold","treat"]:
 		# Coins scatter away from the XP drop, then fall even after aerial kills.
 		node.position+=direction*rules.rng.randf_range(.8,1.15)
 		velocity=direction*1.5+Vector3.UP*2.5
@@ -1955,7 +1961,7 @@ func update_pickups(delta: float):
 		var target={"id":coop.local_id,"position":player.position}
 		if pickup.kind=="xp" and coop.active: target=coop.target(pickup.node.position)
 		var collector_alive=hp>0 if target.id==coop.local_id else float(coop.members.get(target.id,{}).get("hp",0))>0
-		var radius=stats.coinRadius if pickup.kind=="gold" else stat("pickup") if target.id==coop.local_id else float(coop.members[target.id].get("stats",{}).get("pickup",4))
+		var radius=stats.coinRadius if pickup.kind in ["gold","treat"] else stat("pickup") if target.id==coop.local_id else float(coop.members[target.id].get("stats",{}).get("pickup",4))
 		var destination=target.position+Vector3.UP*.4
 		# Only drops tagged when the magnet fired fly in, from anywhere on the map.
 		var collecting_at_magnet=pickup.get("magnet_pull",false) and is_instance_valid(update.magnet_node)
@@ -1987,6 +1993,9 @@ func update_pickups(delta: float):
 			if pickup.kind=="gold":
 				update.run_coins+=pickup.value;gold+=roundi(pickup.value);heal(stats.coinHeal*pickup.get("units",1));sound.effect("coin")
 				MutationBook.event(self,"pickup",player.position)
+			elif pickup.kind=="treat":
+				if is_instance_valid(pet): pet.feed(roundi(pickup.value))
+				sound.effect("coin")
 			else:
 				var gain=stat("xpGain") if target.id==coop.local_id else float(coop.members[target.id].get("stats",{}).get("xpGain",1))
 				var gained=roundi(pickup.value*gain)

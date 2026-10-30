@@ -1,33 +1,56 @@
 extends Node3D
 class_name Pet
 
-# A pet (user request, October 29): a small cartoon creature that follows the
-# hero, flies off to fetch coins lying beyond the hero's pickup reach, and evolves
-# as it brings them back: bigger, quicker and further-reaching, with new parts.
-# One of three species per run (seeded). In co-op every player sees the others'
-# pets follow them (pose "pet"), but only your own pet fetches your coins.
+# A pet (user request, October 29; reworked October 30: "not sure what they do or
+# how many there are; let the player choose one with the hero, and upgrade it with
+# drops"). The player picks one of three pets on the hero screen; each has a job:
+#   Blip     fetcher  runs off for coins and Pet Treats beyond the hero's reach
+#   Fuzzbat  biter    darts at the nearest enemy and bites it
+#   Zorbo    medic    pulses a healing ring when the hero is hurt
+# Pet Treats drop from elites, bosses and now and then any enemy; feeding treats
+# evolves the pet through three stages (bigger, quicker, stronger, new parts).
+# In co-op every player sees the others' pets follow them (pose "pet"), but only
+# your own pet works for you.
 
 const KINDS=["blip","fuzzbat","zorbo"]
 const NAMES={"blip":"Blip","fuzzbat":"Fuzzbat","zorbo":"Zorbo"}
-const EVOLVE_AT=[0,20,70]  # coins fetched to reach each stage
+const ROLES={"blip":"FETCHER","fuzzbat":"BITER","zorbo":"MEDIC"}
+const JOBS={
+	"blip":"Fetches coins and Pet Treats lying beyond your pickup reach.",
+	"fuzzbat":"Darts at the nearest enemy and bites it, over and over.",
+	"zorbo":"Pulses a healing ring when you are hurt.",
+}
+const TREATS_AT=[0,4,12]  # Pet Treats eaten to reach each stage
 const SPEED=[8.0,10.5,13.0]
 const REACH=[12.0,15.0,19.0]
 const SIZE=[.55,.75,.95]
+const BITE=[9.0,16.0,26.0]  # per bite, before island scaling
+const BITE_EVERY=[1.4,1.1,.8]
+const HEAL=[.04,.06,.09]  # share of max HP per pulse
+const HEAL_EVERY=[6.0,5.0,4.0]
 
 var game: Node3D
 var leader: Node3D
 var facing: Node3D  # whose turn sets the follow spot (the local hero's avatar)
 var kind="blip"
 var stage=0
+var treats=0
 var fetched=0
-var fetching=true  # false for another player's pet
+var fetching=true  # false for another player's pet: it only follows
 var state="follow"
 var coin={}
+var target={}
 var scan=0.0
 var clock=0.0
+var work=0.0
 var model: Node3D
 
 static func pick(seed_value: int) -> String: return KINDS[absi(seed_value*7919+13)%KINDS.size()]
+
+# The pet chosen on the hero screen (career settings), Blip if none yet.
+static func chosen(settings: Dictionary) -> String:
+	var value=str(settings.get("pet",""))
+	return value if KINDS.has(value) else "blip"
 
 static func create(owner_game: Node3D,follow: Node3D,pet_kind: String,pet_stage: int=0,fetches: bool=true) -> Pet:
 	var pet=Pet.new();pet.game=owner_game;pet.leader=follow;pet.kind=pet_kind;pet.stage=pet_stage;pet.fetching=fetches
@@ -79,7 +102,7 @@ func flies() -> bool: return kind!="blip"
 
 func _process(delta: float):
 	if not is_instance_valid(leader): queue_free();return
-	clock+=delta
+	clock+=delta;work-=delta
 	var goal: Vector3
 	match state:
 		"fetch":
@@ -93,10 +116,16 @@ func _process(delta: float):
 			else:
 				coin.node.position=position+Vector3.UP*(.35*SIZE[stage])+(-basis.z)*.3
 				if position.distance_to(goal)<2.2: deliver()
+		"bite":
+			if target.is_empty() or target.get("dead",true) or not is_instance_valid(target.get("node")): target={};state="follow";goal=home()
+			else:
+				goal=target.node.position+Vector3.UP*1.0
+				if position.distance_to(goal)<1.3: bite()
+				elif position.distance_to(leader.position)>REACH[stage]+6: target={};state="follow"
 		_:
 			goal=home()
 			scan-=delta
-			if fetching and scan<=0: scan=.3;look_for_coin()
+			if fetching and scan<=0: scan=.3;duty()
 	if position.distance_to(leader.position)>45: position=leader.position+Vector3.UP  # left behind (new island)
 	var speed=SPEED[stage]*(1.6 if state!="follow" else 1.0)
 	var to=goal-position
@@ -109,6 +138,31 @@ func _process(delta: float):
 	if Vector2(to.x,to.z).length()>.2: rotation.y=lerp_angle(rotation.y,atan2(-to.x,-to.z),minf(1.0,delta*10.0))
 	if is_instance_valid(model): model.position.y=sin(clock*(12.0 if flies() else 0.0))*.05
 
+# What the pet does when it is free, by species.
+func duty():
+	match kind:
+		"blip": look_for_coin()
+		"fuzzbat":
+			if work>0 or game.mode!="playing": return
+			var best=REACH[stage];target={}
+			for enemy in game.enemies:
+				if enemy.dead or enemy.get("behavior","")=="turret": continue
+				var d=enemy.node.position.distance_to(leader.position)
+				if d<best: best=d;target=enemy
+			if not target.is_empty(): state="bite"
+		"zorbo":
+			if work>0 or game.mode!="playing" or game.hp<=0 or game.hp>=game.stats.maxHp*.97: return
+			work=HEAL_EVERY[stage]
+			game.heal(game.stats.maxHp*HEAL[stage])
+			CombatInk.wave(game,leader.position+Vector3.UP*.1,2.4,Color("7dffb0"))
+			game.burst(position,Color("7dffb0"),8)
+
+func bite():
+	var damage=BITE[stage]*(1.0+float(game.realm)*.6)
+	game.hurt_enemy(target,damage,"melee")
+	game.burst(position,Color("ff8ac6"),6)
+	work=BITE_EVERY[stage];target={};state="follow"
+
 func home() -> Vector3:
 	var turn: Node3D=facing if is_instance_valid(facing) else leader
 	var side=turn.global_basis.x;var back=turn.global_basis.z
@@ -116,11 +170,11 @@ func home() -> Vector3:
 
 static func live(pickup: Dictionary) -> bool: return not pickup.is_empty() and pickup.get("age",-1)>=0 and is_instance_valid(pickup.get("node"))
 
-# The nearest settled coin the hero would not pick up anyway, within reach.
+# The nearest settled coin or treat the hero would not pick up anyway, within reach.
 func look_for_coin():
 	var best=REACH[stage];var reach=float(game.stats.get("coinRadius",2.0))+.5;coin={}
 	for pickup in game.pickups:
-		if pickup.kind!="gold" or not pickup.get("settled",false) or pickup.get("attracted",false) or pickup.get("carried",false) or pickup.age<0: continue
+		if pickup.kind not in ["gold","treat"] or not pickup.get("settled",false) or pickup.get("attracted",false) or pickup.get("carried",false) or pickup.age<0: continue
 		var from_hero=pickup.node.position.distance_to(leader.position)
 		if from_hero>reach and from_hero<best: best=from_hero;coin=pickup
 	if not coin.is_empty(): state="fetch"
@@ -129,16 +183,30 @@ func drop():
 	if live(coin): coin.carried=false
 	coin={}
 
-# Back at the hero: the coin flies in like any other and counts toward evolving.
+# Back at the hero: the coin flies in like any other.
 func deliver():
 	coin.carried=false;coin.attracted=true;coin={};state="follow"
 	fetched+=1
-	if stage<2 and fetched>=EVOLVE_AT[stage+1]: evolve()
+
+# Pet Treats were collected: count them and evolve at the thresholds.
+func feed(amount: int=1):
+	treats+=maxi(1,amount)
+	game.burst(position,Color("ff9ad6"),8)
+	if stage<2 and treats>=TREATS_AT[stage+1]: evolve()
+	else: game.hud.tell("PET TREAT · %s %s" % [NAMES[kind],progress()],2)
+
+# "· 3 / 4 treats to stage 2", or "is fully grown".
+func progress() -> String:
+	if stage>=2: return "is fully grown"
+	return "· %d / %d treats to stage %d" % [treats,TREATS_AT[stage+1],stage+2]
 
 func evolve():
 	stage+=1;rebuild()
 	game.burst(position,Color("fff38a"),16);game.burst(position,Color.WHITE,8)
 	game.sound.effect("level",position)
-	game.Journey.announce(game,"%s EVOLVED!" % NAMES[kind].to_upper(),"Stage %d · faster, and it fetches from further away" % (stage+1))
+	var better={"blip":"faster, fetches from further away","fuzzbat":"bites harder and more often","zorbo":"heals more, more often"}
+	game.Journey.announce(game,"%s EVOLVED!" % NAMES[kind].to_upper(),"Stage %d · %s" % [stage+1,better[kind]])
+	# A pet that just grew a stage may already have the treats for the next.
+	if stage<2 and treats>=TREATS_AT[stage+1]: evolve()
 
 func label() -> String: return "%s:%d" % [kind,stage]

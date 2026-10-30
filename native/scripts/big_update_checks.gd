@@ -203,19 +203,39 @@ static func run(game: Node3D):
 	game.update.rescue_tick(1.0/60.0);game.update.host_tick(1.0/60.0)
 	checks.rescue_code=shown and halfway and restarted and reset_by_hit and not game.update.downed_ids.has(friend)
 	game.coop.members.erase(friend);game.update.downed_ids.erase(friend);game.update.rescue_tick(1.0/60.0)
-	# Pets (October 29): the run's pet fetches a coin lying beyond the hero's reach,
-	# brings it back to be collected, and evolves after enough fetches.
+	# Pets (October 29; chosen on the hero screen and fed treats since October 30):
+	# the chosen kind is the run's pet; Blip fetches a far coin; treats evolve it;
+	# Fuzzbat bites a nearby enemy; Zorbo heals a hurt hero.
 	var pet: Pet=game.pet
-	var pet_ok=is_instance_valid(pet) and Pet.KINDS.has(pet.kind) and pet.stage==0
+	var pet_ok=is_instance_valid(pet) and pet.kind==Pet.chosen(game.career.data.settings) and pet.stage==0
+	pet.kind="blip";pet.rebuild()
 	var coin_at=game.player.position+Vector3(9,0,0);coin_at.y=game.world.height_at(coin_at.x,coin_at.z)+.27
 	game.spawn_pickup(coin_at,"gold",5.0);var fetch=game.pickups[-1];fetch.node.position=coin_at;fetch.settled=true;fetch.velocity=Vector3.ZERO
-	var gold_before=game.gold;pet.fetched=Pet.EVOLVE_AT[1]-1;pet.state="follow";pet.scan=0.0
+	var gold_before=game.gold;pet.state="follow";pet.scan=0.0;pet.work=0.0
 	for i in range(400):
 		pet._process(1.0/60.0);game.update_pickups(1.0/60.0)
 		if game.gold>gold_before: break
-	checks.pet_fetch=pet_ok and game.gold>gold_before and pet.fetched==Pet.EVOLVE_AT[1]
-	checks.pet_evolves=pet.stage==1 and is_instance_valid(pet.model)
-	pet.stage=0;pet.fetched=0;pet.rebuild()
+	checks.pet_fetch=pet_ok and game.gold>gold_before and pet.fetched==1
+	# A treat pickup walked over feeds the pet; enough treats evolve it.
+	var treat_at=game.player.position+Vector3(.4,.4,0)
+	game.spawn_pickup(treat_at,"treat",float(Pet.TREATS_AT[1]));var treat=game.pickups[-1];treat.node.position=treat_at;treat.velocity=Vector3.ZERO
+	for i in range(30): game.update_pickups(1.0/60.0)
+	checks.pet_evolves=pet.stage==1 and pet.treats==Pet.TREATS_AT[1] and is_instance_valid(pet.model) and not game.pickups.has(treat)
+	pet.kind="fuzzbat";pet.stage=0;pet.treats=0;pet.rebuild();pet.position=game.player.position+Vector3(1,1,0)
+	game.spawn_enemy(4);var bitten=game.enemies[-1];var bite_at=game.player.position+Vector3(3,0,0);bite_at.y=game.world.height_at(bite_at.x,bite_at.z)
+	bitten.node.position=bite_at;bitten.speed=0.0;bitten.attack=1e9;bitten.contact=1e9;bitten.hp=1e5;bitten.maxHp=1e5;bitten.home=bite_at
+	var mode_before=game.mode;game.mode="playing";pet.state="follow";pet.scan=0.0;pet.work=0.0
+	for i in range(240):
+		pet._process(1.0/60.0)
+		if bitten.hp<1e5: break
+	checks.pet_bites=bitten.hp<1e5
+	game.kill_enemy(bitten,"hit")
+	pet.kind="zorbo";pet.rebuild();pet.state="follow";pet.scan=0.0;pet.work=0.0
+	game.hp=game.stats.maxHp*.5;var pet_hp_before=game.hp
+	for i in range(30): pet._process(1.0/60.0)
+	checks.pet_heals=game.hp>pet_hp_before
+	game.hp=game.stats.maxHp;game.mode=mode_before
+	pet.kind=Pet.chosen(game.career.data.settings);pet.stage=0;pet.treats=0;pet.fetched=0;pet.state="follow";pet.rebuild()
 	# Hats (October 29): every hat builds; an owned hat sits on top of the hero's
 	# head; a locked one is not worn.
 	var hats_build=HatBook.HATS.all(func(h):var hat_node=HatBook.build(h.id);var ok=hat_node.find_children("*","MeshInstance3D",true,false).size()>0;hat_node.free();return ok)

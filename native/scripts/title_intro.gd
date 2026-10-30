@@ -4,7 +4,9 @@ class_name TitleIntro
 # The title intro (user request, October 29): a short comic scene before the main
 # menu on a normal launch. Five heroes stand about, The Grand Noggin rises out of
 # its portal behind them, roars, the heroes jump and spin round, and the title
-# slams in while the Noggin booms. About nine seconds; any key or click skips.
+# slams in. About nine seconds; any key or click skips. Since October 30 it
+# replaces the engine splash (boot splash is a plain black screen) and has its
+# own stingers instead of the Noggin's voice (scripts/make-intro-audio.py).
 
 const LENGTH=9.2
 const RISE=Vector2(1.6,4.0)  # the Noggin rises between these times
@@ -23,6 +25,8 @@ var tagline: Label
 var skip: Label
 var shade: ColorRect
 var roared=false
+var risen=false
+var cues_played=[]
 var titled=false
 var done=false
 var captures={}  # review: time -> file name
@@ -87,11 +91,12 @@ func _process(delta: float):
 	var rise=smoothstep(RISE.x,RISE.y,time)
 	noggin.position=stage+Vector3(0,lerpf(-24.0,-1.0,rise)+sin(time*1.4)*.2,-12)
 	noggin.animate(delta,Vector3.ZERO,true)
+	if time>=RISE.x and not risen:
+		risen=true;cue("rise")
 	if time>=ROAR and not roared:
-		roared=true;noggin.play("roar",.2,1.4,.8)
-		CreatureVoice.noggin(game,"roar",noggin.global_position+Vector3.UP*4.2,-8.0)
+		roared=true;noggin.play("roar",.2,1.4,.8);cue("sting")
 	if time>=TITLE and not titled:
-		titled=true;CreatureVoice.noggin(game,"bravo",noggin.global_position+Vector3.UP*4.2,-8.0)
+		titled=true;cue("title")
 	# The title slams in from big, then settles with a bounce.
 	var slam=clampf((time-TITLE)/.35,0,1)
 	var bounce=sin(clampf(time-TITLE-.35,0,1)*PI*3.0)*.06 if slam>=1.0 else 0.0
@@ -101,6 +106,15 @@ func _process(delta: float):
 	for at in captures.keys():
 		if time>=at: capture(captures[at]);captures.erase(at)
 	if time>=LENGTH: finish()
+
+# Plays one of the intro stingers at a calm level under the sound setting.
+func cue(id: String):
+	var sfx=float(game.sound.settings.sfx) if game.sound!=null else 1.0
+	if sfx<=0: return
+	var path="res://assets/audio/intro/"+id+".wav"
+	if not ResourceLoader.exists(path): return
+	var player=AudioStreamPlayer.new();player.stream=load(path);player.volume_db=linear_to_db(sfx)-9.0;add_child(player);player.play()
+	player.finished.connect(player.queue_free);cues_played.append(id)
 
 func capture(name: String):
 	await RenderingServer.frame_post_draw
@@ -122,6 +136,6 @@ func finish():
 	game.hud.start_menu()
 	if review:
 		var files=["intro-1","intro-2","intro-3","intro-4"]
-		print("INTRO_REVIEW "+JSON.stringify({"checks":{"captured":files.all(func(f):return FileAccess.file_exists("user://"+f+".png")),"roared":roared,"titled":titled,"menu":game.mode=="start" and game.hud.modal.visible,"camera_free":not game.camera_locked}}))
+		print("INTRO_REVIEW "+JSON.stringify({"checks":{"captured":files.all(func(f):return FileAccess.file_exists("user://"+f+".png")),"roared":roared,"titled":titled,"menu":game.mode=="start" and game.hud.modal.visible,"camera_free":not game.camera_locked,"stingers":cues_played==["rise","sting","title"],"no_monster_voice":not game.sound.noggin_voice.playing}}))
 		game.get_tree().quit()
 	queue_free()
