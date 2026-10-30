@@ -1,6 +1,6 @@
 {
   "name": "wildforge",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "private": true,
   "type": "module",
   "scripts": {
@@ -16,5 +16,5 @@
     "agent:build": "node scripts/agent-workflow.mjs build",
     "agent:status": "node scripts/agent-workflow.mjs status"
   },
-  "buildNumber": 25
+  "buildNumber": 26
 }
