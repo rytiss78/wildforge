@@ -25,7 +25,7 @@ static func mesh(kind: int=0) -> ArrayMesh:
 			var middle=direction*.30+Vector3.UP*.28;var tip=direction*.62+Vector3.UP*.18
 			for v in [Vector3.ZERO,middle-side,middle+side,middle-side,tip,middle+side]:
 				surface.set_uv(Vector2(0,v.y/.35));surface.add_vertex(v)
-	else:
+	elif kind==0:
 		for i in range(17):
 			var angle=i*2.399
 			var side=Vector3(cos(angle),0,sin(angle))*.055
@@ -34,6 +34,28 @@ static func mesh(kind: int=0) -> ArrayMesh:
 			var middle=root.lerp(tip,.55)+Vector3.UP*.07
 			for v in [root-side,middle-side*.6,root+side,root+side,middle-side*.6,middle+side*.6,middle-side*.6,tip,middle+side*.6]:
 				surface.set_uv(Vector2(0,v.y/.56));surface.add_vertex(v)
+	elif kind==3:
+		# Junkyard litter (October 31, replacing cone shards): a bent sheet of metal, a
+		# bolt, a dented can and a nut, low on the ground.
+		var parts=[
+			[BoxMesh,Vector3(.7,.03,.45),Transform3D(Basis(Vector3.FORWARD,.12),Vector3(-.2,.04,0))],
+			[BoxMesh,Vector3(.4,.03,.45),Transform3D(Basis(Vector3.FORWARD,-.7),Vector3(.24,.14,0))],
+			[CylinderMesh,Vector3(.045,.32,.045),Transform3D(Basis(Vector3.RIGHT,PI*.5),Vector3(.1,.05,.42))],
+			[CylinderMesh,Vector3(.09,.05,.09),Transform3D(Basis(Vector3.RIGHT,PI*.5),Vector3(.1,.07,.26))],
+			[CylinderMesh,Vector3(.08,.2,.08),Transform3D(Basis(Vector3.FORWARD,PI*.5),Vector3(-.4,.08,-.38))],
+			[TorusMesh,Vector3(.07,.07,.07),Transform3D(Basis.IDENTITY,Vector3(.42,.02,-.3))],
+		]
+		for part in parts:
+			var shape=part[0].new()
+			if shape is BoxMesh: shape.size=part[1]
+			elif shape is CylinderMesh: shape.top_radius=part[1].x;shape.bottom_radius=part[1].x;shape.height=part[1].y;shape.radial_segments=6;shape.rings=1
+			else: shape.inner_radius=part[1].x*.5;shape.outer_radius=part[1].x;shape.rings=6;shape.ring_segments=4
+			var arrays=shape.get_mesh_arrays();var xform: Transform3D=part[2]
+			var verts: PackedVector3Array=arrays[Mesh.ARRAY_VERTEX];var index: PackedInt32Array=arrays[Mesh.ARRAY_INDEX]
+			for i in index:
+				var v=xform*verts[i]
+				# Lit like the top of a tuft, a little darker underneath.
+				surface.set_uv(Vector2(0,.7+v.y*2.0));surface.add_vertex(v)
 	surface.generate_normals();tufts[kind]=surface.commit()
 	return tufts[kind]
 
@@ -54,15 +76,18 @@ static func build(world,root: Node3D,cell: Vector2i,rng: RandomNumberGenerator):
 		p.y=world.height_at(p.x,p.z)
 		if absf(world.height_at(p.x+.6,p.z)-p.y)>.55 or absf(world.height_at(p.x,p.z+.6)-p.y)>.55: continue
 		if biome==2 and i%2!=0: continue
-		if biome in [5,6] and i%2!=0: continue
+		if biome==5 and i%2!=0: continue
+		if biome==6 and i%3!=0: continue
 		# Junkyard: shards of scrap and bolts rather than grass.
-		var kind=2 if biome in [2,4,5,6] else 1 if biome in [1,3] else 0
-		var scale_value=rng.randf_range(1.15,1.75) if kind==2 else rng.randf_range(.78,1.28)
+		var kind=3 if biome==6 else 2 if biome in [2,4,5] else 1 if biome in [1,3] else 0
+		var scale_value=rng.randf_range(.55,.95) if kind==3 else rng.randf_range(1.15,1.75) if kind==2 else rng.randf_range(.78,1.28)
 		var basis=Basis(Vector3.UP,rng.randf()*TAU).scaled(Vector3.ONE*scale_value)
 		if not groups.has(kind): groups[kind]={"transforms":[],"colors":[]}
 		groups[kind].transforms.append(Transform3D(basis,p-root.position))
 		var color=COLORS[biome].lightened(rng.randf_range(0,.15))
 		if i%19==0: color=NatureScenery.BLOOM[biome]
+		# Junk comes in every faded paint, not one grey.
+		if kind==3: color=NatureScenery.JUNK_PAINTS[rng.randi()%NatureScenery.JUNK_PAINTS.size()].darkened(rng.randf_range(.45,.65))
 		groups[kind].colors.append(color.srgb_to_linear())
 	for kind in groups:
 		var transforms=groups[kind].transforms;var colors=groups[kind].colors
@@ -70,6 +95,6 @@ static func build(world,root: Node3D,cell: Vector2i,rng: RandomNumberGenerator):
 		for i in range(transforms.size()): batch.set_instance_transform(i,transforms[i]);batch.set_instance_color(i,colors[i])
 		if not paints.has(kind):
 			var paint=ShaderMaterial.new();paint.shader=preload("res://shaders/flora.gdshader")
-			paint.set_shader_parameter("wind_strength",0.0 if kind==2 else 1.0);paints[kind]=paint
+			paint.set_shader_parameter("wind_strength",0.0 if kind>=2 else 1.0);paints[kind]=paint
 		var node=MultiMeshInstance3D.new();node.name="GroundCover";node.multimesh=batch;node.material_override=paints[kind]
 		node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;node.visibility_range_end=world.GRASS_RANGE*world.view_scale;node.visibility_range_end_margin=8;root.add_child(node)
