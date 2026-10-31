@@ -35,6 +35,8 @@ static func run(g):
 	for i in range(pilots.size()):
 		var rig=g.world.model(pilots[i][0],pilots[i][1]);g.add_child(rig);rig.position=ground(g,origin+Vector3(0,0,-4.0))
 		if i==1: rig.position.y+=.6
+		# Glass orbs (October 31): from full to nearly empty, left to right.
+		if rig.has_method("set_health"): rig.set_health([1.0,.7,.45,.25,.08][i])
 		for side in range(2):
 			rig.rotation.y=PI-.35 if side==0 else -.35
 			var height=float(pilots[i][1])
@@ -53,6 +55,7 @@ static func run(g):
 			var spot=origin+Vector3((index%5-2)*2.7,0,-6.0-float(index/5)*3.4)
 			rig.position=ground(g,spot)+Vector3.UP*(.8 if entry.flying else 0.0);rig.rotation.y=PI-.25+.08*index
 			rigs.append(rig)
+			if rig.has_method("set_health"): rig.set_health(.15+.2*float(index%5))
 			# Every species is built around its health orb (October 25).
 			checks.species=checks.species and rig is CartoonCreatureRig and rig.species.mesh.get_surface_count()==1 and rig.species.orb_body
 			if not rig.species.orb_body: print("NOT_ORB_BODY ",entry.model)
@@ -101,6 +104,7 @@ static func run(g):
 			var index=cell*5+k
 			if index>=list.size(): break
 			var rig=g.world.model(str(list[index].model),1.65);g.add_child(rig)
+			if rig.has_method("set_health"): rig.set_health(.3+.15*float(k),true)
 			rig.position=ground(g,origin+Vector3((k-2)*1.5,0,-4.0));rig.rotation.y=PI-.2+.1*k;rigs.append(rig)
 			checks.heroes=checks.heroes and rig.solid!=null and rig.solid.core_materials.size()==1 and rig.solid.hand_socket()!=null
 		g.camera.position=origin+Vector3(0,1.6,.6);g.camera.look_at(origin+Vector3(0,.9,-4.0))

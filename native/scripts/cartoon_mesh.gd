@@ -38,7 +38,7 @@ static func template(kind: String) -> Array:
 	if templates.has(kind): return templates[kind]
 	var mesh: PrimitiveMesh
 	match kind:
-		"ball": mesh=SphereMesh.new();mesh.radius=.5;mesh.height=1.0;mesh.radial_segments=14;mesh.rings=7
+		"ball": mesh=SphereMesh.new();mesh.radius=.5;mesh.height=1.0;mesh.radial_segments=18;mesh.rings=9
 		"rod": mesh=CapsuleMesh.new();mesh.radius=.5;mesh.height=2.0;mesh.radial_segments=8;mesh.rings=2
 		"cone": mesh=CylinderMesh.new();mesh.top_radius=0.0;mesh.bottom_radius=.5;mesh.height=1.0;mesh.radial_segments=8;mesh.rings=1
 		"can": mesh=CylinderMesh.new();mesh.top_radius=.5;mesh.bottom_radius=.5;mesh.height=1.0;mesh.radial_segments=12;mesh.rings=1

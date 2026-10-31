@@ -31,6 +31,13 @@ func setup(model_name: String):
 	for material in [batched,ink]: material.set_shader_parameter("size",model_height)
 	# Set explicitly: other systems read these back (Eclipse corruption, statuses).
 	batched.set_shader_parameter("tint",Vector3.ONE);batched.set_shader_parameter("corruption",0.0)
+	# Skin pattern per species (October 31): spots, stripes, scales or freckles,
+	# spread so neighbours in a biome differ; about one in eight stays plain.
+	var index=int(parts[0])*10+int(parts[1])
+	var look=(index*5+int(parts[0])*3)%8
+	batched.set_shader_parameter("pattern",[1,2,3,4,1,3,0,2][look])
+	batched.set_shader_parameter("pattern_scale",[.8,1.0,1.25][(index/3)%3])
+	batched.set_shader_parameter("gloss",.9 if look in [1,4] else .5)
 	mesh_node=MeshInstance3D.new();mesh_node.mesh=species.mesh;mesh_node.material_override=batched;body.add_child(mesh_node)
 	hit_material=StandardMaterial3D.new()
 	# Designs built around their orb (orb_body) use it exactly as drawn: it is the

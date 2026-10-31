@@ -82,7 +82,7 @@ func setup(model_name: String):
 	paint_phase(0)
 	# The two eyes are the health orbs: one liquid, filled together.
 	var sphere=SphereMesh.new();sphere.radius=EYE_RADIUS;sphere.height=EYE_RADIUS*2;sphere.radial_segments=32;sphere.rings=16
-	orb_paint=ShaderMaterial.new();orb_paint.shader=load("res://shaders/blood_core.gdshader");orb_paint.set_shader_parameter("radius",EYE_RADIUS)
+	orb_paint=ShaderMaterial.new();orb_paint.shader=load("res://shaders/blood_core.gdshader");orb_paint.set_shader_parameter("radius",EYE_RADIUS);orb_paint.set_shader_parameter("clear_glass",false)
 	orb_paint.set_shader_parameter("liquid_color",ORB_COLORS[0])
 	for i in range(2):
 		var eye=MeshInstance3D.new();eye.name="GlassCore" if i==0 else "GlassCoreRight";eye.mesh=sphere;eye.position=EYES[i]
