@@ -442,6 +442,13 @@ Not released yet (Build 25 is the latest public build).
 - [x] **Intro replaces the Godot splash:** boot splash is a plain black screen with no image (`project.godot` `application/boot_splash/*`), so the title intro is the first thing seen. The Noggin's roar and cheer voices are gone from the intro; it plays three original stingers instead (`scripts/make-intro-audio.py`: a portal whoosh, a timpani "dun, dun, DUNN", a cymbal-and-chord title hit). `intro-review` checks the stingers played and the Noggin voice did not.
 - [x] **Pets reworked:** chosen with the hero (YOUR PET row on the hero screen, saved in settings) instead of a random one per run. Each has a job: Blip fetches coins and treats, Fuzzbat bites the nearest enemy, Zorbo pulses a heal when you are hurt. **Pet Treats** (pink glowing drops: every boss drops three, elites 60%, other enemies 2.5%) evolve the pet at 4 and 12 treats; picking one up shows the progress. Run start says which pet you have and what it does. Integration checks `pet_fetch`, `pet_evolves` (a real treat pickup), `pet_bites`, `pet_heals`.
 
+## Game icon (October 30, continues with the Build 26 work)
+
+- **New project icon:** a cartoon night scene — the green slime hero (googly eyes, two buck teeth, red shell) under a big moon and a purple planet, a sprout at its feet, in a gold frame. `native/icon.svg`, set as `application/config/icon` in `project.godot`; Godot embeds it as the Windows exe icon at export and shows it as the window icon in play. Source and design iterations live in `design/wildforge-icon/` (`preview-v3.png`, `sizes-v3.png`).
+- **Small sizes:** legible at 256/128/64; at 32 px it reads as eyes and a green blob, the frame and moon turn to mush (see `sizes-v3.png`).
+- **Not chosen by a person yet:** the three design rounds (`preview-v1/v2/v3.png`) are in `design/wildforge-icon/` — v3 is what is wired in; swap it if another round is preferred.
+- Verified: `check` (import/parse clean, 2026-10-31 run), `smoke` 118 checks; the exported exe icon is checked after the build below.
+
 ## Player notes: 16 fixes (user list, October 25, after Build 23)
 
 1. [x] **Touching a melee enemy hurts at once.** Contact used a 0.45 s wind-up, so brushing past cost nothing. Now the first touch hits, then every 0.7 s while touching; a frozen or blinded enemy does not hit (`CombatTactics.contact_tick`). The old checks that contact "warns before damage" and "can be dodged" described the old spec and were replaced: integration `contact_hits_at_once`, `contact_stops_when_left`, `contact_repeats`, `freeze_cancels_contact`.
