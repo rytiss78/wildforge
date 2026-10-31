@@ -45,6 +45,7 @@ var harvest_sites: Array[Vector3]=[]
 var chunks={}
 var pending=[]
 var terrain_material: ShaderMaterial
+var under_material: ShaderMaterial
 var lava_material: StandardMaterial3D
 var scenery_material: ShaderMaterial
 var last_cell=Vector2i(999,999)
@@ -196,7 +197,20 @@ func compute_height_at(x: float,z: float) -> float:
 	var inland=lerpf(terrace,original*.85,route)*smoothstep(0.0,28.0,Vector2(x,z).length())
 	var edge=Vector2(x,z).length();var coast=shore_radius(p)
 	var shore=2.0-maxf(0.0,edge-(coast-6.0))/3.0
-	return lerpf(inland,shore,smoothstep(coast-32.0,coast-4.0,edge))
+	if edge<=coast: return lerpf(inland,shore,smoothstep(coast-32.0,coast-4.0,edge))
+	# Past the coast the island ends in a rounded rocky rim (October 31: no sea; the
+	# hero walks over it onto the underside, Underside).
+	var over=clampf((edge-coast)/Underside.RIM,0.0,1.0)
+	return shore-Underside.THICK*(1.0-cos(over*PI*.5))
+
+# The underside's surface: a hanging rock belly, deepest under the middle, meeting
+# the rim's lip at the coast plus Underside.RIM.
+func under_height(x: float,z: float) -> float:
+	var p=Vector3(x,0,z)
+	var inside=maxf(0.0,shore_radius(p)+Underside.RIM-Vector2(x,z).length())
+	var depth=minf(55.0,inside*.38)+noise.get_noise_2d(x*1.6,z*1.6)*2.5*smoothstep(0.0,12.0,inside)
+	var lip=2.0-(Underside.RIM+6.0)/3.0-Underside.THICK  # the rim's foot, see compute_height_at
+	return lip-depth
 
 func portal_site() -> Vector3:
 	if realm==3: return Vector3(0,1.5,48)
@@ -268,16 +282,32 @@ func make_chunk(cell: Vector2i):
 	var surface=SurfaceTool.new();surface.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var resolution=16
 	var step=CHUNK/resolution
+	var belly=SurfaceTool.new();belly.begin(Mesh.PRIMITIVE_TRIANGLES);var belly_faces=0;var top_faces=0
 	for x in range(resolution):
 		for z in range(resolution):
 			var ox=cell.x*CHUNK+x*step;var oz=cell.y*CHUNK+z*step
+			var centre=Vector3(ox+step*.5,0,oz+step*.5)
+			# Quads wholly past RIM_START are left to the smooth rim ring (make_rim).
+			var beyond=Vector2(centre.x,centre.z).length()-step*.71-(shore_radius(centre)-RIM_START)
+			if realm!=3 and beyond>0.0: continue
+			top_faces+=2
 			for v in [Vector2(ox,oz),Vector2(ox+step,oz),Vector2(ox,oz+step),Vector2(ox+step,oz),Vector2(ox+step,oz+step),Vector2(ox,oz+step)]:
 				var color=Color.WHITE;color.a=float(biome_at(Vector3(v.x,0,v.y)))/float(BIOME_COUNT-1)
 				surface.set_color(color);surface.set_uv(v*.12)
 				surface.add_vertex(Vector3(v.x-root.position.x,raw_height_at(v.x,v.y),v.y-root.position.z))
-	surface.generate_normals()
-	var terrain=MeshInstance3D.new();terrain.mesh=surface.commit();terrain.material_override=terrain_material;root.add_child(terrain)
-	terrain.create_trimesh_collision()
+			if realm==3: continue
+			# The belly, wound the other way so it faces down.
+			belly_faces+=2
+			for v in [Vector2(ox,oz),Vector2(ox,oz+step),Vector2(ox+step,oz),Vector2(ox+step,oz),Vector2(ox,oz+step),Vector2(ox+step,oz+step)]:
+				belly.add_vertex(Vector3(v.x-root.position.x,under_height(v.x,v.y),v.y-root.position.z))
+	if top_faces>0:
+		surface.generate_normals()
+		var terrain=MeshInstance3D.new();terrain.mesh=surface.commit();terrain.material_override=terrain_material;root.add_child(terrain)
+		terrain.create_trimesh_collision()
+	if belly_faces>0:
+		belly.generate_normals()
+		var underneath=MeshInstance3D.new();underneath.name="Underside";underneath.mesh=belly.commit();underneath.material_override=under_material
+		underneath.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;root.add_child(underneath)
 	make_lava_chunk(root,cell)
 	var scenery_groups={}
 	var local_rng=RandomNumberGenerator.new();local_rng.seed=seed_value+cell.x*73856093+cell.y*19349663
@@ -399,22 +429,71 @@ func build_tick(delta: float):
 func ensure_ground(p: Vector3):
 	make_chunk(Vector2i(floori(p.x/CHUNK),floori(p.z/CHUNK)))
 
+# The island's edge as one smooth ring (October 31), built radially so the coast is
+# round rather than the terrain grid's saw teeth: a band of ground from RIM_START
+# metres inside the coast, the rounded rim, and a band of the belly back in to
+# RIM_START. It sits a hair inside the chunk surfaces, so where both exist the
+# chunks show and the ring fills the jagged gaps. It has collision for the band of
+# ground the chunks leave out.
+const RIM_START=10.0
+const RIM_SEGMENTS=1440
+func make_rim():
+	var top=SurfaceTool.new();top.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var wall=SurfaceTool.new();wall.begin(Mesh.PRIMITIVE_TRIANGLES)
+	# Profile offsets from the coast: ground, rim, then the belly heading back in.
+	var ground=[-RIM_START,-7.5,-5.0,-3.0,-1.5,0.0]
+	var rim=[0.0,.8,1.6,2.4,3.2,Underside.RIM]
+	var belly=[Underside.RIM,2.0,0.0,-2.5,-5.0,-7.5,-RIM_START]
+	var rows=[]
+	for i in range(RIM_SEGMENTS+1):
+		var angle=float(i)/RIM_SEGMENTS*TAU;var direction=Vector2(cos(angle),sin(angle))
+		var coast=coast_radius(angle,seed_value,realm)
+		var row={"ground":[],"rim":[],"belly":[]}
+		for o in ground:
+			var q=direction*(coast+o);row.ground.append(Vector3(q.x,height_at(q.x,q.y)-.06,q.y))
+		# The rim's own curve, exactly (the grid's interpolation is too coarse here).
+		for o in rim:
+			var q=direction*(coast+o);row.rim.append(row.ground[-1] if o==0.0 else Vector3(q.x,compute_height_at(q.x,q.y)-.06,q.y))
+		for o in belly:
+			var q=direction*(coast+o);row.belly.append(Vector3(q.x,under_height(q.x,q.y)+.06,q.y))
+		rows.append(row)
+	# Ground and rim face up and out, the belly faces down.
+	for i in range(RIM_SEGMENTS):
+		var a=rows[i];var b=rows[i+1]
+		strip(top,a.ground,b.ground,true)
+		strip(wall,a.rim,b.rim,true)
+		strip(wall,a.belly,b.belly,true)
+	for pair in [[top,terrain_material,"RimGround"],[wall,under_material,"RimWall"]]:
+		pair[0].generate_normals()
+		var node=MeshInstance3D.new();node.name=pair[2];node.mesh=pair[0].commit();node.material_override=pair[1]
+		node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF if pair[2]=="RimWall" else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+		add_child(node)
+		if pair[2]=="RimGround": node.create_trimesh_collision()
+
+# Two neighbouring profile rows joined into quads. With flip, the ground and rim
+# face up and out and the belly faces down (Godot's front faces are clockwise).
+func strip(surface: SurfaceTool,a: Array,b: Array,flip: bool):
+	for k in range(a.size()-1):
+		var quad=[a[k],b[k],a[k+1],b[k],b[k+1],a[k+1]] if not flip else [a[k],a[k+1],b[k],b[k],a[k+1],b[k+1]]
+		for v in quad:
+			var color=Color.WHITE;color.a=float(biome_at(v))/float(BIOME_COUNT-1)
+			surface.set_color(color);surface.set_uv(Vector2(v.x,v.z)*.12);surface.add_vertex(v)
+
 func make_boundaries():
-	var ocean=MeshInstance3D.new();ocean.name="DeadlySea"
-	var sea_plane=PlaneMesh.new();sea_plane.size=Vector2(2800,2800);ocean.mesh=sea_plane
-	var water=ShaderMaterial.new();water.shader=load("res://shaders/deadly_sea.gdshader");water.set_shader_parameter("red_moon",realm==3);water.set_shader_parameter("phase",float(seed_value%23)*.03+realm*.4);water.set_shader_parameter("shape",GRADE[realm].shape);ocean.material_override=water;add_child(ocean)
+	# No sea since October 31: the island floats (Underside). A soft light from below
+	# shows its belly while the hero is under it.
+	var under_light=DirectionalLight3D.new();under_light.name="UnderLight";under_light.rotation_degrees=Vector3(70,20,0)
+	under_light.light_energy=.55;under_light.light_color=Color("ffe6c8");under_light.shadow_enabled=false;under_light.visible=false;add_child(under_light)
+	under_material=ShaderMaterial.new();under_material.shader=load("res://shaders/island_underside.gdshader")
+	under_material.set_shader_parameter("phase",float(seed_value%23)*.03+realm*.4)
+	for i in range(BIOME_COUNT): under_material.set_shader_parameter("glow"+str(i),NatureScenery.GLOW[i])
+	if realm!=3: make_rim()
 	for side in [-1,1]:
 		for axis in [0,2]:
 			var mesh=BoxMesh.new();mesh.size=Vector3(16,100,EXTENT*2+24) if axis==0 else Vector3(EXTENT*2+24,100,16)
 			var p=Vector3.ZERO;p[axis]=side*(EXTENT+8);p.y=36
 			var ridge=ToonArt.part(self,mesh,Color("a7b6a2"),p);ridge.create_trimesh_collision();ridge.visible=false
-	for axis in [0,2]:
-		var steam=GPUParticles3D.new();steam.amount=32;steam.lifetime=3;steam.emitting=false;steam.visibility_aabb=AABB(Vector3(-10,-1,-10),Vector3(20,10,20));add_child(steam);border_steam.append(steam)
-		var process=ParticleProcessMaterial.new();process.emission_shape=ParticleProcessMaterial.EMISSION_SHAPE_BOX;process.emission_box_extents=Vector3(5,.1,5);process.direction=Vector3.UP;process.spread=35;process.gravity=Vector3(0,.3,0);process.initial_velocity_min=.4;process.initial_velocity_max=1.5;process.scale_min=.4;process.scale_max=1.3;steam.process_material=process
-		var puff=SphereMesh.new();puff.radius=.3;puff.height=.7;puff.radial_segments=8;puff.rings=4
-		var paint=StandardMaterial3D.new();paint.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED;paint.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA;paint.albedo_color=Color(.91,.88,.78,.12);puff.material=paint;steam.draw_pass_1=puff
-		var patch=MeshInstance3D.new();var plane=PlaneMesh.new();plane.size=Vector2(14,14);patch.mesh=plane
-		var ground=ShaderMaterial.new();ground.shader=load("res://shaders/boiling_ground.gdshader");ground.set_shader_parameter("paper",load("res://assets/illustrated/paper.png"));patch.material_override=ground;patch.visible=false;add_child(patch);border_patches.append(patch)
+	# The coast's boiling steam went with the sea; border_steam stays empty.
 
 func make_environment():
 	var env=Environment.new();env.background_mode=Environment.BG_SKY

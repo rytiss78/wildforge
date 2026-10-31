@@ -103,6 +103,10 @@ func flies() -> bool: return kind!="blip"
 func _process(delta: float):
 	if not is_instance_valid(leader): queue_free();return
 	clock+=delta;work-=delta
+	# The hero went under the island: the pet waits on top, bobbing.
+	if leader==game.player and game.underside.active():
+		if is_instance_valid(model): model.position.y=sin(clock*4.0)*.08
+		return
 	var goal: Vector3
 	match state:
 		"fetch":

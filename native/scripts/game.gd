@@ -91,6 +91,8 @@ var pots = []
 var harvestables = []
 var barrels = []  # ExplosiveBarrels
 var pet: Pet
+# Walking upside down under the island (Underside, October 31).
+var underside:=Underside.new()
 # HeroTricks state: cooldown, a roll or leap in progress, timed stat boosts.
 var trick_cooldown=0.0
 var trick_roll={}
@@ -353,6 +355,7 @@ func _ready():
 	elif OS.get_cmdline_user_args().has("--combat-review"): preload("res://scripts/combat_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--golden-scene"): call_deferred("golden_scene")
 	elif OS.get_cmdline_user_args().has("--intro-review"): TitleIntro.play.call_deferred(self,true)
+	elif OS.get_cmdline_user_args().has("--underside-review"): preload("res://scripts/underside_review.gd").run.call_deferred(self)
 	# A normal launch opens with the title intro (TitleIntro), then the menu.
 	elif OS.get_cmdline_user_args().is_empty() and not smoke: TitleIntro.play.call_deferred(self)
 	elif smoke: call_deferred("export_hero_art" if OS.get_cmdline_user_args().has("--art") else "run_soak" if OS.get_cmdline_user_args().has("--soak") else "run_smoke")
@@ -544,6 +547,7 @@ func enter_realm(index: int,broadcast_transition: bool=true):
 	player.velocity = Vector3.ZERO
 	player.reset_physics_interpolation()
 	air_jumps=0;slamming=false;slam_cooldown=0;landing_ready=false;peak_height=player.position.y;last_safe=player.position
+	underside.clear(self)
 	avatar.sync_equipment(equipped)
 	avatar.visible = true
 	hud.map_view.visited.clear()
@@ -926,7 +930,7 @@ func _notification(what):
 func camera_look(amount: Vector2):
 	if mode != "playing": return
 	var sensitivity = float(career.data.settings.lookSensitivity)
-	yaw -= amount.x*sensitivity
+	yaw -= amount.x*sensitivity*(-1.0 if underside.flipped() else 1.0)
 	pitch = clampf(pitch+amount.y*sensitivity*(-1 if career.data.settings.invertLook else 1),-.4,1.1)
 
 func _input(event):
@@ -1761,7 +1765,7 @@ func damage_area(origin: Vector3,radius: float,damage: float,cause: String,exclu
 	if cause in ["explosion","burrow"]: burst(origin+Vector3.UP,Color("f2b777"),8);explosion_fx(origin,radius)
 
 func take_damage(amount: float, source: Vector3=Vector3.ZERO, voice_type: String="hit"):
-	if update.downed: return
+	if update.downed or underside.active(): return
 	update.rescue_hold=false
 	update.rescue_interrupt_until=elapsed+.4
 	update.rescue_progress.clear()
@@ -1958,7 +1962,7 @@ func update_pickups(delta: float):
 			if pickup.settled and not pickup.attracted: pickup.node.position.y=pickup.base_y+pickup.radius+.01
 		var target={"id":coop.local_id,"position":player.position}
 		if pickup.kind=="xp" and coop.active: target=coop.target(pickup.node.position)
-		var collector_alive=hp>0 if target.id==coop.local_id else float(coop.members.get(target.id,{}).get("hp",0))>0
+		var collector_alive=(hp>0 and not underside.active()) if target.id==coop.local_id else float(coop.members.get(target.id,{}).get("hp",0))>0
 		var radius=stats.coinRadius if pickup.kind in ["gold","treat"] else stat("pickup") if target.id==coop.local_id else float(coop.members[target.id].get("stats",{}).get("pickup",4))
 		var destination=target.position+Vector3.UP*.4
 		# Only drops tagged when the magnet fired fly in, from anywhere on the map.
@@ -2077,6 +2081,10 @@ func update_combat(delta: float):
 	for weapon in equipped:
 		if weapon.id=="flowers": continue
 		if hp<=0: continue
+		# Weapons rest while the hero is under the island.
+		if underside.active():
+			if weapon.id in ["saw","flame","fire-turret"]: sound.weapon_loop(weapon.id,false,player.position)
+			continue
 		weapon.clock -= delta
 		weapon.deploy_clock -= delta
 		var origin = player.position+Vector3.UP*.9
@@ -2455,7 +2463,9 @@ func _physics_process(delta: float):
 	var look=Input.get_vector("look_left","look_right","look_up","look_down",.18)
 	if look.length()>.01: camera_look(look*Vector2(2,.65)*delta)
 	if movement.length()>1: movement=movement.normalized()
-	yaw += delta*((1.6 if Input.is_action_pressed("camera_left") else 0)-(1.6 if Input.is_action_pressed("camera_right") else 0))
+	var turned=-1.0 if underside.flipped() else 1.0
+	movement.x*=turned
+	yaw += turned*delta*((1.6 if Input.is_action_pressed("camera_left") else 0)-(1.6 if Input.is_action_pressed("camera_right") else 0))
 	var wish = Vector3(movement.x,0,movement.y).rotated(Vector3.UP,yaw)
 	if not player.is_on_floor(): wish*=1+minf(.5,stats.airControl)
 	if wish.length()>.1: direction=wish.normalized()
@@ -2487,20 +2497,21 @@ func _physics_process(delta: float):
 	if player_chill>0: player.velocity.x*=.7;player.velocity.z*=.7
 	player.velocity.x+=knock_velocity.x;player.velocity.z+=knock_velocity.z
 	knock_velocity=knock_velocity.move_toward(Vector3.ZERO,delta*28)
-	if not player.is_on_floor(): player.velocity.y-=24*delta
-	var was_grounded=player.is_on_floor()
-	peak_height=maxf(peak_height,player.position.y)
-	var falling_speed=player.velocity.y
-	player.move_and_slide()
-	check_stomp(previous,falling_speed)
-	check_landing(was_grounded)
-	player.position.x=clampf(player.position.x,-RealmWorld.EXTENT+3,RealmWorld.EXTENT-3)
-	player.position.z=clampf(player.position.z,-RealmWorld.EXTENT+3,RealmWorld.EXTENT-3)
-	if player.position.y<world.height_at(player.position.x,player.position.z)-5: recover_player()
+	if not underside.tick(self,delta):
+		if not player.is_on_floor(): player.velocity.y-=24*delta
+		var was_grounded=player.is_on_floor()
+		peak_height=maxf(peak_height,player.position.y)
+		var falling_speed=player.velocity.y
+		player.move_and_slide()
+		check_stomp(previous,falling_speed)
+		check_landing(was_grounded)
+		player.position.x=clampf(player.position.x,-RealmWorld.EXTENT+3,RealmWorld.EXTENT-3)
+		player.position.z=clampf(player.position.z,-RealmWorld.EXTENT+3,RealmWorld.EXTENT-3)
+		if player.position.y<world.height_at(player.position.x,player.position.z)-5 and not underside.active(): recover_player()
 	update_boiling_edge()
 	if mode!="playing": return
 	update_hero_vitals()
-	avatar.animate(delta,player.velocity,player.is_on_floor(),slamming)
+	avatar.animate(delta,player.velocity,player.is_on_floor() or underside.active(),slamming)
 	avatar.statuses(player_fire>0,player_poison>0,player_chill>0,player_blind>0)
 	avatar.visible=burrow_time<=0
 	if burrow_time==0 and events.get("burrowing",false): damage_area(player.position,5.5,stats.burrow,"burrow");events.burrowing=false
@@ -2613,11 +2624,13 @@ func _process(delta: float):
 	damage_numbers=damage_numbers.filter(func(dn):return dn.life>0)
 	if profile_crowd: process_mark=profile_mark("p_numbers",process_mark)
 	if not camera_locked:
-		var anchor=player.position+Vector3.UP*1.2
+		# Under the island the view is turned over, so the ground stays at the bottom.
+		var view_up=underside.camera_up()
+		var anchor=player.position+view_up*1.2
 		update_fight_zoom(delta)
 		# TPS camera: spherical coords around player
 		var cos_p=cos(pitch);var distance_value=camera_distance*fight_zoom
-		var offset=Vector3(sin(yaw)*cos_p*distance_value,sin(pitch)*distance_value,cos(yaw)*cos_p*distance_value)
+		var offset=Vector3(sin(yaw)*cos_p*distance_value,0,cos(yaw)*cos_p*distance_value)+view_up*sin(pitch)*distance_value
 		var desired=anchor+offset
 		var ray=PhysicsRayQueryParameters3D.create(anchor,desired)
 		ray.collision_mask=1
@@ -2629,7 +2642,7 @@ func _process(delta: float):
 		# Screen flash overlay
 		if hit_shake>0: camera.position+=Vector3(sin(hit_shake*140),cos(hit_shake*110),0)*hit_shake*.32*EffectDetail.shake
 		# Look at player body (always TPS)
-		camera.look_at(anchor)
+		if absf((anchor-camera.position).normalized().dot(view_up))<.98: camera.look_at(anchor,view_up)
 	for effect in effects:
 		effect.life-=delta
 		effect.node.position+=effect.velocity*delta
@@ -3024,9 +3037,27 @@ func run_smoke():
 	spawn_pickup(Vector3(480,0,0),"xp",100);make_chest(Vector3(480,0,1),false);spawn_enemy(15)
 	var edge_enemy=enemies[-1];edge_enemy.node.position=Vector3(480,0,0)
 	player.position=Vector3.ZERO;update_boiling_edge()
-	checks.border_destroys=edge_enemy.dead and not pickups.any(func(p):return world.dangerous(p.node.position)) and chests[-1].get("destroyed",false)
+	# No sea (October 31): things past the coast are held inside it, not destroyed.
+	checks.border_holds=not edge_enemy.dead and not world.dangerous(edge_enemy.node.position) and not pickups.any(func(p):return world.dangerous(p.node.position)) and not chests[-1].get("destroyed",false) and not world.dangerous(chests[-1].node.position)
 	var coast=world.shore_radius(Vector3.RIGHT)
 	checks.border_bounds=world.dangerous(Vector3(coast+8,0,0)) and not world.dangerous(Vector3(coast-15,0,0))
+	# The underside: walking out over the rim flips the hero under the island, upside
+	# down and out of reach; walking out again flips them back on top.
+	clear_entities();hp=stats.maxHp;invulnerable=0
+	var rim_at=Vector3(coast-1.0,0,0);rim_at.y=world.height_at(rim_at.x,0)+.1
+	world.ensure_ground(rim_at);player.position=rim_at;player.velocity=Vector3(6,0,0);underside.clear(self);underside.flips=0
+	for i in range(80):
+		player.velocity=Vector3(6,0,0)
+		if underside.tick(self,1.0/60.0) and underside.state=="under": break
+		player.position+=player.velocity/60.0
+	var hp_under=hp;take_damage(50,player.position)
+	checks.underside_flip=underside.state=="under" and underside.flipped() and player.position.y<world.height_at(player.position.x,player.position.z)-8 and absf(avatar.rotation.z-PI)<.01 and underside.camera_up().y<-.99
+	checks.underside_safe=hp==hp_under and coop.target(player.position+Vector3(3,0,0)).id==-1 and not world.dangerous(coop.target(player.position).position)
+	for i in range(160):
+		player.velocity=Vector3(6,0,0).rotated(Vector3.UP,0.0)
+		if underside.tick(self,1.0/60.0) and underside.state=="top": break
+	checks.underside_return=underside.state=="top" and not underside.flipped() and absf(player.position.y-world.height_at(player.position.x,player.position.z))<1.0 and underside.flips==2
+	underside.clear(self);player.position=Vector3(0,1.2,0);player.velocity=Vector3.ZERO
 	clear_entities()
 	hud.modal.visible=false
 	await get_tree().process_frame
@@ -3144,12 +3175,13 @@ func slam_recovery() -> float:
 	return 4.5/(1.0+clampf(stat("slamRecovery"),0,5))
 
 func try_slam() -> bool:
-	if player.is_on_floor() or slamming or slam_cooldown>0: return false
+	if player.is_on_floor() or slamming or slam_cooldown>0 or underside.active(): return false
 	slamming=true;slam_cooldown=slam_recovery();player.velocity.y=-24
 	sound.effect("dash")
 	return true
 
 func try_jump():
+	if underside.active(): return
 	if not player.is_on_floor() and air_jumps>=int(stat("airJumps")): return
 	if player.is_on_floor(): air_jumps=0;peak_height=player.position.y;landing_ready=true
 	else: air_jumps+=1
@@ -3177,21 +3209,35 @@ func check_stomp(previous: Vector3,falling_speed: float):
 			sound.effect("squish",enemy.node.position);burst(enemy.node.position+Vector3.UP,Color("f1d39c"),9);vibrate(.22,.45,.1)
 			return
 
+# The island's edge (October 31: no deadly sea). Enemies, drops and chests are
+# held inside the coast; shots and pools past it fade. Only the hero crosses the
+# rim, onto the underside (Underside). The Red Moon arena keeps its killing void.
 func update_boiling_edge():
-	if maxf(absf(player.position.x),absf(player.position.z))>RealmWorld.EXTENT-60: hud.tell("DEADLY SEA  ·  TURN BACK",.2)
-	# Host-owned enemies leave a client only through a kill or snapshot absence.
 	if not coop.active or coop.hosting:
 		for enemy in enemies:
-			if not enemy.dead and world.dangerous(enemy.node.position):
-				enemy.dead=true;burst(enemy.node.position+Vector3.UP,Color("ffd498"),6);enemy.node.queue_free()
-	for collection in [pickups,consumables,pots,flowers,pools,projectiles]:
+			if not enemy.dead and world.dangerous(enemy.node.position): hold_inside(enemy.node,1.5)
+	for collection in [pickups,consumables]:
+		for item in collection:
+			if is_instance_valid(item.node) and world.dangerous(item.node.position):
+				hold_inside(item.node,2.5)
+				if item.has("velocity"): item.velocity=Vector3.ZERO
+				if item.has("base_y"): item.base_y=item.node.position.y-.3
+	for collection in [pots,flowers,pools,projectiles]:
 		for i in range(collection.size()-1,-1,-1):
 			var item=collection[i]
 			if is_instance_valid(item.node) and world.dangerous(item.node.position): item.node.queue_free();collection.remove_at(i)
 	for chest in chests:
-		if not chest.get("destroyed",false) and world.dangerous(chest.node.position): chest.destroyed=true;chest.opened=true;chest.node.visible=false
-	if world.dangerous(player.position):
-		hp=0;health_damage+=stats.maxHp;end_run(false);hud.tell("THE VOID CLAIMED YOU" if realm==3 else "THE DEADLY SEA CLAIMED YOU",6)
+		if not chest.get("destroyed",false) and world.dangerous(chest.node.position): hold_inside(chest.node,3.0)
+	if realm==3 and world.dangerous(player.position):
+		hp=0;health_damage+=stats.maxHp;end_run(false);hud.tell("THE VOID CLAIMED YOU",6)
+
+# Moves a thing back inside the coast by margin metres, standing on the ground.
+func hold_inside(node: Node3D,margin: float):
+	var flat=Vector2(node.position.x,node.position.z)
+	var coast=world.shore_radius(node.position)
+	flat=flat.normalized()*(coast-margin)
+	node.position=Vector3(flat.x,maxf(node.position.y,world.height_at(flat.x,flat.y)+.3),flat.y)
+	if node is CharacterBody3D: node.velocity=Vector3.ZERO
 
 func run_coop_test():
 	coop.test_mode=true

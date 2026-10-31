@@ -10,7 +10,8 @@ static func run(game: Node3D):
 	checks.world_dimensions=RealmWorld.EXTENT==400 and RealmWorld.SPAWN_EXTENT==370
 	var coast=game.world.shore_radius(Vector3.RIGHT)
 	checks.boundary=not game.world.dangerous(Vector3(coast-15,0,0)) and game.world.dangerous(Vector3(coast+8,0,0))
-	checks.visible_sea=game.world.has_node("DeadlySea") and game.world.height_at(coast+8,0)<0 and game.world.height_at(coast-8,0)>0
+	# No sea since October 31: the island floats, with a rounded rim and a hanging belly.
+	checks.floating_rim=not game.world.has_node("DeadlySea") and game.world.has_node("RimWall") and game.world.compute_height_at(coast+Underside.RIM,0)<game.world.height_at(coast-8,0)-Underside.THICK*.8 and game.world.under_height(coast-40,0)<game.world.compute_height_at(coast+Underside.RIM,0)-5
 	var jump_stats=game.stats.duplicate(true)
 	var boots=game.rules.data.loot.filter(func(i):return i.id=="jump-boots-item")[0]
 	game.rules.apply_effects(jump_stats,boots.effects)
@@ -397,6 +398,8 @@ static func run(game: Node3D):
 		var angle=float(biome)*RealmWorld.BIOME_ARC-float(game.seed_value%23)*.03
 		for radius in range(90,350,8):
 			var p=Vector3(cos(angle)*radius,0,sin(angle)*radius);var q=Vector3(cos(angle)*(radius+4),0,sin(angle)*(radius+4))
+			# Routes run to the coast; the rim past it is meant to be steep.
+			if radius+4>game.world.shore_radius(q)-2: continue
 			worst_slope=maxf(worst_slope,absf(game.world.height_at(p.x,p.z)-game.world.height_at(q.x,q.z))/4)
 		angle+=TAU/12;game.player.position=game.world.landmarks[biome]+Vector3(0,0,12)
 		game.world.ensure_ground(game.player.position);game.player.position.y=game.world.height_at(game.player.position.x,game.player.position.z)+.2

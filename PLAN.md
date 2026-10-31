@@ -436,6 +436,12 @@ Not released yet (Build 25 is the latest public build).
   - Evidence: check, smoke, integration (three runs), `biome-review` (captures `biome-6`, `biome-mechanic-6`) and `cartoon-review` (roster and mutants sheets, now 2×4) on `2026-10-30`.
   - Announcer line "Junkyard Planet. Mind the rust, and the crusher." (`biome_6.wav`, Kokoro af_heart via Python 3.12, other voice lines left untouched).
 
+## 60 fps, menus, the island's underside (user request, October 31)
+
+- [x] **60 fps cap:** `application/run/max_fps=60`. Draw distance grows from frame work time (under 9 ms) instead of fps above 90.
+- [x] **Main menu and settings:** menu grouped (Start, Play with friends · Achievements, Scores, Last run · Settings, Quit), About removed, no DEVELOPMENT ALPHA tag, panels inset from the gilt corners. Settings in four sections (Sound, Screen, Controls, Look) on an aligned two-column grid with percentages and On/Off buttons.
+- [x] **No deadly sea; walk under the island:** the sea plane and boiling-coast steam are gone. The island floats: the ground curves over a rounded rim (`RealmWorld.compute_height_at`, `Underside.THICK`/`RIM`) into a hanging rock belly (`under_height`, `island_underside.gdshader`, strata, roots, thin biome-coloured veins). The coast is one smooth radial ring (`make_rim`, with collision) so it is round, not the grid's saw teeth. Walking out over the rim swings the hero over it (`Underside`, 0.7 s) to walk upside down underneath; the camera rolls half a turn so the belly stays at the bottom of the screen, left/right controls follow, and walking out again swings back on top. Underneath the hero is out of the fight: no damage, weapons rest, enemies target the rim above (`CoopSession.target` id -1), drops do not fly to them, the pet waits on top; co-op shows other players upside down (`pose.under`). Enemies, drops and chests past the coast are held inside it instead of destroyed. The Red Moon arena keeps its killing void. Checks: smoke `underside_flip`/`underside_safe`/`underside_return`/`border_holds`, integration `floating_rim`, rendered `underside-review`.
+
 ## Audio, glass orbs, creatures, junkyard, less text (user report, October 31)
 
 - [x] **Enemy sound spam:** `RunSound.effect` plays one sound id at most every 50 ms; enemy sounds (shots, bites, impacts, death splats, burning) go through `enemy_effect`, a shared budget of one per 0.16 s, three at once, 6 dB down. Creature voices: two channels, -9 dB, 0.6 s gap, 10% hurt and 30% death chance (elites always), chatter every 7-12 s. Integration `audio_limiter`.
