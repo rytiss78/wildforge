@@ -444,10 +444,11 @@ Not released yet (Build 25 is the latest public build).
 
 ## Game icon (October 30, continues with the Build 26 work)
 
-- **New project icon:** a cartoon night scene — the green slime hero (googly eyes, two buck teeth, red shell) under a big moon and a purple planet, a sprout at its feet, in a gold frame. `native/icon.svg`, set as `application/config/icon` in `project.godot`; Godot embeds it as the Windows exe icon at export and shows it as the window icon in play. Source and design iterations live in `design/wildforge-icon/` (`preview-v3.png`, `sizes-v3.png`).
+- **New project icon:** a cartoon night scene — the green slime hero (googly eyes, two buck teeth, red shell) under a big moon and a purple planet, a sprout at its feet, in a gold frame. `native/icon.svg`, set as `application/config/icon` in `project.godot` and as `application/icon` in the Windows export preset (with `icon_interpolation=4`); Godot rasterizes that preset icon into the exe at export, and the project setting shows it as the window icon in play. Source and design iterations live in `design/wildforge-icon/` (`preview-v3.png`, `sizes-v3.png`).
+- **Exe icon needed a preset fix:** the first Build 26 export (`29fa06d`) shipped the Godot template's icon group with a solid-blue placeholder instead — the preset had `modify_resources=true` but no `application/icon`, and the exported exe's `RT_GROUP_ICON` bytes were wrong (Windows enumerated 1 icon group but `ExtractIconExW` extracted 0 icons, so Explorer showed a generic page). Added the two preset options (commit `52a5899`); the rebuilt exe extracts normally (2 handles; `exe-icon-extracted.png` shows the slime at 32 px).
 - **Small sizes:** legible at 256/128/64; at 32 px it reads as eyes and a green blob, the frame and moon turn to mush (see `sizes-v3.png`).
 - **Not chosen by a person yet:** the three design rounds (`preview-v1/v2/v3.png`) are in `design/wildforge-icon/` — v3 is what is wired in; swap it if another round is preferred.
-- Verified: `check` (import/parse clean, 2026-10-31 run), `smoke` 118 checks; the exported exe icon is checked after the build below.
+- Verified: `check` (import/parse clean), `smoke` 118 checks; rebuilt Build 26 export at `.build-staging/agent-workflow/2026-10-31T12-25-18-990Z-build/` (source `52a5899`, exe SHA-256 `8c60e094…`), exported smoke all green, exe icon extracted and inspected.
 
 ## Player notes: 16 fixes (user list, October 25, after Build 23)
 
