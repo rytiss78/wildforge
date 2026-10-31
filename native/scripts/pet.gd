@@ -4,26 +4,30 @@ class_name Pet
 # A pet (user request, October 29; reworked October 30: "not sure what they do or
 # how many there are; let the player choose one with the hero, and upgrade it with
 # drops"). The player picks one of three pets on the hero screen; each has a job:
-#   Blip     fetcher  runs off for coins and Pet Treats beyond the hero's reach
-#   Fuzzbat  biter    darts at the nearest enemy and bites it
-#   Zorbo    medic    pulses a healing ring when the hero is hurt
-# Pet Treats drop from elites, bosses and now and then any enemy; feeding treats
-# evolves the pet through three stages (bigger, quicker, stronger, new parts).
+#   Glint  fetcher  darts off for coins and Pet Treats beyond the hero's reach
+#   Sting  biter    darts at the nearest enemy and stings it
+#   Halo   medic    pulses a healing ring when the hero is hurt
+# Pet Treats drop only from the final boss (October 31) and are kept between runs,
+# per pet (settings.pet_treats): 4 treats evolve a pet to stage 2, 12 to stage 3.
+# Pets are glowing wisps floating at the hero's shoulder (see build).
 # In co-op every player sees the others' pets follow them (pose "pet"), but only
 # your own pet works for you.
 
 const KINDS=["blip","fuzzbat","zorbo"]
-const NAMES={"blip":"Blip","fuzzbat":"Fuzzbat","zorbo":"Zorbo"}
+# Wisp names (October 31): Glint grabs shiny things, Sting bites, Halo heals.
+# The ids stay blip/fuzzbat/zorbo so saved choices and treats carry over.
+const NAMES={"blip":"Glint","fuzzbat":"Sting","zorbo":"Halo"}
 const ROLES={"blip":"FETCHER","fuzzbat":"BITER","zorbo":"MEDIC"}
 const JOBS={
 	"blip":"Fetches coins and Pet Treats lying beyond your pickup reach.",
-	"fuzzbat":"Darts at the nearest enemy and bites it, over and over.",
+	"fuzzbat":"Darts at the nearest enemy and stings it, over and over.",
 	"zorbo":"Pulses a healing ring when you are hurt.",
 }
 const TREATS_AT=[0,4,12]  # Pet Treats eaten to reach each stage
 const SPEED=[8.0,10.5,13.0]
 const REACH=[12.0,15.0,19.0]
-const SIZE=[.55,.75,.95]
+const SIZE=[.85,1.0,1.2]
+const FINAL_BOSS_TREATS=4
 const BITE=[9.0,16.0,26.0]  # per bite, before island scaling
 const BITE_EVERY=[1.4,1.1,.8]
 const HEAL=[.04,.06,.09]  # share of max HP per pulse
@@ -47,10 +51,17 @@ var model: Node3D
 
 static func pick(seed_value: int) -> String: return KINDS[absi(seed_value*7919+13)%KINDS.size()]
 
-# The pet chosen on the hero screen (career settings), Blip if none yet.
+# The pet chosen on the hero screen (career settings), Glint if none yet.
 static func chosen(settings: Dictionary) -> String:
 	var value=str(settings.get("pet",""))
 	return value if KINDS.has(value) else "blip"
+
+# Treats a pet has eaten over all runs, and the stage that makes.
+static func saved_treats(settings: Dictionary,pet_kind: String) -> int:
+	return int(settings.get("pet_treats",{}).get(pet_kind,0))
+
+static func stage_for(eaten: int) -> int:
+	return 2 if eaten>=TREATS_AT[2] else 1 if eaten>=TREATS_AT[1] else 0
 
 static func create(owner_game: Node3D,follow: Node3D,pet_kind: String,pet_stage: int=0,fetches: bool=true) -> Pet:
 	var pet=Pet.new();pet.game=owner_game;pet.leader=follow;pet.kind=pet_kind;pet.stage=pet_stage;pet.fetching=fetches
@@ -61,52 +72,94 @@ func rebuild():
 	if is_instance_valid(model): model.queue_free()
 	model=build(kind,stage);add_child(model)
 
-# The three species, each growing new parts at stages 1 and 2.
+# Wisps (October 31, user: "pets should look like wisps floating over the shoulder,
+# like in MMORPGs"): a bright core in a soft glow with a fading trail. Each kind has
+# its own colour and a small mark: Glint one big eye, Sting two flickering flame
+# wings, Halo an orbiting ring. Growing a stage adds orbiting motes (two, then
+# four) and a brighter, larger glow.
+const COLORS={"blip":Color("b6ff5a"),"fuzzbat":Color("ff7ac8"),"zorbo":Color("6fd2ff")}
+static var halo_texture: Texture2D
+
+static func glow_paint(color: Color,alpha: float,additive: bool=true) -> StandardMaterial3D:
+	var paint=StandardMaterial3D.new();paint.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED
+	paint.albedo_color=Color(color,alpha);paint.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA
+	if additive: paint.blend_mode=BaseMaterial3D.BLEND_MODE_ADD
+	paint.disable_receive_shadows=true
+	return paint
+
+static func halo(color: Color,size: float,alpha: float) -> MeshInstance3D:
+	if halo_texture==null:
+		var ramp=Gradient.new();ramp.offsets=PackedFloat32Array([0.0,.35,1.0]);ramp.colors=PackedColorArray([Color(1,1,1,1),Color(1,1,1,.35),Color(1,1,1,0)])
+		var texture=GradientTexture2D.new();texture.gradient=ramp;texture.fill=GradientTexture2D.FILL_RADIAL;texture.fill_from=Vector2(.5,.5);texture.fill_to=Vector2(1,.5);texture.width=64;texture.height=64
+		halo_texture=texture
+	var quad=QuadMesh.new();quad.size=Vector2(size,size)
+	var paint=glow_paint(color,alpha);paint.albedo_texture=halo_texture;paint.billboard_mode=BaseMaterial3D.BILLBOARD_ENABLED
+	var node=MeshInstance3D.new();node.mesh=quad;node.material_override=paint;node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	return node
+
+static func ball(radius: float,paint: Material) -> MeshInstance3D:
+	var sphere=SphereMesh.new();sphere.radius=radius;sphere.height=radius*2;sphere.radial_segments=14;sphere.rings=7
+	var node=MeshInstance3D.new();node.mesh=sphere;node.material_override=paint;node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	return node
+
 static func build(pet_kind: String,pet_stage: int) -> Node3D:
-	var scene=CartoonScene.new();var m=scene.paint(scene.body)
+	var color: Color=COLORS.get(pet_kind,Color.WHITE);var grown=clampi(pet_stage,0,2)
+	var root=Node3D.new();root.name="Wisp"
+	var core_paint=StandardMaterial3D.new();core_paint.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED;core_paint.albedo_color=color.lerp(Color.WHITE,.4)
+	root.add_child(ball(.075,core_paint))
+	root.add_child(ball(.125,glow_paint(color,.35)))
+	var glow=halo(color,.7+grown*.22,.5+grown*.1);glow.name="Halo";root.add_child(glow)
+	var eye_paint=StandardMaterial3D.new();eye_paint.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED;eye_paint.albedo_color=Color("1b1530")
 	match pet_kind:
-		"blip":  # a lime slime drop with one huge eye
-			var body=Color("9be05a")
-			m.ball(Vector3(0,.42,0),Vector3(.8,.72,.75),body);m.ball(Vector3(0,.16,0),Vector3(.95,.3,.9),body.darkened(.12))
-			m.eye(Vector3(0,.55,-.32),.2,Vector3.FORWARD,Color("2a7bd6"))
-			m.grin(Vector3(0,.3,-.36),.3,.1,2,true)
-			if pet_stage>=1:
-				for side in [-1.0,1.0]: m.stalk_eye(Vector3(side*.2,.72,-.05),Vector3(side*.34,1.05,-.08),.09,body,Vector3(side*.3,0,-1))
-			if pet_stage>=2:
-				m.spots(Vector3(0,.42,0),Vector3(.4,.36,.38),Color("f6ff8a"),7,.09,3,true)
-				for i in range(5): m.rod(Vector3(0,.78,.05),Vector3(cos(i*1.26)*.18,1.0,.05+sin(i*1.26)*.18),.04,Color("ffd23f"))
-		"fuzzbat":  # a pink puffball with bat wings
-			var body=Color("ff8ac6")
-			m.ball(Vector3(0,.5,0),Vector3(.7,.68,.66),body)
-			for side in [-1.0,1.0]: m.eye(Vector3(side*.14,.58,-.3),.11,Vector3(side*.2,0,-1),Color("341b4a"))
-			m.grin(Vector3(0,.4,-.32),.24,.08,2,false)
-			m.wings(Vector3(0,.55,.08),.55+pet_stage*.2,.35+pet_stage*.1,Color("c44fa0"),Color("6b2058"))
-			if pet_stage>=1:
-				for side in [-1.0,1.0]: m.rod(Vector3(side*.2,.8,0),Vector3(side*.3,1.02,.05),.05,Color("fff2c2"))
-			if pet_stage>=2:
-				m.tentacles(3,Vector3(0,.2,.1),.12,.35,.05,body.darkened(.2),Color("ffd23f"))
-				m.ball(Vector3(0,.5,-.02),Vector3(.74,.2,.7),Color("ffd8ee"))
-		_:  # zorbo: a little blue saucer bug on stalk eyes
-			var body=Color("5ec8ff")
-			m.ball(Vector3(0,.42,0),Vector3(.9,.36,.9),body);m.ring(Vector3(0,.42,0),.46,.05,Color("2a6fa8"))
-			m.ball(Vector3(0,.6,0),Vector3(.45,.3,.45),Color("c9f3ff"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
-			for side in [-1.0,1.0]: m.stalk_eye(Vector3(side*.15,.68,-.1),Vector3(side*.2,.92,-.16),.08,body,Vector3(side*.2,0,-1))
-			if pet_stage>=1:
-				m.legs([Vector3(-.25,.3,-.15),Vector3(.25,.3,-.15),Vector3(-.25,.3,.18),Vector3(.25,.3,.18)],.22,.04,body.darkened(.2),Color("1d3f66"))
-			if pet_stage>=2:
-				m.ring(Vector3(0,1.05,0),.26,.04,Color("ffd23f"));m.spots(Vector3(0,.42,0),Vector3(.45,.18,.45),Color("ffffff"),8,.06,5,true)
-	var root=scene.finish();root.scale=Vector3.ONE*SIZE[clampi(pet_stage,0,2)]
+		"blip":
+			var eye=ball(.035,eye_paint);eye.position=Vector3(0,.015,-.07);root.add_child(eye)
+		"fuzzbat":
+			for side in [-1.0,1.0]:
+				var eye=ball(.02,eye_paint);eye.position=Vector3(side*.03,.02,-.07);root.add_child(eye)
+				var wing=halo(color.lerp(Color("ffd0f0"),.3),.28,.8);wing.name="Wing";wing.position=Vector3(side*.15,.04,.02);wing.scale=Vector3(1,.55,1);root.add_child(wing)
+		_:
+			for side in [-1.0,1.0]:
+				var eye=ball(.02,eye_paint);eye.position=Vector3(side*.03,.02,-.07);root.add_child(eye)
+			var ring=TorusMesh.new();ring.inner_radius=.17;ring.outer_radius=.19;ring.rings=24;ring.ring_segments=6
+			var band=MeshInstance3D.new();band.name="Ring";band.mesh=ring;band.material_override=glow_paint(color.lerp(Color.WHITE,.4),.85);band.rotation=Vector3(.5,0,.3);root.add_child(band)
+	# Orbiting motes, more as it grows.
+	var motes=Node3D.new();motes.name="Motes";root.add_child(motes)
+	for i in range([0,2,4][grown]):
+		var mote=ball(.022,core_paint);var a=float(i)/[1,2,4][grown]*TAU
+		mote.position=Vector3(cos(a)*.24,sin(a*2.0)*.05,sin(a)*.24);motes.add_child(mote)
+		var spark=halo(color,.14,.7);spark.position=mote.position;motes.add_child(spark)
+	# A short fading trail in the world, so it leaves a streak as it moves.
+	var trail=GPUParticles3D.new();trail.name="Trail";trail.amount=20;trail.lifetime=.55;trail.local_coords=false
+	trail.visibility_aabb=AABB(Vector3(-3,-3,-3),Vector3(6,6,6));trail.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var process=ParticleProcessMaterial.new();process.gravity=Vector3(0,.25,0);process.initial_velocity_min=0.0;process.initial_velocity_max=.15;process.spread=180.0
+	var curve=Curve.new();curve.add_point(Vector2(0,1));curve.add_point(Vector2(1,0));var shrink=CurveTexture.new();shrink.curve=curve;process.scale_curve=shrink
+	trail.process_material=process
+	var dot=QuadMesh.new();dot.size=Vector2(.1,.1);var dot_paint=glow_paint(color,.8);dot_paint.albedo_texture=null;dot_paint.billboard_mode=BaseMaterial3D.BILLBOARD_PARTICLES
+	if halo_texture!=null: dot_paint.albedo_texture=halo_texture
+	dot.material=dot_paint;trail.draw_pass_1=dot;root.add_child(trail)
+	var lamp=OmniLight3D.new();lamp.light_color=color;lamp.light_energy=.5+grown*.2;lamp.omni_range=3.0;lamp.shadow_enabled=false;root.add_child(lamp)
+	root.scale=Vector3.ONE*SIZE[grown]
 	return root
 
-func flies() -> bool: return kind!="blip"
+# The wisp's own motion: motes circle, wings flicker, the ring spins.
+func animate_wisp(delta: float):
+	if not is_instance_valid(model): return
+	model.position.y=sin(clock*2.4)*.07
+	var motes=model.get_node_or_null("Motes")
+	if motes!=null: motes.rotation.y+=delta*2.2
+	var ring=model.get_node_or_null("Ring")
+	if ring!=null: ring.rotation.y+=delta*3.0
+	for wing in model.get_children():
+		if wing.name.begins_with("Wing"): wing.scale.y=.4+absf(sin(clock*14.0))*.35
+
+func flies() -> bool: return true
 
 func _process(delta: float):
 	if not is_instance_valid(leader): queue_free();return
 	clock+=delta;work-=delta
-	# The hero went under the island: the pet waits on top, bobbing.
-	if leader==game.player and game.underside.active():
-		if is_instance_valid(model): model.position.y=sin(clock*4.0)*.08
-		return
+	animate_wisp(delta)
+	# The hero went under the island: the pet waits on top.
+	if leader==game.player and game.underside.active(): return
 	var goal: Vector3
 	match state:
 		"fetch":
@@ -136,11 +189,10 @@ func _process(delta: float):
 	var step=to.limit_length(speed*delta*(1.0 if to.length()>.3 else to.length()/.3))
 	position+=step
 	var ground=game.world.height_at(position.x,position.z)
-	# Flyers bob in the air; Blip hops along the ground.
-	if flies(): position.y=maxf(position.y,ground+.6)+sin(clock*6.0)*.01
-	else: position.y=maxf(ground+absf(sin(clock*9.0))*.35*minf(1.0,step.length()/maxf(.001,speed*delta)),minf(position.y,ground+.4))
+	# Wisps float: never below knee height.
+	position.y=maxf(position.y,ground+.6)
 	if Vector2(to.x,to.z).length()>.2: rotation.y=lerp_angle(rotation.y,atan2(-to.x,-to.z),minf(1.0,delta*10.0))
-	if is_instance_valid(model): model.position.y=sin(clock*(12.0 if flies() else 0.0))*.05
+	elif is_instance_valid(facing): rotation.y=lerp_angle(rotation.y,facing.global_rotation.y,minf(1.0,delta*4.0))
 
 # What the pet does when it is free, by species.
 func duty():
@@ -169,8 +221,10 @@ func bite():
 
 func home() -> Vector3:
 	var turn: Node3D=facing if is_instance_valid(facing) else leader
-	var side=turn.global_basis.x;var back=turn.global_basis.z
-	return leader.position+side*1.3+back*.9+Vector3.UP*(1.3 if flies() else 0.0)
+	# Just over the right shoulder, a little behind, drifting in a slow loop.
+	var side=turn.global_basis.x.normalized();var back=turn.global_basis.z.normalized()
+	var drift=Vector3(sin(clock*.9)*.18,sin(clock*1.3)*.12,cos(clock*.7)*.15)
+	return leader.position+side*.7+back*.15+Vector3.UP*1.55+drift
 
 static func live(pickup: Dictionary) -> bool: return not pickup.is_empty() and pickup.get("age",-1)>=0 and is_instance_valid(pickup.get("node"))
 
@@ -192,9 +246,11 @@ func deliver():
 	coin.carried=false;coin.attracted=true;coin={};state="follow"
 	fetched+=1
 
-# Pet Treats were collected: count them and evolve at the thresholds.
+# Pet Treats were collected: count them (kept between runs) and evolve.
 func feed(amount: int=1):
 	treats+=maxi(1,amount)
+	var store: Dictionary=game.career.data.settings.get("pet_treats",{})
+	store[kind]=treats;game.career.data.settings.pet_treats=store;game.career.dirty=true;game.career.save()
 	game.burst(position,Color("ff9ad6"),8)
 	if stage<2 and treats>=TREATS_AT[stage+1]: evolve()
 
@@ -207,7 +263,6 @@ func evolve():
 	stage+=1;rebuild()
 	game.burst(position,Color("fff38a"),16);game.burst(position,Color.WHITE,8)
 	game.sound.effect("level",position)
-	var better={"blip":"faster, fetches from further away","fuzzbat":"bites harder and more often","zorbo":"heals more, more often"}
 	game.Journey.announce(game,"%s EVOLVED!" % NAMES[kind].to_upper(),"★".repeat(stage+1))
 	# A pet that just grew a stage may already have the treats for the next.
 	if stage<2 and treats>=TREATS_AT[stage+1]: evolve()

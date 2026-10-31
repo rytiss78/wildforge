@@ -436,6 +436,11 @@ Not released yet (Build 25 is the latest public build).
   - Evidence: check, smoke, integration (three runs), `biome-review` (captures `biome-6`, `biome-mechanic-6`) and `cartoon-review` (roster and mutants sheets, now 2×4) on `2026-10-30`.
   - Announcer line "Junkyard Planet. Mind the rust, and the crusher." (`biome_6.wav`, Kokoro af_heart via Python 3.12, other voice lines left untouched).
 
+## Wisp pets (user request, October 31)
+
+- [x] **Pets are wisps** floating over the right shoulder, MMO-companion style: a glowing core in a soft halo with a fading trail and a small light. Renamed to fit: **Glint** (lime, one eye, fetches coins and treats), **Sting** (pink, flickering flame wings, stings enemies), **Halo** (blue, orbiting ring, heals). Stages add orbiting motes and a bigger glow. Internal ids unchanged, so saves carry over.
+- [x] **Pet Treats only from the final boss** (4 per kill), and kept between runs per pet (`settings.pet_treats`): one win evolves a pet to stage 2, three wins to stage 3. The hero screen shows each pet's stars. Integration `pet_wisp`, `pet_treats_final_boss_only`; `underside-review` renders all three wisps.
+
 ## 60 fps, menus, the island's underside (user request, October 31)
 
 - [x] **60 fps cap:** `application/run/max_fps=60`. Draw distance grows from frame work time (under 9 ms) instead of fps above 90.

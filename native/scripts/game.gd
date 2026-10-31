@@ -480,10 +480,11 @@ func start_run(shared_seed: int=-1):
 	death_count = 0
 	kills = 0
 	if is_instance_valid(hud) and hud.combo: hud.combo.reset()
-	# The pet chosen on the hero screen, fresh each run (stage 1, no treats).
+	# The pet chosen on the hero screen, grown by the treats it ate in earlier runs.
 	trick_cooldown=0.0;trick_roll={};trick_leap={};trick_boosts.clear()
 	if is_instance_valid(pet): pet.queue_free()
-	pet=Pet.create(self,player,Pet.chosen(career.data.settings));pet.facing=avatar
+	var pet_kind=Pet.chosen(career.data.settings);var eaten=Pet.saved_treats(career.data.settings,pet_kind)
+	pet=Pet.create(self,player,pet_kind,Pet.stage_for(eaten));pet.treats=eaten;pet.facing=avatar
 	gold = 0
 	paid_chests = 0
 	run_bosses = 0
@@ -1707,9 +1708,8 @@ func kill_enemy(enemy: Dictionary, cause: String):
 	var p = enemy.node.position
 	spawn_pickup(p+Vector3.UP*.35,"xp",float(enemy.get("xp_reward",enemy_xp_reward(enemy))))
 	spawn_pickup(p+Vector3.UP*.4,"gold",roundi((1+RealmWorld.BIOME_TIER[int(enemy.get("biome",0))]*.2)*(40 if enemy.boss else (2+realm)*(3 if enemy.get("elite",false) else 1))*stat("goldGain")))
-	# Pet Treats feed the pet: bosses drop three, elites usually one, others rarely.
-	var treat_chance=1.0 if enemy.boss else .6 if enemy.get("elite",false) else .025
-	if randf()<treat_chance: spawn_pickup(p+Vector3.UP*.5,"treat",3.0 if enemy.boss else 1.0)
+	# Pet Treats come only from the final boss (October 31).
+	if int(enemy.get("boss_id",-1))==8: spawn_pickup(p+Vector3.UP*.5,"treat",float(Pet.FINAL_BOSS_TREATS))
 	# Kill feedback: elite/boss get big explosion, regular get dust puff
 	# Multi-kill tracking
 	if enemy.get("elite",false) or enemy.boss:

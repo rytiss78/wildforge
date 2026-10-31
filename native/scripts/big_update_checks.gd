@@ -211,10 +211,14 @@ static func run(game: Node3D):
 	checks.rescue_code=shown and halfway and restarted and reset_by_hit and not game.update.downed_ids.has(friend)
 	game.coop.members.erase(friend);game.update.downed_ids.erase(friend);game.update.rescue_tick(1.0/60.0)
 	# Pets (October 29; chosen on the hero screen and fed treats since October 30):
-	# the chosen kind is the run's pet; Blip fetches a far coin; treats evolve it;
-	# Fuzzbat bites a nearby enemy; Zorbo heals a hurt hero.
+	# the chosen kind is the run's pet; Glint fetches a far coin; treats evolve it;
+	# Sting bites a nearby enemy; Halo heals a hurt hero.
 	var pet: Pet=game.pet
-	var pet_ok=is_instance_valid(pet) and pet.kind==Pet.chosen(game.career.data.settings) and pet.stage==0
+	var saved_treats=game.career.data.settings.get("pet_treats",{}).duplicate()
+	var pet_ok=is_instance_valid(pet) and pet.kind==Pet.chosen(game.career.data.settings) and pet.stage==Pet.stage_for(pet.treats)
+	# Wisps (October 31): a glowing core, halo and trail, floating over the shoulder.
+	checks.pet_wisp=is_instance_valid(pet.model) and pet.model.get_node_or_null("Halo")!=null and pet.model.get_node_or_null("Trail")!=null and pet.home().y>game.player.position.y+1.2
+	pet.stage=0;pet.treats=0;pet.rebuild()
 	pet.kind="blip";pet.rebuild()
 	var coin_at=game.player.position+Vector3(9,0,0);coin_at.y=game.world.height_at(coin_at.x,coin_at.z)+.27
 	game.spawn_pickup(coin_at,"gold",5.0);var fetch=game.pickups[-1];fetch.node.position=coin_at;fetch.settled=true;fetch.velocity=Vector3.ZERO
@@ -227,7 +231,11 @@ static func run(game: Node3D):
 	var treat_at=game.player.position+Vector3(.4,.4,0)
 	game.spawn_pickup(treat_at,"treat",float(Pet.TREATS_AT[1]));var treat=game.pickups[-1];treat.node.position=treat_at;treat.velocity=Vector3.ZERO
 	for i in range(30): game.update_pickups(1.0/60.0)
-	checks.pet_evolves=pet.stage==1 and pet.treats==Pet.TREATS_AT[1] and is_instance_valid(pet.model) and not game.pickups.has(treat)
+	checks.pet_evolves=pet.stage==1 and pet.treats==Pet.TREATS_AT[1] and is_instance_valid(pet.model) and not game.pickups.has(treat) and Pet.saved_treats(game.career.data.settings,pet.kind)==Pet.TREATS_AT[1]
+	# Treats come only from the final boss: an elite drops none.
+	var treats_before=game.pickups.filter(func(x):return x.kind=="treat").size()
+	game.spawn_enemy(4);var treatless=game.enemies[-1];treatless.elite=true;game.kill_enemy(treatless,"hit")
+	checks.pet_treats_final_boss_only=game.pickups.filter(func(x):return x.kind=="treat").size()==treats_before
 	pet.kind="fuzzbat";pet.stage=0;pet.treats=0;pet.rebuild();pet.position=game.player.position+Vector3(1,1,0)
 	game.spawn_enemy(4);var bitten=game.enemies[-1];var bite_at=game.player.position+Vector3(3,0,0);bite_at.y=game.world.height_at(bite_at.x,bite_at.z)
 	bitten.node.position=bite_at;bitten.speed=0.0;bitten.attack=1e9;bitten.contact=1e9;bitten.hp=1e5;bitten.maxHp=1e5;bitten.home=bite_at
@@ -242,7 +250,8 @@ static func run(game: Node3D):
 	for i in range(30): pet._process(1.0/60.0)
 	checks.pet_heals=game.hp>pet_hp_before
 	game.hp=game.stats.maxHp;game.mode=mode_before
-	pet.kind=Pet.chosen(game.career.data.settings);pet.stage=0;pet.treats=0;pet.fetched=0;pet.state="follow";pet.rebuild()
+	game.career.data.settings.pet_treats=saved_treats;game.career.save()
+	pet.kind=Pet.chosen(game.career.data.settings);pet.treats=Pet.saved_treats(game.career.data.settings,pet.kind);pet.stage=Pet.stage_for(pet.treats);pet.fetched=0;pet.state="follow";pet.rebuild()
 	# Hats (October 29): every hat builds; an owned hat sits on top of the hero's
 	# head; a locked one is not worn.
 	var hats_build=HatBook.HATS.all(func(h):var hat_node=HatBook.build(h.id);var ok=hat_node.find_children("*","MeshInstance3D",true,false).size()>0;hat_node.free();return ok)

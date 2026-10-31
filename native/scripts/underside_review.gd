@@ -30,6 +30,16 @@ static func run(g):
 	g.yaw=-PI*.5;g.pitch=.35
 	for i in range(30): await g.get_tree().process_frame
 	checks.top=await shot(g,"top")
+	# The three pet wisps at the hero's shoulder, at stages 1, 2 and 3, close up.
+	for i in range(3):
+		var kind=Pet.KINDS[i];g.pet.kind=kind;g.pet.stage=i;g.pet.rebuild();g.pet.position=g.pet.home()
+		g.camera_locked=true
+		var hero=g.player.position;var side=g.avatar.global_basis.x.normalized()
+		var behind=g.avatar.global_basis.z.normalized()
+		g.camera.position=hero+Vector3.UP*2.0+side*1.6+behind*3.0;g.camera.look_at(hero+Vector3.UP*1.3+side*.4)
+		for f in range(40): await g.get_tree().process_frame
+		checks["pet_"+kind]=await shot(g,"pet-"+kind)
+	g.camera_locked=false
 	# A few enemies and a coin on top, near the rim: they must stay up there.
 	for i in range(4):
 		g.spawn_enemy(6);var e=g.enemies[-1];var at=Vector3(coast-6,0,(i-1.5)*3);at.y=g.world.height_at(at.x,at.z)+.2;e.node.position=at

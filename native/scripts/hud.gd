@@ -822,11 +822,12 @@ func start_menu(focus_hero: bool=false):
 	bio.add_child(label("PET",13,ThemeTokens.STAR_GOLD))
 	var pet_row=HBoxContainer.new();pet_row.add_theme_constant_override("separation",8);bio.add_child(pet_row)
 	for kind in Pet.KINDS:
-		var pick_pet=button(Pet.NAMES[kind],func():game.career.data.settings.pet=kind;game.career.dirty=true;game.career.save();start_menu(true))
+		var grown=Pet.stage_for(Pet.saved_treats(game.career.data.settings,kind))
+		var pick_pet=button(Pet.NAMES[kind]+("  "+"★".repeat(grown) if grown>0 else ""),func():game.career.data.settings.pet=kind;game.career.dirty=true;game.career.save();start_menu(true))
 		pick_pet.name="Pet_"+kind
 		if kind==current_pet: pick_pet.add_theme_stylebox_override("normal",style(ThemeTokens.BIOME_ACCENTS.verdant.blossom,ThemeTokens.EARTH_TERRACOTTA))
 		pet_row.add_child(pick_pet)
-	var pet_job=label(Pet.ROLES[current_pet],14);pet_job.tooltip_text=Pet.JOBS[current_pet]+" Pet Treats evolve it twice.";pet_job.mouse_filter=Control.MOUSE_FILTER_PASS
+	var pet_job=label(Pet.ROLES[current_pet],14);pet_job.tooltip_text=Pet.JOBS[current_pet]+" Treats from the final boss evolve it.";pet_job.mouse_filter=Control.MOUSE_FILTER_PASS
 	pet_job.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;bio.add_child(pet_job)
 	# Keep hero selection focused on the selected hero; repeat rules in Help only.
 	var footer=HBoxContainer.new()
