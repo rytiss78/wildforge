@@ -135,7 +135,6 @@ func cosmetic_style(id: String) -> Dictionary:
 
 func set_boss_focus(id: int,name: String):
 	game.events.boss_focus_id=id;game.events.boss_focus_until=game.elapsed+4.0
-	game.hud.tell("THE NOGGIN MARKS "+clean_player_name(name)+" · MOVE",3.0)
 	sync_local_nameplate()
 
 func name_changed():
@@ -218,14 +217,14 @@ func host_lan():
 	publish_lobby()
 	peer.peer_connected.connect(func(id):linked[id]=true)
 	peer.peer_disconnected.connect(func(id):linked.erase(id))
-	peer.peer_disconnected.connect(remove_member);status="Party ready on your network · %s · UDP %d. Friends can also join after the run starts." % [", ".join(local_addresses()),party_port]
+	peer.peer_disconnected.connect(remove_member);status="Hosting · %s" % ", ".join(local_addresses())
 
 # Opens the party to the internet. Only the HOST PARTY button calls this:
 # automated tests never change a router's port mappings.
 func open_internet():
 	if not hosting or upnp_thread!=null or not invite.is_empty(): return
 	upnp_thread=Thread.new();upnp_thread.start(upnp_work)
-	status="Party ready on your network · opening internet access…"
+	status="Hosting · opening internet access…"
 
 # Router result names (UPNP.UPNP_RESULT_*), for messages players can report back.
 const UPNP_RESULTS=["success","not authorized","mapping not found","inconsistent parameters","no such entry","action failed","source IP wildcard not permitted","external port wildcard not permitted","internal port wildcard not permitted","remote host must be wildcard","external port must be wildcard","no port maps available","conflict with another mechanism","conflict with another mapping","same port values required","only permanent leases supported","invalid gateway","invalid port","invalid protocol","invalid duration","invalid arguments","invalid response","invalid parameter","HTTP error","socket error","out of memory","no gateway","no devices","unknown error"]
@@ -302,7 +301,7 @@ func upnp_finished(result: Dictionary):
 		_:
 			upnp=result.router;upnp_port=int(result.port);invite=InviteCode.encode(str(result.address),upnp_port)
 			DisplayServer.clipboard_set(invite)
-			status="Party open to the internet · invite code %s (copied). Friends paste it into Join. %s" % [invite,lan]
+			status="Invite code %s (copied)" % invite
 	game.hud.tell("Invite code copied: "+invite if not invite.is_empty() else "Internet hosting unavailable · see the party panel",5)
 
 func close_internet():
@@ -815,7 +814,7 @@ func receive(sender: int,message):
 				send_to(sender,{"type":"welcome","reconnected":false,"drop_in":true,"seed":game.seed_value,"realm":game.realm,"opened_chests":opened})
 				status="A player is joining the run · %d / 4." % (members.size()+1);game.hud.tell("A friend is joining…",3)
 			else:
-				members[sender]={"mode":"loading","player_name":"Player","token":token,"last_seen":Time.get_ticks_msec()/1000.0};status="%d / 4 players. Ready to start." % (members.size()+1)
+				members[sender]={"mode":"loading","player_name":"Player","token":token,"last_seen":Time.get_ticks_msec()/1000.0};status="%d / 4" % (members.size()+1)
 				send_to(sender,{"type":"welcome","reconnected":false});publish_lobby()
 			return
 		if not members.has(sender): return
@@ -962,7 +961,7 @@ func receive(sender: int,message):
 				game.hud.close();sync_local_nameplate()
 				status="Joined the run in progress.";game.hud.tell(status,5)
 			else:
-				status="Joined. Choose your hero and mark Ready.";publish_lobby_choice()
+				status="Joined";publish_lobby_choice()
 		elif kind=="lobby_state" and not game.run_active: lobby_roster=message.get("players",[])
 		elif kind=="start":
 			reset_actor_sync()

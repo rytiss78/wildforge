@@ -481,7 +481,6 @@ func start_run(shared_seed: int=-1):
 	trick_cooldown=0.0;trick_roll={};trick_leap={};trick_boosts.clear()
 	if is_instance_valid(pet): pet.queue_free()
 	pet=Pet.create(self,player,Pet.chosen(career.data.settings));pet.facing=avatar
-	if is_instance_valid(hud) and not coop.active: hud.tell("PET · %s the %s · %s" % [Pet.NAMES[pet.kind],Pet.ROLES[pet.kind].to_lower(),Pet.JOBS[pet.kind]],5)
 	gold = 0
 	paid_chests = 0
 	run_bosses = 0
@@ -566,7 +565,7 @@ func enter_realm(index: int,broadcast_transition: bool=true):
 	if realm in [1,2]:
 		# Later islands announce themselves and how much harder they are.
 		var tougher=roundi((realm_difficulty/(1.08)-1.0)*100)
-		Journey.announce(self,"ISLAND %d · %s" % [realm+1,RealmWorld.NAMES[realm].to_upper()],"%s · enemies +%d%% health and damage" % [RealmWorld.GRADE[realm].title,tougher])
+		Journey.announce(self,"ISLAND %d" % [realm+1],"☠ +%d%%" % tougher)
 	PortalFx.arrive(self)
 	if realm > 0: sound.say("realm",0)
 	if broadcast_transition: coop.realm_changed()
@@ -616,9 +615,9 @@ func interaction_hint() -> String:
 	var special=update.hint()
 	if not special.is_empty(): return special
 	var drop=nearest_consumable()
-	if not drop.is_empty(): return "E / X  ·  "+drop.title+"  ·  25 s"
+	if not drop.is_empty(): return "E / X  ·  "+drop.title
 	var harvest=nearest_harvestable()
-	if not harvest.is_empty(): return "E / X · Harvest "+harvest.type.name+"\n"+harvest.type.description+" "+harvest.type.effect
+	if not harvest.is_empty(): return "E / X · "+harvest.type.name
 	if mode != "playing": return ""
 	var chest = nearest_chest()
 	if not chest.is_empty():
@@ -745,7 +744,6 @@ func level_up():
 	burst(player.position+Vector3.UP,Color("eac97f"),18)
 	sound.say("level",0)
 	vibrate(.4,.65,.25)
-	hud.tell("LEVEL %d  ·  NEW POWER!" % level,1.2)
 	# Host-authoritative: only the host rolls/advances the shared level. Broadcast the
 	# rolled pool AND the resulting level/xp/xp_target so every member mirrors the host
 	# and opens the same choice — members never level up on their own.
@@ -813,7 +811,7 @@ func reroll_offers():
 func skip_offer():
 	if mode!="offer" or not offers.any(func(item):return item.kind=="weapon"): return
 	if coop.active: coop.publish_reward_skip(offer_source)
-	offers.clear();hud.close();hud.tell("Kept your weapons")
+	offers.clear();hud.close()
 	if (not coop.active or coop.hosting) and xp>=xp_target: level_up()
 
 func equip_weapon(item: Dictionary):
@@ -2418,7 +2416,7 @@ func update_events():
 			if item[2] in ["boss","swarm"]: sound.say(item[2],0);hud.tell("☠  00:30" if item[2]=="boss" else "☠☠☠  00:30",4)
 			# Waves surge but build: the first is a test (70 enemies on the first island),
 			# the second a real push; later islands add to both.
-			if item[2]=="rush": events.swarm_until=realm_time+25;events.wave_active=true;events.wave_budget=(70+realm*40) if item[1]=="swarm_one" else (120+realm*50);hud.tell("WAVE START · 25 s",3)
+			if item[2]=="rush": events.swarm_until=realm_time+25;events.wave_active=true;events.wave_budget=(70+realm*40) if item[1]=="swarm_one" else (120+realm*50);hud.tell("WAVE!",2)
 
 func _physics_process(delta: float):
 	var pads = Input.get_connected_joypads()
@@ -3392,11 +3390,10 @@ func update_exploration(delta: float):
 	if not biome_seen.has(current_biome):
 		biome_seen[current_biome]=true
 		career.discover_biome(current_biome)
-		hud.tell("DISCOVERED  ·  "+RealmWorld.BIOMES[current_biome],4)
 		sound.say("biome_"+str(current_biome),0)
 	for key in buffs.keys():
 		buffs[key]=maxf(0,buffs[key]-delta)
-		if buffs[key]<=0: buffs.erase(key);sound.effect("coin");hud.tell("Finished  ·  "+PotionBook.TYPES[key].name)
+		if buffs[key]<=0: buffs.erase(key);sound.effect("coin")
 	if buffs.has("poison"): player_poison=0
 	if buffs.has("fire"): player_fire=0
 	player_poison=maxf(0,player_poison-delta);player_fire=maxf(0,player_fire-delta);player_chill=maxf(0,player_chill-delta);player_blind=maxf(0,player_blind-delta)
@@ -3483,14 +3480,13 @@ func activate_consumable(kind: String):
 		effects.append({"node":pop,"life":.8,"velocity":Vector3.UP*.6})
 	# The Colossus's health potions heal at once instead of giving a timed buff.
 	if kind=="health":
-		heal(stats.maxHp*ColossusFight.POTION_HEAL);sound.effect("drink");vibrate(.2,.2,.1);hud.tell("HEALTH POTION");return
+		heal(stats.maxHp*ColossusFight.POTION_HEAL);sound.effect("drink");vibrate(.2,.2,.1);return
 	if not PotionBook.TYPES.has(kind): return
 	var duration=25.0*stats.get("potionDuration",1.0)
 	buffs[kind]=maxf(float(buffs.get(kind,0)),duration)
 	if kind=="poison": player_poison=0
 	if kind=="fire": player_fire=0
 	sound.effect("drink");vibrate(.2,.2,.1)
-	hud.tell("%d s  ·  %s" % [duration,PotionBook.TYPES[kind].name])
 
 func drop_consumable(p: Vector3, force: bool=false, kind: String=""):
 	if not force and rules.rng.randf()>minf(.75,.22+maxf(0,stats.luck)*.12+stats.potionChance*.5): return
@@ -3507,7 +3503,6 @@ func drop_consumable(p: Vector3, force: bool=false, kind: String=""):
 	ToonArt.part(node,badge,Color("f2e4cb"),Vector3(0,0,-.22))
 	var mark=Label3D.new();mark.text=entry.mark;mark.font_size=30;mark.modulate=Color("584735");mark.position=Vector3(0,0,-.24);node.add_child(mark)
 	var title=entry.name
-	var tag=Label3D.new();tag.text=title;tag.font_size=26;tag.position.y=.85;tag.billboard=BaseMaterial3D.BILLBOARD_ENABLED;tag.visibility_range_end=35;tag.modulate=Color("fff0cc");node.add_child(tag)
 	consumables.append({"node":node,"kind":kind,"title":title,"base_y":node.position.y,"age":0.0})
 
 func stat(key: String) -> float:

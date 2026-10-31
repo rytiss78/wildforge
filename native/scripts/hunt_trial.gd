@@ -9,7 +9,7 @@ static func setup(g):
 	var node=Node3D.new();node.name="HuntShrine";g.add_child(node)
 	node.position=Vector3(60,g.world.height_at(60,-35),-35)
 	build_totem(node)
-	var title=Label3D.new();title.name="Title";title.text="HUNTER'S OATH";title.font_size=34;title.pixel_size=.013;title.position.y=5.6;title.billboard=BaseMaterial3D.BILLBOARD_ENABLED
+	var title=Label3D.new();title.name="Title";title.text="◆";title.font_size=64;title.pixel_size=.013;title.position.y=5.6;title.billboard=BaseMaterial3D.BILLBOARD_ENABLED
 	title.modulate=Color("f3d9ff");title.outline_modulate=Color("1d0f22");title.outline_size=8;node.add_child(title)
 	g.events.hunt_state="idle";g.events.hunt_ids=[];g.events.hunt_kills=[]
 
@@ -113,7 +113,7 @@ static func tick(g):
 		var flame=node.get_node_or_null(name)
 		if flame: flame.scale=Vector3.ONE*(1.0+sin(Time.get_ticks_msec()*.012+(0.0 if name=="FlameL" else 2.0))*.15)*(1.4 if current=="active" else 1.0)
 	g.sound.hunt_music(float(g.events.get("hunt_deadline",0))-g.realm_time if current=="active" else -1.0)
-	node.get_node("Title").text={"idle":"HUNTER'S OATH","active":"HUNT IN PROGRESS","complete":"OATH FULFILLED","failed":"OATH EXPIRED"}[current]
+	node.get_node("Title").text={"idle":"◆","active":"◆ ◆ ◆","complete":"✓","failed":"✕"}[current]
 	for enemy in g.enemies:
 		if enemy.dead: continue
 		var marked=current=="active" and enemy.net_id in g.events.get("hunt_ids",[])

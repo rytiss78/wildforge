@@ -49,8 +49,6 @@ static func spawn(game):
 				if obstructed: continue
 			game.world.harvest_sites.append(p)
 			var node=make_model(biome);game.add_child(node);node.position=p
-			var title=Label3D.new();title.text=TYPES[biome].name;title.font_size=32;title.outline_size=6
-			title.position.y=1.7;title.billboard=BaseMaterial3D.BILLBOARD_ENABLED;title.visibility_range_end=18;node.add_child(title)
 			game.harvestables.append({"node":node,"type":TYPES[biome],"biome":biome,"picked":false});placed+=1
 
 static func pick(game,harvest: Dictionary):
@@ -62,7 +60,7 @@ static func pick(game,harvest: Dictionary):
 		game.stats.shield+=entry.bonus;game.shield_hp=minf(game.stats.shield,game.shield_hp+entry.bonus)
 	else: game.harvest_buffs[id]=float(entry.duration)
 	game.condition_times.harvest=game.elapsed
-	game.hud.tell(entry.name+" · "+entry.effect,3)
+	game.hud.tell(entry.name,2)
 	game.sound.ui_effect("garden" if id in [0,1,3] else "magic")
 	game.burst(p+Vector3.UP*.55,Color(entry.color),14)
 	# Existing pot-economy upgrades now enhance harvest coins; no dead upgrade.

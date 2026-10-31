@@ -100,7 +100,7 @@ static func defeated(g):
 	g.events.final_defeated=true;g.events.eclipse=true;g.events.eclipse_started=g.realm_time;g.events.eclipse_stage=0
 	g.events.final_ceremony=true;g.events.final_ceremony_until=g.realm_time+3.5;g.events.final_ceremony_announced=false
 	g.events.eclipse_started=g.events.final_ceremony_until;g.spawn_clock=99999
-	g.Journey.announce(g,"THE NOGGIN FALLS","The Red Moon cracks beneath it.")
+	g.Journey.announce(g,"THE NOGGIN FALLS","")
 	CombatInk.wave(g,Vector3(0,g.world.height_at(0,0)+.2,0),58,Color("ffd16c"))
 	for i in range(8):
 		var x=cos(i*TAU/8)*16;var z=sin(i*TAU/8)*16
@@ -129,7 +129,7 @@ static func tick(g):
 	if g.events.get("final_defeated",false):
 		if g.events.get("final_ceremony",false) and g.realm_time>=float(g.events.final_ceremony_until):
 			g.events.final_ceremony=false;g.events.final_ceremony_announced=true;g.spawn_clock=0
-			g.Journey.announce(g,"ENDLESS ECLIPSE","The Noggin has fallen. Survive until the last light falls.")
+			g.Journey.announce(g,"ENDLESS ECLIPSE","")
 			for crack in g.events.get("final_cracks",[]):
 				if is_instance_valid(crack) and crack.material_override is StandardMaterial3D:
 					crack.material_override.albedo_color=Color(1,.62,.16,.96);crack.material_override.emission=Color("ffc357");crack.material_override.emission_energy_multiplier=4.0
@@ -148,7 +148,6 @@ static func tick(g):
 
 static func erupt(g):
 	g.events.final_rift_time=g.realm_time+19.0
-	g.hud.tell("GROUND BREACH · MOVE BETWEEN THE RED MARKS",3)
 	for i in range(10):
 		var radius=17.0+(i%3)*9.0;var angle=TAU*float(i)/10.0+g.realm_time*.11
 		var p=Vector3(cos(angle)*radius,0,sin(angle)*radius);p.y=g.world.height_at(p.x,p.z)

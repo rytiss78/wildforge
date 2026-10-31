@@ -193,7 +193,6 @@ func feed(amount: int=1):
 	treats+=maxi(1,amount)
 	game.burst(position,Color("ff9ad6"),8)
 	if stage<2 and treats>=TREATS_AT[stage+1]: evolve()
-	else: game.hud.tell("PET TREAT · %s %s" % [NAMES[kind],progress()],2)
 
 # "· 3 / 4 treats to stage 2", or "is fully grown".
 func progress() -> String:
@@ -205,7 +204,7 @@ func evolve():
 	game.burst(position,Color("fff38a"),16);game.burst(position,Color.WHITE,8)
 	game.sound.effect("level",position)
 	var better={"blip":"faster, fetches from further away","fuzzbat":"bites harder and more often","zorbo":"heals more, more often"}
-	game.Journey.announce(game,"%s EVOLVED!" % NAMES[kind].to_upper(),"Stage %d · %s" % [stage+1,better[kind]])
+	game.Journey.announce(game,"%s EVOLVED!" % NAMES[kind].to_upper(),"★".repeat(stage+1))
 	# A pet that just grew a stage may already have the treats for the next.
 	if stage<2 and treats>=TREATS_AT[stage+1]: evolve()
 

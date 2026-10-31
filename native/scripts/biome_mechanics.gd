@@ -22,7 +22,8 @@ const KINDS={
 	5:{"id":"rift","every":12.0,"warn":1.2,"life":3.0,"radius":6.5,"color":Color("b38cff"),"intro":"GRAVITY RIFTS · pulled in, then the rift implodes on enemies"},
 	6:{"id":"crusher","every":9.0,"warn":1.6,"life":1.2,"radius":3.6,"color":Color("ffb43a"),"intro":"SCRAP CRUSHERS · get out from under the falling plate; it flattens enemies too"},
 }
-const LABELS={"clover":"+ HEAL ZONE","spores":"POISON FOG","ice":"ICE · SLIPPERY","gust":"WIND","lava":"LAVA","rift":"GRAVITY RIFT","crusher":"CRUSHER"}
+# One symbol each since October 31 ("too much text"): green heals, red hurts.
+const LABELS={"clover":"♥","spores":"☠","ice":"❄","gust":"≋","lava":"☠","rift":"◎","crusher":"▼"}
 const CRUSH_HEIGHT=9.0
 const MAX_ZONES=8
 static var disc_paints={}
@@ -81,12 +82,11 @@ static func spawn(g,event: Dictionary):
 	var seen: Dictionary=g.get_meta("biome_seen_mechanics",{})
 	if not seen.has(zone.kind):
 		seen[zone.kind]=true;g.set_meta("biome_seen_mechanics",seen)
-		g.hud.tell(RealmWorld.BIOMES[biome].to_upper()+" · "+str(info.intro),4)
 
 # A floating name says what the circle is (user request, October 25: "green
 # circles on the ground, what are they?"). Green for help, red for harm.
 static func name_tag(zone: Dictionary):
-	var tag=Label3D.new();tag.text=LABELS[zone.kind];tag.font_size=44;tag.outline_size=10;tag.billboard=BaseMaterial3D.BILLBOARD_ENABLED
+	var tag=Label3D.new();tag.text=LABELS[zone.kind];tag.font_size=64;tag.outline_size=12;tag.billboard=BaseMaterial3D.BILLBOARD_ENABLED
 	tag.modulate=Color("8dff7a") if zone.kind=="clover" else DangerMark.DANGER.lightened(.25) if hurts_hero(int(zone.biome)) else Color("e8f4ff")
 	tag.pixel_size=.018;tag.outline_modulate=Color(0,0,0,.85);tag.position.y=2.6;tag.visibility_range_end=45;zone.node.add_child(tag)
 

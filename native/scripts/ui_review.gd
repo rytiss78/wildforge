@@ -99,7 +99,7 @@ static func run(game):
 	var saved_equipped=game.equipped
 	var flowers=ContentExpansion.weapon("flowers").duplicate(true);flowers.rank=1;flowers.power=1
 	game.equipped=[flowers];game.buffs={"hands":25.0,"lucky":25.0,"bite":25.0};game.hud.update(0)
-	okay=expect(await capture(game,"buff-compatibility") and game.hud.buff_widgets.hands.text.contains("No benefit") and game.hud.buff_widgets.bite.text.contains("Active"),"ui assertion 60") and okay
+	okay=expect(await capture(game,"buff-compatibility") and game.hud.buff_widgets.hands.get_theme_color("font_color")==Color("f49b86") and game.hud.buff_widgets.bite.get_theme_color("font_color")!=Color("f49b86") and game.hud.buff_widgets.bite.text.ends_with("s"),"ui assertion 60") and okay
 	game.equipped=saved_equipped
 	game.buffs.clear();game.hud.update(0)
 	game.make_chest(Vector3(1,game.world.height_at(1,0),0),false)

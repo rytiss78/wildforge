@@ -146,7 +146,6 @@ static func potions(g,enemy: Dictionary):
 	for i in range(POTIONS):
 		var at=enemy.node.position+Vector3.RIGHT.rotated(Vector3.UP,turn+i*TAU/POTIONS)*g.rules.rng.randf_range(9.0,14.0)
 		g.drop_consumable(on_arena(g,at),true,"health")
-	g.hud.tell("THE NOGGIN SHEDS HEALTH POTIONS",3)
 
 # Keep impacts and landings on the playable ground of the arena.
 static func on_arena(g,at: Vector3) -> Vector3:
@@ -170,7 +169,6 @@ static func tick(g,enemy: Dictionary):
 	var p=phase(enemy)
 	if p>=1 and g.realm_time>=float(enemy.get("next_vents",g.realm_time+6)):
 		enemy.next_vents=g.realm_time+15.0
-		g.hud.tell("LAVA VENTS · MOVE BETWEEN THE RED MARKS",2.5)
 		for i in range(9):
 			var angle=TAU*float(i)/9.0+g.realm_time*.13;var radius=14.0+(i%3)*12.0
 			hazard(g,Vector3(cos(angle)*radius,0,sin(angle)*radius),3.0,2.4,50,"lava")
@@ -241,9 +239,9 @@ static func broadcast_perform(g,stage: String):
 # Every machine: the call, the verdict, and the cracked eyes on a success.
 static func show_perform(g,stage: String):
 	match stage:
-		"start": g.Journey.announce(g,"THE NOGGIN DEMANDS A PERFORMANCE","Dodge every mark · stand on the gold square")
-		"success": g.Journey.announce(g,"BRAVO!","Its eyes crack · hit them now for double damage")
-		"fail": g.Journey.announce(g,"BOO!","The Noggin is disappointed and heals")
+		"start": g.Journey.announce(g,"PERFORM!","")
+		"success": g.Journey.announce(g,"BRAVO!","")
+		"fail": g.Journey.announce(g,"BOO!","")
 	speak(g,{"start":"sing","success":"bravo","fail":"boo"}.get(stage,""))
 	if stage=="success":
 		for enemy in g.enemies:
@@ -284,7 +282,7 @@ static func show_phase(g,next: int):
 			var body=rig(enemy)
 			if body!=null: body.set_phase(next)
 	g.hit_shake=maxf(g.hit_shake,1.0)
-	if next>0: g.Journey.announce(g,NAME,PHASES[clampi(next,0,2)]);speak(g,"roar")
+	if next>0: g.Journey.announce(g,NAME,"");speak(g,"roar")
 
 # Every machine: one of the Noggin's booming lines (CreatureVoice), from its head.
 static func speak(g,cue: String):

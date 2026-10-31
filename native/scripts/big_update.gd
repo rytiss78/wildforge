@@ -63,7 +63,6 @@ func realm_started():
 	ToonArt.ball(merchant,Color("efd4a1"),Vector3(0,1.8,0),Vector3(.9,.8,.8))
 	ToonArt.tube(merchant,Color("a378c8"),Vector3(0,2.3,0),.1,.75,.65)
 	for x in [-.65,.65]: ToonArt.ball(merchant,Color("edbf56"),Vector3(x,1.2,0),Vector3(.5,.3,.5))
-	caption(merchant,"WANDERING MERCHANT",2.9)
 	# Catalog-only stock; each purchase has one positive bonus. Different realms visit once.
 	var pools=game.rules.data.loot.filter(func(i):return i.kind=="item")
 	for i in range(3):
@@ -78,7 +77,6 @@ func realm_started():
 	beacon=Node3D.new();beacon.position=beacon_position;add_child(beacon)
 	ToonArt.tube(beacon,Color("617886"),Vector3(0,1.2,0),.2,.5,2.4)
 	ToonArt.ball(beacon,Color("8be7ef"),Vector3(0,2.6,0),Vector3(.8,.8,.8))
-	caption(beacon,"SUPPLY SIGNAL",3.5)
 	if game.chests.size()>2:
 		var chest=game.chests[2];chest.mimic=true
 	# Magnet building: spawns once (realm 1), defended by 3 turrets, then sucks up XP/gold.
@@ -100,7 +98,6 @@ func realm_started():
 	var halo=TorusMesh.new();halo.inner_radius=1.3;halo.outer_radius=1.42
 	var ring=ToonArt.part(magnet_node,halo,Color("4ddcf0"),Vector3(0,2.3,0));ring.rotation.x=PI/2;ring.material_override=game.material(Color("43eaff"),2.0)
 	var light=OmniLight3D.new();light.light_color=Color("43cfff");light.light_energy=2;light.omni_range=9;light.position.y=2;magnet_node.add_child(light)
-	caption(magnet_node,"E.X.P. MAGNET",4.4)
 	magnet_turrets=[]
 	magnet_turret_count=3
 	magnet_active=false
@@ -172,7 +169,7 @@ func activate_magnet():
 	if magnet_active or magnet_spent or magnet_turret_count>0 or not is_instance_valid(magnet_node): return
 	magnet_active=true;magnet_hold=2.5
 	tag_magnet_loot()
-	game.hud.tell("E.X.P. MAGNET ACTIVATED · Every XP orb on the map is coming!",4)
+	game.hud.tell("XP MAGNET!",2)
 
 func tag_magnet_loot():
 	for pickup in game.pickups:
@@ -183,7 +180,6 @@ func magnet_tick(delta: float):
 	magnet_hold=maxf(0,magnet_hold-delta)
 	if magnet_hold<=0 and not game.pickups.any(func(p):return p.get("magnet_pull",false)):
 		magnet_active=false;magnet_spent=true
-		game.hud.tell("E.X.P. MAGNET SPENT · Grab the giant orb!",4)
 
 func merchant_menu():
 	quip("discovery")
@@ -239,13 +235,12 @@ func grant(item: Dictionary):
 func activate_beacon():
 	if beacon_state!="idle": return
 	beacon_state="defending";beacon_seconds=0;beacon_absent=0;beacon_budget=180+game.realm*60
-	game.hud.tell("SUPPLY WAVE · DEFEND THE SIGNAL",4);quip("discovery")
+	game.hud.tell("DEFEND!",2);quip("discovery")
 
 func award_beacon():
 	var id=str(game.coop.local_id)
 	if beacon_claimed.has(id): return
 	beacon_claimed[id]=true;note("BEACON")
-	game.hud.tell("SUPPLY SECURED · CHOOSE YOUR REWARD",3)
 	game.offer_kind="item";game.offer_elite=true;game.offer_rerolls=0;game.offer_source="beacon"
 	game.offers=game.rules.offers("item",game.stats.luck,true,game.stats,game.equipped)
 	game.mode="offer";game.hud.show_offers(game.offers,"beacon")
@@ -260,7 +255,7 @@ func start_mimic(chest: Dictionary) -> bool:
 		ToonArt.ball(node,Color("fff8da"),Vector3(x,.8,-.48),Vector3(.3,.35,.2))
 		ToonArt.ball(node,Color("574536"),Vector3(x,.8,-.59),Vector3(.13,.18,.06))
 	caption(node,"NOPE!",1.5);mimic={"node":node,"life":5.0,"drop":0.0}
-	game.hud.tell("MIMIC! · NO CHARGE · THE REAL BOX STAYS HERE",4)
+	game.hud.tell("MIMIC!",2)
 	return true
 
 func send_ping():
@@ -301,7 +296,7 @@ func knocked_down():
 	if downed: return
 	downed=true;game.hp=0;game.player.velocity=Vector3.ZERO
 	game.melee_attacks.clear();game.avatar.finish_melee();game.avatar.body.rotation.z=.9
-	game.hud.tell("DOWNED · A FRIEND CAN ENTER THE RESCUE CODE",6)
+	game.hud.tell("DOWNED",3)
 	if game.coop.hosting: downed_ids[game.coop.local_id]=true
 	else: game.coop.send_to(game.coop.owner_id,{"type":"big_action","action":"down","realm":game.realm})
 
@@ -316,7 +311,7 @@ func revive(id: int):
 func revived():
 	if not downed: return
 	run_revives+=1;downed=false;game.hp=game.stats.maxHp*.4;game.invulnerable=3;game.avatar.body.rotation.z=0
-	game.hud.tell("BACK ON YOUR FEET",4)
+	game.hud.tell("BACK UP!",2)
 
 func host_tick(delta: float):
 	for id in downed_ids.keys():
@@ -346,7 +341,7 @@ func host_tick(delta: float):
 		var present=helpers.values().any(func(m):return float(m.get("hp",0))>0 and CoopSession.vector(m.get("position",[])).distance_to(beacon_position)<14)
 		beacon_absent=0 if present else beacon_absent+delta
 		beacon_seconds+=delta if present else 0
-		if beacon_absent>6: beacon_state="failed";game.hud.tell("SUPPLY LOST · KEEP YOUR EARNED POWERS",4)
+		if beacon_absent>6: beacon_state="failed";game.hud.tell("SUPPLY LOST",2)
 		elif beacon_seconds>=25:
 			beacon_state="complete"
 			for id in helpers:
@@ -426,7 +421,7 @@ func rescue_tick(delta: float):
 	if rescue_coding and not code.complete():
 		match code.read_input():
 			"ok": game.sound.ui_effect("reel_tick")
-			"wrong": game.sound.effect("hit",game.player.position);game.hud.tell("WRONG ARROW · START THE CODE AGAIN",1.5)
+			"wrong": game.sound.effect("hit",game.player.position);game.hud.tell("✖",1)
 			"done": game.sound.effect("level",game.player.position)
 	code.tick(delta)
 	rescue_step=code.step if target>0 else 0
@@ -454,7 +449,6 @@ func tick(delta: float):
 	if is_instance_valid(magnet_node):
 		if not game.coop.active or game.coop.hosting:
 			var remaining=magnet_turrets.filter(func(t):return not t.dead).size()
-			if remaining==0 and magnet_turret_count>0: game.hud.tell("MAGNET DEFENSE DOWN · INTERACT TO ACTIVATE",4)
 			magnet_turret_count=remaining
 		if not game.coop.active or game.coop.hosting: magnet_tick(delta)
 		var pulse=sin(game.realm_time*4)*(.12 if magnet_active else 0.0 if magnet_spent else .025)
@@ -471,7 +465,6 @@ func quip(context: String):
 	if quip_clock>0 or float(quip_times.get(context,-100))+90>game.elapsed: return
 	quip_clock=45;quip_times[context]=game.elapsed
 	var text={"discovery":"Well, that looks suspicious.","boss":"That one skipped leg day.","weapon":"Three hands. Still no pockets."}.get(context,"")
-	game.hud.tell(game.hero.name+": "+text,3)
 	game.sound.hero_quip(game.hero.id,context,game.player)
 
 var effect_pool=[]

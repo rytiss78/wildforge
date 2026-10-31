@@ -535,11 +535,11 @@ func update(delta: float):
 	_ach_note_panel.visible=_ach_note_active and not modal.visible
 	level_plate.visible=game.mode=="level_reveal"
 	level_plate.text="LEVEL %d  ·  NEW POWER!" % game.level
-	biome_label.text="The Red Moon" if game.realm==3 else RealmWorld.BIOMES[game.current_biome]
+	biome_label.visible=false
 	var harvest_lines=[]
 	for id in game.harvest_buffs:
 		var entry=HarvestBook.TYPES[int(id)]
-		harvest_lines.append("%s · %ds\n%s" % [entry.name,ceili(game.harvest_buffs[id]),entry.effect.replace(" for 20s","")])
+		harvest_lines.append("%s  %ds" % [entry.name,ceili(game.harvest_buffs[id])])
 	harvest_status.text="\n".join(harvest_lines);harvest_status.visible=not modal.visible and not harvest_lines.is_empty()
 	if is_instance_valid(party_label): party_label.text=game.coop.status
 	if game.mode=="coop" and is_instance_valid(party_list): update_party_list();update_lobby_controls()
@@ -556,9 +556,9 @@ func update(delta: float):
 			var icon=TextureRect.new();icon.texture=load("res://assets/illustrated/potions/"+str(key)+".svg");icon.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;icon.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;icon.custom_minimum_size=Vector2(40,40);column.add_child(icon)
 			var timer=label("",12);timer.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;column.add_child(timer);buff_widgets[key]=timer
 		var benefit=UpgradeFit.for_key(game,str(PotionBook.TYPES[key].key))
-		buff_widgets[key].text="%s\n%ds · %s" % [PotionBook.TYPES[key].name,ceil(game.buffs[key]),"Active" if benefit.useful else "No benefit"]
+		buff_widgets[key].text="%ds" % ceil(game.buffs[key])
 		buff_widgets[key].add_theme_color_override("font_color",ink if benefit.useful else Color("f49b86"))
-		buff_widgets[key].get_parent().get_parent().tooltip_text=benefit.text
+		buff_widgets[key].get_parent().get_parent().tooltip_text=PotionBook.TYPES[key].name+" · "+benefit.text
 	health_text.text="HP  %d / %d" % [ceili(game.hp),roundi(game.stats.maxHp)]
 	health_orb.fill=clampf(game.hp/maxf(1,game.stats.maxHp),0,1)
 	health_orb.shield_fill=clampf(game.shield_hp/maxf(1,game.stats.shield),0,1);health_orb.queue_redraw()
@@ -566,7 +566,7 @@ func update(delta: float):
 	shield_text.visible=true
 	# Armor with its buffs, and how much damage it takes off.
 	var armor=game.stat("armor")
-	armor_text.text="ARMOR  %d  ·  −%d%% damage" % [roundi(armor),roundi(100.0-10000.0/(100.0+armor*6.0))] if armor>0 else "ARMOR  0  ·  no reduction"
+	armor_text.text="ARMOR  %d" % roundi(armor)
 	armor_text.visible=true
 	clock.seconds = game.realm_time if game.realm==3 else maxf(0,600.0-game.realm_time)
 	clock.realm = game.realm
@@ -591,26 +591,27 @@ func update(delta: float):
 		var progress=float(game.update.rescue_progress.get(rescue_id,game.update.rescue_progress.get(str(rescue_id),0.0)))
 		rescue_meter.value=clampf(progress,0,3)
 		rescue_text.text=("BEING REVIVED" if game.update.downed else "REVIVING FRIEND")+"  ·  CODE %d / %d" % [roundi(progress/3.0*RescueCode.LENGTH),RescueCode.LENGTH]
-	coins.text = "%d gold  ·  Chest %d  ·  %d left" % [game.gold,game.rules.chest_price(game.paid_chests,game.stats.discount),game.chests.filter(func(c):return not c.opened and not c.get("destroyed",false)).size()]
+	coins.text = "%d gold  ·  chest %d" % [game.gold,game.rules.chest_price(game.paid_chests,game.stats.discount)]
 	box_counter.visible=false
 	weapons.refresh()
 	slam_status.visible=not modal.visible and game.mode=="playing"
-	slam_status.text="[%s] SLAM · %s" % [ControlBindings.display(game.career.data.settings,"slam","controller" if game.input_kind=="xbox" else "keyboard"),"READY" if game.slam_cooldown<=0 else "%.1fs" % game.slam_cooldown]
+	slam_status.text="[%s] %s" % [ControlBindings.display(game.career.data.settings,"slam","controller" if game.input_kind=="xbox" else "keyboard"),"SLAM" if game.slam_cooldown<=0 else "%.1fs" % game.slam_cooldown]
 	slam_status.add_theme_color_override("font_color",READY_GREEN if game.slam_cooldown<=0 else ThemeTokens.STAR_GOLD)
 	dash_status.visible=slam_status.visible
-	dash_status.text="[%s] DASH · %s" % [ControlBindings.display(game.career.data.settings,"dash","controller" if game.input_kind=="xbox" else "keyboard"),"READY" if game.dash_cooldown<=0 else "%.1fs" % game.dash_cooldown]
+	dash_status.text="[%s] %s" % [ControlBindings.display(game.career.data.settings,"dash","controller" if game.input_kind=="xbox" else "keyboard"),"DASH" if game.dash_cooldown<=0 else "%.1fs" % game.dash_cooldown]
 	dash_status.add_theme_color_override("font_color",READY_GREEN if game.dash_cooldown<=0 else ThemeTokens.STAR_GOLD)
 	var hero_trick=HeroTricks.trick(game)
 	trick_status.visible=slam_status.visible and not hero_trick.is_empty()
 	if trick_status.visible:
-		trick_status.text="[%s] %s · %s" % [ControlBindings.display(game.career.data.settings,"trick","controller" if game.input_kind=="xbox" else "keyboard"),str(hero_trick.name).to_upper(),"READY" if game.trick_cooldown<=0 else "%.1fs" % game.trick_cooldown]
+		trick_status.text="[%s] %s" % [ControlBindings.display(game.career.data.settings,"trick","controller" if game.input_kind=="xbox" else "keyboard"),str(hero_trick.name).to_upper() if game.trick_cooldown<=0 else "%.1fs" % game.trick_cooldown]
 		trick_status.add_theme_color_override("font_color",READY_GREEN if game.trick_cooldown<=0 else ThemeTokens.STAR_GOLD)
 	var turrets=game.equipped.filter(func(w):return w.turret)
 	turret_hints.visible=not modal.visible and not turrets.is_empty()
 	if turret_hints.visible:
 		var selected=turrets[game.selected_turret%turrets.size()];var device="controller" if game.input_kind=="xbox" else "keyboard"
 		var readiness="READY" if selected.deploy_clock<=0 else "%.1fs" % selected.deploy_clock
-		turret_status.text="%s · %s\n[%s] Deploy   [%s] Switch turret" % [selected.name,readiness,ControlBindings.display(game.career.data.settings,"deploy",device),ControlBindings.display(game.career.data.settings,"next_turret",device)]
+		turret_status.text="[%s] %s" % [ControlBindings.display(game.career.data.settings,"deploy",device),selected.name if selected.deploy_clock<=0 else readiness]
+		if turrets.size()>1: turret_status.text+="   [%s] »" % ControlBindings.display(game.career.data.settings,"next_turret",device)
 	if hint_device != game.input_kind:
 		hint_device = game.input_kind;hints_until=game.elapsed+8
 		var device="controller" if game.input_kind=="xbox" else "keyboard"
@@ -619,7 +620,7 @@ func update(delta: float):
 			child.queue_free()
 		control_hints.add_child(label("Menu · Pause / controls" if game.input_kind=="xbox" else "Esc · Pause / controls",12))
 		# InputGlyph updates itself; rebuilding choices here resets controller focus.
-	control_hints.visible=not modal.visible
+	control_hints.visible=not modal.visible and game.elapsed<hints_until
 	prompt.visible=not modal.visible and not game.interaction_hint().is_empty()
 	prompt.text = game.interaction_hint().replace("E / X", ControlBindings.display(game.career.data.settings,"interact","controller" if game.input_kind=="xbox" else "keyboard"))
 	alert.visible=false
@@ -797,21 +798,16 @@ func start_menu(focus_hero: bool=false):
 	description.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
 	bio.add_child(description)
 	var perk=label(game.hero.perk,19,ThemeTokens.EARTH_TERRACOTTA);bio.add_child(perk)
-	var perk_description=label(game.hero.description,15);perk_description.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;bio.add_child(perk_description)
-	var bonuses=game.hero.effects.filter(func(effect):return effect.key not in ["speed","jumpHeight"]).map(func(effect):return game.rules.describe(effect))
-	var bonus_text=label("  •  ".join(bonuses),13);bonus_text.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;bio.add_child(bonus_text)
+	var perk_description=label(str(game.hero.description).split(" Height ")[0],15);perk_description.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;bio.add_child(perk_description)
 	var starter=HBoxContainer.new()
 	var icon=PowerIcon.new()
 	icon.key=game.hero.weapon;icon.weapon_icon=true
 	icon.custom_minimum_size=Vector2(96,96)
 	starter.add_child(icon)
 	var weapon_name=game.rules.data.weapons.filter(func(w):return w.id==game.hero.weapon)[0].name
-	starter.add_child(label("Starts with
-"+weapon_name,16))
+	starter.add_child(label(weapon_name,16));starter.alignment=BoxContainer.ALIGNMENT_BEGIN
+	icon.tooltip_text=WeaponDetails.describe(game.hero.weapon)
 	bio.add_child(starter)
-	var mechanics=label(WeaponDetails.describe(game.hero.weapon),16)
-	mechanics.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
-	bio.add_child(mechanics)
 	# Pet choice (October 30): one of three, each with its own job; Pet Treats from
 	# elites and bosses evolve it twice during a run.
 	var current_pet=Pet.chosen(game.career.data.settings)
@@ -822,7 +818,7 @@ func start_menu(focus_hero: bool=false):
 		pick_pet.name="Pet_"+kind
 		if kind==current_pet: pick_pet.add_theme_stylebox_override("normal",style(ThemeTokens.BIOME_ACCENTS.verdant.blossom,ThemeTokens.EARTH_TERRACOTTA))
 		pet_row.add_child(pick_pet)
-	var pet_job=label("%s · %s Feed it Pet Treats to evolve it twice." % [Pet.ROLES[current_pet],Pet.JOBS[current_pet]],14)
+	var pet_job=label(Pet.ROLES[current_pet],14);pet_job.tooltip_text=Pet.JOBS[current_pet]+" Pet Treats evolve it twice.";pet_job.mouse_filter=Control.MOUSE_FILTER_PASS
 	pet_job.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;bio.add_child(pet_job)
 	# Keep hero selection focused on the selected hero; repeat rules in Help only.
 	var footer=HBoxContainer.new()
@@ -841,7 +837,7 @@ func start_menu(focus_hero: bool=false):
 
 func coop_menu():
 	game.mode="coop"
-	var box=open("PLAY WITH FRIENDS","Choose a hero → Ready up → Host starts · Up to 4 players")
+	var box=open("PLAY WITH FRIENDS","")
 	var columns=HBoxContainer.new();columns.add_theme_constant_override("separation",32);box.add_child(columns)
 	var heroes=VBoxContainer.new();heroes.custom_minimum_size.x=333;columns.add_child(heroes)
 	heroes.add_child(label("YOUR HERO",14))
@@ -857,13 +853,10 @@ func coop_menu():
 		if hero.id==game.hero.id: selected=pick
 	var connection=VBoxContainer.new();connection.size_flags_horizontal=Control.SIZE_EXPAND_FILL;connection.add_theme_constant_override("separation",10);columns.add_child(connection)
 	connection.add_child(label(game.hero.name+" · "+game.hero.perk,24))
-	lobby_specialty=label(game.hero.description+"\n"+" · ".join(game.hero.effects.map(func(effect):return game.rules.describe(effect))),17)
+	lobby_specialty=label(game.hero.description,17);lobby_specialty.visible=false
 	lobby_specialty.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;connection.add_child(lobby_specialty)
 	var starter=ContentExpansion.weapon(game.hero.weapon)
-	var loadout=label("STARTING WEAPON · "+str(starter.get("name",game.hero.weapon))+"\n"+WeaponDetails.describe(game.hero.weapon),15)
-	loadout.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;connection.add_child(loadout)
 	party_label=label(game.coop.status,14);party_label.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;connection.add_child(party_label)
-	connection.add_child(label("PLAYER NAME · SHOWN ABOVE YOU IN CO-OP",13))
 	coop_name_input=LineEdit.new();coop_name_input.text=game.coop.player_name();coop_name_input.placeholder_text="Player name";coop_name_input.max_length=24;coop_name_input.custom_minimum_size=Vector2(340,36);connection.add_child(coop_name_input)
 	coop_name_input.text_submitted.connect(func(value):save_coop_player_name(value))
 	coop_name_input.focus_exited.connect(func():save_coop_player_name(coop_name_input.text) if is_instance_valid(coop_name_input) else null)
@@ -881,14 +874,12 @@ func coop_menu():
 	address.text_submitted.connect(func(value):save_coop_player_name(coop_name_input.text);game.coop.join_lan(value))
 	connection.add_child(label("NEARBY PARTIES",13));party_list=VBoxContainer.new();connection.add_child(party_list);party_list_key=""
 	game.coop.begin_discovery();update_party_list()
-	connection.add_child(label("PARTY · HERO / STATUS",14))
+	connection.add_child(label("PARTY",14))
 	lobby_roster_label=label("",16);lobby_roster_label.custom_minimum_size.y=98;connection.add_child(lobby_roster_label)
 	var actions=HBoxContainer.new();connection.add_child(actions)
 	lobby_ready=button("READY",func():game.coop.set_ready(not game.coop.local_ready));actions.add_child(lobby_ready)
 	lobby_start=button("START GAME",func():game.coop.start_party(),true);actions.add_child(lobby_start)
 	connection.add_child(button("Leave party",func():game.coop.leave();game.coop.status="Solo"))
-	var help=label("Internet: the host shares the invite code shown after HOST PARTY; friends paste it into Join. Same network: pick a nearby party. Friends can join a run already in progress. Hero changes clear your Ready status.",13)
-	help.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;box.add_child(help)
 	box.add_child(button("Back",start_menu))
 	update_lobby_controls()
 	if selected!=null: selected.grab_focus();reveal_selection.call_deferred(scroll,selected)
@@ -901,7 +892,7 @@ func update_lobby_controls():
 	lobby_start.text="START GAME" if game.coop.hosting else "HOST STARTS GAME"
 	var lines=[]
 	for member in game.coop.lobby_roster:
-		lines.append(("Host" if member.host else "Player")+" · "+str(member.name)+" ("+str(member.get("hero","Hero"))+") · "+("READY" if member.ready else "Not ready"))
+		lines.append(("★ " if member.host else "")+str(member.name)+" · "+str(member.get("hero","Hero"))+("  ✓" if member.ready else "  …"))
 	lobby_roster_label.text="Host or join a party to ready up." if lines.is_empty() else "\n".join(lines)
 
 func save_coop_player_name(value: String):
@@ -921,7 +912,7 @@ func update_party_list():
 	if key==party_list_key: return
 	party_list_key=key
 	for child in party_list.get_children(): child.queue_free()
-	if entries.is_empty(): party_list.add_child(label("Looking for nearby parties… You can also join an address above.",14));return
+	if entries.is_empty(): party_list.add_child(label("…",14));return
 	for entry in entries.slice(0,3):
 		var join=button("%s · %s · %d / 4%s" % [entry.name,entry.address,entry.players," · RUNNING" if entry.playing else ""],func():game.coop.join_lan(entry.address))
 		join.disabled=entry.playing or entry.players>=4;party_list.add_child(join)

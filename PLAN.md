@@ -436,6 +436,15 @@ Not released yet (Build 25 is the latest public build).
   - Evidence: check, smoke, integration (three runs), `biome-review` (captures `biome-6`, `biome-mechanic-6`) and `cartoon-review` (roster and mutants sheets, now 2×4) on `2026-10-30`.
   - Announcer line "Junkyard Planet. Mind the rust, and the crusher." (`biome_6.wav`, Kokoro af_heart via Python 3.12, other voice lines left untouched).
 
+## Audio, glass orbs, creatures, junkyard, less text (user report, October 31)
+
+- [x] **Enemy sound spam:** `RunSound.effect` plays one sound id at most every 50 ms; enemy sounds (shots, bites, impacts, death splats, burning) go through `enemy_effect`, a shared budget of one per 0.16 s, three at once, 6 dB down. Creature voices: two channels, -9 dB, 0.6 s gap, 10% hurt and 30% death chance (elites always), chatter every 7-12 s. Integration `audio_limiter`.
+- [x] **Intro scream:** the intro still fired the Noggin rig's built-in colossus roar (+4 dB). The intro rig has no roar now (`intro-review` `no_monster_voice` covers it); the in-game roar is 8 dB quieter.
+- [x] **Glass HP orbs:** `blood_core.gdshader` draws the empty part as clear glass with a bright rim and the far inside wall, so the liquid reads as a volume. The final boss's eye-orbs keep the opaque look (`clear_glass=false`).
+- [x] **Creatures less basic:** `cartoon_creature.gdshader` adds three-band cel light with cool shadows and a gloss spot, countershading, mottling and a per-species skin pattern (spots, stripes, scales, freckles). Smoother base spheres. Crowd GPU 2.6 -> 3.4 ms at 125 enemies. Next step if still basic: thicker limbs and bigger heads on the stick-figure humanoids (CartoonBook designs).
+- [x] **Junkyard props:** crushed cars with windows and wheels under lattice cranes dangling a car, a car hulk with its bonnet up, tyre stacks with rims, a fridge, a TV, toxic drums, a gear, a washing machine, a traffic cone; ground litter instead of cone shards.
+- [x] **Too much text:** about 30 toasts removed or cut to a word (hero quips printed as text, biome mechanic intros, "move between the red marks", potion start/end, biome discovered, pet treats, magnet/supply instructions); boss and island banners lose their subtitles; zone labels became symbols (♥ ☠ ❄ ≋ ◎ ▼); no floating names over potions, harvest plants, merchant, beacon or magnet; HUD drops the biome name, armour explanation, "left" count, "READY" words and "EMPTY SLOT"; potions show their bottle and seconds (red when useless, name in the tooltip); hero screen drops the stat list and weapon paragraph (tooltip); co-op menu drops the instructions and stats.
+
 ## Icons, intro, pets (user report, October 30)
 
 - [x] **Broken weapon icons:** every weapon icon was rendered on an opaque dark square, small or clipped, so weapon-upgrade medallions showed a black box. `render_weapon_icons.gd` now renders at 640 px on a transparent background, crops to the weapon and fills 86% of the 256 px icon; all 73 re-rendered. Checked in the `capture-ui` upgrade-icon sheet, offer screen and hero screen.

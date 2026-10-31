@@ -75,6 +75,6 @@ func refresh():
 			name_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 			column.add_child(name_label)
 		else:
-			var empty=game.hud.label("+\nEMPTY SLOT",12,Color("a1ada8"))
+			var empty=game.hud.label("+",22,Color("a1ada8"))
 			empty.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
 			column.add_child(empty)
