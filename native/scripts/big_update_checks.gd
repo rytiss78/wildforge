@@ -154,7 +154,13 @@ static func run(game: Node3D):
 				lines=lines and line is AudioStreamWAV and line.get_length()>.1 and line.get_length()<2.0
 	for cue in ["roar","sing","bravo","boo"]: lines=lines and load(CreatureVoice.PATH+"noggin-"+cue+".wav") is AudioStreamWAV
 	checks.creature_voices=voiced and lines and CreatureVoice.voice_of({"model":"creature_0_0","boss":true}).is_empty()
-	game.spawn_enemy(6);var talker=game.enemies[-1]
+	# Busy-audio limiter (October 31): one sound twice in a frame plays once; a burst
+	# of enemy sounds plays one; creature pool is two voices.
+	var sfx_first=game.sound.effect("deploy",game.player.position);var sfx_second=game.sound.effect("deploy",game.player.position)
+	game.sound.enemy_last=-100.0;game.sound.enemy_channels=[]
+	for i in range(12): game.sound.enemy_effect("enemy-shot",game.player.position)
+	checks.audio_limiter=(sfx_first!=null or float(game.sound.settings.sfx)<=0) and sfx_second==null and game.sound.enemy_channels.size()<=1 and game.sound.creature_pool.size()==2
+	game.spawn_enemy(6);var talker=game.enemies[-1];talker.elite=true;CreatureVoice.last_voice=-100.0
 	for channel in game.sound.creature_pool: channel.stop();channel.stream=null
 	game.kill_enemy(talker,"hit")
 	checks.creature_death_voice=game.sound.creature_pool.any(func(c):return c.stream!=null and c.stream.resource_path.contains("-die-"))

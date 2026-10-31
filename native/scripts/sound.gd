@@ -52,6 +52,18 @@ var ui_voice=AudioStreamPlayer.new()
 var achievement_voice=AudioStreamPlayer.new()
 var weapon_samples={}
 var effect_samples={}
+# Busy-audio limiter (user report, October 31: "enemies spam sounds, game audio is
+# way too busy"). Any one sound plays at most once per MIN_GAP (or its own gap), and
+# all enemy sounds together share a small budget: one every ENEMY_GAP, at most
+# ENEMY_MAX at once, a few dB under the hero's own sounds.
+const MIN_GAP=.05
+const GAPS={"coin":.06,"melee_hit":.08,"hit":.08,"shell_bump":.25,"wing_bump":.25,"stone_bump":.25,"wet_bump":.25,"buzz_bump":.25,"roar_bump":.25,"shield-hit":.2}
+const ENEMY_GAP=.16
+const ENEMY_MAX=3
+const ENEMY_DB=-6.0
+var last_played={}
+var enemy_last=-100.0
+var enemy_channels=[]
 const WEAPON_SFX=["gun","shotgun","turret","rocket","rocket-turret","bomb","meteor","rail","lightning","lightning-turret","ice","poison","gravity","harpoon","boomerang","disc","horn","bubble","saw","flame","fire-turret"]
 
 func setup(options: Dictionary):
@@ -84,7 +96,7 @@ func setup(options: Dictionary):
 	voice.pitch_scale = 1.0
 	for i in range(12):
 		var channel=AudioStreamPlayer3D.new();channel.unit_size=7;channel.max_distance=75;channel.max_db=0;add_child(channel);sfx_pool.append(channel)
-	for i in range(4):
+	for i in range(2):
 		var channel=AudioStreamPlayer3D.new();channel.unit_size=5;channel.max_distance=40;channel.max_db=0;add_child(channel);creature_pool.append(channel)
 	noggin_voice.unit_size=12;noggin_voice.max_distance=140;noggin_voice.max_db=0;add_child(noggin_voice)
 
@@ -329,8 +341,21 @@ func say(id: String, cooldown: float = 12.0):
 	voice.stream = load("res://assets/voices/" + id + ".wav")
 	voice.play()
 
-func effect(id: String,position: Vector3=Vector3.ZERO):
-	if float(settings.sfx)<=0 or sfx_pool.is_empty(): return
+# An enemy's sound (its shot, bite, impact, death splat, burning): shares the enemy
+# budget, so a crowd is heard as a crowd, not as forty sounds at once.
+func enemy_effect(id: String,position: Vector3):
+	var now=Time.get_ticks_msec()/1000.0
+	if now-enemy_last<ENEMY_GAP: return
+	enemy_channels=enemy_channels.filter(func(c):return c.playing)
+	if enemy_channels.size()>=ENEMY_MAX: return
+	var channel=effect(id,position,ENEMY_DB)
+	if channel!=null: enemy_last=now;enemy_channels.append(channel)
+
+func effect(id: String,position: Vector3=Vector3.ZERO,offset_db: float=0.0) -> AudioStreamPlayer3D:
+	if float(settings.sfx)<=0 or sfx_pool.is_empty(): return null
+	var now=Time.get_ticks_msec()/1000.0
+	if now-float(last_played.get(id,-100.0))<float(GAPS.get(id,MIN_GAP)): return null
+	last_played[id]=now
 	var key="effect_"+id
 	if effect_samples.has(id): cache[key]=effect_samples[id]
 	elif weapon_samples.has(id): cache[key]=weapon_samples[id]
@@ -395,7 +420,8 @@ func effect(id: String,position: Vector3=Vector3.ZERO):
 		cache[key]=audio
 	var channel=sfx_pool[sfx_index%sfx_pool.size()];sfx_index+=1
 	channel.global_position=get_parent().player.position if position==Vector3.ZERO else position
-	channel.stream=cache[key];channel.pitch_scale=rng.randf_range(.95,1.04) if weapon_samples.has(id) else 1.0;channel.volume_db=linear_to_db(float(settings.sfx));channel.play()
+	channel.stream=cache[key];channel.pitch_scale=rng.randf_range(.95,1.04) if weapon_samples.has(id) else 1.0;channel.volume_db=linear_to_db(float(settings.sfx))+offset_db;channel.play()
+	return channel
 
 # One creature voice line at a position. A free channel is used; an urgent line (a
 # death, the Noggin) takes the oldest busy one instead of being dropped. Returns
@@ -413,7 +439,7 @@ func creature(path: String,position: Vector3,pitch: float,urgent: bool=false,boo
 		if not urgent: return false
 		channel=creature_pool[0];creature_pool.push_back(creature_pool.pop_front())
 	channel.global_position=position;channel.stream=cache[path];channel.pitch_scale=clampf(pitch,.5,2.0)
-	channel.volume_db=linear_to_db(maxf(.0001,float(settings.sfx)))-4+boost_db;channel.play()
+	channel.volume_db=linear_to_db(maxf(.0001,float(settings.sfx)))-9+boost_db;channel.play()
 	return true
 
 func weapon_loop(id: String,enabled: bool,position: Vector3):

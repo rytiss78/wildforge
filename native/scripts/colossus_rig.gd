@@ -87,7 +87,7 @@ func setup(model_name: String):
 	for i in range(2):
 		var eye=MeshInstance3D.new();eye.name="GlassCore" if i==0 else "GlassCoreRight";eye.mesh=sphere;eye.position=EYES[i]
 		eye.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;eye.material_override=orb_paint;head_node.add_child(eye);eyes.append(eye)
-	add_child(roar_player);roar_player.unit_size=40;roar_player.max_distance=220;roar_player.max_db=4
+	add_child(roar_player);roar_player.unit_size=40;roar_player.max_distance=220;roar_player.max_db=0;roar_player.volume_db=-8.0
 	var roar_sound=load("res://assets/audio/colossus/roar.wav")
 	if roar_sound!=null: roar_player.stream=roar_sound
 

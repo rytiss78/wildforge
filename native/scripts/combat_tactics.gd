@@ -44,7 +44,7 @@ static func ranged_attack(g,enemy: Dictionary,target: Vector3):
 	enemy.attack=g.rules.rng.randf_range(3.8,6.2)
 	enemy.ranged_recovery=.65
 	enemy.node.get_meta("rig").attack=.8
-	g.sound.effect("enemy-shot",enemy.node.position)
+	g.sound.enemy_effect("enemy-shot",enemy.node.position)
 	var forward=(target-enemy.node.position).normalized();forward.y=0
 	var side=forward.cross(Vector3.UP).normalized()
 	var damage=(24+g.realm*7)*enemy.damage*g.realm_difficulty*g.ENEMY_DAMAGE_SCALE

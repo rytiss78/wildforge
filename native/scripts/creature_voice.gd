@@ -17,10 +17,13 @@ const VOICES=[
 	["gibber",1.1],["hiss",.9],["growl",.85],["squeak",1.05],["squeak",1.3],["burp",.8],["hiss",.85],["warble",.9],["groan",.8],["gibber",1.0],
 	["gibber",.95],["warble",.85],["honk",1.3],["hiss",1.2],["squeak",1.4],["growl",.8],["warble",1.3],["burp",1.05],["groan",.85],["gibber",1.25],
 	["burp",1.1],["honk",1.4],["growl",.7],["hiss",.8],["squeak",1.5],["growl",.7],["warble",.75],["groan",1.05],["gibber",.75],["hiss",1.3]]
-const HURT_CHANCE=.35
-const HURT_EVERY=1.5  # one enemy's hurt yelps, at most
-const GAP=.12  # between any two creature voices
-const CHAT_EVERY=Vector2(2.5,5.0)
+# October 31 (user: "enemies spam sounds"): far fewer, quieter voices. Most hits
+# and most deaths are silent; one creature babbles every 7-12 s.
+const HURT_CHANCE=.1
+const HURT_EVERY=4.0  # one enemy's hurt yelps, at most
+const GAP=.6  # between any two creature voices
+const DIE_CHANCE=.3  # elites always cry out
+const CHAT_EVERY=Vector2(7.0,12.0)
 const CHAT_RANGE=18.0
 
 static var last_voice=-100.0
@@ -44,11 +47,14 @@ static func speak(game: Node3D,enemy: Dictionary,cue: String) -> bool:
 	var voice=voice_of(enemy)
 	if voice.is_empty() or not is_instance_valid(enemy.get("node")): return false
 	var now=Time.get_ticks_msec()/1000.0
-	# A death always gets through the global gap; hurt and chatter wait their turn.
-	if cue!="die" and now-last_voice<GAP: return false
+	# Everything, deaths included, waits for the global gap; only an elite's death
+	# may take a busy channel.
+	if now-last_voice<GAP: return false
+	var elite=enemy.get("elite",false)
+	if cue=="die" and not elite and randf()>DIE_CHANCE: return false
 	last_voice=now
 	var file=PATH+"%s-%s-%d.wav" % [voice[0],cue,randi()%2]
-	return game.sound.creature(file,enemy.node.position+Vector3.UP*float(enemy.get("height",1.0))*.7,float(voice[1])*randf_range(.94,1.06),cue=="die")
+	return game.sound.creature(file,enemy.node.position+Vector3.UP*float(enemy.get("height",1.0))*.7,float(voice[1])*randf_range(.94,1.06),cue=="die" and elite)
 
 static func hurt(game: Node3D,enemy: Dictionary):
 	var now=Time.get_ticks_msec()/1000.0

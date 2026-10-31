@@ -27,6 +27,7 @@ var shade: ColorRect
 var roared=false
 var risen=false
 var cues_played=[]
+var roar_silent=true
 var titled=false
 var done=false
 var captures={}  # review: time -> file name
@@ -51,6 +52,9 @@ func begin():
 		heroes.append({"rig":rig,"base":at,"phase":i*.7})
 	noggin=game.world.model("boss_8",9.0);game.add_child(noggin)
 	noggin.position=stage+Vector3(0,-24,-12);noggin.rotation.y=PI  # its face toward the heroes and camera
+	# Its built-in roar sample is the "loud, irritating" scream (October 31): the
+	# intro is silent but for its own stingers.
+	noggin.roar_player.stream=null
 	layer=CanvasLayer.new();layer.layer=50;add_child(layer)
 	shade=ColorRect.new();shade.color=Color(0,0,0,1);shade.set_anchors_preset(Control.PRESET_FULL_RECT);shade.mouse_filter=Control.MOUSE_FILTER_IGNORE;layer.add_child(shade)
 	title=text("WILDFORGE",132,Color("ffd23f"),.17);tagline=text("Grow strange. Fight hard. Start again.",38,Color("f7f2e3"),.85)
@@ -94,7 +98,7 @@ func _process(delta: float):
 	if time>=RISE.x and not risen:
 		risen=true;cue("rise")
 	if time>=ROAR and not roared:
-		roared=true;noggin.play("roar",.2,1.4,.8);cue("sting")
+		roared=true;noggin.play("roar",.2,1.4,.8);cue("sting");roar_silent=not noggin.roar_player.playing
 	if time>=TITLE and not titled:
 		titled=true;cue("title")
 	# The title slams in from big, then settles with a bounce.
@@ -113,7 +117,7 @@ func cue(id: String):
 	if sfx<=0: return
 	var path="res://assets/audio/intro/"+id+".wav"
 	if not ResourceLoader.exists(path): return
-	var player=AudioStreamPlayer.new();player.stream=load(path);player.volume_db=linear_to_db(sfx)-9.0;add_child(player);player.play()
+	var player=AudioStreamPlayer.new();player.stream=load(path);player.volume_db=linear_to_db(sfx)-12.0;add_child(player);player.play()
 	player.finished.connect(player.queue_free);cues_played.append(id)
 
 func capture(name: String):
@@ -136,6 +140,6 @@ func finish():
 	game.hud.start_menu()
 	if review:
 		var files=["intro-1","intro-2","intro-3","intro-4"]
-		print("INTRO_REVIEW "+JSON.stringify({"checks":{"captured":files.all(func(f):return FileAccess.file_exists("user://"+f+".png")),"roared":roared,"titled":titled,"menu":game.mode=="start" and game.hud.modal.visible,"camera_free":not game.camera_locked,"stingers":cues_played==["rise","sting","title"],"no_monster_voice":not game.sound.noggin_voice.playing}}))
+		print("INTRO_REVIEW "+JSON.stringify({"checks":{"captured":files.all(func(f):return FileAccess.file_exists("user://"+f+".png")),"roared":roared,"titled":titled,"menu":game.mode=="start" and game.hud.modal.visible,"camera_free":not game.camera_locked,"stingers":cues_played==["rise","sting","title"],"no_monster_voice":not game.sound.noggin_voice.playing and roar_silent}}))
 		game.get_tree().quit()
 	queue_free()

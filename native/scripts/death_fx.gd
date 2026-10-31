@@ -74,7 +74,7 @@ static func creature(g,enemy: Dictionary,style: String,landing: Vector3,size: fl
 	var node: Node3D=enemy.node;var skin: Color=rig.skin if rig.get("skin")!=null else Color("c9b28a")
 	var paint: ShaderMaterial=rig.batched if rig.get("batched")!=null else null
 	g.death_fx.append({"kind":style,"node":node,"rig":rig,"paint":paint,"age":0.0,"life":float(STYLE_LIFE[style]),"from":node.position,"to":landing,"skin":skin,"size":size,"done":false})
-	g.sound.effect(STYLE_SOUND[style],node.position)
+	g.sound.enemy_effect(STYLE_SOUND[style],node.position)
 	match style:
 		"melt": blot(g,landing,size*1.6,skin.darkened(.25))
 		"splat":

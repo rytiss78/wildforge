@@ -1646,8 +1646,8 @@ func hurt_enemy(enemy: Dictionary, damage: float, cause: String,mechanic: String
 	if enemy.node.has_meta("rig"): enemy.node.set_meta("flash_timer",0.05)
 	# Status effect start sounds
 	if cause=="poison" and enemy.poison<=0: enemy.poison=4;enemy.status_time=4 # Cloud/DOT hits are silent; the firing sound marks the attack.
-	elif cause=="fire" and enemy.fire<=0: enemy.fire=3;enemy.status_time=4;sound.effect("fire",enemy.node.position)
-	elif cause=="ice" and enemy.freeze<=0: enemy.freeze=3;enemy.status_time=4;sound.effect("freeze",enemy.node.position)
+	elif cause=="fire" and enemy.fire<=0: enemy.fire=3;enemy.status_time=4;sound.enemy_effect("fire",enemy.node.position)
+	elif cause=="ice" and enemy.freeze<=0: enemy.freeze=3;enemy.status_time=4;sound.enemy_effect("freeze",enemy.node.position)
 	# Hero tricks (HeroTricks): a stun is a short freeze; a blind lasts 4 s.
 	elif cause=="stun": enemy.freeze=maxf(float(enemy.freeze),.4 if enemy.boss else 1.8);enemy.status_time=maxf(float(enemy.status_time),2.0)
 	elif cause=="blind": enemy.blind=maxf(float(enemy.blind),2.0 if enemy.boss else 4.0);enemy.slow=maxf(float(enemy.slow),.3);enemy.status_time=maxf(float(enemy.status_time),4.0)
@@ -2009,7 +2009,8 @@ func burst(p: Vector3,color: Color,count: int):
 
 func explosion_fx(p: Vector3, radius_value: float, enemy_attack: bool=false):
 	if effects.size()>220: return
-	sound.effect("enemy-impact" if enemy_attack else "blast",p)
+	if enemy_attack: sound.enemy_effect("enemy-impact",p)
+	else: sound.effect("blast",p)
 	CombatInk.blast(self,p,radius_value)
 
 func beam(from: Vector3,to: Vector3,color: Color):
@@ -2254,7 +2255,7 @@ func update_combat(delta: float):
 			# The Eclipse hits harder island by island: 1.5x, 2x, then 2.5x contact damage.
 			coop.damage_player(target_player.id,(18+realm*5 if enemy.boss else (11+realm*4)*ENEMY_DAMAGE_SCALE)*enemy.damage*(1+RealmWorld.BIOME_TIER[int(enemy.get("biome",0))]*.12)*((1.5+mini(realm,2)*.5) if events.get("eclipse",false) else 1.0),enemy.node.position,enemy.sound)
 			if target_player.id==coop.local_id:
-				sound.effect("enemy-bite",enemy.node.position)
+				sound.enemy_effect("enemy-bite",enemy.node.position)
 				if enemy.get("biome",0)==1 and not buffs.has("poison"): player_poison=3
 				if enemy.get("biome",0)==4 and not buffs.has("fire"): player_fire=3
 				# Only bosses slow the hero, so a slow always has a visible cause.
