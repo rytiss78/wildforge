@@ -418,7 +418,9 @@ func open(title: String, subtitle: String = "") -> VBoxContainer:
 	panel.position = Vector2((vp_size.x-panel_w)/2,(vp_size.y-panel_h)/2)
 	panel.size = Vector2(panel_w,panel_h)
 	var shade=ColorRect.new();shade.color=Color(.025,.05,.08,.72);modal.add_child(shade);shade.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
-	panel.add_theme_stylebox_override("panel",style(paper,Color("a99070"),22))
+	# Content clears the gilt frame's corner ornaments (October 31).
+	var panel_style=style(paper,Color("a99070"),22);panel_style.content_margin_left=30;panel_style.content_margin_right=30;panel_style.content_margin_top=24;panel_style.content_margin_bottom=20
+	panel.add_theme_stylebox_override("panel",panel_style)
 	modal.add_child(panel)
 	var frame=preload("res://scripts/forge_frame.gd").new();frame.panel=panel;frame.position=panel.position;frame.size=panel.size;frame.z_index=2;modal.add_child(frame)
 	content = VBoxContainer.new()
@@ -748,20 +750,24 @@ func start_menu(focus_hero: bool=false):
 	var nav=VBoxContainer.new()
 	nav.custom_minimum_size=Vector2(326,0)
 	nav.add_theme_constant_override("separation",12)
-	nav_panel.add_child(nav)
+	var nav_inset=MarginContainer.new();nav_panel.add_child(nav_inset)
+	for side in ["left","right","top","bottom"]: nav_inset.add_theme_constant_override("margin_"+side,14)
+	nav_inset.add_child(nav)
 	menu_start=button("START RUN",func():
 		if game.coop.active and not game.coop.hosting: tell("The party host starts the run.")
 		else: game.start_run()
 	,true)
 	nav.add_child(menu_start)
-	nav.add_child(button("Achievements",func(): career_menu(false)))
-	nav.add_child(button("Local scores",func(): career_menu(true)))
-	if not game.career.data.lastRun.is_empty(): nav.add_child(button("Last run",last_run_menu))
+	# Main menu (cleaned up October 31): play first, records next, then settings.
 	nav.add_child(button("Play with friends",coop_menu))
-	nav.add_child(button("Sound & controls",settings_menu))
-	nav.add_child(button("About Wildforge",about_menu))
+	var gap=Control.new();gap.custom_minimum_size.y=10;nav.add_child(gap)
+	nav.add_child(button("Achievements",func(): career_menu(false)))
+	nav.add_child(button("Scores",func(): career_menu(true)))
+	if not game.career.data.lastRun.is_empty(): nav.add_child(button("Last run",last_run_menu))
+	var gap2=Control.new();gap2.custom_minimum_size.y=10;nav.add_child(gap2)
+	nav.add_child(button("Settings",settings_menu))
 	nav.add_child(button("Quit",func(): game.career.save();game.get_tree().quit()))
-	nav_panel.position=Vector2(96,289);nav_panel.size=Vector2(374,nav.get_child_count()*54+36)
+	nav_panel.position=Vector2(96,277);nav_panel.size=Vector2(374,0)
 	var hero_panel=PanelContainer.new()
 	hero_panel.position=Vector2(533,277)
 	hero_panel.size=Vector2(1266,626)
@@ -771,12 +777,14 @@ func start_menu(focus_hero: bool=false):
 		var frame=preload("res://scripts/forge_frame.gd").new();frame.panel=framed;frame.position=framed.position;frame.size=framed.size;frame.z_index=2;frame.mouse_filter=Control.MOUSE_FILTER_IGNORE;modal.add_child(frame)
 	var columns=HBoxContainer.new()
 	columns.add_theme_constant_override("separation",29)
-	hero_panel.add_child(columns)
+	var inset=MarginContainer.new();hero_panel.add_child(inset)
+	for side in ["left","right","top","bottom"]: inset.add_theme_constant_override("margin_"+side,18)
+	inset.add_child(columns)
 	var hero_list=VBoxContainer.new()
 	hero_list.custom_minimum_size.x=226
 	hero_list.add_theme_constant_override("separation",6)
 	var hero_scroll=ScrollContainer.new();hero_scroll.custom_minimum_size=Vector2(246,580);hero_scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;columns.add_child(hero_scroll);hero_scroll.add_child(hero_list)
-	hero_list.add_child(label("CHOOSE YOUR HERO",13))
+	hero_list.add_child(label("HERO",13,ThemeTokens.STAR_GOLD))
 	var selected_hero: Button
 	for item in game.rules.data.heroes:
 		var pick=button(item.name,func():game.select_hero(item);start_menu(true))
@@ -811,7 +819,7 @@ func start_menu(focus_hero: bool=false):
 	# Pet choice (October 30): one of three, each with its own job; Pet Treats from
 	# elites and bosses evolve it twice during a run.
 	var current_pet=Pet.chosen(game.career.data.settings)
-	bio.add_child(label("YOUR PET",13))
+	bio.add_child(label("PET",13,ThemeTokens.STAR_GOLD))
 	var pet_row=HBoxContainer.new();pet_row.add_theme_constant_override("separation",8);bio.add_child(pet_row)
 	for kind in Pet.KINDS:
 		var pick_pet=button(Pet.NAMES[kind],func():game.career.data.settings.pet=kind;game.career.dirty=true;game.career.save();start_menu(true))
@@ -826,7 +834,7 @@ func start_menu(focus_hero: bool=false):
 	modal.add_child(footer)
 	add_prompts(footer,[["↑↓","D-pad","Navigate"],["Enter","A","Select"]])
 	# The exact build ID (CoopSession.build_id) so players can check they match.
-	var version=label("v%s  ·  BUILD %d  ·  %s  ·  DEVELOPMENT ALPHA" % [ProjectSettings.get_setting("application/config/version"),ProjectSettings.get_setting("application/config/build_number",0),CoopSession.build_id().left(7)],14)
+	var version=label("v%s  ·  BUILD %d  ·  %s" % [ProjectSettings.get_setting("application/config/version"),ProjectSettings.get_setting("application/config/build_number",0),CoopSession.build_id().left(7)],14)
 	version.name="ReleaseVersion";version.position=Vector2(1280,1026);version.size=Vector2(570,28);version.horizontal_alignment=HORIZONTAL_ALIGNMENT_RIGHT
 	version.add_theme_color_override("font_color",Color("b4c9bc"))
 	modal.add_child(version)
@@ -1352,24 +1360,40 @@ func last_run_menu():
 
 func settings_menu():
 	game.mode = "settings"
-	var box = open("♫  SOUND / CONTROLS", "Nova · Warm female tactical voice. No kill-streak chatter.")
-	for channel in ["music","sfx","voice"]:
-		var row = HBoxContainer.new()
-		row.add_child(label(channel.capitalize(),21))
-		var slider = HSlider.new()
-		slider.min_value = 0
-		slider.max_value = 1
-		slider.step = .05
-		slider.value = game.career.data.settings[channel]
-		slider.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		slider.value_changed.connect(func(value): game.career.data.settings[channel]=value;game.career.dirty=true)
-		row.add_child(slider)
-		box.add_child(row)
-	var genres = HBoxContainer.new()
-	for genre in ["metal","cyber"]: genres.add_child(button("PHONK" if genre == "metal" else "PHONK SOFT",func(): game.career.data.settings.genre=genre;game.career.dirty=true;game.sound.start(randi())))
-	box.add_child(genres)
-	var cosmetic_row=HBoxContainer.new();box.add_child(cosmetic_row)
-	cosmetic_row.add_child(label("ACHIEVEMENT STYLE · %d / 8 EARNED" % mini(8,game.career.data.cosmetics.size()),16))
+	# Settings (cleaned up October 31): three labelled sections in one aligned grid,
+	# names on the left, controls on the right, values shown as percentages.
+	var box = open("SETTINGS")
+	var columns=HBoxContainer.new();columns.add_theme_constant_override("separation",56);box.add_child(columns)
+	var left=VBoxContainer.new();left.size_flags_horizontal=Control.SIZE_EXPAND_FILL;left.add_theme_constant_override("separation",8);columns.add_child(left)
+	var right=VBoxContainer.new();right.size_flags_horizontal=Control.SIZE_EXPAND_FILL;right.add_theme_constant_override("separation",8);columns.add_child(right)
+	var sound=settings_section(left,"SOUND")
+	for channel in [["music","Music"],["sfx","Effects"],["voice","Voice"]]:
+		settings_slider(sound,channel[1],float(game.career.data.settings[channel[0]]),0.0,1.0,func(value): game.career.data.settings[channel[0]]=value;game.career.dirty=true)
+	var styles=HBoxContainer.new();styles.add_theme_constant_override("separation",8)
+	for genre in [["metal","Phonk"],["cyber","Soft"]]:
+		var pick=button(genre[1],func(): game.career.data.settings.genre=genre[0];game.career.dirty=true;game.sound.start(randi());settings_menu())
+		if str(game.career.data.settings.get("genre","metal"))==genre[0]: pick.add_theme_stylebox_override("normal",style(ThemeTokens.BIOME_ACCENTS.verdant.blossom,ThemeTokens.EARTH_TERRACOTTA))
+		styles.add_child(pick)
+	settings_row(sound,"Music style",styles)
+	var screen=settings_section(left,"SCREEN")
+	for setting in [["shake","Screen shake",0.0],["flashes","Flashes",0.0],["particles","Particles",.25]]:
+		settings_slider(screen,setting[1],float(game.career.data.settings.get(setting[0],1.0)),setting[2],1.0,func(value): game.career.data.settings[setting[0]]=value;game.career.dirty=true;EffectDetail.load_settings(game.career.data.settings))
+	var controls=settings_section(right,"CONTROLS")
+	settings_slider(controls,"Camera speed",float(game.career.data.settings.lookSensitivity),.3,2.0,func(value): game.career.data.settings.lookSensitivity=value;game.career.dirty=true)
+	settings_toggle(controls,"Invert camera",bool(game.career.data.settings.invertLook),func(value): game.career.data.settings.invertLook=value;game.career.dirty=true)
+	settings_toggle(controls,"Vibration",bool(game.career.data.settings.rumble),func(value): game.career.data.settings.rumble=value;game.career.dirty=true;game.vibrate(.4,.3,.25) if value else null)
+	settings_row(controls,"Keys & buttons",button("Remap",bindings_menu))
+	var look=settings_section(right,"LOOK")
+	# Achievement rewards: a hat and a nameplate style, owned ones only.
+	var hat_picker=OptionButton.new();hat_picker.add_item("None");hat_picker.set_item_metadata(0,"")
+	for hat in HatBook.HATS:
+		if not HatBook.owned(game.career.data.unlocked,hat.id): continue
+		hat_picker.add_item(hat.name);hat_picker.set_item_metadata(hat_picker.item_count-1,hat.id)
+		if hat.id==str(game.career.data.settings.get("hat","")): hat_picker.select(hat_picker.item_count-1)
+	hat_picker.disabled=hat_picker.item_count==1
+	hat_picker.tooltip_text="\n".join(HatBook.HATS.filter(func(h):return not HatBook.owned(game.career.data.unlocked,h.id)).map(func(h):return "%s · %s" % [h.name,h.how]))
+	hat_picker.item_selected.connect(func(index):game.career.data.settings.hat=str(hat_picker.get_item_metadata(index));game.career.dirty=true;game.career.save();game.wear_hat())
+	settings_row(look,"Hat",hat_picker)
 	var cosmetics={"mastery_crown":"Mastery Crown","formation_gold":"Formation Gold","biome_prism":"Biome Prism","ping_star":"Ping Star","party_banner":"Party Banner","comeback_flame":"Comeback Flame","scout_visor":"Scout Visor","recap_medal":"Recap Medal"}
 	var picker=OptionButton.new();achievement_cosmetic_picker=picker;picker.add_item("Default");picker.set_item_metadata(0,"")
 	for id in cosmetics:
@@ -1378,59 +1402,41 @@ func settings_menu():
 		if str(picker.get_item_metadata(index))==str(game.career.data.settings.get("cosmetic","")): picker.select(index)
 	picker.disabled=picker.item_count==1
 	picker.item_selected.connect(func(index):game.career.data.settings.cosmetic=str(picker.get_item_metadata(index));game.career.dirty=true;game.career.save();game.coop.sync_local_nameplate())
-	cosmetic_row.add_child(picker)
-	# Achievement hats (October 29): owned ones to pick, locked ones say how to earn them.
-	var hat_row=HBoxContainer.new();box.add_child(hat_row)
-	var hats_owned=HatBook.HATS.filter(func(h):return HatBook.owned(game.career.data.unlocked,h.id))
-	hat_row.add_child(label("HAT · %d / %d UNLOCKED" % [hats_owned.size(),HatBook.HATS.size()],16))
-	var hat_picker=OptionButton.new();hat_picker.add_item("No hat");hat_picker.set_item_metadata(0,"")
-	for hat in HatBook.HATS:
-		var owned=HatBook.owned(game.career.data.unlocked,hat.id)
-		hat_picker.add_item(hat.name if owned else "LOCKED · %s · %s" % [hat.name,hat.how]);hat_picker.set_item_metadata(hat_picker.item_count-1,hat.id)
-		hat_picker.set_item_disabled(hat_picker.item_count-1,not owned)
-		if owned and hat.id==str(game.career.data.settings.get("hat","")): hat_picker.select(hat_picker.item_count-1)
-	hat_picker.item_selected.connect(func(index):game.career.data.settings.hat=str(hat_picker.get_item_metadata(index));game.career.dirty=true;game.career.save();game.wear_hat())
-	hat_row.add_child(hat_picker)
-	var rumble = CheckButton.new()
-	rumble.text = "Xbox vibration"
-	rumble.add_theme_color_override("font_color",ink)
-	rumble.add_theme_color_override("font_hover_color",ink)
-	rumble.add_theme_color_override("font_focus_color",ink)
-	rumble.button_pressed = game.career.data.settings.rumble
-	rumble.toggled.connect(func(value): game.career.data.settings.rumble=value;game.career.dirty=true)
-	box.add_child(rumble)
-	box.add_child(button("TEST VOICE + VIBRATION",func(): game.sound.say("boss",0);game.vibrate(.5,.4,.3)))
-	var look_settings = HBoxContainer.new()
-	look_settings.add_child(label("Camera sensitivity",18))
-	var sensitivity = HSlider.new()
-	sensitivity.min_value=.3
-	sensitivity.max_value=2.0
-	sensitivity.step=.1
-	sensitivity.value=game.career.data.settings.lookSensitivity
-	sensitivity.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-	sensitivity.value_changed.connect(func(value): game.career.data.settings.lookSensitivity=value;game.career.dirty=true)
-	look_settings.add_child(sensitivity)
-	box.add_child(look_settings)
-	var invert=CheckButton.new()
-	invert.text="Invert camera up / down"
-	invert.add_theme_color_override("font_color",ink)
-	invert.add_theme_color_override("font_hover_color",ink)
-	invert.add_theme_color_override("font_focus_color",ink)
-	invert.button_pressed=game.career.data.settings.invertLook
-	invert.toggled.connect(func(value): game.career.data.settings.invertLook=value;game.career.dirty=true)
-	box.add_child(invert)
-	# Comfort and performance: one compact row so the menu still fits at 720p.
-	var effects=HBoxContainer.new();effects.add_theme_constant_override("separation",10);box.add_child(effects)
-	effects.add_child(label("Effects",18))
-	for setting in [["shake","Shake",0.0],["flashes","Flashes",0.0],["particles","Particles",.25]]:
-		effects.add_child(label(setting[1],15))
-		var amount=HSlider.new();amount.min_value=setting[2];amount.max_value=1;amount.step=.05
-		amount.value=float(game.career.data.settings.get(setting[0],1.0));amount.custom_minimum_size.x=150;amount.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-		amount.value_changed.connect(func(value): game.career.data.settings[setting[0]]=value;game.career.dirty=true;EffectDetail.load_settings(game.career.data.settings))
-		effects.add_child(amount)
-	box.add_child(button("REMAP KEYBOARD / CONTROLLER",bindings_menu))
-	box.add_child(label("Mouse: look · Escape / Menu: pause or back · Enter / A: select",16))
-	box.add_child(button("←  BACK",func(): game.career.save(); start_menu() if not game.run_active else pause_menu(game.run_recorded),true))
+	settings_row(look,"Nameplate",picker)
+	var spacer=Control.new();spacer.size_flags_vertical=Control.SIZE_EXPAND_FILL;box.add_child(spacer)
+	var back=button("BACK",func(): game.career.save(); start_menu() if not game.run_active else pause_menu(game.run_recorded),true)
+	back.custom_minimum_size=Vector2(260,48);back.size_flags_horizontal=Control.SIZE_SHRINK_CENTER;box.add_child(back)
+	back.grab_focus()
+
+func settings_section(parent: VBoxContainer,title: String) -> GridContainer:
+	if parent.get_child_count()>0:
+		var gap=Control.new();gap.custom_minimum_size.y=18;parent.add_child(gap)
+	parent.add_child(label(title,15,ThemeTokens.STAR_GOLD))
+	var grid=GridContainer.new();grid.columns=2;grid.add_theme_constant_override("h_separation",18);grid.add_theme_constant_override("v_separation",12);parent.add_child(grid)
+	return grid
+
+func settings_row(grid: GridContainer,name: String,control: Control):
+	var title=label(name,18);title.custom_minimum_size.x=170;grid.add_child(title)
+	control.size_flags_horizontal=Control.SIZE_EXPAND_FILL if control is Range or control is OptionButton else Control.SIZE_SHRINK_BEGIN
+	grid.add_child(control)
+
+func settings_slider(grid: GridContainer,name: String,value: float,low: float,high: float,changed: Callable):
+	var row=HBoxContainer.new();row.add_theme_constant_override("separation",12)
+	var slider=HSlider.new();slider.min_value=low;slider.max_value=high;slider.step=.05;slider.value=value
+	slider.size_flags_horizontal=Control.SIZE_EXPAND_FILL;slider.size_flags_vertical=Control.SIZE_SHRINK_CENTER;slider.custom_minimum_size.x=200;row.add_child(slider)
+	var amount=label("%d%%" % roundi(value*100),16);amount.custom_minimum_size.x=52;amount.horizontal_alignment=HORIZONTAL_ALIGNMENT_RIGHT;row.add_child(amount)
+	slider.value_changed.connect(func(v): amount.text="%d%%" % roundi(v*100);changed.call(v))
+	var title=label(name,18);title.custom_minimum_size.x=170;grid.add_child(title)
+	row.size_flags_horizontal=Control.SIZE_EXPAND_FILL;grid.add_child(row)
+
+# On / Off as two buttons, like Music style, so the state is easy to read.
+func settings_toggle(grid: GridContainer,name: String,value: bool,changed: Callable):
+	var row=HBoxContainer.new();row.add_theme_constant_override("separation",8)
+	for state in [true,false]:
+		var pick=button("On" if state else "Off",func(): changed.call(state);settings_menu())
+		if state==value: pick.add_theme_stylebox_override("normal",style(ThemeTokens.BIOME_ACCENTS.verdant.blossom,ThemeTokens.EARTH_TERRACOTTA))
+		row.add_child(pick)
+	settings_row(grid,name,row)
 
 func career_menu(scores: bool):
 	game.mode = "career"

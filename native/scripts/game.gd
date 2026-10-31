@@ -2555,15 +2555,17 @@ func update_aura_visual():
 	aura.scale=Vector3(pulse,.1,pulse)
 	aura.material_override.emission_energy_multiplier=2.4+sin(elapsed*5)*.4
 
-# Draw distance follows the frame rate: up to 1.5x while above 90 fps, back toward
-# 1.0 below 55. The camera range keeps up with the fog.
+# Draw distance follows the frame rate. The game is capped at 60 fps (October 31),
+# so headroom is read from the frame's own work time: under 9 ms of a 16.7 ms frame
+# grows the view up to 1.5x; below 55 fps it shrinks back toward 1.0.
 var view_clock=0.0
 func adapt_view(delta: float):
 	view_clock+=delta
 	if view_clock<1.0 or mode!="playing": return
 	view_clock=0.0
 	var fps=Engine.get_frames_per_second()
-	if fps>=90: world.view_scale=minf(1.5,world.view_scale+.05)
+	var work_ms=Performance.get_monitor(Performance.TIME_PROCESS)*1000.0
+	if fps>=58 and work_ms<9.0: world.view_scale=minf(1.5,world.view_scale+.05)
 	elif fps<55: world.view_scale=maxf(1.0,world.view_scale-.1)
 	camera.far=minf(260.0*world.view_scale,300.0)
 
@@ -2760,7 +2762,7 @@ func golden_scene():
 func run_smoke():
 	await get_tree().process_frame
 	var rebuilt_menu=is_instance_valid(hud.menu_start) and hud.menu_start.is_visible_in_tree()
-	input_kind="xbox";hud.menu_start.grab_focus();hud.controller_move(Vector2.DOWN)
+	input_kind="xbox";hud.menu_start.grab_focus();hud.controller_move(Vector2.DOWN);hud.controller_move(Vector2.DOWN)
 	var navigated=get_viewport().gui_get_focus_owner()!=hud.menu_start
 	var focused_before=get_viewport().gui_get_focus_owner()
 	var idle_mouse=InputEventMouseMotion.new();idle_mouse.relative=Vector2(5,3);_input(idle_mouse)

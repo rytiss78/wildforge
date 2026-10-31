@@ -332,10 +332,10 @@ static func run(game: Node3D):
 	# Effect settings: the real Shake slider (first of the three effect sliders)
 	# changes both the saved setting and the live value.
 	game.hud.settings_menu()
-	var effect_sliders=game.hud.find_children("*","HSlider",true,false).filter(func(x):return x.is_visible_in_tree() and x.custom_minimum_size.x==150)
-	checks.effect_sliders=effect_sliders.size()>=3
+	var effect_sliders=game.hud.find_children("*","HSlider",true,false).filter(func(x):return x.is_visible_in_tree() and x.custom_minimum_size.x==200)
+	checks.effect_sliders=effect_sliders.size()>=7
 	if checks.effect_sliders:
-		effect_sliders[-3].value=0.0
+		effect_sliders[3].value=0.0
 		checks.effect_sliders=is_zero_approx(float(game.career.data.settings.shake)) and is_zero_approx(EffectDetail.shake)
 	game.career.data.settings.merge({"shake":1.0,"flashes":1.0,"particles":1.0},true);EffectDetail.load_settings(game.career.data.settings)
 	game.hud.close();game.mode="playing"

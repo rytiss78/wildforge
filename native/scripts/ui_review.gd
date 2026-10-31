@@ -29,10 +29,10 @@ static func run(game):
 	var version=game.hud.modal.find_child("ReleaseVersion",true,false)
 	okay=expect(version!=null and version.text.contains(str(ProjectSettings.get_setting("application/config/version"))) and version.text.contains("BUILD "+str(ProjectSettings.get_setting("application/config/build_number"))),"main menu version/build metadata") and okay
 	okay=expect(version!=null and game.get_viewport().get_visible_rect().encloses(version.get_global_rect()),"version label within viewport") and okay
-	var about=game.hud.menu_controls().filter(func(c):return c is Button and c.text=="About Wildforge")[0]
+	var about=game.hud.menu_controls().filter(func(c):return c is Button and c.text=="Settings")[0]
 	about.pressed.emit();okay=expect(await capture(game,"about"),"ui assertion 17") and okay
 	game.hud.menu_controls().filter(func(c):return c is Button and c.text=="BACK")[0].pressed.emit()
-	game.hud.menu_controls().filter(func(c):return c is Button and c.text=="About Wildforge")[0].pressed.emit()
+	game.hud.menu_controls().filter(func(c):return c is Button and c.text=="Settings")[0].pressed.emit()
 	game.hud.menu_controls().filter(func(c):return c is Button and c.text=="BACK")[0].pressed.emit()
 	await game.get_tree().process_frame
 	game.hud.coop_menu()
