@@ -816,19 +816,9 @@ func start_menu(focus_hero: bool=false):
 	starter.add_child(label(weapon_name,16));starter.alignment=BoxContainer.ALIGNMENT_BEGIN
 	icon.tooltip_text=WeaponDetails.describe(game.hero.weapon)
 	bio.add_child(starter)
-	# Pet choice (October 30): one of three, each with its own job; Pet Treats from
-	# elites and bosses evolve it twice during a run.
-	var current_pet=Pet.chosen(game.career.data.settings)
+	# Pet choice: the three wisps, picked by look (names only in the tooltip).
 	bio.add_child(label("PET",13,ThemeTokens.STAR_GOLD))
-	var pet_row=HBoxContainer.new();pet_row.add_theme_constant_override("separation",8);bio.add_child(pet_row)
-	for kind in Pet.KINDS:
-		var grown=Pet.stage_for(Pet.saved_treats(game.career.data.settings,kind))
-		var pick_pet=button(Pet.NAMES[kind]+("  "+"★".repeat(grown) if grown>0 else ""),func():game.career.data.settings.pet=kind;game.career.dirty=true;game.career.save();start_menu(true))
-		pick_pet.name="Pet_"+kind
-		if kind==current_pet: pick_pet.add_theme_stylebox_override("normal",style(ThemeTokens.BIOME_ACCENTS.verdant.blossom,ThemeTokens.EARTH_TERRACOTTA))
-		pet_row.add_child(pick_pet)
-	var pet_job=label(Pet.ROLES[current_pet],14);pet_job.tooltip_text=Pet.JOBS[current_pet]+" Treats from the final boss evolve it.";pet_job.mouse_filter=Control.MOUSE_FILTER_PASS
-	pet_job.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;bio.add_child(pet_job)
+	bio.add_child(pet_picker(84.0,func():start_menu(true)))
 	# Keep hero selection focused on the selected hero; repeat rules in Help only.
 	var footer=HBoxContainer.new()
 	footer.position=Vector2(120,997)
@@ -853,13 +843,16 @@ func coop_menu():
 	portrait = HeroPortrait.new()
 	portrait.custom_minimum_size=Vector2(333,220);heroes.add_child(portrait)
 	portrait.setup(game.hero.model,game.hero.weapon,0,0)
-	var scroll=ScrollContainer.new();scroll.custom_minimum_size=Vector2(333,300);scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;heroes.add_child(scroll)
+	var scroll=ScrollContainer.new();scroll.custom_minimum_size=Vector2(333,220);scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;heroes.add_child(scroll)
 	var choices=VBoxContainer.new();choices.size_flags_horizontal=Control.SIZE_EXPAND_FILL;scroll.add_child(choices)
 	var selected: Button
 	for hero in game.rules.data.heroes:
 		var pick=button(("✓ " if hero.id==game.hero.id else "")+hero.name,func():game.select_hero(hero);coop_menu())
 		pick.disabled=game.run_active;choices.add_child(pick)
 		if hero.id==game.hero.id: selected=pick
+	# Pet choice in co-op too (user, November 1: "where is pet choosing in coop menu?").
+	heroes.add_child(label("YOUR PET",14))
+	heroes.add_child(pet_picker(72.0,coop_menu,game.run_active))
 	var connection=VBoxContainer.new();connection.size_flags_horizontal=Control.SIZE_EXPAND_FILL;connection.add_theme_constant_override("separation",10);columns.add_child(connection)
 	connection.add_child(label(game.hero.name+" · "+game.hero.perk,24))
 	lobby_specialty=label(game.hero.description,17);lobby_specialty.visible=false
@@ -892,6 +885,30 @@ func coop_menu():
 	box.add_child(button("Back",start_menu))
 	update_lobby_controls()
 	if selected!=null: selected.grab_focus();reveal_selection.call_deferred(scroll,selected)
+
+# The pet wisps as buttons (November 1, user: "make pets visible in selection, not
+# names"). Each shows the wisp as it looks now (its motes are its stage); the
+# chosen one is ringed in gold. Used on the hero screen and in the co-op menu.
+func pet_picker(icon_size: float,rebuild: Callable,locked: bool=false) -> HBoxContainer:
+	var row=HBoxContainer.new();row.name="PetPicker";row.add_theme_constant_override("separation",10)
+	var current=Pet.chosen(game.career.data.settings)
+	for kind in Pet.KINDS:
+		var pick=Button.new();pick.name="Pet_"+kind;pick.custom_minimum_size=Vector2(icon_size,icon_size)
+		pick.focus_mode=Control.FOCUS_ALL;pick.disabled=locked
+		pick.add_theme_stylebox_override("normal",style(Color(ThemeTokens.INK,.0) if kind!=current else Color("2a2440"),Color(0,0,0,0),10))
+		pick.add_theme_stylebox_override("hover",style(Color("2a2440"),Color("9b855e"),10))
+		pick.add_theme_stylebox_override("focus",style(Color(0,0,0,0),Color("f4da9e"),10))
+		pick.add_theme_stylebox_override("pressed",style(Color("2a2440"),Color("f4da9e"),10))
+		pick.add_theme_stylebox_override("disabled",style(Color(0,0,0,0),Color(0,0,0,0),10))
+		pick.tooltip_text=Pet.NAMES[kind]+" · "+Pet.JOBS[kind]+" Treats from the final boss make it grow."
+		var icon=PetIcon.new();icon.kind=kind;icon.selected=kind==current
+		icon.stage=Pet.stage_for(Pet.saved_treats(game.career.data.settings,kind))
+		icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);pick.add_child(icon)
+		pick.pressed.connect(func():
+			game.career.data.settings.pet=kind;game.career.dirty=true;game.career.save()
+			rebuild.call())
+		row.add_child(pick)
+	return row
 
 func update_lobby_controls():
 	if not is_instance_valid(lobby_ready): return

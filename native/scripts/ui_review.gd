@@ -43,6 +43,13 @@ static func run(game):
 	okay=expect(not game.hud.lobby_ready.disabled and game.hud.lobby_start.disabled,"ui assertion 25") and okay
 	game.hud.lobby_ready.grab_focus();game.hud.controller_accept();game.hud.update_lobby_controls()
 	okay=expect(game.coop.local_ready and not game.hud.lobby_start.disabled,"ui assertion 27") and okay
+	# Pets are chosen by look in the co-op menu too (November 1).
+	var saved_pet=game.career.data.settings.get("pet","blip")
+	var coop_pets=game.hud.menu_controls().filter(func(c):return c is Button and c.name.begins_with("Pet_"))
+	okay=expect(coop_pets.size()==3 and coop_pets.all(func(b):return b.text=="" and b.get_child(0) is PetIcon),"co-op menu shows the three pet wisps, no names") and okay
+	coop_pets.filter(func(b):return b.name=="Pet_zorbo")[0].pressed.emit()
+	await game.get_tree().process_frame
+	okay=expect(game.career.data.settings.pet=="zorbo" and game.hud.coop_name_input.text=="UI Host","picking a pet in the co-op menu saves it") and okay
 	okay=expect(await capture(game,"coop"),"ui assertion 28") and okay
 	var coop_hero=game.hud.menu_controls().filter(func(c):return c is Button and c.text=="Tank Potato")[0]
 	coop_hero.pressed.emit()
@@ -61,6 +68,12 @@ static func run(game):
 	for frame in range(4): await game.get_tree().process_frame
 	okay=expect(game.get_viewport().gui_get_focus_owner().text=="Tank Potato" and game.hero.name=="Tank Potato","ui assertion 43") and okay
 	okay=expect(await capture(game,"hero"),"ui assertion 44") and okay
+	var hero_pets=game.hud.menu_controls().filter(func(c):return c is Button and c.name.begins_with("Pet_"))
+	okay=expect(hero_pets.size()==3 and hero_pets.all(func(b):return b.text==""),"hero screen shows the pet wisps, no names") and okay
+	hero_pets.filter(func(b):return b.name=="Pet_fuzzbat")[0].pressed.emit()
+	await game.get_tree().process_frame
+	okay=expect(game.career.data.settings.pet=="fuzzbat","picking a pet on the hero screen saves it") and okay
+	game.career.data.settings.pet=saved_pet;game.career.save()
 	game.select_hero(game.rules.data.heroes.filter(func(h):return h.weapon=="ice")[0]);game.hud.start_menu()
 	okay=expect(await capture(game,"ice-match"),"ui assertion 46") and okay
 	game.select_hero(original_hero)
