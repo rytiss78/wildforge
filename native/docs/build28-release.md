@@ -2,7 +2,7 @@
 
 Build 28 is a Windows alpha. `build-info.json` beside the executable records the exact source commit and artifact hashes. **Every player in a party needs Build 28**: co-op refuses any other download (network protocol `wildforge-shared-world-19`). The main menu shows the build ID (bottom right) to compare.
 
-**Install:** extract the whole ZIP into a folder and run `Wildforge.exe`. Keep `Wildforge.pck` and `godot_wry.dll` beside it. Archive `Wildforge-1.11.0-Windows.zip`, SHA-256 `ARCHIVE_SHA`.
+**Install:** extract the whole ZIP into a folder and run `Wildforge.exe`. Keep `Wildforge.pck` and `godot_wry.dll` beside it. Archive `Wildforge-1.11.0-Windows.zip`, SHA-256 `8a84ac5ec13fe0fb1be8c4390d1331d3f3a4c3de4d30271e97ae15bd29f77b00`.
 
 ## New hero: Digby Mole
 
@@ -43,5 +43,5 @@ Build 28 is a Windows alpha. `build-info.json` beside the executable records the
 
 ## Verified
 
-- The export from source commit `SOURCE_SHA` reports 1.11.0 / Build 28 and passes `test-build`.
+- The export from source commit `a6e5034` reports 1.11.0 / Build 28 and passes `test-build`.
 - `check`, `smoke`, `integration`, `capture-ui`, `underside-review`, `crusher-review`, `weapon-review`, `fx-review` and `combat-review` pass on the source.
