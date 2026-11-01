@@ -231,7 +231,7 @@ func _ready():
 	world.build(0,407)
 	add_child(player)
 	player.collision_layer = 2
-	player.collision_mask = 5
+	player.collision_mask = 13  # world, enemies, crusher lifts (BiomeMechanics.PLATE_LAYER)
 	player.floor_snap_length = .65
 	player.floor_max_angle = deg_to_rad(52)
 	var collision = CollisionShape3D.new()
@@ -356,6 +356,7 @@ func _ready():
 	elif OS.get_cmdline_user_args().has("--golden-scene"): call_deferred("golden_scene")
 	elif OS.get_cmdline_user_args().has("--intro-review"): TitleIntro.play.call_deferred(self,true)
 	elif OS.get_cmdline_user_args().has("--underside-review"): preload("res://scripts/underside_review.gd").run.call_deferred(self)
+	elif OS.get_cmdline_user_args().has("--crusher-review"): preload("res://scripts/crusher_review.gd").run.call_deferred(self)
 	# A normal launch opens with the title intro (TitleIntro), then the menu.
 	elif OS.get_cmdline_user_args().is_empty() and not smoke: TitleIntro.play.call_deferred(self)
 	elif smoke: call_deferred("export_hero_art" if OS.get_cmdline_user_args().has("--art") else "run_soak" if OS.get_cmdline_user_args().has("--soak") else "run_smoke")
@@ -1081,7 +1082,7 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 	# Keep physical crowd blocking as well as anticipatory separation.
 	# Enemies collide with the world and heroes, not each other: separation steering
 	# spaces them, and body-on-body solving made packed crowds several times slower.
-	node.collision_layer=4;node.collision_mask=3;node.floor_snap_length=1.2;node.floor_max_angle=deg_to_rad(55);node.max_slides=6;node.floor_constant_speed=true
+	node.collision_layer=4;node.collision_mask=11;node.floor_snap_length=1.2;node.floor_max_angle=deg_to_rad(55);node.max_slides=6;node.floor_constant_speed=true
 	var collider=CollisionShape3D.new();var capsule=CylinderShape3D.new()
 	capsule.radius=radius_value;capsule.height=maxf(height,radius_value*2)
 	collider.shape=capsule;collider.position.y=capsule.height*.5;node.add_child(collider)
@@ -2478,7 +2479,7 @@ func _physics_process(delta: float):
 	dash_cooldown=maxf(0,dash_cooldown-delta)
 	# A dash passes through enemies (never through the world), so a hero hemmed
 	# in by a crowd can always break out.
-	player.collision_mask=1 if dash_time>0 else 5
+	player.collision_mask=9 if dash_time>0 else 13
 	slam_cooldown=maxf(0,slam_cooldown-delta)
 	invulnerable=maxf(0,invulnerable-delta)
 	ghost_time=maxf(0,ghost_time-delta)

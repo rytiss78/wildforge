@@ -87,7 +87,7 @@ export function assertCommittedBuild(cwd) {
 }
 
 async function main(action) {
-  if (!['balance-review', 'mutation-balance', 'shared-review', 'shared-review-stress', 'coop-dropin', 'bot-playtest', 'island-review', 'block-drop-review', 'shorts-review', 'hero-numbers-review', 'colossus-review', 'cartoon-review', 'model-review', 'weapon-review', 'hermes-review', 'playfeel-review', 'red-moon-review', 'fresh-import', 'biome-review', 'release-review', 'roster-review', 'bake-roster', 'style-review', 'fx-review', 'intro-review', 'underside-review', 'boss-review', 'forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'crowd-spells', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
+  if (!['balance-review', 'mutation-balance', 'shared-review', 'shared-review-stress', 'coop-dropin', 'bot-playtest', 'island-review', 'block-drop-review', 'shorts-review', 'hero-numbers-review', 'colossus-review', 'cartoon-review', 'model-review', 'weapon-review', 'hermes-review', 'playfeel-review', 'red-moon-review', 'fresh-import', 'biome-review', 'release-review', 'roster-review', 'bake-roster', 'style-review', 'fx-review', 'intro-review', 'underside-review', 'crusher-review', 'boss-review', 'forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'crowd-spells', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
     console.error('Usage: node scripts/agent-workflow.mjs check|smoke|capture|capture-ui|combat-review|pace-review|soak|integration|build|status'); return 2;
   }
   const git = (...args) => spawnSync('git', ['-C', root, ...args], {encoding:'utf8', windowsHide:true}).stdout?.trim() ?? '';
@@ -220,6 +220,13 @@ async function main(action) {
       if(!line) throw new Error('Missing underside review');report.underside=JSON.parse(line.slice(17));
       if(Object.values(report.underside.checks).some(v=>v===false)) throw new Error('Underside review assertions failed');
       report.capture=['top','pet-blip','pet-fuzzbat','pet-zorbo','flip','under','under-back','return','mole','mole-dig','mole-under','mole-up','side'].map(n=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','underside-'+n+'.png'),started));
+    }
+    if (action === 'crusher-review') {
+      const output=await step('crusher-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--crusher-review'],180000);
+      const line=output.split(/\r?\n/).findLast(x=>x.startsWith('CRUSHER_REVIEW '));
+      if(!line) throw new Error('Missing crusher review');report.crusher=JSON.parse(line.slice(15));
+      if(Object.values(report.crusher.checks).some(v=>v===false)) throw new Error('Crusher review assertions failed');
+      report.capture=['rest','ride','top'].map(n=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','crusher-'+n+'.png'),started));
     }
     if (action === 'fx-review') {
       const output=await step('fx-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--fx-review'],240000);

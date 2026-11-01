@@ -62,6 +62,8 @@ Prefix every action below with `node scripts/agent-workflow.mjs`.
 | `fresh-import` | Import an isolated copy with no `.godot` cache, then smoke-test | Preserves the working project cache |
 | `roster-review` | Hero/enemy orbs, scenery and full catalogue contact sheets | Inspect the rendered sheets |
 | `biome-review` | Stream and render all seven biomes with combat | Normal camera, isolated profile |
+| `underside-review` | Walk over the rim, under the island and back; pet wisps; Digby Mole's dig | Real run, captures `underside-*.png` |
+| `crusher-review` | Junkyard crusher: squash, push-out, lift riders, safe landing | Real run with physics, captures `crusher-*.png` |
 | `release-review` | Exported 720p/1080p menus and 810p forge/combat/boss/biome captures | Uses the latest successful staged build |
 | `bake-roster` | Rebuild all baked enemy/prop resources | After Forge generators |
 | `style-review` | Short lighting and combat-art iteration | Eight rendered captures; actual explosion damage, effect expiry and unchanged camera checks. Full regression/export testing remains separate. |

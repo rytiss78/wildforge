@@ -132,7 +132,7 @@ static func run(game: Node3D):
 	game._physics_process(1.0/60.0)
 	var through=game.player.collision_mask&4==0
 	for i in range(20): game._physics_process(1.0/60.0)
-	checks.dash_through_enemies=through and game.player.collision_mask==5
+	checks.dash_through_enemies=through and game.player.collision_mask==13
 	# Rift Dash (October 26): the dash pops the hero out well ahead and blasts the start.
 	game.spawn_enemy(8);var rift_target=game.enemies[-1];var rift_start=game.player.position
 	rift_target.node.position=rift_start+Vector3(.8,0,.8);rift_target.hp=1e6;rift_target.maxHp=1e6;rift_target.freeze=5

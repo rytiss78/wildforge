@@ -22,7 +22,7 @@ static func run(game: Node3D):
 			game.elapsed+=1.0/60;game.update_combat(1.0/60)
 			await game.get_tree().physics_frame
 		checks[behavior+"_attacks"]=game.health_damage>before
-		checks[behavior+"_collision_restored"]=enemy.node.collision_mask==3
+		checks[behavior+"_collision_restored"]=enemy.node.collision_mask==11
 	game.clear_entities();game.player.position=Vector3(0,.3,0);game.spawn_enemy(20)
 	var frozen=game.enemies[0];frozen.flying=false;frozen.behavior="chase";frozen.freeze=5
 	frozen.node.position=Vector3(frozen.radius+.6,.15,0)

@@ -9,7 +9,9 @@ class_name BiomeMechanics
 #   4 Candy Hell      lava vents: erupt into a spreading pool that burns everyone
 #   5 Starfall Space  gravity rifts: pull everything in, then implode on enemies
 #   6 Junkyard Planet scrap crushers: a press plate drops on a marked circle and
-#                     flattens everyone under it, enemies too
+#                     squashes the monsters under it and shoves heroes and bosses
+#                     out from under it, hurt; then it is a lift:
+#                     whoever stands on it (hero or monster) rides it up
 # The host (or a solo game) rolls each event and broadcasts it, so every player
 # sees the same zone; each player applies its effect to their own hero, and only
 # the host moves, statuses and damages enemies. Not on the Red Moon.
@@ -20,11 +22,22 @@ const KINDS={
 	3:{"id":"gust","every":10.0,"warn":1.4,"life":2.5,"radius":9.0,"color":Color("e6f6ff"),"intro":"WIND GUSTS · watch the streaks; the gust shoves everyone"},
 	4:{"id":"lava","every":8.0,"warn":1.6,"life":8.0,"radius":4.5,"color":Color("ff7a2a"),"intro":"LAVA VENTS · pools spread and burn everyone inside"},
 	5:{"id":"rift","every":12.0,"warn":1.2,"life":3.0,"radius":6.5,"color":Color("b38cff"),"intro":"GRAVITY RIFTS · pulled in, then the rift implodes on enemies"},
-	6:{"id":"crusher","every":9.0,"warn":1.6,"life":1.2,"radius":3.6,"color":Color("ffb43a"),"intro":"SCRAP CRUSHERS · get out from under the falling plate; it flattens enemies too"},
+	6:{"id":"crusher","every":9.0,"warn":1.6,"life":7.0,"radius":3.6,"color":Color("ffb43a"),"intro":"SCRAP CRUSHERS · get out from under the falling plate; it flattens enemies too"},
 }
 # One symbol each since October 31 ("too much text"): green heals, red hurts.
 const LABELS={"clover":"♥","spores":"☠","ice":"❄","gust":"≋","lava":"☠","rift":"◎","crusher":"▼"}
 const CRUSH_HEIGHT=9.0
+# The crusher as a lift (user request, November 1: "platforms that land in the
+# junkyard should lift heroes and monsters if they jump on it"). After the strike
+# the plate rests on the ground (LIFT_REST s) as a step you can jump onto, then
+# winches up to LIFT_TOP m over LIFT_RISE s carrying anyone on it, holds there
+# (LIFT_HOLD s) as a lookout, and lets go of its riders before it flies off: the
+# drop stays under the fall-damage height, so heroes land safely (or slam).
+const LIFT_REST=2.0
+const LIFT_RISE=2.4
+const LIFT_HOLD=1.6
+const LIFT_TOP=5.5
+const PLATE_LAYER=8
 const MAX_ZONES=8
 static var disc_paints={}
 
@@ -140,6 +153,10 @@ static func crusher_plate(zone: Dictionary):
 	var band=MeshInstance3D.new();band.mesh=stripe;band.material_override=hazard;band.position.y=0.0;plate.add_child(band)
 	var chain=CylinderMesh.new();chain.top_radius=.08;chain.bottom_radius=.08;chain.height=14.0
 	var link=MeshInstance3D.new();link.mesh=chain;link.material_override=paint;link.position.y=7.3;plate.add_child(link)
+	# Solid once it lands: heroes and monsters can stand on it and ride it.
+	var lift=AnimatableBody3D.new();lift.name="Lift";lift.sync_to_physics=false;lift.collision_layer=0;lift.collision_mask=0
+	var shape=CollisionShape3D.new();var box=BoxShape3D.new();box.size=Vector3(zone.radius*1.7,.7,zone.radius*1.7);shape.shape=box;lift.add_child(shape)
+	plate.add_child(lift)
 
 static func inside(zone: Dictionary,p: Vector3) -> bool:
 	return Vector2(p.x-zone.pos.x,p.z-zone.pos.z).length()<zone_radius(zone)
@@ -210,16 +227,75 @@ static func tick(g,delta: float):
 static func crusher_tick(g,zone: Dictionary,authority: bool):
 	var plate=zone.node.get_node_or_null("Plate") if is_instance_valid(zone.get("node")) else null
 	var t=clampf(zone.age/maxf(.01,zone.warn),0,1)
-	# Down with an accelerating fall, rests a moment, then winches back up.
-	var lift=clampf((zone.age-zone.warn-.45)/maxf(.1,KINDS[6].life-.45),0,1)
-	if plate!=null: plate.position.y=lerpf(CRUSH_HEIGHT,.35,t*t*t)+lift*lift*CRUSH_HEIGHT
+	# Down with an accelerating fall, rests as a step, lifts its riders, holds,
+	# lets them go and winches away.
+	var since=zone.age-zone.warn
+	var rise=clampf((since-LIFT_REST)/LIFT_RISE,0,1);rise=rise*rise*(3-2*rise)
+	var away=clampf((since-LIFT_REST-LIFT_RISE-LIFT_HOLD)/maxf(.1,KINDS[6].life-LIFT_REST-LIFT_RISE-LIFT_HOLD),0,1)
+	if plate!=null:
+		plate.position.y=lerpf(CRUSH_HEIGHT,.35,t*t*t)+rise*LIFT_TOP+away*away*CRUSH_HEIGHT
+		var body: AnimatableBody3D=plate.get_node_or_null("Lift")
+		if body!=null: body.collision_layer=PLATE_LAYER if since>=0.0 and away<=0.0 else 0
+		if since>0.0 and away<=0.0 and rise>0.0: carry(g,zone,plate,authority)
 	if zone.age<zone.warn or zone.get("struck",false): return
 	zone.struck=true
 	CombatInk.wave(g,zone.pos,zone.radius*1.3,KINDS[6].color);CombatInk.star(g,zone.pos+Vector3.UP*.6,zone.radius*1.2,Color("ffd27a"),8.0,.35)
 	g.sound.effect("slam",zone.pos)
 	g.hit_shake=maxf(g.hit_shake,.3)
-	if inside(zone,g.player.position): g.take_damage(18.0+g.realm*6.0+g.stats.maxHp*.12,zone.pos,"blast")
-	if authority: g.damage_area(zone.pos,zone.radius,g.stat("damage")*3.0+30.0,"stomp")
+	# Under the plate (user, November 1: "enemies should be squished under
+	# platforms; bosses and heroes get some damage and get pushed away, not no-clip"):
+	# ordinary monsters are flattened outright; the hero and bosses are hurt and
+	# shoved out past the plate's edge, never left inside or on top of it.
+	if under(zone,g.player.position):
+		g.take_damage(18.0+g.realm*6.0+g.stats.maxHp*.12,zone.pos,"blast")
+		var out=shove(g,zone,g.player.position,float(g.hero.get("radius",.42))+.4)
+		g.player.position=out;g.player.velocity.y=maxf(g.player.velocity.y,4.0)
+		g.knock_velocity=((out-zone.pos)*Vector3(1,0,1)).normalized()*11.0;g.player.reset_physics_interpolation()
+	if not authority: return
+	for enemy in g.enemies.duplicate():
+		if enemy.dead or enemy.get("flying",false) or not under(zone,enemy.node.position): continue
+		if enemy.boss:
+			g.hurt_enemy(enemy,g.stat("damage")*3.0+30.0,"stomp")
+			if not enemy.dead: enemy.node.position=shove(g,zone,enemy.node.position,float(enemy.get("radius",.6))+.4)
+		else:
+			g.burst(enemy.node.position+Vector3.UP*.3,Color("ffd27a"),8)
+			g.kill_enemy(enemy,"stomp")
+	zone.squashed=true
+
+# Under the falling plate: inside its marked circle or its square slab.
+static func under(zone: Dictionary,p: Vector3) -> bool:
+	var half=zone.radius*.85
+	return inside(zone,p) or (absf(p.x-zone.pos.x)<half and absf(p.z-zone.pos.z)<half)
+
+# The nearest spot just outside both the slab and the marked circle, straight out
+# from the plate's middle.
+static func shove(g,zone: Dictionary,p: Vector3,margin: float) -> Vector3:
+	var away=(p-zone.pos)*Vector3(1,0,1)
+	if away.length()<.05: away=Vector3.RIGHT
+	away=away.normalized()
+	var reach=maxf(zone.radius,zone.radius*.85/maxf(absf(away.x),absf(away.z)))+margin
+	var out=zone.pos+away*reach;out.y=g.world.height_at(out.x,out.z)+.1
+	return out
+
+# Riders on the rising plate: the hero rides its floor; monsters (whose own
+# movement may not follow a moving floor) are kept on top while they stand on it.
+static func carry(g,zone: Dictionary,plate: Node3D,authority: bool):
+	var top=plate.global_position.y+.35;var half=zone.radius*.85
+	var on=func(p: Vector3) -> bool: return absf(p.x-zone.pos.x)<half and absf(p.z-zone.pos.z)<half and p.y>top-1.2 and p.y<top+.6
+	if on.call(g.player.position) and g.player.velocity.y<=.5:
+		if g.player.position.y<top: g.player.position.y=top
+		zone.lifted_hero=true
+	if not authority: return
+	for enemy in g.enemies:
+		if enemy.dead or enemy.boss or enemy.get("flying",false): continue
+		var p: Vector3=enemy.node.position
+		if on.call(p):
+			enemy.node.position.y=maxf(p.y,top);zone.lifted=int(zone.get("lifted",0))+(0 if enemy.get("riding",false) else 1);enemy.riding=true
+
+# Lifted monsters stranded up there drop back when it lets go.
+static func plate_top(zone: Dictionary) -> float:
+	var plate=zone.node.get_node_or_null("Plate") if is_instance_valid(zone.get("node")) else null
+	return plate.global_position.y+.35 if plate!=null else zone.pos.y
 
 static func near(g,zone: Dictionary,scale: float=1.0) -> Array:
 	var r=zone_radius(zone)*scale
@@ -273,4 +349,4 @@ static func steer(g,desired: Vector3,previous: Vector3,delta: float) -> Vector3:
 
 # Zones that hurt the hero, for the playtest bot's steering.
 static func harmful(g) -> Array:
-	return g.biome_zones.filter(func(zone):return zone.kind in ["spores","lava","crusher"] and zone.age>=zone.warn*.5)
+	return g.biome_zones.filter(func(zone):return zone.kind in ["spores","lava","crusher"] and zone.age>=zone.warn*.5 and not zone.get("struck",false))
