@@ -8,11 +8,11 @@ A vivid 3D survival game where a duck, a loaf of bread and an angry granny are p
 
 **Build 27 (1.10.0) is now available as an alpha release.** The islands float: walk over the edge and your hero walks upside down beneath the island. Pets are glowing wisps over your shoulder that grow with every final-boss win. Glass health orbs, calmer audio, a 60 fps cap and far less on-screen text. [Build 27 notes](native/docs/build27-release.md).
 
-**Build 25 (1.8.0)** The final boss is The Grand Noggin, a giant floating head whose eyes are its health. Mid-fight it demands a performance: dodge every mark for a big damage window, or watch it heal. Also new: the Rift Dash card, gibberish voices for every creature, and cartoon spell weapons. Everyone in a co-op party needs Build 25. [Build 25 notes and limits](native/docs/archive/build25-release.md).
+**Build 25 (1.8.0)** The final boss is The Grand Noggin, a giant floating head whose eyes are its health. Mid-fight it demands a performance: dodge every mark for a big damage window, or watch it heal. Also new: the Rift Dash card, gibberish voices for every creature, and cartoon spell weapons. Everyone in a co-op party needs Build 25. [Build 25 notes and limits](https://github.com/rytiss78/wildforge/releases/tag/build-25).
 
-**Build 24 (1.7.0)** made everything a cartoon: 60 original enemies including body-horror humanoid mutants, new realm bosses, new heroes, new weapons and weapon icons, all with health in glass orbs. Enemies hit harder but die faster, melee contact hurts at once, and danger zones are labelled. [Build 24 notes](native/docs/archive/build24-release.md).
+**Build 24 (1.7.0)** made everything a cartoon: 60 original enemies including body-horror humanoid mutants, new realm bosses, new heroes, new weapons and weapon icons, all with health in glass orbs. Enemies hit harder but die faster, melee contact hurts at once, and danger zones are labelled. [Build 24 notes](https://github.com/rytiss78/wildforge/releases/tag/build-24).
 
-**Build 21 (1.4.0)** brought weapon evolutions into gilded new forms, named spell-and-mutation synergies, and a fight mechanic for every biome: clover rings, spore fog, ice floors, wind gusts, lava vents and gravity rifts. Enemies dissolve into ink or shatter, every attack warning speaks one danger-red language, and each biome has its own light and ink. [Build 21 notes](native/docs/archive/build21-release.md) · [Build 20 notes](native/docs/archive/build20-release.md).
+**Build 21 (1.4.0)** brought weapon evolutions into gilded new forms, named spell-and-mutation synergies, and a fight mechanic for every biome: clover rings, spore fog, ice floors, wind gusts, lava vents and gravity rifts. Enemies dissolve into ink or shatter, every attack warning speaks one danger-red language, and each biome has its own light and ink. [Build 21 notes](https://github.com/rytiss78/wildforge/releases/tag/build-21) · [Build 20 notes](https://github.com/rytiss78/wildforge/releases/tag/build-20).
 
 The third map leads to the Red Moon, where an immense, slow Baron waits with four visible steam vents and deadly, telegraphed attacks. He is a stylized original fallback, not a photorealistic or officially licensed film model. Defeat him to begin an endless Eclipse. **Known limits:** some internet providers put homes behind a shared address (carrier-grade NAT), where no router can open a port; the game says so, and a friend with a public address can host instead. Balance comes from automated playtests rather than people, especially the Baron fight. Co-op fixes have been tested on one machine, not yet over a real internet connection.
 
@@ -68,6 +68,6 @@ Published downloads use sequential build numbers. This release is `Wildforge 1.8
 
 WASD / left stick moves; mouse / right stick looks; Space / A jumps; Shift / RT dashes; Ctrl / B slams; E / X interacts; B / Y opens your build; Escape / Menu pauses. Weapons attack automatically. Florist plants while moving.
 
-Achievements, scores and settings save locally in `%APPDATA%/Godot/app_userdata/Wildforge/career.json`. [Build notes](native/docs/archive/build-0.8.3.md) · [Asset origins](native/assets/README.md)
+Achievements, scores and settings save locally in `%APPDATA%/Godot/app_userdata/Wildforge/career.json`. [All releases](https://github.com/rytiss78/wildforge/releases) · [Asset origins](native/assets/README.md)
 
 </details>

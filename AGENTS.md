@@ -6,7 +6,7 @@ These instructions apply to this repository. Start here when working as Hermes o
 
 1. Read the user's current request, then [PLAN.md](PLAN.md).
 2. Read [the Godot workflow](native/docs/godot-workflow.md) before running, testing or exporting the game.
-3. Consult [the repair audit](native/docs/repair-audit-2026-10-12.md) for known unfinished work. A historical `[x done]` in the plan is not proof that a feature works.
+3. Consult the Open issues in [PLAN.md](PLAN.md) for known unfinished work. A historical `[x done]` in the plan is not proof that a feature works.
 4. Inspect `git status --short`, `git diff`, and `git diff --cached` before editing. Preserve existing work, including staged changes.
 
 ## Working rules

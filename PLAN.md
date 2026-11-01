@@ -2,7 +2,7 @@
 
 November 1, 2026 · main branch · **Build 27 (1.10.0) is the latest public release** ([build-27](https://github.com/rytiss78/wildforge/releases/tag/build-27), notes [build27-release.md](native/docs/build27-release.md), source `0ce3a57`).
 
-Rules: [AGENTS.md](AGENTS.md) and the [Godot workflow](native/docs/godot-workflow.md). A checked item means the real entry point was exercised and the evidence is recorded. Everything done up to Build 27, with evidence paths, is in [plan-history-through-build27.md](native/docs/archive/plan-history-through-build27.md) (earlier: [through Build 19](native/docs/archive/plan-history-through-build19.md)). Older release notes are in `native/docs/archive/`.
+Rules: [AGENTS.md](AGENTS.md) and the [Godot workflow](native/docs/godot-workflow.md). A checked item means the real entry point was exercised and the evidence is recorded. Everything done up to Build 27, with evidence paths, is in git history (the last full plan is `PLAN.md` at commit `0ce3a57`); release notes are on the [GitHub releases page](https://github.com/rytiss78/wildforge/releases).
 
 ## The game today
 
