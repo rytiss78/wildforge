@@ -62,12 +62,12 @@ static func use(g) -> bool:
 		if g.underside.state in ["down","up","dig_down","dig_up"]: return false
 		if g.underside.can_dig(g):
 			g.trick_cooldown=float(t.cooldown);word(g,str(t.word))
-			g.underside.dig(g,t.damage*power(g),float(t.radius))
+			g.underside.dig(g,t.damage*power(g),float(t.radius));shout(g)
 			return true
 		# The Red Moon has no underside: burrow down and burst up where you stand.
 		g.trick_cooldown=float(t.cooldown);word(g,str(t.word))
 		g.damage_area(p,t.radius,t.damage*power(g),"burrow");g.burst(p+Vector3.UP*.4,Color("7a5a3a"),18)
-		CombatInk.wave(g,p,t.radius,Color("c79a5a"));g.hit_shake=maxf(g.hit_shake,.4);g.sound.effect("slam",p)
+		CombatInk.wave(g,p,t.radius,Color("c79a5a"));g.hit_shake=maxf(g.hit_shake,.4);g.sound.effect("slam",p);shout(g)
 		return true
 	g.trick_cooldown=float(t.cooldown)
 	word(g,str(t.word))
@@ -122,6 +122,15 @@ static func use(g) -> bool:
 static func forward(g) -> Vector3:
 	var stick=Input.get_vector("move_left","move_right","move_forward","move_back",.18)
 	return preload("res://scripts/combat_tactics.gd").dash_vector(stick,g.yaw,g.direction)
+
+# The hero's own trick shout (quip_<id>_trick.wav; Digby Mole's "Dig, dig, dig!"),
+# at most every 15 s so it does not get old.
+static var last_shout=-100.0
+static func shout(g) -> bool:
+	if g.elapsed-last_shout<15.0: return false
+	if not ResourceLoader.exists("res://assets/voices/quip_%s_trick.wav" % str(g.hero.id)): return false
+	last_shout=g.elapsed;g.sound.hero_quip(str(g.hero.id),"trick",g.player)
+	return true
 
 # A big comic word over the hero's head.
 static func word(g,text: String):

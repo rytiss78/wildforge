@@ -28,10 +28,14 @@ cast={
  'icecream':('af_nicole',['Oh!','Brain freeze!']),
  'bathtub':('bm_george',['Argh!','Man overboard!']),
  'peacock':('af_sarah',['Ah!','My beautiful tail!']),
- 'toaster':('am_eric',['Ow!','Burnt toast!'])}
+ 'toaster':('am_eric',['Ow!','Burnt toast!']),
+ 'mole':('am_santa',['Oof!','Mind the paws!'])}
+# Heroes with their own quips (and a shout for their trick); the rest share the defaults.
+own_quips={'mole':{'discovery':'Ooh. Something shiny down here.','boss':'Big fella. I will dig round him.','weapon':'More paws. Faster digging.','trick':'Dig, dig, dig!'}}
 out=root/'native/assets/voices';records=[]
 for hero,(voice,lines) in cast.items():
- for context,line in [(str(i),line) for i,line in enumerate(lines)]+[("discovery","Well, that looks suspicious."),("boss","That one skipped leg day."),("weapon","Three hands. Still no pockets.")]:
+ quips=own_quips.get(hero,{'discovery':'Well, that looks suspicious.','boss':'That one skipped leg day.','weapon':'Three hands. Still no pockets.'})
+ for context,line in [(str(i),line) for i,line in enumerate(lines)]+list(quips.items()):
   p=out/(f'hurt_{hero}_{context}.wav' if context.isdigit() else f'quip_{hero}_{context}.wav')
   if p.exists(): audio,sr=sf.read(p)
   else:

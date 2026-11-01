@@ -17,7 +17,7 @@ Rules: [AGENTS.md](AGENTS.md) and the [Godot workflow](native/docs/godot-workflo
 
 ## Since Build 27
 
-- [x] **Digby Mole, the 26th hero** (user request, November 1). A velvet-grey miner (hard hat with a lamp, pink star nose, round glasses, buck teeth, big pink paws, orb belly) with the Rolling Bomb and the Tunnel Vision perk (dashing burrows, bursting out for 30). His trick **Dig Through** (V, 9 s) tunnels straight through the island in 0.9 s to the same spot on the other side: the camera rolls over about its view line so forward stays forward; popping out on top blasts and knocks back the enemies there. On the Red Moon (no underside) it is a burrow-and-burst in place. `Underside.dig`/`can_dig`/`finish_dig`; co-op protocol 18. Checks: smoke `mole_dig_down`, `mole_dig_up`, `mole_hero`, `hero_roster` (26); integration `hero_tricks`; `underside-review` captures `mole`, `mole-dig`, `mole-under`, `mole-up`; `cartoon-review` hero sheet now six cells. Not yet: hero voice lines, a front close-up in a review, a live feel test of the roll.
+- [x] **Digby Mole, the 26th hero** (user request, November 1). A velvet-grey miner (hard hat with a lamp, pink star nose, round glasses, buck teeth, big pink paws, orb belly) with the Rolling Bomb and the Tunnel Vision perk (dashing burrows, bursting out for 30). His trick **Dig Through** (V, 9 s) tunnels straight through the island in 0.9 s to the same spot on the other side: the camera rolls over about its view line so forward stays forward; popping out on top blasts and knocks back the enemies there. On the Red Moon (no underside) it is a burrow-and-burst in place. `Underside.dig`/`can_dig`/`finish_dig`; co-op protocol 18. Checks: smoke `mole_dig_down`, `mole_dig_up`, `mole_hero`, `hero_roster` (26); integration `hero_tricks`; `underside-review` captures `mole`, `mole-dig`, `mole-under`, `mole-up`; `cartoon-review` hero sheet now six cells. **Voice** (`scripts/generate-hero-voices.py`, Kokoro am_santa): hurt "Oof!" / "Mind the paws!", his own quips ("Ooh. Something shiny down here.", "Big fella. I will dig round him.", "More paws. Faster digging.") and a trick shout "Dig, dig, dig!" (`HeroTricks.shout`, at most every 15 s; any hero with a `quip_<id>_trick.wav` gets one). Integration `mole_voice`. Not yet heard by a person; a live feel test of the roll.
 
 ## Next
 
@@ -32,7 +32,7 @@ Rules: [AGENTS.md](AGENTS.md) and the [Godot workflow](native/docs/godot-workflo
 - **Early co-op desync:** never described in detail; open until a matching report or reproduction.
 - **Performance:** three rank-9 spells in a 125-enemy crowd run at about 30 fps (physics step about 19 ms). The real fix is a script-side crowd mover and fewer posed rig parts; the profiling timers stay in the code.
 - **Not heard by a person:** generated creature voices, enemy attack sounds, spell sounds, the phonk music and the intro stingers.
-- **Known flaky checks** (not loosened): `shared-review` rejoin snapshot count under load, integration `biome_gust`, smoke `head_stomp`.
+- **Known flaky checks** (not loosened): `shared-review` rejoin snapshot count under load, integration `biome_gust` and `spell_hits_trigger_mutations` (once, November 1), smoke `head_stomp`.
 - **Remote co-op visuals:** teammates see an evolved weapon's halo but not gilded shots or spell synergy effects.
 
 ## Deferred

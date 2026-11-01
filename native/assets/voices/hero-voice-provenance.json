@@ -842,6 +842,54 @@
       "text": "Three hands. Still no pockets.",
       "duration": 1.899,
       "sha256": "e503622c10e4306f5faad8858672105efd0d86aa02422e4059202c65f04e4cf9"
+    },
+    {
+      "id": "hurt_mole_0",
+      "hero": "mole",
+      "voice": "am_santa",
+      "text": "Oof!",
+      "duration": 0.533,
+      "sha256": "dd07d026e6717387f2d5f3f137f41eb8f010d7e3fc4a62a28b55500f5f205eba"
+    },
+    {
+      "id": "hurt_mole_1",
+      "hero": "mole",
+      "voice": "am_santa",
+      "text": "Mind the paws!",
+      "duration": 1.088,
+      "sha256": "b8a37229c7ad57649e375d9559961af1b6da013b5ff1d6a5f5b3ae0241c4a42f"
+    },
+    {
+      "id": "quip_mole_discovery",
+      "hero": "mole",
+      "voice": "am_santa",
+      "text": "Ooh. Something shiny down here.",
+      "duration": 1.941,
+      "sha256": "a46d3008a1982938f8db923ff0736ed53b49264052cd4f3e7d0a142c1bb84aef"
+    },
+    {
+      "id": "quip_mole_boss",
+      "hero": "mole",
+      "voice": "am_santa",
+      "text": "Big fella. I will dig round him.",
+      "duration": 2.197,
+      "sha256": "576a215644fa9e7c017ba4b0e47bc2e15788ceb8e81eb88174592d55d9f1b815"
+    },
+    {
+      "id": "quip_mole_weapon",
+      "hero": "mole",
+      "voice": "am_santa",
+      "text": "More paws. Faster digging.",
+      "duration": 2.027,
+      "sha256": "09b822c937fa0f0841c80c72f3ea2e4ebfef575239ff207ae954e5b04b73c647"
+    },
+    {
+      "id": "quip_mole_trick",
+      "hero": "mole",
+      "voice": "am_santa",
+      "text": "Dig, dig, dig!",
+      "duration": 1.323,
+      "sha256": "3fe3a4c682c3cb99e526dcb6ff5c060a4159cf52fd33b7317e7ae3e8cf27768e"
     }
   ]
 }

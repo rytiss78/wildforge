@@ -111,7 +111,7 @@ func hero_hurt(id: String,source: Node3D):
 	if not ResourceLoader.exists(path): return
 	if not cache.has(path): cache[path]=load(path)
 	last_hurt=now;hurt_source=source;hurt_voice.global_position=source.global_position+Vector3.UP
-	hurt_voice.pitch_scale={"duck":1.06,"broccoli":.94,"goblin":1.08,"loaf":.96,"teapot":1.04,"octopus":.93,"astronaut":.98,"cactus":.97,"snail":.92,"bee":1.06,"sushi":1.04,"clock":.97,"bathtub":.94,"toaster":1.03}.get(id,1.0)
+	hurt_voice.pitch_scale={"duck":1.06,"broccoli":.94,"goblin":1.08,"loaf":.96,"teapot":1.04,"octopus":.93,"astronaut":.98,"cactus":.97,"snail":.92,"bee":1.06,"sushi":1.04,"clock":.97,"bathtub":.94,"mole":.96,"toaster":1.03}.get(id,1.0)
 	hurt_voice.stream=cache[path];hurt_voice.volume_db=linear_to_db(maxf(.0001,float(settings.voice)));hurt_voice.play()
 
 func chest_open(tier: int,_duration: float):
