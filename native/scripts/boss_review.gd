@@ -10,13 +10,14 @@ static func clear_list(list: Array):
 		if is_instance_valid(item.node): item.node.queue_free()
 	list.clear()
 
-static func marks_follow_terrain(g) -> bool:
-	for hazard in g.hazards:
+static func marks_follow_terrain(g,hazards: Array=[]) -> bool:
+	if hazards.is_empty(): hazards=g.hazards
+	for hazard in hazards:
 		for vertex in hazard.node.mesh.surface_get_arrays(0)[Mesh.ARRAY_VERTEX]:
 			var p=hazard.node.to_global(vertex)
 			var clearance=p.y-g.world.height_at(p.x,p.z)
 			if clearance<.085 or clearance>.095: return false
-	return not g.hazards.is_empty()
+	return not hazards.is_empty()
 
 static func run(g):
 	AudioServer.set_bus_volume_db(0,-80)
@@ -63,8 +64,10 @@ static func run(g):
 		for mark in marks: signature.append([mark.position,mark.radius,mark.delay])
 		signatures.append(JSON.stringify(signature))
 		checks["reaction_"+str(id)]=marks.all(func(m):return m.delay>=1.4 and m.radius<=2.0)
-		enemy.attack=0;g.update_combat(.05)
-		checks["attack_"+str(id)]=g.hazards.size()==marks.size() and marks_follow_terrain(g)
+		# The boss's own attack, called directly as the fight loop does: a full combat
+		# step could also let another system add a hazard that frame (a flaky count).
+		clear_list(g.hazards);BossBook.attack(g,enemy)
+		checks["attack_"+str(id)]=g.hazards.size()==marks.size() and marks_follow_terrain(g,g.hazards)
 		checks["warning_capture_"+str(id)]=await capture(g,str(id)+"-warning")
 		clear_list(g.hazards)
 		var old_chests=g.chests.size();var old_wardens=g.realm_bosses
