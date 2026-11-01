@@ -134,7 +134,7 @@ static func disc(g,at: Vector3,radius: float,color: Color,biome: int) -> Node3D:
 		var line=StandardMaterial3D.new();line.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED;line.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA;line.cull_mode=BaseMaterial3D.CULL_DISABLED
 		line.albedo_color=Color(DangerMark.DANGER,.95) if hurts_hero(biome) else Color(color.lightened(.35),.9)
 		disc_paints[key+"rim"]=line
-	edge.material_override=disc_paints[key+"rim"];edge.visible=biome!=3;floor_disc.add_child(edge)
+	edge.material_override=disc_paints[key+"rim"];edge.visible=false;floor_disc.add_child(edge)  # no edge lines (November 1)
 	if biome==1: AreaVisual.make(root,"danger_poison",radius,Vector3.ZERO)
 	if biome==5: AreaVisual.make(root,"gravity",radius*.55,Vector3.ZERO)
 	floor_disc.visible=biome!=3
@@ -202,10 +202,11 @@ static func tick(g,delta: float):
 						if not enemy.boss: enemy.node.move_and_collide(zone.dir*7.0*delta)
 			"lava":
 				if inside(zone,hero) and g.player.is_on_floor():
+					if not g.buffs.has("fire"): g.player_fire=maxf(g.player_fire,Lava.HERO_BURN)
 					zone.burn=float(zone.get("burn",0))+delta
 					if zone.burn>=1.0: zone.burn-=1.0;g.take_damage(maxf(5.0,g.stats.maxHp*.05),hero,"fire")
 				if authority:
-					for enemy in near(g,zone): g.set_damage_status(enemy,"fire",6.0+g.realm*2.0,g.coop.local_id);enemy.status_time=maxf(float(enemy.status_time),2.0)
+					for enemy in near(g,zone): Lava.ignite(g,enemy)
 			"rift":
 				if authority:
 					for enemy in near(g,zone,1.6):

@@ -725,6 +725,7 @@ func update(delta: float):
 	update_achievement_notification(delta)
 
 func start_menu(focus_hero: bool=false):
+	if not focus_hero: game.roll_menu_hero()
 	game.mode="start"
 	game.run_active=false
 	for child in modal.get_children():
@@ -835,6 +836,7 @@ func start_menu(focus_hero: bool=false):
 	else: menu_start.grab_focus()
 
 func coop_menu():
+	game.roll_menu_hero()
 	game.mode="coop"
 	var box=open("PLAY WITH FRIENDS","")
 	var columns=HBoxContainer.new();columns.add_theme_constant_override("separation",32);box.add_child(columns)

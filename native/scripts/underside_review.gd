@@ -132,6 +132,24 @@ static func run(g):
 		for i in range(10): await g.get_tree().process_frame
 		checks.flowers_ring=g.flowers[0].node.get_node("Area").visible and await shot(g,"flowers")
 		g.camera_locked=false;g.hud.visible=true
+	# The Florist's trick plants a ring of grown flowers, while she is on fire
+	# (lava flames), and a danger mark and a burst show as plain colour fills.
+	g.select_hero(g.rules.data.heroes.filter(func(h):return h.id=="florist")[0])
+	var trick_at=spot+Vector3(-12,0,0);trick_at.y=g.world.height_at(trick_at.x,trick_at.z)+.3
+	g.world.ensure_ground(trick_at);g.player.position=trick_at;g.player.velocity=Vector3.ZERO;g.player.reset_physics_interpolation()
+	for i in range(10): await g.get_tree().physics_frame
+	var planted=g.flowers.size();g.trick_cooldown=0.0;checks.florist_trick=HeroTricks.use(g) and g.flowers.size()>=mini(planted+6,g.FLOWER_MAX)
+	g.player_fire=30.0
+	var mark=preload("res://scripts/danger_mark.gd").make(g,trick_at+Vector3(-7,0,4),3.0,"meteor");mark.material_override.set_shader_parameter("progress",.5)
+	CombatInk.wave(g,trick_at+Vector3(-7,0,-4),3.0,Color("ffbd35"))
+	g.camera_locked=true;g.hud.visible=false
+	g.camera.position=trick_at+Vector3(9,11,9);g.camera.look_at(trick_at+Vector3(-2,0,0))
+	for i in range(12): await g.get_tree().process_frame
+	checks.florist_shot=await shot(g,"florist")
+	g.camera.position=trick_at+Vector3(2.6,2.0,2.6);g.camera.look_at(trick_at+Vector3.UP*.9)
+	for i in range(8): await g.get_tree().process_frame
+	checks.fire_shot=await shot(g,"fire")
+	g.camera_locked=false;g.hud.visible=true;g.player_fire=0.0;mark.queue_free()
 	# The island from outside: rim and belly.
 	g.camera_locked=true;g.hud.visible=false
 	g.camera.position=Vector3(coast+40,-6,30);g.camera.look_at(Vector3(coast-30,-14,0))

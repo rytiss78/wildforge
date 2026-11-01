@@ -58,8 +58,16 @@ static func run(game: Node3D) -> Dictionary:
 	# Lava vent: the pool spreads, burns enemies, and hurts a hero standing in it.
 	setup(game);game.hp=hp_scale;var scorched=dummy(game,Vector3(1.5,0,0))
 	var lava=event(game,4,game.player.position);run_frames(game,int(lava.warn*60)+5)
+	var boss_dummy=dummy(game,Vector3(-1.5,0,0));boss_dummy.boss=true;boss_dummy.fire=0.0
+	var coin_at=game.player.position+Vector3(0,0,1.5);game.spawn_pickup(coin_at+Vector3.UP*.4,"gold",1.0);var coin=game.pickups[-1]
 	var small=BiomeMechanics.zone_radius(lava);run_frames(game,250,true)
 	checks.biome_lava=small<2.0 and BiomeMechanics.zone_radius(lava)>4.0 and float(scorched.fire)>0.0 and game.hp<hp_scale
+	# Lava sets the hero on fire with visible flames, bosses only smoulder, and a
+	# coin that lands in it burns up (November 1).
+	var flames=game.player.get_node_or_null("HeroFlames")
+	checks.lava_hero_fire=game.player_fire>0.0 and flames!=null and flames.emitting
+	checks.lava_boss_smoulders=float(boss_dummy.fire)>0.0 and float(boss_dummy.fire)<float(scorched.fire)
+	checks.lava_burns_drops=not game.pickups.has(coin)
 	# Gravity rift: pulls enemies in, then implodes on them.
 	setup(game);var pulled=dummy(game,Vector3(5,0,0));var far=pulled.node.position.distance_to(game.player.position+Vector3(0,0,8))
 	var rift=event(game,5,game.player.position+Vector3(0,0,8));run_frames(game,int(rift.warn*60)+40,true)

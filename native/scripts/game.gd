@@ -401,7 +401,22 @@ func shape(mesh_value: Mesh, color: Color, parent: Node3D, position_value: Vecto
 	parent.add_child(node)
 	return node
 
+# A random hero each time the player comes to the hero screen (user request,
+# November 1), solo and co-op: rolled once per visit, kept while they browse the
+# menus, rolled again after a run. Picking a hero by hand keeps it until the next
+# run. Automated reviews keep their fixed hero.
+var hero_rolled=false
+
+func roll_menu_hero(force: bool=false) -> bool:
+	if hero_rolled: return false
+	if not force and (run_active or smoke or not OS.get_cmdline_user_args().is_empty()): return false
+	var choices=rules.data.heroes.filter(func(h):return h.id!=str(hero.get("id","")))
+	if choices.is_empty(): return false
+	select_hero(choices[randi()%choices.size()])
+	return true
+
 func select_hero(item: Dictionary):
+	hero_rolled=true
 	hero=item
 	if coop!=null: coop.hero_changed()
 	if is_instance_valid(avatar): avatar.queue_free()
@@ -448,6 +463,7 @@ func clear_entities():
 	if is_instance_valid(blood_rain): blood_rain.visible=false
 
 func start_run(shared_seed: int=-1):
+	hero_rolled=false
 	if coop.active and coop.hosting and not run_active and not coop.can_start(): hud.tell("Every player must be Ready before starting.");return
 	if shared_seed<0 and coop.active and not coop.hosting: hud.tell("The party host starts the run.");return
 	record_run(false,true)
@@ -1985,6 +2001,7 @@ func update_pickups(delta: float):
 				var floor_y=world.height_at(p.x,p.z)+(.27 if pickup.kind=="gold" else pickup.radius+.01)
 				if p.y<=floor_y:
 					pickup.node.position.y=floor_y
+					if Lava.burns_drop(self,pickup): continue
 					pickup.base_y=floor_y-(.27 if pickup.kind=="gold" else pickup.radius+.01)
 					if not pickup.bounced and pickup.velocity.y< -3:
 						pickup.velocity.y=absf(pickup.velocity.y)*.22;pickup.velocity.x*=.35;pickup.velocity.z*=.35;pickup.bounced=true
@@ -2521,6 +2538,7 @@ func _physics_process(delta: float):
 	update_hero_vitals()
 	avatar.animate(delta,player.velocity,player.is_on_floor() or (underside.active() and not underside.state=="under") or underside.grounded(),slamming or underside.slamming)
 	avatar.statuses(player_fire>0,player_poison>0,player_chill>0,player_blind>0)
+	Lava.hero_flames(self,player_fire>0 and hp>0)
 	avatar.visible=burrow_time<=0 and not underside.digging()
 	if burrow_time==0 and events.get("burrowing",false): damage_area(player.position,5.5,stats.burrow,"burrow");events.burrowing=false
 	if burrow_time>0: events.burrowing=true
@@ -3506,7 +3524,11 @@ func update_exploration(delta: float):
 		if player_poison>0: take_damage(1.2)
 		elif player_fire>0: take_damage(1.8)
 	# Molten rivers are ground hazards, not instant kills. Jumping clears them.
+	# Lava (rivers and vent pools) also sets the hero on fire for a moment
+	# (user request, November 1), and monsters too; see Lava.
+	Lava.tick(self,delta)
 	if player.is_on_floor() and world.lava_at(player.position):
+		if not buffs.has("fire"): player_fire=maxf(player_fire,Lava.HERO_BURN)
 		lava_clock+=delta
 		if lava_clock>=1.0:
 			lava_clock-=1.0

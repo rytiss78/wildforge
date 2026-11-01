@@ -30,6 +30,11 @@ Rules: [AGENTS.md](AGENTS.md) and the [Godot workflow](native/docs/godot-workflo
 - [x] **Florist: fewer flowers, bigger area** (user, November 1). One flower every 7 m instead of 2.3 m (seed cards add up to two more beside it), at most 14 instead of 48. Each flower is 1.6× bigger and stands in a ring showing its 5 m reach (was 3 m); a bloom blasts the whole ring for twice the damage and heals twice as much, with an ink wave. Integration `flowers_wide`; weapon-review flowers 2,013 → 4,327 damage from rank 1 to 5.
 - `playfeel-review` fails `grove_walk_0` and `turret_selected` on main before these changes too (checked on a stash); not yet investigated.
 
+- [x] **A random hero on each visit to the hero screen** (user, November 1), solo and co-op: `game.roll_menu_hero` rolls once per visit (kept while browsing menus or after a manual pick), and again after a run. Automated reviews keep their fixed hero. Integration `random_menu_hero`.
+- [x] **Florist's V plants a ring of flowers** (`HeroTricks` kind `garden`): six fully grown flowers in a 6.5 m circle round her, 14 s cooldown (heals instead if she no longer carries Flowers). Integration `hero_tricks`; `underside-review` capture `florist`.
+- [x] **Lava burns** (`Lava`, user November 1): Candy Hell lava rivers and lava-vent pools set the hero on fire for 2.5 s with visible flames (particles and a warm light on the hero, any fire source); monsters catch fire, bosses only smoulder (2 + island burn); gold and XP orbs that land or lie in lava burn up (XP only on the host). Integration `lava_hero_fire`, `lava_boss_smoulders`, `lava_burns_drops`; capture `underside-fire`.
+- [x] **Ground indicators without edge lines** (user November 1): danger marks are a soft fill that deepens from the middle as the warning runs (white flash at the end); bursts (explosions, slams, heals, pulses) are a spreading, fading colour disc; turret and flower rings and biome zones have no rim. `fx-telegraphs` inspected.
+
 ## Next
 
 - [ ] **Human playtest of Build 27:** the flip under the island (feel, camera, flipped controls), the wisps in motion, the calmer audio. Decide whether hiding underneath is too safe (simple fix: a slow health drain while under).

@@ -16,6 +16,7 @@ class_name HeroTricks
 #   bubble  refill your shield and trap nearby enemies in bubbles
 #   blink   vanish in smoke and reappear ahead
 #   dig     dig straight through the island to its other side, and back (Mole)
+#   garden  plant a ring of fully grown flowers round you at once (Florist)
 # Damage goes through damage_area/hurt_enemy, so co-op guests' tricks reach the
 # host like any hit; stuns and blinds travel as the "stun"/"blind" causes.
 
@@ -26,7 +27,7 @@ const TRICKS={
 	"grandma":{"name":"Handbag Quake","kind":"quake","cooldown":12.0,"radius":7.0,"damage":60.0,"word":"WHACK!"},
 	"goblin":{"name":"Tax Day","kind":"coins","cooldown":16.0,"radius":8.0,"damage":25.0,"coins":3,"word":"TAXED!"},
 	"loaf":{"name":"Rise & Shine","kind":"leap","cooldown":12.0,"radius":6.0,"damage":55.0,"word":"RISE!"},
-	"florist":{"name":"Bouquet","kind":"heal","cooldown":20.0,"heal":.3,"radius":6.0,"cause":"stun","word":"BLOOM!"},
+	"florist":{"name":"Bouquet","kind":"garden","cooldown":14.0,"count":6,"radius":6.5,"heal":.3,"cause":"stun","word":"BLOOM!"},
 	"teapot":{"name":"Tea Time","kind":"heal","cooldown":20.0,"heal":.2,"radius":6.0,"cause":"ice","word":"TEA TIME!"},
 	"octopus":{"name":"Ink Cloud","kind":"cloud","cooldown":14.0,"radius":8.0,"word":"SPLOOSH!"},
 	"astronaut":{"name":"Moon Jump","kind":"leap","cooldown":11.0,"radius":7.0,"damage":50.0,"word":"BOING!"},
@@ -83,6 +84,20 @@ static func use(g) -> bool:
 		"nova":
 			g.damage_area(p,t.radius,t.damage*power(g),str(t.cause))
 			CombatInk.wave(g,p,t.radius,Color(str(t.color)));g.burst(p+Vector3.UP,Color(str(t.color)),16);g.sound.effect("nova",p)
+		"garden":
+			# A ring of flowers, grown at once, round the Florist (user, November 1:
+			# "the Florist's V should plant flowers in a circle instantly").
+			var bed=g.equipped.filter(func(w):return w.id=="flowers")
+			if bed.is_empty():
+				g.heal(g.stats.maxHp*float(t.heal))
+			else:
+				var count=int(t.count);var turn=randf()*TAU
+				for i in range(count):
+					var at=p+Vector3.RIGHT.rotated(Vector3.UP,turn+i*TAU/count)*float(t.radius)
+					g.plant_flower(at,bed[0]);g.flowers[-1].age=1.5;g.flowers[-1].node.scale=Vector3.ONE
+					g.burst(Vector3(at.x,g.world.height_at(at.x,at.z)+1.0,at.z),Color("f5a8c4"),6)
+				g.last_plant=p
+			g.sound.effect("heal",p)
 		"heal":
 			g.heal(g.stats.maxHp*float(t.heal));g.player_poison=0;g.player_fire=0
 			g.damage_area(p,t.radius,1.0,str(t.cause))

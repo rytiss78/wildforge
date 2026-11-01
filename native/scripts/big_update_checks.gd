@@ -288,6 +288,13 @@ static func run(game: Node3D):
 	for weapon in game.equipped:
 		if is_instance_valid(weapon.get("node")): weapon.node.queue_free()
 	game.equipped=kept
+	# A random hero on each visit to the hero screen (November 1): rolled once,
+	# kept while browsing, rolled again after a run starts.
+	var menu_hero=game.hero;game.hero_rolled=false
+	var rolled=game.roll_menu_hero(true);var first=game.hero.id
+	var again=game.roll_menu_hero(true)
+	checks.random_menu_hero=rolled and first!=menu_hero.id and not again and game.hero.id==first
+	game.select_hero(menu_hero)
 	# Hats (October 29): every hat builds; an owned hat sits on top of the hero's
 	# head; a locked one is not worn.
 	var hats_build=HatBook.HATS.all(func(h):var hat_node=HatBook.build(h.id);var ok=hat_node.find_children("*","MeshInstance3D",true,false).size()>0;hat_node.free();return ok)
@@ -308,14 +315,14 @@ static func run(game: Node3D):
 		game.player.position=Vector3(0,game.world.height_at(0,0)+.1,0);game.player.velocity=Vector3.ZERO
 		game.spawn_enemy(6);var target=game.enemies[-1];target.node.position=game.player.position+Vector3(2.2,0,0);target.hp=1e6;target.maxHp=1e6;target.speed=0.0;target.freeze=0.0;target.blind=0.0
 		game.hp=game.stats.maxHp*.5;game.shield_hp=0.0;game.trick_cooldown=0.0;game.trick_boosts.clear();game.direction=Vector3.RIGHT
-		var start_at=game.player.position;var hp_at=game.hp
+		var start_at=game.player.position;var hp_at=game.hp;var flowers_at=game.flowers.size()
 		var used=HeroTricks.use(game)
 		for i in range(60):
 			HeroTricks.tick(game,1.0/60.0)
 			# Digby Mole tunnels through the island (Underside), not along the ground.
 			if game.underside.digging(): game.underside.tick(game,1.0/60.0);continue
 			game.player.velocity.y-=0.4;game.player.move_and_slide()
-		var effect=target.hp<1e6 or float(target.freeze)>0 or float(target.blind)>0 or float(target.get("bubble",0))>0 or game.hp>hp_at or game.shield_hp>0 or game.stat("rate")>game.stats.rate*1.01 or game.stat("speed")>game.stats.speed*1.01 or game.player.position.distance_to(start_at)>3.0
+		var effect=target.hp<1e6 or float(target.freeze)>0 or float(target.blind)>0 or float(target.get("bubble",0))>0 or game.hp>hp_at or game.shield_hp>0 or game.stat("rate")>game.stats.rate*1.01 or game.stat("speed")>game.stats.speed*1.01 or game.player.position.distance_to(start_at)>3.0 or game.flowers.size()>=flowers_at+4
 		if not (used and effect and game.trick_cooldown>0): tricked.append(hero_def.id)
 		if game.underside.active(): game.underside.reset(game)
 	# Digby Mole's voice: hurt lines, quips and the trick shout exist and load.
