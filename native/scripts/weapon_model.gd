@@ -48,7 +48,7 @@ func setup(weapon_id: String):
 		flash=ToonArt.ball(muzzle,Color("ffe6a4"),Vector3.ZERO,Vector3(.16,.16,.26));flash.visible=false
 		return
 	var asset="mint_pistol" if id=="gun" else "weapon_"+id
-	if ResourceLoader.exists("res://assets/style3d/"+asset+".glb"):
+	if ResourceLoader.exists("res://assets/style3d/"+asset+".glb") or CartoonWeapons.has(asset):
 		var solid=StyleModel.new();solid.setup(asset);base.add_child(solid)
 		# The cartoon gadgets (CartoonWeapons) carry their own details.
 		if not CartoonWeapons.has(asset): preload("res://scripts/weapon_identity.gd").apply(id,solid)

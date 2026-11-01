@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://d2y825dijidmo"
-path="res://.godot/imported/poison-turret.png-7f0e14f975d0611902d42d7498f26ec0.ctex"
+uid="uid://b4fo5myws50fn"
+path="res://.godot/imported/heal-turret.png-b27a3510d0f68adb0a24da7f542cefb3.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/illustrated/weapon-icons/poison-turret.png"
-dest_files=["res://.godot/imported/poison-turret.png-7f0e14f975d0611902d42d7498f26ec0.ctex"]
+source_file="res://assets/illustrated/weapon-icons/heal-turret.png"
+dest_files=["res://.godot/imported/heal-turret.png-b27a3510d0f68adb0a24da7f542cefb3.ctex"]
 
 [params]
 

@@ -27,8 +27,8 @@ const MECHANICS = {
 	"flowers":"Walking plants flowers. Mature flowers root enemies, spread harmful pollen and heal you nearby. Blooms wake neighbouring flowers.",
 	"turret":"Deploy one stationary gun turret. It automatically shoots nearby enemies; deploy again to move it.",
 	"fire-turret":"Deploy one turret that shoots burning rounds. Move it by deploying again; fire keeps hurting enemies after a hit.",
-	"ice-turret":"Deploy one turret that slows enemies and can freeze them. Deploy again to move it.",
-	"poison-turret":"Deploy one turret that poisons enemies. Deploy again to move your toxic firing position.",
+	"pulse-turret":"Deploy one turret that thumps out a pulse, knocking enemies in its ring away and hurting them a little. Deploy again to move it.",
+	"heal-turret":"Deploy one turret that heals you while you stand in its green ring. Turret cards make it heal more, more often and wider.",
 	"lightning-turret":"Deploy one turret whose shots jump electricity between enemies. Deploy again to move it.",
 	"rocket-turret":"Deploy one turret that fires explosive rounds into crowds. Deploy again to move it."
 }

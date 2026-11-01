@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://obi04uswye04"
-path="res://.godot/imported/ice-turret.png-fc0db32e74b63651c3cd94702307b7a2.ctex"
+uid="uid://cjrxvff0m636s"
+path="res://.godot/imported/pulse-turret.png-f2f8f188b6c7ab8c9a7738e6ab714874.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/illustrated/weapon-icons/ice-turret.png"
-dest_files=["res://.godot/imported/ice-turret.png-fc0db32e74b63651c3cd94702307b7a2.ctex"]
+source_file="res://assets/illustrated/weapon-icons/pulse-turret.png"
+dest_files=["res://.godot/imported/pulse-turret.png-f2f8f188b6c7ab8c9a7738e6ab714874.ctex"]
 
 [params]
 

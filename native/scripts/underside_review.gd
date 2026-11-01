@@ -55,6 +55,18 @@ static func run(g):
 	checks.under=g.underside.state=="under" and g.player.position.y<g.world.height_at(g.player.position.x,g.player.position.z)-8
 	checks.enemies_on_top=g.enemies.all(func(e):return e.dead or (not g.world.dangerous(e.node.position) and e.node.position.y>g.world.height_at(e.node.position.x,e.node.position.z)-2))
 	checks.under_shot=await shot(g,"under")
+	# Underneath: place a turret (it hangs from the rock) and jump (November 1).
+	var hung={"id":"heal-turret","rank":1,"power":1.0,"turret":true,"range":7.0}
+	g.deploy_turret(hung)
+	for i in range(20): await g.get_tree().process_frame
+	g.try_jump()
+	for i in range(10): await g.get_tree().physics_frame
+	checks.under_hop=g.underside.hop>.4
+	checks.under_turret_shot=await shot(g,"under-turret")
+	for i in range(60):
+		await g.get_tree().physics_frame
+		if g.underside.grounded(): break
+	if is_instance_valid(hung.node): hung.node.queue_free()
 	# Turn round and walk back out over the rim.
 	g.yaw+=PI
 	for i in range(30): await g.get_tree().process_frame
@@ -96,6 +108,30 @@ static func run(g):
 	for i in range(4): await g.get_tree().process_frame
 	checks.mole_up=g.underside.state=="top"
 	checks.mole_up_shot=await shot(g,"mole-up")
+	# Back on top: a Mender and a Thumper turret and a few of the Florist's flowers,
+	# each with its ring on the ground.
+	var spot=Vector3(coast-40,0,-10);spot.y=g.world.height_at(spot.x,spot.z)+.3
+	g.world.ensure_ground(spot);g.player.position=spot;g.player.velocity=Vector3.ZERO;g.player.reset_physics_interpolation();g.yaw=-PI*.5;g.pitch=.5
+	for w in g.equipped:
+		if is_instance_valid(w.get("node")): w.node.queue_free()
+	g.equipped.clear()
+	for id in ["heal-turret","pulse-turret"]:
+		var item=g.rules.data.weapons.filter(func(w):return w.id==id)[0].duplicate(true);item.kind="weapon";item.strength=1.0;g.equip_weapon(item)
+	var turrets=g.equipped.filter(func(w):return w.id in ["heal-turret","pulse-turret"])
+	if turrets.size()==2:
+		turrets[0].node.position=spot+Vector3(6,0,-6);turrets[1].node.position=spot+Vector3(6,0,6)
+		for t in turrets: t.node.position.y=g.world.height_at(t.node.position.x,t.node.position.z);t.node.get_node("Ring").queue_free();TurretPulse.add_ring(g,t,false)
+	var flowers_item=g.rules.data.weapons.filter(func(w):return w.id=="flowers")[0].duplicate(true);flowers_item.kind="weapon";flowers_item.strength=1.0;g.equip_weapon(flowers_item)
+	for k in range(2): g.plant_flower(spot+Vector3(14+k*7,0,(k-.5)*6),g.equipped[-1])
+	for f in g.flowers: f.age=2.0
+	for i in range(40): await g.get_tree().process_frame
+	checks.turrets_flowers=await shot(g,"turrets-flowers")
+	if not g.flowers.is_empty():
+		var bloom_at=g.flowers[0].node.position;g.camera_locked=true;g.hud.visible=false
+		g.camera.position=bloom_at+Vector3(0,7,7);g.camera.look_at(bloom_at)
+		for i in range(10): await g.get_tree().process_frame
+		checks.flowers_ring=g.flowers[0].node.get_node("Area").visible and await shot(g,"flowers")
+		g.camera_locked=false;g.hud.visible=true
 	# The island from outside: rim and belly.
 	g.camera_locked=true;g.hud.visible=false
 	g.camera.position=Vector3(coast+40,-6,30);g.camera.look_at(Vector3(coast-30,-14,0))

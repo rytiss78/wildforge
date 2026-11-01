@@ -67,7 +67,7 @@ static func run(g):
 	g.coop.active=false;g.coop.hosting=false;g.coop.members.clear();clear(g.enemies);clear(g.effects)
 	g.player.position=Vector3(0,g.world.height_at(0,0),0);g._process(.016)
 	# The actual mapped switch/deploy path, with the currently selected card highlighted.
-	for id in ["turret","ice-turret"]:
+	for id in ["turret","pulse-turret"]:
 		var weapon=g.rules.data.weapons.filter(func(w):return w.id==id)[0].duplicate(true);weapon.kind="weapon";weapon.strength=1;weapon.tier=0;g.equip_weapon(weapon)
 	g.selected_turret=0;g.hud.update(0);press(g,"next_turret");g.hud.update(0)
 	checks.turret_selected=g.selected_turret==1 and g.hud.turret_status.text.contains(g.equipped[1].name)

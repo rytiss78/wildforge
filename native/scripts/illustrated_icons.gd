@@ -20,7 +20,7 @@ const SKILLS={
 	"freeze":14,"slow":14,
 	"speed":15,"jumpPower":15,"jumpHeight":15,"airJumps":15,"bounceJump":15,"slamRecovery":15,"airControl":15,"airDamage":15,"fallThreshold":15
 }
-const WEAPONS = {"gun":0,"shotgun":1,"flame":2,"poison":3,"ice":4,"rail":5,"lightning":6,"saw":7,"rocket":8,"ghost":9,"flowers":10,"turret":11,"fire-turret":11,"poison-turret":11,"ice-turret":11,"lightning-turret":11,"rocket-turret":11}
+const WEAPONS = {"gun":0,"shotgun":1,"flame":2,"poison":3,"ice":4,"rail":5,"lightning":6,"saw":7,"rocket":8,"ghost":9,"flowers":10,"turret":11,"fire-turret":11,"heal-turret":11,"pulse-turret":11,"lightning-turret":11,"rocket-turret":11}
 const POWERS = {
 	"burn":12,"splash":12,"explosion":12,"dashBlast":12,
 	"poison":13,"pools":13,"freeze":14,"slow":14,

@@ -14,8 +14,10 @@ class_name Underside
 # Walking back out over the rim flips the hero back on top.
 #
 # Underneath, the hero is out of the fight: enemies cannot reach or target them,
-# they take no damage, their weapons rest, drops do not fly to them and the pet
-# waits on top. The Red Moon arena (realm 3) has no underside; its void still kills.
+# they take no damage, their hand weapons rest (turrets keep working and can be
+# placed there, hanging from the rock), drops do not fly to them and the pet
+# waits on top. They can still jump and ground-slam (hop, slam_down), away from
+# and back onto the belly. The Red Moon arena (realm 3) has no underside; its void still kills.
 #
 # Digby Mole's trick digs straight through the rock instead (dig): he vanishes
 # into the ground in a spray of dirt, the camera rolls over while he tunnels, and
@@ -40,6 +42,11 @@ var realm=-1
 var flips=0
 var face=0.0
 var digs=0
+# Jumping underneath: how far below the belly the hero is, and how fast that grows.
+var hop=0.0
+var hop_speed=0.0
+var slamming=false
+var slams=0
 var dig_damage=0.0
 var dig_radius=0.0
 
@@ -53,13 +60,13 @@ func span() -> float: return DIG if digging() else FLIP
 
 # A new island or run: back on top, nothing turned over.
 func clear(game: Node3D):
-	state="top";clock=0.0;realm=game.world.realm
+	state="top";clock=0.0;realm=game.world.realm;hop=0.0;hop_speed=0.0;slamming=false
 	game.avatar.rotation.x=0.0;game.avatar.rotation.z=0.0
 	light(game,false)
 
 func reset(game: Node3D):
 	if state=="top": return
-	state="top";clock=0.0
+	state="top";clock=0.0;hop=0.0;hop_speed=0.0;slamming=false
 	var p: Vector3=game.player.position;var coast=game.world.shore_radius(p)
 	var flat=Vector2(p.x,p.z)
 	if flat.length()>coast-INSET: flat=flat.normalized()*(coast-INSET)
@@ -113,9 +120,16 @@ func tick(game: Node3D,delta: float) -> bool:
 			var step=Vector3(game.player.velocity.x,0,game.player.velocity.z)*delta
 			var next=p+step;var next_flat=Vector2(next.x,next.z)
 			var next_coast=game.world.shore_radius(next)
-			if next_flat.length()>next_coast-TRIGGER and step.length()>0.0 and Vector2(step.x,step.z).dot(next_flat.normalized())>0.0:
+			if hop<=.05 and next_flat.length()>next_coast-TRIGGER and step.length()>0.0 and Vector2(step.x,step.z).dot(next_flat.normalized())>0.0:
 				begin(game,"up",next_flat,next_coast);return true
-			game.player.position=Vector3(next.x,game.world.under_height(next.x,next.z),next.z)
+			# Jumps fall back up onto the belly (gravity points at the rock here).
+			hop_speed-=24.0*delta;hop=maxf(0.0,hop+hop_speed*delta)
+			if hop<=0.0 and hop_speed<0.0:
+				hop_speed=0.0;game.air_jumps=0
+				if slamming: slam_land(game,Vector3(next.x,game.world.under_height(next.x,next.z),next.z))
+			# Mid-jump the hero cannot sail out past the rim.
+			if hop>.05 and next_flat.length()>next_coast-INSET*.5: next_flat=next_flat.normalized()*(next_coast-INSET*.5);next=Vector3(next_flat.x,next.y,next_flat.y)
+			game.player.position=Vector3(next.x,game.world.under_height(next.x,next.z)-hop,next.z)
 			# Upside down, turning toward the way the hero walks.
 			if step.length()>.001: face=lerp_angle(face,atan2(-step.x,-step.z),minf(1.0,delta*9))
 			game.avatar.rotation=Vector3(0,face,PI)
@@ -123,7 +137,7 @@ func tick(game: Node3D,delta: float) -> bool:
 	return false
 
 func begin(game: Node3D,kind: String,flat: Vector2,coast: float):
-	state=kind;clock=0.0
+	state=kind;clock=0.0;hop=0.0;hop_speed=0.0;slamming=false
 	var direction=flat.normalized() if flat.length()>.01 else Vector2.RIGHT
 	outward=Vector3(direction.x,0,direction.y);axis=Vector3.UP.cross(outward).normalized()
 	var top_y=game.world.height_at(direction.x*coast,direction.y*coast)
@@ -138,6 +152,32 @@ func begin(game: Node3D,kind: String,flat: Vector2,coast: float):
 	game.sound.effect("dash",game.player.position)
 	light(game,true)
 
+# On the belly (not mid-jump) while underneath.
+func grounded() -> bool: return state=="under" and hop<=.01
+
+func jump(game: Node3D) -> bool:
+	if state!="under": return false
+	if not grounded() and game.air_jumps>=int(game.stat("airJumps")): return false
+	if grounded(): game.air_jumps=0
+	else: game.air_jumps+=1
+	slamming=false;hop_speed=8.5*sqrt(game.stat("jumpHeight"))
+	game.sound.effect("jump");game.burst(game.player.position-Vector3.UP*.1,Color("8a7a6a"),5)
+	return true
+
+func slam(game: Node3D) -> bool:
+	if state!="under" or hop<.3 or slamming or game.slam_cooldown>0: return false
+	slamming=true;hop_speed=-24.0;game.slam_cooldown=game.slam_recovery()
+	game.sound.effect("dash")
+	return true
+
+# A slam onto the belly: the same blast as on top, with a shower of dirt.
+func slam_land(game: Node3D,at: Vector3):
+	slamming=false;slams+=1
+	game.damage_area(at,4*game.stats.slamRadius,game.stat("damage")*2*game.stats.slamPower,"slam")
+	for i in range(3): game.burst(at-Vector3.UP*.3,Color("7a5a3a") if i<2 else Color("c79a5a"),10)
+	game.hit_shake=maxf(game.hit_shake,.45);game.sound.effect("slam",at);game.vibrate(.5,.75,.2)
+	game.heal(game.stats.slamHeal)
+
 func can_dig(game: Node3D) -> bool:
 	return game.world.realm!=3 and state in ["top","under"] and (state=="under" or game.player.is_on_floor())
 
@@ -147,6 +187,7 @@ func dig(game: Node3D,damage: float,radius: float):
 	var coast=game.world.shore_radius(p)
 	if flat.length()>coast-INSET: flat=flat.normalized()*(coast-INSET)
 	var going_down=state=="top"
+	hop=0.0;hop_speed=0.0;slamming=false
 	state="dig_down" if going_down else "dig_up";clock=0.0
 	dig_damage=damage;dig_radius=radius
 	from=p

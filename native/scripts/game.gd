@@ -759,7 +759,7 @@ func level_up():
 func choose_offer(index: int):
 	if mode != "offer" or index < 0 or index >= offers.size(): return
 	var item = offers[index]
-	var weapon_sounds={"flame":"burn","fire-turret":"burn","poison":"poison","poison-turret":"poison","ice":"freeze","ice-turret":"freeze","lightning":"chain","lightning-turret":"chain","flowers":"flowerPower","ghost":"ghost","rocket":"explosion","rocket-turret":"explosion","turret":"turretDamage"}
+	var weapon_sounds={"flame":"burn","fire-turret":"burn","poison":"poison","heal-turret":"heal","ice":"freeze","pulse-turret":"nova","lightning":"chain","lightning-turret":"chain","flowers":"flowerPower","ghost":"ghost","rocket":"explosion","rocket-turret":"explosion","turret":"turretDamage"}
 	sound.choose_power(weapon_sounds.get(item.id,"damage") if item.kind=="weapon" else (item.get("effects",[]).front() if item.get("effects",[]).size()>0 else {}).get("key","damage"))
 	if item.kind == "weapon":
 		if not rules.can_weapon(equipped,item.id):
@@ -862,12 +862,15 @@ func deploy_turret(weapon: Dictionary):
 	if is_instance_valid(weapon.get("node")): weapon.node.queue_free()
 	var node = Node3D.new()
 	node.position = player.position+Vector3(1.6,0,0)
-	node.position.y = world.height_at(node.position.x,node.position.z)
+	var hanging=underside.state=="under"
+	node.position.y = world.under_height(node.position.x,node.position.z) if hanging else world.height_at(node.position.x,node.position.z)
+	if hanging: node.rotation.z=PI
 	add_child(node)
 	var model=WeaponModel.new();model.setup(weapon.id);model.rank=weapon.rank;model.evolved=weapon.get("evolved",false);model.scale=Vector3.ONE*1.7;model.position.y=.75;node.add_child(model);node.set_meta("model",model)
 	node.scale=Vector3.ONE*.05
 	create_tween().tween_property(node,"scale",Vector3.ONE,.25).set_trans(Tween.TRANS_BACK)
 	weapon.node = node
+	if TurretPulse.pulses(str(weapon.id)): TurretPulse.add_ring(self,weapon,hanging)
 	weapon.deploy_clock = 2
 	sound.effect("deploy")
 	weapon.clock = 0
@@ -2083,8 +2086,8 @@ func update_combat(delta: float):
 	for weapon in equipped:
 		if weapon.id=="flowers": continue
 		if hp<=0: continue
-		# Weapons rest while the hero is under the island.
-		if underside.active():
+		# Hand weapons rest while the hero is under the island; turrets keep working.
+		if underside.active() and not weapon.turret:
 			if weapon.id in ["saw","flame","fire-turret"]: sound.weapon_loop(weapon.id,false,player.position)
 			continue
 		weapon.clock -= delta
@@ -2094,15 +2097,18 @@ func update_combat(delta: float):
 			if not is_instance_valid(weapon.node): deploy_turret(weapon)
 			# A turret left far behind walks back to the hero by itself.
 			elif weapon.node.position.distance_to(player.position)>TURRET_FOLLOW: deploy_turret(weapon)
-			origin = weapon.node.position+Vector3.UP*.9
-			var target = nearest_enemy(origin,weapon.range)
-			if not target.is_empty(): weapon.node.rotation.y=atan2(origin.x-target.node.position.x,origin.z-target.node.position.z)
+			origin = weapon.node.to_global(Vector3.UP*.9) if is_instance_valid(weapon.node) else player.position
+			if TurretPulse.pulses(str(weapon.id)): TurretPulse.tick(self,weapon)
+			else:
+				var target = nearest_enemy(origin,weapon.range)
+				if not target.is_empty(): weapon.node.rotation.y=atan2(origin.x-target.node.position.x,origin.z-target.node.position.z)
 			if stats.repair>0 and origin.distance_to(player.position)<5: heal(stats.repair*delta)
 		if weapon.id in ["saw","flame","fire-turret"]: sound.weapon_loop(weapon.id,not (nearest_melee(origin,weapon.range*stat("range")/18.0) if weapon.id=="saw" else nearest_enemy(origin,weapon.range)).is_empty(),origin)
 		if weapon.turret and weapon.node.has_meta("model"):
 			weapon.node.get_meta("model").rank=weapon.rank;weapon.node.get_meta("model").tick(delta)
 		if weapon.clock<=0:
-			fire(weapon,origin)
+			if weapon.turret and TurretPulse.pulses(str(weapon.id)): TurretPulse.fire(self,weapon)
+			else: fire(weapon,origin)
 			weapon.clock = 1.0/(weapon.rate*(stat("turretRate")*TURRET_RATE if weapon.turret else stat("rate")))
 	for enemy in enemies:
 		if enemy.dead: continue
@@ -2513,7 +2519,7 @@ func _physics_process(delta: float):
 	update_boiling_edge()
 	if mode!="playing": return
 	update_hero_vitals()
-	avatar.animate(delta,player.velocity,player.is_on_floor() or underside.active(),slamming)
+	avatar.animate(delta,player.velocity,player.is_on_floor() or (underside.active() and not underside.state=="under") or underside.grounded(),slamming or underside.slamming)
 	avatar.statuses(player_fire>0,player_poison>0,player_chill>0,player_blind>0)
 	avatar.visible=burrow_time<=0 and not underside.digging()
 	if burrow_time==0 and events.get("burrowing",false): damage_area(player.position,5.5,stats.burrow,"burrow");events.burrowing=false
@@ -3055,6 +3061,21 @@ func run_smoke():
 	var hp_under=hp;take_damage(50,player.position)
 	checks.underside_flip=underside.state=="under" and underside.flipped() and player.position.y<world.height_at(player.position.x,player.position.z)-8 and absf(avatar.rotation.z-PI)<.01 and underside.camera_up().y<-.99
 	checks.underside_safe=hp==hp_under and coop.target(player.position+Vector3(3,0,0)).id==-1 and not world.dangerous(coop.target(player.position).position)
+	# Under the island the hero can still jump, slam and place a turret (November 1).
+	player.velocity=Vector3.ZERO;slam_cooldown=0.0;air_jumps=0
+	var belly_y=player.position.y;try_jump()
+	for i in range(14): player.velocity=Vector3.ZERO;underside.tick(self,1.0/60.0)
+	checks.under_jump=underside.hop>.5 and player.position.y<belly_y-.5
+	var slams_before=underside.slams;try_slam()
+	for i in range(60):
+		player.velocity=Vector3.ZERO;underside.tick(self,1.0/60.0)
+		if underside.grounded(): break
+	checks.under_slam=underside.slams==slams_before+1 and underside.grounded() and absf(player.position.y-belly_y)<.6
+	var hung={"id":"turret","rank":1,"power":1.0,"turret":true}
+	deploy_turret(hung)
+	checks.under_turret=is_instance_valid(hung.node) and hung.node.position.y<world.height_at(hung.node.position.x,hung.node.position.z)-8 and absf(hung.node.rotation.z-PI)<.01
+	if is_instance_valid(hung.node): hung.node.queue_free()
+	player.velocity=Vector3(6,0,0)
 	for i in range(160):
 		player.velocity=Vector3(6,0,0).rotated(Vector3.UP,0.0)
 		if underside.tick(self,1.0/60.0) and underside.state=="top": break
@@ -3124,20 +3145,32 @@ func check_creative_goals():
 			if stats.get(pair[0],0)>rules.data.stats.get(pair[0],0) and stats.get(pair[1],0)>rules.data.stats.get(pair[1],0):
 				if career.data.total.get(a.key,0)==0: career.bump(a.key)
 
+# Florist's garden (user request, November 1: "the flower hero should not spam
+# flowers; fewer flowers but a bigger, visible effect area"): one flower every
+# FLOWER_STEP metres (seed cards add a couple beside it), at most FLOWER_MAX, each a
+# bigger plant standing in a pink ring that shows its FLOWER_REACH: enemies inside
+# are rooted and poisoned, and a bloom blasts the whole ring.
+const FLOWER_STEP=7.0
+const FLOWER_MAX=14
+const FLOWER_REACH=5.0
+const FLOWER_SIZE=1.6
+
 func make_flower_visual(position_value: Vector3,tone_index: int) -> Node3D:
 	var node=Node3D.new()
 	node.position=position_value
 	node.position.y=world.height_at(position_value.x,position_value.z)
 	add_child(node)
+	var plant=Node3D.new();plant.name="Plant";plant.scale=Vector3.ONE*FLOWER_SIZE;node.add_child(plant)
 	var stem=CylinderMesh.new()
 	stem.top_radius=.025;stem.bottom_radius=.04;stem.height=.7
-	ToonArt.part(node,stem,Color("507e35"),Vector3(0,.35,0))
+	ToonArt.part(plant,stem,Color("507e35"),Vector3(0,.35,0))
 	var tone=Color("f49cbd") if tone_index%3==0 else Color("e9c954") if tone_index%3==1 else Color("ab93ef")
 	for i in range(6):
 		var petal=SphereMesh.new();petal.radius=.17;petal.height=.13
-		ToonArt.part(node,petal,tone,Vector3(cos(i*TAU/6)*.2,.72,sin(i*TAU/6)*.2))
+		ToonArt.part(plant,petal,tone,Vector3(cos(i*TAU/6)*.2,.72,sin(i*TAU/6)*.2))
 	var center=SphereMesh.new();center.radius=.12;center.height=.17
-	ToonArt.part(node,center,Color("fff2a5"),Vector3(0,.74,0))
+	ToonArt.part(plant,center,Color("fff2a5"),Vector3(0,.74,0))
+	var area=GroundRing.make(self,node.position,FLOWER_REACH,tone.lerp(Color("f5a8c4"),.5),.1);area.name="Area";node.add_child(area)
 	return node
 
 func plant_flower(position_value: Vector3, weapon: Dictionary):
@@ -3147,7 +3180,7 @@ func plant_flower(position_value: Vector3, weapon: Dictionary):
 	achievement_event("GARDEN")
 	garden_patches[Vector2i(roundi(position_value.x/10),roundi(position_value.z/10))]=true
 	if garden_patches.size()>=5: achievement_event("GARDEN_MOVE")
-	if flowers.size()>48: flowers[0].node.queue_free();flowers.pop_front()
+	if flowers.size()>FLOWER_MAX: flowers[0].node.queue_free();flowers.pop_front()
 
 func update_garden(delta: float):
 	if update.downed: return
@@ -3157,32 +3190,36 @@ func update_garden(delta: float):
 		flowers.clear()
 		return
 	# Movement lays a trail. Flowers never aim, shoot or deploy as turrets.
-	if player.position.distance_to(last_plant)>2.3 and player.is_on_floor():
+	if player.position.distance_to(last_plant)>FLOWER_STEP and player.is_on_floor():
 		last_plant=player.position
 		plant_flower(last_plant,weapon[0])
-		for i in range(mini(2,int(stats.flowerSeeds))): plant_flower(last_plant+Vector3.RIGHT.rotated(Vector3.UP,i*PI+elapsed)*1.5,weapon[0])
+		for i in range(mini(2,int(stats.flowerSeeds))): plant_flower(last_plant+Vector3.RIGHT.rotated(Vector3.UP,i*PI+elapsed)*FLOWER_REACH,weapon[0])
 	for flower in flowers:
-		flower.node.rotation.z=sin(elapsed*TAU*144/60)*(.22 if stats.flowerPower*flower.power>=1.5 else .045)
+		var plant=flower.node.get_node_or_null("Plant")
+		if plant!=null: plant.rotation.z=sin(elapsed*TAU*144/60)*(.22 if stats.flowerPower*flower.power>=1.5 else .045)
 		flower.age+=delta;flower.life-=delta;flower.bloom=maxf(0,flower.bloom-delta)
 		flower.node.scale=Vector3.ONE*minf(1,flower.age/1.5)
+		var area=flower.node.get_node_or_null("Area")
+		if area!=null: area.visible=flower.age>=1.5 or flower.bloom>0
 		if flower.age<1.5: continue
 		for enemy in enemies:
 			if enemy.dead or not is_instance_valid(enemy.node): continue
-			if flower.node.position.distance_to(melee_contact(enemy,flower.node.position))<3:
+			if flower.node.position.distance_to(melee_contact(enemy,flower.node.position))<FLOWER_REACH:
 				enemy.slow=maxf(enemy.slow,stats.flowerRoots);set_damage_status(enemy,"poison",stats.flowerPollen*sqrt(maxf(1.0,weapon_power("flowers"))),coop.local_id);enemy.status_time=3
 				achievement_event("ROOTS");achievement_event("POLLEN")
-		if flower.bloom<=0 and enemies.any(func(e): return not e.dead and flower.node.position.distance_to(melee_contact(e,flower.node.position))<3):
-			var chain=flowers.filter(func(f):return f.age>=1.5 and f.bloom<=0 and f.node.position.distance_to(flower.node.position)<5)
+		if flower.bloom<=0 and enemies.any(func(e): return not e.dead and flower.node.position.distance_to(melee_contact(e,flower.node.position))<FLOWER_REACH):
+			var chain=flowers.filter(func(f):return f.age>=1.5 and f.bloom<=0 and f.node.position.distance_to(flower.node.position)<FLOWER_STEP*1.6)
 			if chain.size()>=3: achievement_event("BLOOM_CHAIN")
 			for bloom in chain:
 				bloom.bloom=3.5
 				for enemy in enemies:
-					if not enemy.dead and enemy.boss and bloom.node.position.distance_to(melee_contact(enemy,bloom.node.position))<3.5: achievement_event("FLOWER_BOSS")
+					if not enemy.dead and enemy.boss and bloom.node.position.distance_to(melee_contact(enemy,bloom.node.position))<FLOWER_REACH: achievement_event("FLOWER_BOSS")
 				# Current rank, not the rank when the flower was planted: flowers live 22 s,
 				# so a rank-up only showed once the old trail had withered.
-				damage_area(bloom.node.position,3.5,stat("damage")*stats.flowerPower*maxf(bloom.power,weapon_power("flowers"))*.8,"bloom",{},"flowers")
-				burst(bloom.node.position+Vector3.UP*.85,Color("f5a8c4"),5)
-				if player.position.distance_to(bloom.node.position)<4 and hp<stats.maxHp: heal(stats.flowerHeal);achievement_event("FLOWER_HEAL")
+				# Fewer flowers, so each bloom blasts its whole ring and hits harder.
+				damage_area(bloom.node.position,FLOWER_REACH,stat("damage")*stats.flowerPower*maxf(bloom.power,weapon_power("flowers"))*1.6,"bloom",{},"flowers")
+				burst(bloom.node.position+Vector3.UP*1.3,Color("f5a8c4"),10);CombatInk.wave(self,bloom.node.position,FLOWER_REACH,Color("f5a8c4"))
+				if player.position.distance_to(bloom.node.position)<FLOWER_REACH and hp<stats.maxHp: heal(stats.flowerHeal*2.0);achievement_event("FLOWER_HEAL")
 	for flower in flowers:
 		if flower.life<=0: flower.node.queue_free()
 	flowers=flowers.filter(func(f):return f.life>0)
@@ -3191,13 +3228,15 @@ func slam_recovery() -> float:
 	return 4.5/(1.0+clampf(stat("slamRecovery"),0,5))
 
 func try_slam() -> bool:
-	if player.is_on_floor() or slamming or slam_cooldown>0 or underside.active(): return false
+	if underside.active(): return underside.slam(self)
+	if player.is_on_floor() or slamming or slam_cooldown>0: return false
 	slamming=true;slam_cooldown=slam_recovery();player.velocity.y=-24
 	sound.effect("dash")
 	return true
 
 func try_jump():
-	if underside.active(): return
+	if underside.active():
+		underside.jump(self);return
 	if not player.is_on_floor() and air_jumps>=int(stat("airJumps")): return
 	if player.is_on_floor(): air_jumps=0;peak_height=player.position.y;landing_ready=true
 	else: air_jumps+=1

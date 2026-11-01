@@ -21,7 +21,7 @@ add('gold-glove','Gold','goldGain',.3,'multiply');add('cheap-chest','Sale','disc
 
 const weapons=[
 
- ['flowers','Flowers','Garden',1,1,18],['gun','Gun','Shots',1,1,24],['shotgun','Shotgun','Shots',.6,.65,17],['flame','Fire Gun','Fire',.65,1.3,18],['poison','Poison Gun','Poison',.7,1,22],['ice','Ice Gun','Ice',.7,1,24],['rail','Rail Gun','Shots',2.4,.5,36],['lightning','Lightning','Lightning',1.1,.8,26],['saw','Saw','Thorns',1.6,1,8],['rocket','Rocket','Boom',2,.55,30],['ghost','Ghost Ball','Ghost',1.1,1,26],['turret','Turret','Engineering',1,1.5,25],['fire-turret','Fire Turret','Fire',.8,1.4,18],['ice-turret','Ice Turret','Frost',.8,1.1,22],['poison-turret','Poison Turret','Toxic',.8,1.1,22],['lightning-turret','Storm Turret','Electric',1.2,.9,26],['rocket-turret','Rocket Turret','Explosives',2.3,.5,30]
+ ['flowers','Flowers','Garden',1,1,18],['gun','Gun','Shots',1,1,24],['shotgun','Shotgun','Shots',.6,.65,17],['flame','Fire Gun','Fire',.65,1.3,18],['poison','Poison Gun','Poison',.7,1,22],['ice','Ice Gun','Ice',.7,1,24],['rail','Rail Gun','Shots',2.4,.5,36],['lightning','Lightning','Lightning',1.1,.8,26],['saw','Saw','Thorns',1.6,1,8],['rocket','Rocket','Boom',2,.55,30],['ghost','Ghost Ball','Ghost',1.1,1,26],['turret','Turret','Engineering',1,1.5,25],['fire-turret','Fire Turret','Fire',.8,1.4,18],['pulse-turret','Thumper Turret','Engineering',.5,.4,6],['heal-turret','Mender Turret','Recovery',0,.55,7],['lightning-turret','Storm Turret','Electric',1.2,.9,26],['rocket-turret','Rocket Turret','Explosives',2.3,.5,30]
 
 ].map(([id,name,family,damage,rate,range])=>({id,name,family,damage,rate,range,turret:id.includes('turret')}));
 

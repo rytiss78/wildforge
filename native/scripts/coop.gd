@@ -7,7 +7,7 @@ var party_seen={}
 
 # Transport-independent authoritative world. Important events are reliable;
 # poses/snapshots use unreliable ordered delivery. Never deserialize objects.
-const PROTOCOL="wildforge-shared-world-18"
+const PROTOCOL="wildforge-shared-world-19"
 # The exact build a player runs: the source commit in the build-info.json beside an
 # exported game, "dev" in the editor. Two different downloads with the same
 # PROTOCOL played different games and desynced (user report, October 25), so the

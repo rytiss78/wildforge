@@ -113,8 +113,10 @@ static func emblem(ci: CanvasItem,strain: String,c: Vector2,r: float,color: Colo
 static func color_for(name: String) -> Color:
 	if SkillBook.COLORS.has(name): return SkillBook.COLORS[name]
 	if name in ["burn","flame","fire","fire-turret","explosion","splash","rocket","rocket-turret"]: return Color("ff955c")
-	if name in ["poison","pools","poison-turret"]: return Color("8bdd6e")
-	if name in ["freeze","slow","ice","ice-turret"]: return Color("76d9f6")
+	if name in ["poison","pools"]: return Color("8bdd6e")
+	if name in ["heal-turret","heal"]: return Color("65f8bd")
+	if name in ["pulse-turret","pulse"]: return Color("8fd0ff")
+	if name in ["freeze","slow","ice"]: return Color("76d9f6")
 	if name in ["lifesteal","maxHp","regen","salvage","repair"]: return Color("f77b98")
 	if name in ["ghost","blind","burrow","nova","orbitDamage"]: return Color("bda0f4")
 	if name in ["goldGain","discount","keyPower","walkGold","hurtGold","interest","coinRadius","potGold"]: return Color("f6d178")

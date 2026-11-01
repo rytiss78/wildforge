@@ -252,6 +252,42 @@ static func run(game: Node3D):
 	game.hp=game.stats.maxHp;game.mode=mode_before
 	game.career.data.settings.pet_treats=saved_treats;game.career.save()
 	pet.kind=Pet.chosen(game.career.data.settings);pet.treats=Pet.saved_treats(game.career.data.settings,pet.kind);pet.stage=Pet.stage_for(pet.treats);pet.fetched=0;pet.state="follow";pet.rebuild()
+	# Pulsing turrets (November 1): the Mender heals the hero in its ring, the
+	# Thumper knocks enemies in its ring away and hurts them; flowers are fewer, each
+	# with a wide ring that a bloom blasts.
+	var kept=game.equipped.duplicate();game.equipped=[];game.clear_entities()
+	game.player.position=Vector3(0,game.world.height_at(0,0)+.1,0);game.player.velocity=Vector3.ZERO
+	var mender=game.rules.data.weapons.filter(func(w):return w.id=="heal-turret")[0].duplicate(true);mender.kind="weapon";mender.strength=1.0
+	game.equip_weapon(mender);var mend=game.equipped[-1];mend.clock=0.0
+	game.hp=game.stats.maxHp*.5;var mend_hp=game.hp
+	for i in range(90): game.update_combat(1.0/60.0)
+	checks.mender_heals=game.hp>mend_hp and float(mend.get("healed",0))>0 and mend.node.get_node_or_null("Ring")!=null
+	if is_instance_valid(mend.node): mend.node.queue_free()
+	game.equipped=[]
+	var thumper=game.rules.data.weapons.filter(func(w):return w.id=="pulse-turret")[0].duplicate(true);thumper.kind="weapon";thumper.strength=1.0
+	game.equip_weapon(thumper);var thump=game.equipped[-1];thump.clock=0.0
+	game.spawn_enemy(6);var shoved=game.enemies[-1];var shove_at=thump.node.position+Vector3(2.5,0,0);shove_at.y=game.world.height_at(shove_at.x,shove_at.z)
+	shoved.node.position=shove_at;shoved.speed=0.0;shoved.attack=1e9;shoved.contact=1e9;shoved.damage=0.0;shoved.hp=1e6;shoved.maxHp=1e6;shoved.boss=false
+	var shove_before=Vector2(shove_at.x-thump.node.position.x,shove_at.z-thump.node.position.z).length()
+	for i in range(90):
+		game.update_combat(1.0/60.0)
+		if int(thump.get("pushed",0))>0: break
+	var shove_after=Vector2(shoved.node.position.x-thump.node.position.x,shoved.node.position.z-thump.node.position.z).length()
+	checks.thumper_pushes=int(thump.get("pushed",0))>0 and shove_after>shove_before+1.0 and shoved.hp<1e6
+	if is_instance_valid(thump.node): thump.node.queue_free()
+	game.equipped=[];game.clear_entities()
+	var garden=game.rules.data.weapons.filter(func(w):return w.id=="flowers")[0].duplicate(true);garden.kind="weapon";garden.strength=1.0
+	game.equip_weapon(garden);var bed_at=game.player.position+Vector3(-6,0,0)
+	game.plant_flower(bed_at,game.equipped[-1]);var bloom_flower=game.flowers[-1];bloom_flower.age=2.0
+	game.spawn_enemy(6);var trampler=game.enemies[-1];var trample_at=bloom_flower.node.position+Vector3(game.FLOWER_REACH-1.0,0,0);trample_at.y=game.world.height_at(trample_at.x,trample_at.z)
+	trampler.node.position=trample_at;trampler.speed=0.0;trampler.attack=1e9;trampler.contact=1e9;trampler.damage=0.0;trampler.hp=1e6;trampler.maxHp=1e6;trampler.boss=false
+	game.last_plant=game.player.position;game.update_garden(1.0/60.0)
+	checks.flowers_wide=game.FLOWER_STEP>=6.0 and game.FLOWER_MAX<=16 and bloom_flower.node.get_node_or_null("Area")!=null and trampler.hp<1e6 and bloom_flower.bloom>0
+	for flower in game.flowers: flower.node.queue_free()
+	game.flowers.clear();game.clear_entities()
+	for weapon in game.equipped:
+		if is_instance_valid(weapon.get("node")): weapon.node.queue_free()
+	game.equipped=kept
 	# Hats (October 29): every hat builds; an owned hat sits on top of the hero's
 	# head; a locked one is not worn.
 	var hats_build=HatBook.HATS.all(func(h):var hat_node=HatBook.build(h.id);var ok=hat_node.find_children("*","MeshInstance3D",true,false).size()>0;hat_node.free();return ok)

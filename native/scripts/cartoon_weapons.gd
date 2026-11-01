@@ -8,7 +8,7 @@ class_name CartoonWeapons
 # these models (render_weapon_icons.gd). Every other weapon builds on one of these.
 
 const INK=CartoonMesh.INK
-const ASSETS=["mint_pistol","weapon_shotgun","weapon_flame","weapon_poison","weapon_ice","weapon_rail","weapon_lightning","weapon_saw","weapon_rocket","weapon_ghost","weapon_flowers","weapon_turret","weapon_fire-turret","weapon_ice-turret","weapon_poison-turret","weapon_lightning-turret","weapon_rocket-turret","weapon_boomerang","weapon_disc","weapon_harpoon","weapon_gravity","weapon_horn","weapon_bubble","weapon_meteor","weapon_bomb","weapon_ninja-shuriken","weapon_smoke-censer","weapon_bottle-barrage","weapon_supra-backfire","spell_tornado","spell_blackhole","spell_thunderstorm","spell_inferno"]
+const ASSETS=["mint_pistol","weapon_shotgun","weapon_flame","weapon_poison","weapon_ice","weapon_rail","weapon_lightning","weapon_saw","weapon_rocket","weapon_ghost","weapon_flowers","weapon_turret","weapon_fire-turret","weapon_pulse-turret","weapon_heal-turret","weapon_lightning-turret","weapon_rocket-turret","weapon_boomerang","weapon_disc","weapon_harpoon","weapon_gravity","weapon_horn","weapon_bubble","weapon_meteor","weapon_bomb","weapon_ninja-shuriken","weapon_smoke-censer","weapon_bottle-barrage","weapon_supra-backfire","spell_tornado","spell_blackhole","spell_thunderstorm","spell_inferno"]
 
 static func c(hex: String) -> Color: return Color(hex)
 
@@ -63,11 +63,22 @@ static func scene(asset: String) -> Node3D:
 		m.ball(Vector3(0,.0,0),Vector3(.34,.3,.34),hue)
 		m.eye(Vector3(0,.04,-.15),.09,Vector3.FORWARD,c("ff3b3b"))
 		var kind=id.trim_suffix("-turret") if id!="turret" else "gun"
-		m.can(Vector3(0,.16,-.05),Vector3(0,.16,-.5),.06,hue.darkened(.3));m.ring(Vector3(0,.16,-.46),.08,.04,c("ffd23f"),Vector3(PI*.5,0,0))
+		if not kind in ["heal","pulse"]: m.can(Vector3(0,.16,-.05),Vector3(0,.16,-.5),.06,hue.darkened(.3));m.ring(Vector3(0,.16,-.46),.08,.04,c("ffd23f"),Vector3(PI*.5,0,0))
 		match kind:
 			"fire": m.ball(Vector3(0,.3,.1),Vector3.ONE*.18,c("ff8a2b"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
 			"ice": for k in range(3): m.spike(Vector3((k-1)*.05,.16,-.5),Vector3((k-1)*.1,.18,-.65),.04,c("bff6ff"))
 			"poison": m.ball(Vector3(0,.3,.1),Vector3(.14,.2,.14),c("8fff5a"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
+			"heal":
+				# Mender: a big glowing green cross standing on its head, no barrel.
+				var green=c("3dff9a")
+				m.rod(Vector3(0,.12,0),Vector3(0,.32,0),.04,c("c0c0c8"));m.box(Vector3(0,.5,0),Vector3(.44,.14,.12),green);m.box(Vector3(0,.5,0),Vector3(.14,.44,.12),green)
+				m.ball(Vector3(0,.5,0),Vector3(.12,.12,.14),c("e8fff2"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
+			"pulse":
+				# Thumper: a big speaker cone facing up, with rings like sound waves.
+				m.can(Vector3(0,.16,0),Vector3(0,.3,0),.24,c("3a3040"))
+				m.ring(Vector3(0,.32,0),.24,.045,c("8fd0ff"));m.ring(Vector3(0,.33,0),.15,.035,c("dff6ff"))
+				m.ball(Vector3(0,.33,0),Vector3(.12,.06,.12),c("8fd0ff"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
+				m.ring(Vector3(0,.48,0),.3,.025,c("8fd0ff"));m.ring(Vector3(0,.6,0),.36,.02,c("bfe6ff"))
 			"lightning": m.antenna(Vector3(0,.15,.08),Vector3(0,.42,.1),.05,c("c0c0c8"),c("c97aff"))
 			"rocket": m.spike(Vector3(0,.16,-.5),Vector3(0,.16,-.68),.07,c("ff3b3b"))
 		muzzle=Vector3(0,.16,-.56)

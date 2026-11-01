@@ -929,21 +929,21 @@
       "turret": true
     },
     {
-      "id": "ice-turret",
-      "name": "Ice Turret",
-      "family": "Frost",
-      "damage": 0.8,
-      "rate": 1.1,
-      "range": 22,
+      "id": "pulse-turret",
+      "name": "Thumper Turret",
+      "family": "Engineering",
+      "damage": 0.5,
+      "rate": 0.4,
+      "range": 6,
       "turret": true
     },
     {
-      "id": "poison-turret",
-      "name": "Poison Turret",
-      "family": "Toxic",
-      "damage": 0.8,
-      "rate": 1.1,
-      "range": 22,
+      "id": "heal-turret",
+      "name": "Mender Turret",
+      "family": "Recovery",
+      "damage": 0,
+      "rate": 0.55,
+      "range": 7,
       "turret": true
     },
     {

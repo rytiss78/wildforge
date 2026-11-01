@@ -56,12 +56,31 @@ static func measure(g,weapon_id: String,rank: int) -> Dictionary:
 	for enemy in dummies: dealt+=1e7-enemy.hp
 	return {"dealt":snappedf(dealt,.1),"shown":snappedf(shown,.1)}
 
+static func measure_heal(g,rank: int) -> float:
+	for weapon in g.equipped:
+		if is_instance_valid(weapon.get("node")): weapon.node.queue_free()
+	g.equipped.clear();g.skills.clear()
+	g.stats=g.rules.data.stats.duplicate(true);g.stats.maxHp=100.0
+	var item=g.rules.data.weapons.filter(func(w):return w.id=="heal-turret")[0].duplicate(true);item.kind="weapon";item.strength=1.0
+	for i in range(rank): g.equip_weapon(item)
+	var t=0.0
+	while t<SECONDS:
+		t+=1.0/60.0;g.elapsed+=1.0/60.0;g.realm_time=0.0;g.hp=50.0
+		g.update_combat(1.0/60.0)
+	return float(g.equipped[0].get("healed",0.0))
+
 static func run(g: Node3D):
 	AudioServer.set_bus_volume_db(0,-80)
 	g.start_run(2026);g.set_process(false);g.set_physics_process(false)
 	g.invulnerable=1e9;g.spawn_clock=1e9;g.formation_clock=1e9;g.xp_target=1e9;g.sound.settings.sfx=0;g.mode="playing"
 	var rows={};var flagged=[]
 	for weapon in g.rules.data.weapons:
+		# The Mender Turret heals instead of hurting: its healing must grow with rank.
+		if weapon.id=="heal-turret":
+			var healed1=measure_heal(g,1);var healed5=measure_heal(g,5)
+			rows[weapon.id]={"r1":{"healed":healed1},"r5":{"healed":healed5}}
+			if healed1<=0 or healed5<=healed1*1.1: flagged.append({"id":weapon.id,"reasons":["healing does not grow with rank"],"r1":healed1,"r5":healed5})
+			continue
 		var low=measure(g,weapon.id,1);var high=measure(g,weapon.id,5)
 		# Area weapons vary run to run (where the well lands, how many dummies it
 		# catches): a weak result is measured again and both samples are summed.
