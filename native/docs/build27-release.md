@@ -2,7 +2,7 @@
 
 Build 27 is a Windows alpha. `build-info.json` beside the executable records the exact source commit and artifact hashes. **Every player in a party needs Build 27**: co-op refuses any other download (network protocol `wildforge-shared-world-17`). The main menu shows the build ID (bottom right) to compare.
 
-**Install:** extract the whole ZIP into a folder and run `Wildforge.exe`. Keep `Wildforge.pck` and `godot_wry.dll` beside it. Archive `Wildforge-1.10.0-Windows.zip`, SHA-256 `ARCHIVE_SHA`.
+**Install:** extract the whole ZIP into a folder and run `Wildforge.exe`. Keep `Wildforge.pck` and `godot_wry.dll` beside it. Archive `Wildforge-1.10.0-Windows.zip`, SHA-256 `b5feadee1efef812c990473192d3a0c8b0bbf2cf36f9e84caa42fd23b0c7cfdc`.
 
 ## The island floats
 
@@ -37,5 +37,5 @@ Build 27 is a Windows alpha. `build-info.json` beside the executable records the
 
 ## Verified
 
-- The export from source commit `SOURCE_SHA` reports 1.10.0 / Build 27 and passes `test-build`.
+- The export from source commit `0ce3a57` reports 1.10.0 / Build 27 and passes `test-build`.
 - `check`, `smoke`, `integration`, `capture-ui`, `underside-review` and `boss-review` pass on the source.
