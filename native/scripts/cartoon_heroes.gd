@@ -1,7 +1,7 @@
 extends RefCounted
 class_name CartoonHeroes
 
-# The 25 heroes rebuilt from scratch in the cartoon style (user request, October 25:
+# The heroes (25, then Digby Mole) rebuilt from scratch in the cartoon style (user request, October 25:
 # the old models looked bad). Every hero keeps who it is (a wrench, a rubber duck,
 # a teapot, a white sports car...) but is now a goofy cartoon character: googly
 # mismatched eyes, wonky proportions, bold ink outlines. Original designs, about
@@ -11,7 +11,7 @@ class_name CartoonHeroes
 const INK=CartoonMesh.INK
 const TOOTH=CartoonMesh.TOOTH
 const MOUTH=CartoonMesh.MOUTH
-const ASSETS=["hero_pipe_wrench","count_duck","hero_sweet_potato","hero_marble_bust_01","hero_street_rat","hero_hamburger_buns","hero_florist","hero_teapot","hero_octopus","hero_astronaut","hero_cactus","hero_book","hero_snail","hero_bee","hero_sushi","hero_mushroom","hero_clock","hero_icecream","hero_bathtub","hero_peacock","hero_toaster","hero_ninja","hero_smoker","hero_alcoholic","hero_white-supra"]
+const ASSETS=["hero_pipe_wrench","count_duck","hero_sweet_potato","hero_marble_bust_01","hero_street_rat","hero_hamburger_buns","hero_florist","hero_teapot","hero_octopus","hero_astronaut","hero_cactus","hero_book","hero_snail","hero_bee","hero_sushi","hero_mushroom","hero_clock","hero_icecream","hero_bathtub","hero_peacock","hero_toaster","hero_ninja","hero_smoker","hero_alcoholic","hero_white-supra","hero_mole"]
 
 static func c(hex: String) -> Color: return Color(hex)
 
@@ -298,6 +298,29 @@ static func scene(asset: String) -> Node3D:
 			h.ball(Vector3(0,-.07,-.04),Vector3.ONE*.08,c("ff3b3b"))
 			s.make_arms(Vector3(.36,.75,0),.3,.05,glass,glass);s.make_legs(Vector3(.14,.3,0),.22,.055,glass,INK)
 			s.orb(Vector3(0,.62,0),.35,null,true)
+		"hero_mole":
+			# Digby Mole: a velvet-grey miner with a pink star nose, a hard hat with a
+			# lamp, tiny round glasses, buck teeth and huge pink digging paws. His round
+			# belly is the orb, with a tool belt under it.
+			var fur=c("6a5a6e");var pink=c("ff9cb8");var hat=c("ffc21f")
+			b.ball(Vector3(0,.3,0),Vector3(.74,.3,.64),fur);b.ball(Vector3(0,1.0,0),Vector3(.8,.3,.68),fur)
+			b.ring(Vector3(0,.36,0),.37,.06,c("7a4a24"));b.box(Vector3(.22,.36,-.3),Vector3(.12,.12,.06),c("c9c9d4"))
+			var h=s.make_head(Vector3(0,1.18,-.04))
+			h.ball(Vector3.ZERO,Vector3(.6,.52,.58),fur);h.ball(Vector3(0,-.04,-.24),Vector3(.3,.22,.24),c("8a7a8e"))
+			# The star nose: a pink button ringed with little fleshy rays.
+			h.ball(Vector3(0,-.02,-.38),Vector3.ONE*.1,pink)
+			for i in range(10):
+				var a=float(i)/10.0*TAU;var ray=Vector3(cos(a),sin(a),0)
+				h.spike(Vector3(0,-.02,-.37)+ray*.04,Vector3(0,-.02,-.4)+ray*.13,.022,pink)
+			for x in [-.12,.12]:
+				h.ring(Vector3(x,.1,-.25),.065,.014,INK,Vector3(PI*.5,0,0));h.eye(Vector3(x,.1,-.24),.032)
+			h.box(Vector3(0,.1,-.27),Vector3(.1,.014,.014),INK)
+			for x in [-.035,.035]: h.box(Vector3(x,-.17,-.3),Vector3(.06,.09,.03),TOOTH)
+			# Hard hat with a glowing lamp.
+			h.ball(Vector3(0,.2,0),Vector3(.62,.34,.6),hat);h.ring(Vector3(0,.16,0),.32,.035,c("e0a010"))
+			h.can(Vector3(0,.26,-.27),Vector3(0,.26,-.33),.07,c("c9c9d4"));h.ball(Vector3(0,.26,-.34),Vector3(.11,.11,.04),c("fff4b0"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
+			s.make_arms(Vector3(.38,.88,0),.3,.075,fur,pink,1.7);s.make_legs(Vector3(.16,.3,0),.2,.07,fur,pink)
+			s.orb(Vector3(0,.66,0),.35,null,true)
 		"hero_white-supra":
 			var paint_c=c("f4f6ff")
 			b.ball(Vector3(0,.45,0),Vector3(.85,.32,1.5),paint_c);b.ring(Vector3(0,.6,.05),.34,.06,paint_c)

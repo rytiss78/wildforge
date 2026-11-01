@@ -16,14 +16,20 @@ class_name Underside
 # Underneath, the hero is out of the fight: enemies cannot reach or target them,
 # they take no damage, their weapons rest, drops do not fly to them and the pet
 # waits on top. The Red Moon arena (realm 3) has no underside; its void still kills.
+#
+# Digby Mole's trick digs straight through the rock instead (dig): he vanishes
+# into the ground in a spray of dirt, the camera rolls over while he tunnels, and
+# he pops out on the other side at the same spot. Popping out on top bursts up
+# under the enemies for damage.
 
 const THICK=14.0  # rock from the shore down to the belly's lip
 const RIM=4.0  # the rim's width, curving from the shore down to the lip
 const FLIP=.7
 const INSET=2.0  # how far inside the rim the hero lands, top or bottom
 const TRIGGER=.5  # how close to the rim a move starts the flip
+const DIG=.9  # seconds to tunnel through the island
 
-var state="top"  # top, down (flipping under), under, up (flipping back)
+var state="top"  # top, down (flipping under), under, up (flipping back), dig_down, dig_up
 var clock=0.0
 var pivot=Vector3.ZERO
 var outward=Vector3.RIGHT
@@ -33,11 +39,17 @@ var to=Vector3.ZERO
 var realm=-1
 var flips=0
 var face=0.0
+var digs=0
+var dig_damage=0.0
+var dig_radius=0.0
 
 # Anything but plain walking on top: the hero is unreachable and out of the fight.
 func active() -> bool: return state!="top"
 # Underneath or most of the way there: the view and the controls are turned over.
-func flipped() -> bool: return state=="under" or (state=="down" and clock>=FLIP*.5) or (state=="up" and clock<FLIP*.5)
+func flipped() -> bool: return state=="under" or (state in ["down","dig_down"] and clock>=span()*.5) or (state in ["up","dig_up"] and clock<span()*.5)
+# Tunnelling through the rock: the hero is hidden inside it.
+func digging() -> bool: return state in ["dig_down","dig_up"]
+func span() -> float: return DIG if digging() else FLIP
 
 # A new island or run: back on top, nothing turned over.
 func clear(game: Node3D):
@@ -68,6 +80,12 @@ func tick(game: Node3D,delta: float) -> bool:
 			var moving_out=Vector2(game.player.velocity.x,game.player.velocity.z).dot(flat.normalized())>.5
 			if flat.length()>coast-TRIGGER and (moving_out or flat.length()>coast+.5): begin(game,"down",flat,coast)
 			return state!="top"
+		"dig_down","dig_up":
+			clock+=delta
+			var t=clampf(clock/DIG,0,1);var eased=t*t*(3-2*t)
+			game.player.position=from.lerp(to,eased);game.player.velocity=Vector3.ZERO
+			if t>=1.0: finish_dig(game)
+			return true
 		"down","up":
 			clock+=delta
 			var t=clampf(clock/FLIP,0,1);var eased=t*t*(3-2*t)
@@ -120,6 +138,50 @@ func begin(game: Node3D,kind: String,flat: Vector2,coast: float):
 	game.sound.effect("dash",game.player.position)
 	light(game,true)
 
+func can_dig(game: Node3D) -> bool:
+	return game.world.realm!=3 and state in ["top","under"] and (state=="under" or game.player.is_on_floor())
+
+# Start tunnelling from where the hero stands to the same spot on the other side.
+func dig(game: Node3D,damage: float,radius: float):
+	var p: Vector3=game.player.position;var flat=Vector2(p.x,p.z)
+	var coast=game.world.shore_radius(p)
+	if flat.length()>coast-INSET: flat=flat.normalized()*(coast-INSET)
+	var going_down=state=="top"
+	state="dig_down" if going_down else "dig_up";clock=0.0
+	dig_damage=damage;dig_radius=radius
+	from=p
+	to=Vector3(flat.x,game.world.under_height(flat.x,flat.y) if going_down else game.world.height_at(flat.x,flat.y)+.1,flat.y)
+	# The camera rolls about its own view line, so forward stays forward.
+	axis=Vector3(sin(game.yaw),0,cos(game.yaw))
+	face=game.avatar.rotation.y
+	game.slamming=false;game.landing_ready=false;game.air_jumps=0
+	dirt(game,p,1.0 if going_down else -1.0)
+	game.sound.effect("slam",p);game.hit_shake=maxf(game.hit_shake,.3)
+	light(game,true)
+
+func finish_dig(game: Node3D):
+	var p: Vector3=to;game.player.position=p;game.player.velocity=Vector3.ZERO
+	game.player.reset_physics_interpolation()
+	digs+=1
+	if state=="dig_down":
+		state="under";game.avatar.rotation=Vector3(0,face,PI)
+		dirt(game,p,-1.0)
+	else:
+		state="top";game.avatar.rotation=Vector3(0,face,0);game.last_safe=p;light(game,false)
+		dirt(game,p,1.0)
+		# Bursting up under the enemies.
+		if dig_damage>0:
+			game.damage_area(p,dig_radius,dig_damage,"burrow")
+			for enemy in game.enemies:
+				if not enemy.dead and not enemy.boss and enemy.node.position.distance_to(p)<dig_radius: enemy.node.move_and_collide(((enemy.node.position-p)*Vector3(1,0,1)).normalized()*2.0)
+			CombatInk.wave(game,p,dig_radius,Color("c79a5a"));game.hit_shake=maxf(game.hit_shake,.55)
+	game.sound.effect("land",p)
+
+# A spray of dirt and pebbles where the hero breaks the surface; side is +1 on
+# top, -1 under the island (the spray flies away from the rock).
+func dirt(game: Node3D,at: Vector3,side: float):
+	for i in range(3): game.burst(at+Vector3.UP*side*.4,Color("7a5a3a") if i<2 else Color("c79a5a"),10)
+
 # Sets the avatar's turn from where its front and its head point (model front is -Z).
 func pose(game: Node3D,forward: Vector3,up: Vector3):
 	var size=game.avatar.scale
@@ -132,12 +194,12 @@ func pose(game: Node3D,forward: Vector3,up: Vector3):
 func camera_up() -> Vector3:
 	match state:
 		"under": return Vector3.DOWN
-		"down": return Vector3.UP.rotated(axis,ease_angle())
-		"up": return Vector3.DOWN.rotated(axis,ease_angle())
+		"down","dig_down": return Vector3.UP.rotated(axis,ease_angle())
+		"up","dig_up": return Vector3.DOWN.rotated(axis,ease_angle())
 	return Vector3.UP
 
 func ease_angle() -> float:
-	var t=clampf(clock/FLIP,0,1)
+	var t=clampf(clock/span(),0,1)
 	return t*t*(3-2*t)*PI
 
 # A soft light from below while the hero is under the island, so the belly reads.

@@ -15,6 +15,7 @@ class_name HeroTricks
 #   coins   tax the enemies around you: damage, and they drop coins
 #   bubble  refill your shield and trap nearby enemies in bubbles
 #   blink   vanish in smoke and reappear ahead
+#   dig     dig straight through the island to its other side, and back (Mole)
 # Damage goes through damage_area/hurt_enemy, so co-op guests' tricks reach the
 # host like any hit; stuns and blinds travel as the "stun"/"blind" causes.
 
@@ -44,6 +45,7 @@ const TRICKS={
 	"smoker":{"name":"Smog Bomb","kind":"nova","cooldown":12.0,"radius":8.0,"damage":20.0,"cause":"poison","color":"8fd65a","word":"COUGH!"},
 	"alcoholic":{"name":"Hiccup Blast","kind":"quake","cooldown":10.0,"radius":6.0,"damage":45.0,"word":"HIC!"},
 	"white-supra":{"name":"Nitro","kind":"frenzy","cooldown":16.0,"rate":1.0,"speed":1.8,"time":4.0,"word":"NITRO!"},
+	"mole":{"name":"Dig Through","kind":"dig","cooldown":9.0,"radius":6.0,"damage":50.0,"word":"DIG!"},
 }
 
 static func trick(g) -> Dictionary: return TRICKS.get(str(g.hero.id),{})
@@ -54,8 +56,20 @@ static func power(g) -> float: return float(g.realm_difficulty)*maxf(1.0,float(g
 static func use(g) -> bool:
 	var t=trick(g)
 	if t.is_empty() or g.trick_cooldown>0 or g.mode!="playing" or g.hp<=0 or g.update.downed: return false
-	g.trick_cooldown=float(t.cooldown)
 	var p: Vector3=g.player.position
+	# Digging through the island (Mole): only from solid footing on top or underneath.
+	if str(t.kind)=="dig":
+		if g.underside.state in ["down","up","dig_down","dig_up"]: return false
+		if g.underside.can_dig(g):
+			g.trick_cooldown=float(t.cooldown);word(g,str(t.word))
+			g.underside.dig(g,t.damage*power(g),float(t.radius))
+			return true
+		# The Red Moon has no underside: burrow down and burst up where you stand.
+		g.trick_cooldown=float(t.cooldown);word(g,str(t.word))
+		g.damage_area(p,t.radius,t.damage*power(g),"burrow");g.burst(p+Vector3.UP*.4,Color("7a5a3a"),18)
+		CombatInk.wave(g,p,t.radius,Color("c79a5a"));g.hit_shake=maxf(g.hit_shake,.4);g.sound.effect("slam",p)
+		return true
+	g.trick_cooldown=float(t.cooldown)
 	word(g,str(t.word))
 	match str(t.kind):
 		"shout":

@@ -92,7 +92,9 @@ for(const [id,name,title,weapon,perk,description,effects] of [
  ['ninja','Ninja','A small shadow with a very large grudge.','ninja-shuriken','Afterimage','Fast feet, high jumps and 12% dodge, with 15% less health.',['dodge',.12,'add']],
  ['smoker','Smoker','An ash-grey coat and an ill-tempered chimney.','smoke-censer','Secondhand Hex','Poison hits deal 10 extra damage per second.',['poison',10,'add']],
  ['alcoholic','Alcoholic','Last call. First into trouble.','bottle-barrage','Last Orders','Bottle explosions and 30% more health.',['maxHp',.3,'multiply']],
- ['white-supra','White Supra','The white coupe has entered the dungeon.','supra-backfire','Turbocharged','Very fast, wide, low-jumping; dashes blast for 24 damage.',['dashBlast',24,'add']]
+ ['white-supra','White Supra','The white coupe has entered the dungeon.','supra-backfire','Turbocharged','Very fast, wide, low-jumping; dashes blast for 24 damage.',['dashBlast',24,'add']],
+ // The Mole (user request, November 1): his trick digs straight through the island.
+ ['mole','Digby Mole','Digs first. Asks questions later.','bomb','Tunnel Vision','Dashing burrows you underground; you burst out for 30 damage.',['burrow',30,'add']]
 ]) heroes.push({id,name,title,model:id,weapon,perk,description,effects:[{key:effects[0],amount:effects[1],mode:effects[2]}]});
 // Screen-filling spells (native/scripts/skill_book.gd): each cast is a large area
 // that grows with rank and Size, and multiplies with extra shots. Added after the
@@ -108,7 +110,8 @@ const physiques={
  wrench:[1.7,.43,.96,.95],duck:[1.5,.38,1.02,1.1],broccoli:[2.05,.57,.82,.8],grandma:[1.85,.48,.86,.85],goblin:[1.2,.31,1.17,1.25],loaf:[1.5,.46,1.05,1.05],
  florist:[1.7,.4,1,1.05],teapot:[1.65,.49,.92,.9],octopus:[1.85,.53,.94,1.15],astronaut:[1.8,.42,.96,1.35],cactus:[1.95,.48,.9,.9],book:[1.35,.36,1.07,1.2],
  snail:[1.25,.47,.85,.7],bee:[1.2,.3,1.2,1.35],sushi:[1.4,.38,1.12,1.15],mushroom:[1.6,.47,.98,1.1],clock:[1.75,.44,.95,1],icecream:[1.9,.39,1.03,1.2],
- bathtub:[1.35,.58,.84,.7],peacock:[2,.48,1.08,1.15],toaster:[1.35,.45,.96,.9],ninja:[1.4,.32,1.24,1.45],smoker:[2.1,.43,.92,.9],alcoholic:[1.75,.53,.88,.8],'white-supra':[1.05,.7,1.42,.55]
+ bathtub:[1.35,.58,.84,.7],peacock:[2,.48,1.08,1.15],toaster:[1.35,.45,.96,.9],ninja:[1.4,.32,1.24,1.45],smoker:[2.1,.43,.92,.9],alcoholic:[1.75,.53,.88,.8],'white-supra':[1.05,.7,1.42,.55],
+ mole:[1.35,.45,1,.85]
 };
 for(const h of heroes){const [height,radius,speed,jump]=physiques[h.id];Object.assign(h,{height,radius});if(h.id==='ninja')h.effects.push({key:'maxHp',amount:-.15,mode:'multiply'});if(h.id==='snail')h.effects.push({key:'armor',amount:3,mode:'add'});h.effects.push({key:'speed',amount:speed-1,mode:'multiply'},{key:'jumpHeight',amount:jump-1,mode:'multiply'});h.description+=` Height ${height.toFixed(2)} m · Move ${Math.round(speed*100)}% · Jump ${Math.round(jump*100)}%.`;}
 

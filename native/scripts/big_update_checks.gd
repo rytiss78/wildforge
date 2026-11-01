@@ -274,9 +274,14 @@ static func run(game: Node3D):
 		game.hp=game.stats.maxHp*.5;game.shield_hp=0.0;game.trick_cooldown=0.0;game.trick_boosts.clear();game.direction=Vector3.RIGHT
 		var start_at=game.player.position;var hp_at=game.hp
 		var used=HeroTricks.use(game)
-		for i in range(60): HeroTricks.tick(game,1.0/60.0);game.player.velocity.y-=0.4;game.player.move_and_slide()
+		for i in range(60):
+			HeroTricks.tick(game,1.0/60.0)
+			# Digby Mole tunnels through the island (Underside), not along the ground.
+			if game.underside.digging(): game.underside.tick(game,1.0/60.0);continue
+			game.player.velocity.y-=0.4;game.player.move_and_slide()
 		var effect=target.hp<1e6 or float(target.freeze)>0 or float(target.blind)>0 or float(target.get("bubble",0))>0 or game.hp>hp_at or game.shield_hp>0 or game.stat("rate")>game.stats.rate*1.01 or game.stat("speed")>game.stats.speed*1.01 or game.player.position.distance_to(start_at)>3.0
 		if not (used and effect and game.trick_cooldown>0): tricked.append(hero_def.id)
+		if game.underside.active(): game.underside.reset(game)
 	checks.hero_tricks=tricked.is_empty() and game.rules.data.heroes.all(func(h):return HeroTricks.TRICKS.has(h.id))
 	if not tricked.is_empty(): print("HERO_TRICKS_FAILED "+JSON.stringify(tricked))
 	game.hero=trick_hero;game.hp=trick_hp;game.clear_entities();game.trick_boosts.clear();game.trick_roll={};game.trick_leap={};game.trick_cooldown=0.0

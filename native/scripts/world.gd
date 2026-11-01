@@ -228,7 +228,7 @@ func model(name: String,height: float) -> Node3D:
 	if name.begins_with("creature_"):
 		var creature=CartoonCreatureRig.new();creature.setup(name);creature.scale=Vector3.ONE*(height/maxf(.1,creature.model_height));return creature
 	var asset=name if name.begins_with("creature_") else "count_duck" if name=="rubber_duck_toy" else "hero_"+name
-	if ResourceLoader.exists("res://assets/style3d/"+asset+".glb"):
+	if ResourceLoader.exists("res://assets/style3d/"+asset+".glb") or CartoonHeroes.has(asset):
 		var rig=ActorRig.new();rig.setup(name);var reference_height=1.65
 		if name.begins_with("creature_") and ResourceLoader.exists("res://assets/style3d/baked/"+name+".res"):
 			reference_height=load("res://assets/style3d/baked/"+name+".res").get_aabb().size.y

@@ -36,4 +36,4 @@ Host a party as above. Friends pick it from the nearby-party list (discovery use
 - Choices (level-ups, chests) pause the party together. Each player picks their own upgrades.
 - If the host leaves, the run ends for everyone.
 - Achievements and scores save on each player's own PC.
-- All players must run the same build. The network protocol is `wildforge-shared-world-17`.
+- All players must run the same build. The network protocol is `wildforge-shared-world-18`.

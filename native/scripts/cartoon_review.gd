@@ -98,7 +98,7 @@ static func run(g):
 	var heroes=Image.create(CELL.x*2,CELL.y*3,false,Image.FORMAT_RGBA8)
 	var list=g.rules.data.heroes
 	checks.heroes=true
-	for cell in range(5):
+	for cell in range(ceili(list.size()/5.0)):
 		var rigs=[]
 		for k in range(5):
 			var index=cell*5+k

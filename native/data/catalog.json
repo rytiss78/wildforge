@@ -780,6 +780,34 @@
       ],
       "height": 1.05,
       "radius": 0.7
+    },
+    {
+      "id": "mole",
+      "name": "Digby Mole",
+      "title": "Digs first. Asks questions later.",
+      "model": "mole",
+      "weapon": "bomb",
+      "perk": "Tunnel Vision",
+      "description": "Dashing burrows you underground; you burst out for 30 damage. Height 1.35 m · Move 100% · Jump 85%.",
+      "effects": [
+        {
+          "key": "burrow",
+          "amount": 30,
+          "mode": "add"
+        },
+        {
+          "key": "speed",
+          "amount": 0,
+          "mode": "multiply"
+        },
+        {
+          "key": "jumpHeight",
+          "amount": -0.15000000000000002,
+          "mode": "multiply"
+        }
+      ],
+      "height": 1.35,
+      "radius": 0.45
     }
   ],
   "weapons": [

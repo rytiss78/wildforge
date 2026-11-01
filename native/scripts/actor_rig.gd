@@ -36,7 +36,7 @@ var thumb_glove: Node3D
 func setup_solid(model_name: String) -> bool:
 	var asset=model_name if model_name.begins_with("creature_") or model_name.begins_with("boss_") else "count_duck" if model_name=="rubber_duck_toy" else "hero_"+model_name
 	if model_name=="boss_8": asset="boss_8_baron"
-	if not ResourceLoader.exists("res://assets/style3d/"+asset+".glb"): return false
+	if not ResourceLoader.exists("res://assets/style3d/"+asset+".glb") and not CartoonHeroes.has(asset): return false
 	solid=StyleModel.new();solid.setup(asset);add_child(solid)
 	head.free();body.free()
 	body=solid.body;head=solid.head if solid.head!=null else body

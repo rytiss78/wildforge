@@ -21,9 +21,9 @@ A cartoon survival roguelite where a duck, a loaf of bread and an angry granny a
 
 ## Your hero. Your chaos.
 
-Choose from 25 ridiculous heroes, each with a trick of their own on **V**. Count Duck steals life. Sir Loaf dashes with a bang. Florist turns footsteps into a dangerous blooming garden. Admiral Bubbles brings a bathtub to the battlefield.
+Choose from 26 ridiculous heroes, each with a trick of their own on **V**. Digby Mole digs straight through the island and pops up under the enemies. Count Duck steals life. Sir Loaf dashes with a bang. Florist turns footsteps into a dangerous blooming garden. Admiral Bubbles brings a bathtub to the battlefield.
 
-![The 25 heroes](docs/screenshots/build27/cast.jpg)
+![The heroes](docs/screenshots/build27/cast.jpg)
 
 Carry three weapons at once from a pool of 73: guns, blades, flowers, turrets and four screen-filling spells. When two hands aren't enough, grow a third arm. Rank a weapon up with its catalyst and it **evolves** into a gilded new form. Mutations of fire, poison, frost, storm and stranger things combine with your spells into named synergies like Firestorm and Supercell.
 

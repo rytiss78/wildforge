@@ -66,6 +66,36 @@ static func run(g):
 	for i in range(30): await g.get_tree().process_frame
 	checks.returned=g.underside.state=="top"
 	checks.return_shot=await shot(g,"return")
+	# Digby Mole (November 1): a close-up, then his trick (V) for real, down
+	# through the island and back up under a few enemies.
+	g.select_hero(g.rules.data.heroes.filter(func(h):return h.id=="mole")[0])
+	var dig_at=Vector3(coast-24,0,8);dig_at.y=g.world.height_at(dig_at.x,dig_at.z)+.3
+	g.world.ensure_ground(dig_at);g.player.position=dig_at;g.player.velocity=Vector3.ZERO;g.player.reset_physics_interpolation()
+	g.camera_locked=true
+	var front=g.avatar.global_basis.z.normalized()
+	g.camera.position=dig_at+Vector3.UP*1.3+front*3.2+g.avatar.global_basis.x.normalized()*1.2;g.camera.look_at(dig_at+Vector3.UP*.8)
+	for i in range(30): await g.get_tree().process_frame
+	checks.mole_shot=await shot(g,"mole")
+	g.camera_locked=false
+	for i in range(20): await g.get_tree().physics_frame
+	g.trick_cooldown=0.0;checks.mole_trick=HeroTricks.use(g)
+	for i in range(24): await g.get_tree().process_frame
+	checks.mole_mid=await shot(g,"mole-dig")
+	for i in range(90):
+		await g.get_tree().physics_frame
+		if g.underside.state=="under": break
+	for i in range(30): await g.get_tree().process_frame
+	checks.mole_under=g.underside.state=="under" and g.avatar.visible
+	checks.mole_under_shot=await shot(g,"mole-under")
+	for i in range(3):
+		g.spawn_enemy(6);var e=g.enemies[-1];var at=Vector3(g.player.position.x+(i-1)*2.0,0,g.player.position.z+2.5);at.y=g.world.height_at(at.x,at.z)+.2;e.node.position=at
+	g.trick_cooldown=0.0;checks.mole_trick_up=HeroTricks.use(g)
+	for i in range(90):
+		await g.get_tree().physics_frame
+		if g.underside.state=="top": break
+	for i in range(4): await g.get_tree().process_frame
+	checks.mole_up=g.underside.state=="top"
+	checks.mole_up_shot=await shot(g,"mole-up")
 	# The island from outside: rim and belly.
 	g.camera_locked=true;g.hud.visible=false
 	g.camera.position=Vector3(coast+40,-6,30);g.camera.look_at(Vector3(coast-30,-14,0))

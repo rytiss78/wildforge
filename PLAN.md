@@ -8,12 +8,16 @@ Rules: [AGENTS.md](AGENTS.md) and the [Godot workflow](native/docs/godot-workflo
 
 - **Run:** three floating islands of seven biomes each (Junkyard Planet is the seventh). Each island has a 10-minute clock, two wardens and a portal; then the Red Moon arena with the final boss, **The Grand Noggin** (a giant floating head; its glass eyes are its health), then an endless Eclipse.
 - **Islands float:** no sea. Walking over the rim flips the hero to walk upside down under the island, out of the fight; enemies, drops and chests stay on top. The Red Moon arena keeps its deadly void.
-- **Content:** 25 heroes, each with a unique trick (V / left trigger); 73 weapons including four spells; weapon evolutions and spell–mutation synergies; a fight mechanic per biome; 60 original cartoon creatures built around glass health orbs; elites, hunts, beacons, exploding barrels, a merchant; 93 achievements with hats and cosmetics.
+- **Content:** 26 heroes, each with a unique trick (V / left trigger); 73 weapons including four spells; weapon evolutions and spell–mutation synergies; a fight mechanic per biome; 60 original cartoon creatures built around glass health orbs; elites, hunts, beacons, exploding barrels, a merchant; 93 achievements with hats and cosmetics.
 - **Pets:** wisps over the shoulder, chosen with the hero: Glint (fetches), Sting (bites), Halo (heals). Treats drop only from the final boss and are kept between runs (stage 2 after one win, stage 3 after three).
-- **Co-op:** up to four players over LAN or the internet (UPnP invite codes, or a tunnel). Drop-in, reconnect with replayed rewards, rescue codes, party combos. Exact build match required; protocol `wildforge-shared-world-17`.
+- **Co-op:** up to four players over LAN or the internet (UPnP invite codes, or a tunnel). Drop-in, reconnect with replayed rewards, rescue codes, party combos. Exact build match required; protocol `wildforge-shared-world-18`.
 - **Presentation:** 60 fps cap, show-don't-tell HUD (symbols, details in tooltips), own title intro instead of the engine splash, calmer audio with an enemy sound budget, own window and exe icon.
 - **Waiting:** Block Drop in the pause menu and co-op waiting overlay, with TikTok or YouTube Shorts beside it.
 - **Tooling:** `node scripts/agent-workflow.mjs` (check, smoke, integration, about 50 rendered and two-process reviews, `bot-playtest`, `build`, `test-build`); `scripts/package-release.ps1` packs a release.
+
+## Since Build 27
+
+- [x] **Digby Mole, the 26th hero** (user request, November 1). A velvet-grey miner (hard hat with a lamp, pink star nose, round glasses, buck teeth, big pink paws, orb belly) with the Rolling Bomb and the Tunnel Vision perk (dashing burrows, bursting out for 30). His trick **Dig Through** (V, 9 s) tunnels straight through the island in 0.9 s to the same spot on the other side: the camera rolls over about its view line so forward stays forward; popping out on top blasts and knocks back the enemies there. On the Red Moon (no underside) it is a burrow-and-burst in place. `Underside.dig`/`can_dig`/`finish_dig`; co-op protocol 18. Checks: smoke `mole_dig_down`, `mole_dig_up`, `mole_hero`, `hero_roster` (26); integration `hero_tricks`; `underside-review` captures `mole`, `mole-dig`, `mole-under`, `mole-up`; `cartoon-review` hero sheet now six cells. Not yet: hero voice lines, a front close-up in a review, a live feel test of the roll.
 
 ## Next
 

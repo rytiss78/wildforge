@@ -2513,7 +2513,7 @@ func _physics_process(delta: float):
 	update_hero_vitals()
 	avatar.animate(delta,player.velocity,player.is_on_floor() or underside.active(),slamming)
 	avatar.statuses(player_fire>0,player_poison>0,player_chill>0,player_blind>0)
-	avatar.visible=burrow_time<=0
+	avatar.visible=burrow_time<=0 and not underside.digging()
 	if burrow_time==0 and events.get("burrowing",false): damage_area(player.position,5.5,stats.burrow,"burrow");events.burrowing=false
 	if burrow_time>0: events.burrowing=true
 	walking_gold+=previous.distance_to(player.position)*stats.walkGold
@@ -2636,7 +2636,7 @@ func _process(delta: float):
 		ray.collision_mask=1
 		ray.exclude=[player.get_rid()]
 		var obstacle=get_world_3d().direct_space_state.intersect_ray(ray)
-		if not obstacle.is_empty(): desired=obstacle.position+(anchor-obstacle.position).normalized()*.4
+		if not obstacle.is_empty() and not underside.digging(): desired=obstacle.position+(anchor-obstacle.position).normalized()*.4
 		camera.position=camera.position.lerp(desired,1-exp(-delta*9))
 		hit_shake=maxf(0,hit_shake-delta)
 		# Screen flash overlay
@@ -2792,7 +2792,7 @@ func run_smoke():
 	var checks = {"native":true,"initial_enemies":enemies.size(),"weapon_slots":equipped.size(),"chests":chests.size(),"first_price":rules.chest_price(0),"rarities":rules.data.loot.size(),"achievements":career.achievements.size(),"xp_target":xp_target,"realm":realm,"paid_count":paid_chests}
 	checks.main_menu=rebuilt_menu
 	checks.xbox_navigation=navigated;checks.xbox_accept=accepted;checks.pointer_focus_safe=pointer_safe
-	checks.hero_roster=rules.data.heroes.size()==25 and rules.data.heroes.all(func(h):return ResourceLoader.exists("res://assets/style3d/"+("count_duck" if h.model=="rubber_duck_toy" else "hero_"+h.model)+".glb"))
+	checks.hero_roster=rules.data.heroes.size()==26 and rules.data.heroes.all(func(h):return CartoonHeroes.has("count_duck" if h.model=="rubber_duck_toy" else "hero_"+h.model))
 	# Every biome's ten cartoon species build as one merged mesh (CartoonBook).
 	checks.enemy_roster=range(RealmWorld.BIOME_COUNT).all(func(b):return range(CreatureBook.WEIGHTS.size()).all(func(s):return CartoonBook.get_model(b,s).mesh.get_surface_count()==1))
 	checks.painted_terrain=range(6).all(func(i):return ResourceLoader.exists("res://assets/illustrated/terrain-%d.png" % i))
@@ -3057,6 +3057,20 @@ func run_smoke():
 		player.velocity=Vector3(6,0,0).rotated(Vector3.UP,0.0)
 		if underside.tick(self,1.0/60.0) and underside.state=="top": break
 	checks.underside_return=underside.state=="top" and not underside.flipped() and absf(player.position.y-world.height_at(player.position.x,player.position.z))<1.0 and underside.flips==2
+	# Digby Mole's trick digs straight through the island and back; popping out on
+	# top hurts the enemies standing there.
+	underside.clear(self);var dig_at=Vector3(12,0,6);dig_at.y=world.height_at(dig_at.x,dig_at.z)+.1
+	world.ensure_ground(dig_at);player.position=dig_at;player.velocity=Vector3.ZERO
+	underside.dig(self,40.0,6.0)
+	for i in range(90):
+		if underside.tick(self,1.0/60.0) and underside.state=="under": break
+	checks.mole_dig_down=underside.state=="under" and underside.flipped() and Vector2(player.position.x-dig_at.x,player.position.z-dig_at.z).length()<.01 and player.position.y<world.height_at(dig_at.x,dig_at.z)-8
+	spawn_enemy(0);var dug_enemy=enemies[-1];dug_enemy.node.position=dig_at+Vector3(1.5,0,0);var dug_hp=float(dug_enemy.hp)
+	underside.dig(self,40.0,6.0)
+	for i in range(90):
+		if underside.tick(self,1.0/60.0) and underside.state=="top": break
+	checks.mole_dig_up=underside.state=="top" and not underside.flipped() and absf(player.position.y-world.height_at(dig_at.x,dig_at.z))<1.0 and underside.digs==2 and (dug_enemy.dead or float(dug_enemy.hp)<dug_hp)
+	checks.mole_hero=HeroTricks.TRICKS.has("mole") and rules.data.heroes.any(func(h):return h.id=="mole" and CartoonHeroes.has("hero_"+h.model))
 	underside.clear(self);player.position=Vector3(0,1.2,0);player.velocity=Vector3.ZERO
 	clear_entities()
 	hud.modal.visible=false
