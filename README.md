@@ -4,18 +4,25 @@
 
 A cartoon survival roguelite where a duck, a loaf of bread and an angry granny are perfectly reasonable heroes. Drop onto floating islands full of weird creatures, grab unpredictable upgrades and become outrageously overpowered before the monsters catch you. Solo or with up to three friends.
 
-**[Download Build 27 for Windows](https://github.com/rytiss78/wildforge/releases/tag/build-27)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
+**[Download Build 28 for Windows](https://github.com/rytiss78/wildforge/releases/tag/build-28)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
 
 ![A cartoon fight on the first island](docs/screenshots/build27/fight.jpg)
 
-## New in Build 27
+## New in Build 28
 
-- **The islands float.** No more deadly sea. Walk over the edge and your hero swings under the island and walks upside down beneath it, out of the fight, while the monsters crowd the rim above.
-- **Pets are wisps.** A small glowing companion floats over your shoulder: **Glint** fetches coins, **Sting** stings enemies, **Halo** heals you. Pet Treats drop only from the final boss, and your pet keeps them between runs, so it grows with every win.
-- **Glass health orbs.** Every creature and hero carries its health in a glass orb; the empty part is clear glass, so you can read a fight at a glance.
-- **Cleaner and calmer:** a 60 fps cap, a tidier main menu and settings, symbols instead of walls of text, and enemies that no longer drown out the music.
+- **Digby Mole**, the 26th hero: his V digs straight through the island to its other side and back, and bursts up under the monsters.
+- **Two new turrets:** the Mender heals you in its ring, the Thumper knocks enemies away in pulses.
+- **Under the island** you can now jump, slam and place turrets.
+- **Junkyard crushers** squash monsters, then turn into lifts you can ride. **Lava** sets heroes and monsters on fire and burns up dropped gold and XP.
+- Pets picked by look, a random hero on the hero screen, fewer but bigger Florist flowers, faster monsters, and clean ground markers without edge lines.
 
-[Full Build 27 notes](native/docs/build27-release.md)
+[Full Build 28 notes](native/docs/build28-release.md)
+
+## Build 27
+
+- **The islands float.** Walk over the edge and your hero walks upside down beneath it, out of the fight.
+- **Pets are wisps** that float over your shoulder and grow with every final-boss win.
+- **Glass health orbs**, a 60 fps cap, cleaner menus and calmer audio. [Notes](https://github.com/rytiss78/wildforge/releases/tag/build-27)
 
 ![The island from the side, and walking upside down underneath it](docs/screenshots/build27/island.jpg)
 
@@ -83,10 +90,10 @@ For Windows packaging, place the console editor at `tools/godot/Godot_v4.7.2-sta
 ```powershell
 node scripts/agent-workflow.mjs build
 node scripts/agent-workflow.mjs test-build
-./scripts/package-release.ps1 -BuildNumber 27 -BuildDirectory <staged build directory>
+./scripts/package-release.ps1 -BuildNumber 28 -BuildDirectory <staged build directory>
 ```
 
-Published downloads use sequential build numbers. The current release is `Wildforge 1.10.0 — Build 27`, tag `build-27`, archive `Wildforge-1.10.0-Windows.zip` (with `godot_wry.dll` and its license, needed beside the executable for the video panel). Each package includes `build-info.json` with the source commit and artifact hashes, and a SHA-256 checksum file.
+Published downloads use sequential build numbers. The current release is `Wildforge 1.11.0 — Build 28`, tag `build-28`, archive `Wildforge-1.11.0-Windows.zip` (with `godot_wry.dll` and its license, needed beside the executable for the video panel). Each package includes `build-info.json` with the source commit and artifact hashes, and a SHA-256 checksum file.
 
 **Controls:** WASD / left stick moves; mouse / right stick looks; Space / A jumps; Shift / RT dashes; V / LT hero trick; Ctrl / B slams; E / X interacts; B / Y opens your build; Escape / Menu pauses. Weapons attack automatically. Walk over an island's edge to go underneath.
 
