@@ -1,0 +1,528 @@
+# Wildforge — plan
+
+October 31, 2026 · main branch · **Build 27 (1.10.0) is the latest public release** ([build-27](https://github.com/rytiss78/wildforge/releases/tag/build-27), notes [build27-release.md](../build27-release.md)). Older release notes are in `native/docs/archive/`.
+
+Rules: [AGENTS.md](../../../AGENTS.md) and the [Godot workflow](../godot-workflow.md). A checked item means the real entry point was exercised and the evidence is recorded. The full history up to this rewrite, with every evidence path, is in [plan-history-through-build19.md](plan-history-through-build19.md).
+
+Evidence folders are under `.build-staging/agent-workflow/`. Run folders older than October 23 were moved to `G:\wildforge-archive\2026-10-23\agent-workflow\`. The latest run of each action and the Build 19 build folder were kept.
+
+## The game today
+
+- **Run:** three islands of seven biomes each (island 2 is "Blighted Highlands", island 3 "Ashen Reach"). Each island has a 10-minute clock, two wardens and a portal. Then the Red Moon arena with the Baron, then an endless Eclipse.
+- **Content:** 25 heroes, 73 weapons (including four screen-filling spells), 746 upgrade cards, 102 mutations, elite modifiers (shielded, splitting, blinking, berserk), hunts, supply beacons, magnet events, a merchant, rerolls and banishes, and 117 achievements with earned cosmetics.
+- **Co-op:** up to four players over LAN, or over the internet with UPnP invite codes. Drop-in join, reconnect (missed rewards are replayed), shared XP with each player's own reward cards, and party combos (Crossfire, Overload). The world travels in packets under the MTU. Protocol `wildforge-shared-world-16` (Build 24: ten enemy species per biome and the cartoon cast; 15 was Build 23).
+- **Difficulty:** tuned with the playtest bot (island step 0.45, Baron health x7.5). The last 24 runs had 71% clear island 1, 42% reach the Baron and 25% beat him, against a target of about 70 / 25 / 10. Bot runs vary by about 20 points (see "Difficulty retune").
+- **Waiting:** Block Drop in the pause menu and the co-op waiting overlay, with real TikTok or YouTube Shorts beside it (godot_wry web view).
+- **Tooling:** `node scripts/agent-workflow.mjs` covers check, smoke, integration, about 30 rendered and two-process reviews, `bot-playtest` and `build`.
+
+## Since Build 19 (released as Build 20)
+
+Commits `4cbe4a3` → `d95dd56`. Details and evidence for each are in the plan history.
+
+- [x] Four screen-filling spells: Twister Totem, Void Orb, Storm Crown, Inferno Halo (`4cbe4a3`).
+- [x] **Phase A:**
+  - crowd performance (125 enemies: p95 frame 130 → 18.5 ms);
+  - the banish bug fixed;
+  - the flaky combat check fixed;
+  - Shake, Flashes and Particles settings (`886ae86`).
+- [x] **Phase B:**
+  - internet co-op with UPnP invite codes;
+  - drop-in join and ping on nameplates;
+  - Crossfire and Overload combos (`f591afb`).
+- [x] **Phase C:**
+  - the playtest bot;
+  - dashing passes through enemies;
+  - wave pacing and Eclipse ramp;
+  - elite modifiers;
+  - islands 2 and 3 look distinct and harder (`0eaa43c`).
+- [x] **October 23 polish** (`d95dd56`):
+  - **Hunt:**
+    - a horned-skull totem with braziers and a violet beacon;
+    - its own drum loop, which speeds up in the last 20 s;
+    - HUNT BEGINS / COMPLETE / FAILED cards with their own sounds.
+  - **Boss and hunt chests:** a gold sky beam, rare-or-better cards and a guaranteed mutation.
+  - **Island arrival:** a teleport sound, flash, beam and ring.
+  - **Damage numbers:** non-gun numbers use the full screen width, fade out, and crits shake.
+  - **Minimap:** the leftover landmark flags are removed.
+  - **Evidence:** `hunt-review`, `island-review`, `capture-ui` and the full two-process `coop` route (`2026-10-23T10-20-21-186Z-coop`) pass.
+- [x] Hero stat drawbacks show their real sign ("Move faster −18.0%", was "+-18.0%") (`1789d63`).
+- [x] **Build 20 (1.3.0).** Built locally after the user skipped the planned friend test of internet hosting (October 23).
+  - Version bumped in `package.json` (version and buildNumber), `native/project.godot` and `native/export_presets.cfg` (`790fde9`, `5eee44d`).
+  - Build `.build-staging/agent-workflow/2026-10-23T11-13-11-943Z-build/Wildforge.exe` from source `1789d63`. The exported smoke passes and reports 1.3.0 / Build 20.
+  - Exported reviews against that exe pass with 0 script errors:
+    - shared-review `2026-10-23T11-13-32-006Z`;
+    - shared-review-stress `11-13-46-887Z`;
+    - coop-dropin (invite-code join) `11-14-09-588Z`;
+    - hermes-review `11-14-18-464Z`;
+    - release-review `11-14-31-069Z`. Its 720p and 1080p menu, HUD and co-op renders were inspected.
+  - Packaged as `dist/Wildforge-1.3.0-Windows.zip` (81,875,888 bytes, SHA-256 `01f88715…ff5744566`).
+  - Notes: [build20-release.md](build20-release.md).
+  - A first build attempt (`11-07-40-071Z-build`) was rejected by the build guard because `package.json` buildNumber was still 19. That build is invalid.
+- [x] **Published** GitHub release [`build-20`](https://github.com/rytiss78/wildforge/releases/tag/build-20) at the user's request: "Wildforge 1.3.0 — Build 20", marked Latest.
+  - The annotated tag resolves to source commit `1789d63d38c972fc81aeb943ea1906ddb24a7f20`.
+  - Assets: `Wildforge-1.3.0-Windows.zip` (81,875,888 bytes) and `SHA256SUMS-1.3.0.txt`.
+  - The re-downloaded ZIP matches SHA-256 `01f88715…ff5744566`, and its `build-info.json` reports 1.3.0 / Build 20 from `1789d63`.
+  - README, README.txt and HERMES.md now point at Build 20.
+
+## Next: Phase D — run depth
+
+- [x] **Weapon evolutions** (`weapon_evolution.gd`, October 23).
+  - **Rule:** a weapon at rank 5 that has its catalyst card can evolve once. For example, Gun needs a Critical hit card and Rail needs Piercing.
+  - **Offers:** the next chest, or weapon level-up, offers a gold "WEAPON EVOLUTION" card. Choosing it renames the weapon and multiplies its power (×1.4–2.0; spells ×2.25, which is 1.5× damage). It also adds the form's own modifiers: more shots, pierce, bounces, area or stun.
+  - **Coverage:** every one of the 73 weapons has a form. The 25 base kinds have their own names (Hand Cannon, Star Lance, Event Horizon, Sun Halo…). Themed variants keep their name with the form's adjective, for example "Gilded Popcorn Repeater".
+  - **Evolution key:** a full-rank weapon still missing its catalyst gets that card offered in chests and skill level-ups, marked "EVOLUTION KEY". Without this, an 8-run bot batch had 0 evolutions; with it, 4 evolutions in the 3 strongest runs, at minutes 15–26.
+  - **Look:**
+    - shots get a wider, gold-tinted trail, gold glints and a gold ring on impact;
+    - melee, horn, wells, meteors and spells get a gold flare where they land;
+    - the held weapon (and turret) wears a turning gold halo;
+    - the HUD slot gets a gold frame with "EVOLVED", or a thinner one with "EVOLVE READY";
+    - the build menu and slot tooltip show the recipe;
+    - evolving plays a new sound with a WEAPON EVOLVED card, a sky beam, a ring and a star burst.
+  - **Co-op:** each player gets only their own evolution and key cards from a shared chest pool. The evolved flag travels in the pose, so teammates see the halo.
+  - **Verified:**
+    - 23 integration checks (`2026-10-23T11-44-39-573Z-integration`). They cover the real chest purchase and reveal, a press of the EVOLVE card button, the catalyst and key-card path, banish refusal, one evolution per weapon, the evolved shots' pierce and trail, variant names, modifier merging and the co-op pool filter.
+    - Disabling the offer injection makes 10 of them fail.
+    - Rendered `capture-ui` (`2026-10-23T11-55-16-999Z`): `ui-evolution-key`, `ui-evolution-offer` and `ui-evolution-hud` inspected. The `fx-evolved` sheet (`2026-10-23T11-32-31-274Z-fx-review`) shows plain and evolved shots side by side for gun, rail, flame and rocket, plus the halo close-up.
+    - Bot batch: `2026-10-23T11-45-15-376Z-bot-playtest`.
+    - Also passing with 0 errors: check, smoke, shared-review, coop-dropin, combat, hunt, journey and playfeel reviews, and the full `coop` route (`2026-10-23T11-57-50-797Z`).
+  - **Limits:**
+    - Remote co-op shot visuals are not gilded; teammates see the halo only.
+    - The evolved damage was not measured separately with the damage-dummy harness; the bot batch is too small to say whether it changes win rates (3 of 8 reached the Baron, against 1 of 8 before, on the same seeds).
+    - Not playtested by a person.
+- [x] **Spell–mutation synergies** (`spell_synergy.gd`, October 23).
+  - **Found first:** spell damage never fired "on hit" mutations. Spells call `hurt_enemy` directly, so Ember Edge did nothing inside Inferno Halo.
+  - **Spell hits as triggers:** spell hits now count as weapon hits for "on hit" mutations, at most once per spell damage tick (4 per second, like a fast gun). Unthrottled, a spell hitting a crowd pinned those mutations at their cooldown.
+  - **Eight named synergies,** two per spell. Each is active while the hero carries the matching strain (any mutation of it):
+    - **Firestorm** (Inferno Halo + Ember): burns twice as hot and ends in a ring of Ember eruptions.
+    - **Phoenix Ring** (Inferno Halo + Bloom): 0.3 healing per enemy burned, up to 3 per cast.
+    - **Supercell** (Storm Crown + Storm): strikes fork Storm lightning.
+    - **Hailstorm** (Storm Crown + Frost): strikes freeze enemies for 0.8 s.
+    - **Collapsar** (Void Orb + Comet): 50% wider collapse that hurls the crowd.
+    - **Plague Well** (Void Orb + Venom): a poison cloud where it collapses.
+    - **Fire Whirl** (Twister Totem + Ember): twisters set held enemies on fire.
+    - **Toxic Cyclone** (Twister Totem + Venom): poison clouds along the path.
+  - Synergy damage scales like the strain's own effects.
+  - **Where players see them:**
+    - the first activation each run shows a "SPELL SYNERGY · NAME" card;
+    - mutation cards name the synergy they would switch on with the equipped spells, and spell cards name the ones they would switch on with the carried strains;
+    - the build menu has a SPELL SYNERGIES section;
+    - the spell's slot tooltip lists its active synergies.
+  - **Measured** (`2026-10-23T12-23-51-055Z-mutation-balance`, 12-dummy crowd, spells at rank 5). Damage each synergy adds beyond the spell and the strain measured separately:
+    - Firestorm +65% of the spell;
+    - Collapsar +54%;
+    - Plague Well +54%;
+    - Fire Whirl +43%;
+    - Toxic Cyclone +42%;
+    - Supercell +24%;
+    - Hailstorm adds control, not damage;
+    - Phoenix Ring heals 2.5 HP/s.
+  - **Tuning the measurement caught:**
+    - Firestorm first compounded the burn on each recast (+14,000 dps). It now sets a fixed burn.
+    - Plague Well's cloud was 11 times Venom's own cloud (+218%).
+    - Phoenix Ring healed 6 HP/s.
+    - Unthrottled spell hits let one Ember Edge nearly double Void Orb's damage.
+  - **Verified:**
+    - 13 integration checks with real casts against controls without the strain (`2026-10-23T12-25-06-160Z-integration`). The halo alone already ignites, so Firestorm is checked by burn strength. Disabling the synergies and the spell-hit trigger makes 10 of them fail.
+    - The `fx-synergies` sheet (`2026-10-23T12-26-01-124Z-fx-review`) shows one cell per synergy with its card, all inspected.
+    - Check, smoke, capture-ui, shared-review, coop-dropin, combat and playfeel reviews pass with 0 errors.
+    - `crowd-spells` (no mutations) runs at median 34 ms / p95 51 ms, no slower than Phase A.
+  - **Limits:**
+    - Teammates see a teammate's spell but not its synergy effects. Damage stays on the caster, as before.
+    - Supercell's forks and Phoenix Ring's healing are subtle on screen.
+    - Frame cost with a full mutation kit in a 125-enemy crowd was not measured.
+    - Not playtested by a person.
+- [x] **Biome mechanics in fights** (`biome_mechanics.gd`, October 23). One per biome. Each appears near the hero after an island's first 40 s, is telegraphed, and affects enemies too:
+  - **Clover Woods · clover rings:** stand inside to heal and shed burn and poison.
+  - **Puffcap Marsh · spore fog:** a drifting cloud that poisons heroes and enemies inside.
+  - **Moon Craters · ice floors:** heroes slide (momentum kept, slow grip); enemies are slowed and slip.
+  - **Cloudwilds · wind gusts:** a streak-telegraphed gust shoves heroes and enemies.
+  - **Candy Hell · lava vents:** erupt into a pool that spreads from 1 m to 4.5 m and burns everyone. The pool is a bright yellow with a dark crust, apart from the orange rivers.
+  - **Starfall Space · gravity rifts:** pull everything in, then implode on enemies; the centre hurts the hero.
+  - **Presentation:** each zone has a bright edge ring. The first event of each kind in a run explains itself.
+  - **Co-op:** the host rolls events near every member and broadcasts them (`biome_event`). Each player applies the effect to their own hero; only the host moves, statuses and damages enemies.
+  - **Bot:** the playtest bot walks out of spore fog and lava pools.
+  - **Not on the Red Moon.**
+  - **Verified:**
+    - 10 integration checks (`2026-10-23T15-25-44-236Z-integration`): each mechanic through the real tick and the hero's real movement step against a control outside the zone, plus scheduling, other-realm events, clearing and Red Moon exclusion. Switching off the tick and movement hook fails 7 of them.
+    - The rendered `biome-review` (`2026-10-23T13-56-24-726Z`) adds one `biome-mechanic-N` capture per biome. All six were inspected. The first version's clover ring, gust streaks and lava pool did not read, and were made bolder. The lava pool was also sinking into slopes because it was scaled; it is now rebuilt as it spreads.
+    - Also passing with 0 errors: check, smoke, capture-ui, the Red Moon, feature, journey and island reviews, shared-review, coop-dropin, crowd-review and the full `coop` route (`2026-10-23T15-28-03-562Z`).
+- [x] **Phase D difficulty retune** (12-bot batches on the Phase C seeds 801–812):
+  - **With evolutions, synergies and biome mechanics** (`2026-10-23T13-57-53-807Z`): 67% clear island 1, 42% reach the Baron, 25% beat him. The Phase C baseline was 58 / 17 / 8.
+  - **Biome mechanics off** (`14-13-05-735Z`): 83 / 33 / 25. The mechanics make island 1 harder; the easier late game comes from evolutions.
+  - **Changes:**
+    - Evolution power bonuses are cut by 30% (Gun +50% → +35%, spells ×2.25 → ×1.96).
+    - The Baron's health multiplier goes from 4 to 6 (360,000 → 540,000 solo). Evolved builds had killed him in 2–12 minutes, against 17 before.
+    - A tougher island step (+0.36) was tried and reverted: 75 / 8 / 0 (`14-33-38-680Z`).
+  - **Final** (`2026-10-23T15-03-41-146Z`): 75 / 42 / 25, with Baron fights of 6–8 minutes.
+  - **Open:**
+    - The late game is still easier than the target (about 70 / 25 / 10).
+    - Batch-to-batch noise is large: reaching the Baron moved 42 → 8 → 33 → 42% across similar settings.
+    - The next retune should use larger batches (24+ runs) before changing numbers again.
+  - The reviews that hard-coded 360,000 now use the arena's formula.
+
+## Then: Phase E — look and feel (Hades direction)
+
+- [x] **Art bible and per-biome pass** (October 23).
+  - **Art bible:** [art-direction.md](../art-direction.md) is rewritten as version 1.0. It covers the pillars, a value hierarchy, a per-biome table (ground, key, fill, fog, ink, accents), the colour language, ink rules, model rules, the readability checks and how to verify a look change. The old 0.1 storybook baseline predated the Hades direction.
+  - **Per-biome pass:** the new `biome_look.gd` gives each biome its own key light (colour, strength, angle), ambient fill, fog reach and ink colour, thickness, strength and vignette. Values ease across borders, islands 2 and 3 blend 60% of their grade on top, and the Red Moon keeps its original lighting.
+  - **Ground and horizons:** ground bases and horizons for Puffcap Marsh, Moon Craters, Cloudwilds, Candy Hell and Starfall Space are darker, so the ground stays the quietest layer.
+  - **Results:**
+    - Candy Hell's lava now outshines its ground.
+    - Moon Craters went from washed-out blue-grey to dark navy with pale crystals and long shadows. A first try with a blue key light turned the whole biome saturated blue, so the key is now near-neutral.
+    - Cloudwilds' ground moved from pale cream (about 165) to a mid grey-green (about 125).
+  - **Verified:**
+    - before/after sheet `.build-staging/agent-workflow/biome-pass-before-after.png` (before `16-13-27-590Z`, after `16-31-19-144Z-biome-review`);
+    - island sheet `16-31-38-940Z-island-review`;
+    - check, smoke, integration, the Red Moon and style reviews pass with 0 errors.
+  - **Not yet accepted by the user.** The October 16 refreshed views had been accepted, so this pass needs their look.
+- [x] **Enemy death animations** (`death_fx.gd`, October 23). The killing blow picks the style:
+  - **Ink dissolve** (most kills): the painted enemy shader has a new `dissolve` uniform. The body erodes top-down with a dark ink edge and sinks into a soft round ink blot while wisps rise. The outline pass is dropped so no ghost remains. Bosses take 1.4 s.
+  - **Shatter** (frost, crits, explosions, slams, meteors, or a frozen enemy): the body bursts into tumbling shards in its own colour; frost shards are pale ice.
+  - Visual only, shard count capped, and it follows the Particles setting. Co-op clients use the same path.
+  - **Verified:**
+    - the `fx-deaths` sheet (`2026-10-23T15-57-06-714Z-fx-review`) shows hit, poison, frost and crit kills, early and late, cropped on the victim;
+    - review checks confirm each style, the shader dissolve and full clean-up;
+    - `crowd-review` median 11.7 / p95 15.9 ms (Phase A: 14.0 / 18.5).
+  - **The review needed fixes before it showed anything:**
+    - the victims were still burning from the synergy section;
+    - the crop used viewport units on a smaller image;
+    - the first blot was a hard square;
+    - the first frost shards rendered brown.
+- [x] **Damage numbers at the XP bar** (user report, October 23: "dmage numer still dont rise from the exp bar"). Non-gun numbers started 210 px above the bottom; they now start on the XP bar at the bottom edge and rise 260 px, across the full width. Gun numbers still rise from their weapon's slot. The combat-review contract changed with it (start within the bottom 60 px; the spec change is noted in the test). Verified in `2026-10-23T16-01-21-533Z-capture-ui` (`ui-damage-text`) and `16-01-36-427Z-combat-review`.
+- [x] **Biome events stay out of reviews:** automated reviews switch ambient spawns off with a huge spawn clock, and biome events now follow it. A clover ring had appeared in an effects capture.
+- [x] **Model pilot (dropped for now)** (`scripts/blender/pilot.py`, not used by the game). It rebuilds Count Duck and the Briar Beetle with the same node names, pivots, hand sockets and GlassCore health orb as the shipped models. The GLBs are generated outside the game's assets until the pilot wins a side-by-side.
+  - **Version 1** (subdivision cages): rounder but weaker than the faceted originals. A bandit-like mask, loaf arms and an egg torso hid the orb; the beetle shells read as bullets.
+  - **Version 2** (planes and points, subdivision only on corners): a better beetle (wing plates over a dark body, thorns, berries) but messy legs. The duck gained a vampire collar, scowl mask, visible orb and scalloped cape, but its bill reads as a thin line from the front.
+  - **In-game comparison** (October 23): the new `model-review` action builds the pilot in Blender into its run folder and renders it beside the shipped models through `StyleModel`. `StyleModel.setup_scene` adopts any glTF scene with the shipped node names. The sheet shows the gameplay camera (duck from behind, beetle trio ahead) and close-ups.
+  - **Pipeline fixes the comparison found:**
+    - the pilot orb's node sat at the body origin, so the orb shader drew it empty;
+    - parts with special surface names (`metal`, `boot`, `rim`…) rendered white because Blender exports vertex-painted base colour as white.
+  - **Version 3:** thick ridged bill, fanned beetle legs, a cape with a shoulder V notch, scalloped hem and gold chain (`2026-10-23T16-52-12-518Z-model-review`).
+  - **Verdict (assistant):**
+    - The beetle pilot is a plausible improvement: wing plates over a dark body, thorns, berries, legs that read as six.
+    - The duck pilot does not beat the shipped Count Duck. From behind (the view players see all game) its cape is still rectangular next to the current flared, pointed one, and the current head and gold arms read stronger.
+  - **Decision (user, October 23): keep the current models; the pilot is dropped for now.** `pilot.py` and `model-review` stay in the repository for a later attempt; nothing from the pilot is in the game.
+- [ ] **Better hero and creature models**, made in-house. Earlier procedural and Blender metaball rebuilds read as blobs and were rejected. Pilot one hero and one creature with a slower, hand-directed Blender pipeline (blocked silhouette, subdivision, painted texture, ink outline). Compare them side by side with the current models before any wider rollout.
+- [x] **Spell sounds** (`spell_audio.gd`, October 23). Synthesized, no samples. Each spell has its own cast:
+  - Twister Totem: a rising whoosh.
+  - Void Orb: descending suction, plus a boom on collapse.
+  - Storm Crown: a thunder crack and rolling rumble, plus a crack per strike.
+  - Inferno Halo: a fire whoomp with roar and crackle.
+  - Twisters and orbs carry seamless 3D loops (wind; a deep hum) that fade with the spell.
+  - Before this, the spells borrowed the dash, gravity, lightning and nova sounds.
+  - **Verified:** integration checks confirm each spell uses its own sound, every sound peaks between 0.15 and 0.96 (audible, unclipped) and both loops loop (`2026-10-23T16-02-24-064Z-integration`); fx-review casts all spells with 0 errors. Not yet heard by a person.
+- [x] **Camera zoom** (October 23). A `fight_zoom` factor on top of the player's own camera distance eases out by up to 35%:
+  - for a crowd within 16 m (more than 10 enemies, full effect at 50);
+  - for active screen-filling spells;
+  - for a nearby boss (not in the Red Moon arena, which has its own camera).
+  - It eases in again more slowly, counts four times a second, and resets with each run and island. The player's distance setting and the reviews' camera checks are untouched.
+  - **Verified:** an integration check (40-enemy crowd zooms out past 1.15, back below 1.03 once they are gone; `2026-10-23T16-10-57-897Z-integration`) and the `fx-zoom` before/after sheet (`16-09-35-247Z-fx-review`).
+- [x] **Telegraph consistency** (October 23). One warning language:
+  - **Colour:** every enemy attack's ground mark now has a danger-red ink (`DangerMark.DANGER`), with the attack's own colour kept only as the inner fill. The hero's own strikes stay gold; harmless hazards (ice floors, wind gusts) are pale blue.
+  - **Timing:** every ground warning lasts at least 0.8 s, and the sweep closes in. The last 0.25 s flashes white ("impact now"), for marks, the melee bite ring (now the same red) and the new charge lanes.
+  - **Charge lanes:** charges used to show only angry eyebrows during their 0.8 s windup. They now paint their lane on the ground in danger red. The review found lanes left behind when a freeze or blind interrupted the windup, or the charger died; lanes now clear on every path.
+  - **Verified:** the `fx-telegraphs` sheet (`2026-10-23T16-09-35-247Z-fx-review`) shows four styles in red with their own fills, the final flash, a charge lane and a bite ring, all inspected. Review checks cover the red ink, flash timing, lane creation and lane clean-up.
+  - **Regression runs:** check, smoke, integration, the boss, Red Moon, style, combat, playfeel and biome reviews, and coop-dropin pass with 0 errors.
+  - **Known flaky:** `shared-review` failed once (`16-12-59-888Z`). After the island-change reconnect the guest got 4 of the required 5 snapshots within 5 s; three re-runs passed with 5. This is timing under load and has not been changed by this work. Left open, not loosened.
+
+## Co-op big-fight desync (user report, October 23, Build 21)
+
+- **Report:** in big fights over the internet the guest took damage but saw no enemies, the host saw the guest frozen in a crowd, they sometimes recovered, the guest sometimes had to be revived, and once a revive produced a second copy of the guest.
+- **Measured** (`net_size_checks.gd`; 125 enemies, 300 XP orbs, a full build):
+  - The world snapshot was **48,916 bytes**, near the 60,000-byte drop limit and about 35 network fragments, so over a lossy link most snapshots were lost. XP orbs, sent as dictionaries, took 36,008 of those bytes.
+  - The guest's pose was **3,596 bytes** (stats took 2,948). That is over the 1,000-byte unreliable limit, so it went out reliably ten times a second and stalled behind resends.
+- **Fixes** (protocol `wildforge-shared-world-13`):
+  - XP orbs travel packed (six floats each), at most the 200 nearest any hero. The client matches them through an index instead of a search per orb.
+  - Stats travel apart from the pose, as reliable changed values only, at most every 0.5 s, and in full after a welcome.
+  - Poses, like world snapshots, stay unreliable at any size.
+  - **Duplicate copies of a player:**
+    - A returning player is matched by profile token even while the host still believes the old connection is alive; the stale connection and its avatar are dropped.
+    - Late poses from a dropped connection no longer rebuild its avatar. Under lag, such poses left ghost avatars; the stress run found two.
+  - **Engine errors after a dead link:** the client's link checks and ping read the actual connection state, which removes the errors after a silent drop.
+- **Results:** snapshot **17,716 bytes**, pose **632 bytes**.
+- **Verified:**
+  - integration (`net_world_size`, `net_pose_unreliable`);
+  - shared-review with a new silent-drop rejoin (the guest's link dies without notice) and `reconnect_no_duplicate`;
+  - shared-review-stress, coop-dropin and the full `coop` route (`2026-10-23T20-37-43-363Z`), all with 0 errors.
+- **Not verified:** a real internet session with packet loss; the tests run on one machine. Snapshots were later split into independent packets (see Open issues: split world snapshots).
+
+## Weapon damage review (user report, October 24)
+
+- **Report:** a friend saw one weapon always show "1" damage, even after ranking it up. The user also asked that hero-specific weapons can drop for other heroes.
+- **New review:** `weapon-review` (`weapon_review.gd`) runs every weapon through the real combat path at ranks 1 and 5 and reads the number shown at its slot.
+- **Hero weapons:** all already sit in the shared drop pool. The review checks that each hero's starting weapon is offered in 4,000 weapon rolls.
+- **Fixes:**
+  - Gravity wells (Gravity Jar, Pocket Black Hole, Teacup Singularity) dealt damage every frame. Each slice was a fraction of a point, shown as "1", and on a co-op guest each slice was one hit message per enemy. Wells now tick four times a second with the same total.
+  - Gravity and meteor damage was not on the list of causes that show a number; neither was flower blooms. All three now show.
+  - Flowers bloomed at the power they had when planted, for their full 22 s life, so a rank-up only showed once the old trail withered. Blooms now use the weapon's current rank.
+  - The burn or poison of a fire or poison weapon, and flower pollen, were flat (10 / 9 / 4). They now grow with the square root of the weapon's power, like spells.
+  - Hybrid mutation infusions hit for a flat 1. They now scale like their strain.
+  - Rolling bombs (Bomb, Marble Mine, Bottle Barrage, Pumpkin Fuse) aimed their hit test at an enemy's middle while rolling on the ground, so they passed under tall enemies and went off only at the end of the fuse. They now test at bomb height.
+  - The host's co-op cause list keeps a guest's gravity and bloom damage as such, instead of plain hits.
+  - **Volley variants** (`scripts/data/expansion.js volleyShare`): the variants that fire extra projectiles or meteors kept the damage per shot of their base weapon, so a volley dealt 2–7x the base weapon (Marble Rain 6.7x Meteor, Hail Hose 4x Ice Gun, Confetti Cannon 4x Shotgun). Damage per shot is now split so a full volley is about 1.5x a base volley (Shotgun counts its own three pellets). Measured afterwards: 1.4–1.7x, Marble Rain 2.3x (its meteors also spread over more ground). Affected: Popcorn Repeater, Confetti Cannon, Hail Hose, Knitting Needles, Bottle Rockets, Button Barrage, Trident, Foam Party, Marble Rain, Staple Sentry. Bounce and pierce variants are unchanged: the dummy ring favours them, which says little about real crowds.
+- **Verified:** `weapon-review` passed on two runs (`2026-10-24T13-37-46-311Z`); every weapon grows from rank 1 to rank 5. check, integration, smoke, shared-review and coop-dropin passed with no script errors.
+- **Limits:** the review uses pinned dummies, not moving crowds. Spells grow about 1.5x by rank 5 by design (square root of power). The friend's weapon was not named, so the fix covers every cause found, not a confirmed single weapon.
+
+## Reward offers (user reports, October 24)
+
+- **"Level-up sometimes offers just one item":** in co-op, shared offers hid every weapon a full loadout (3 weapons) could not hold. A weapon level (level 2, then every third level) then showed only the rank-up of a held weapon. All cards now stay, and a new weapon opens the swap menu, as in solo. A swap is now reported to the party panel too.
+- **"Every player gets the same drop" in co-op:** the host rolled one set of cards for everyone. Level-ups and chests are still shared events, but each guest now rolls its own cards from its own loadout and luck. Event chests keep their minimum rarity, because the chest message now says it is an event chest.
+- **"All runs end up with the same weapons":** the first weapon offer was already varied (72 of 73 weapons over 80 runs, the commonest 12 times in 400 cards), so the sameness came from the shared co-op cards and from habit. The profile now keeps the last runs' weapons (`recentWeapons`, up to 8, not the hero's own weapon). Those sit out the weapon offers at levels 2, 3 and 6, including rerolls.
+- **Verified:**
+  - weapon-review checks `early_diverse`, `recent_sit_out` (0 of 200 cards) and `full_loadout_cards` (5).
+  - shared-review checks `own_pool` and `own_chest_pool`. These replace `same_pool` and `shared_chest_pool`, which required the host's cards; the spec changed on request.
+  - check, integration, smoke, coop-dropin and shared-review-stress passed with no script errors.
+- **Limits:** the full-loadout case is checked by calling the offer directly, not by pressing through a co-op swap. The swap menu itself is the solo path.
+
+## Block Drop minigame (user request, October 24)
+
+- A small falling-blocks game for waiting (`block_drop.gd`). It is not named after the trademarked original. Controls: arrows or WASD, Space hard drop, Z rotate back. On a controller: D-pad, A rotate, Y or D-pad up hard drop.
+- **Where it appears:**
+  - the pause menu's **BLOCK DROP** button;
+  - automatically, under the "party paused" banner, while a co-op friend chooses a reward and this player is done.
+- **Saving:** one board for the session. It is saved to the profile (`blockDrop`) whenever it leaves the screen, and continues at the next pause, after a restart too.
+- **Audio:** game music pauses while it is open. It has its own chiptune arrangement of "Korobeiniki" (public-domain folk song, 1861) and seven effects, all generated by `scripts/make-block-drop-audio.py`.
+- **Verified:**
+  - `block-drop-review`: 20 checks through the real Esc, button and key path; captures inspected.
+  - capture-ui pause menu inspected.
+  - check, smoke, integration, shared-review and coop-dropin passed, with no leaks at exit.
+- **Party choices beside the board:** in co-op, the team options panel (each player's cards, ✓ on a pick) shows while Block Drop is open, both in the menu and the waiting overlay. The board moves left to make room.
+- **Space no longer picks reward cards** (friends spamming Space as hard drop picked a random card). For 0.8 s after an offer opens, Enter and controller A are ignored too. Number keys and the mouse pick at once. block-drop-review checks `space_guard`, `space_never_picks` and `number_picks`. The smoke test's controller-accept check now presses after that moment.
+- **Short videos beside the board** (`shorts_panel.gd`, `assets/shorts/`): **TikTok by default**, with a button to switch to YouTube Shorts and back, plus a VIDEOS: ON/OFF button.
+  - **Plugin:** godot_wry v1.0.2 (MIT; the user approved the download). Only its Windows DLL and the license are installed, in `addons/godot_wry`. It is a native Edge WebView2 window laid over the game, so it follows the panel's on-screen rectangle (including the 1920x1080 stretch) and hides when the panel leaves the screen.
+  - **Short and fast:** each video plays at most 7 s (a longer one moves on after 7 s), looping is off, and the next starts at once. The volume is 35% of the music volume.
+  - **TikTok:** the panel reads the video links on a TikTok hashtag page while hidden, from the user's tag list (#phonk, #gymtok, #meme, #gravel, #remco, #techhouse, #nature, #run, #rally, #parrot, #core, #cuterat, #punk, #puppy, #mindset, #uptempo, #rats), so the page's cookie banner is never shown or answered. It plays them in TikTok's official embed player (`tiktok.html`), which shows no banner.
+  - **YouTube:** shorts come from the public feeds of The Dodo, The Pet Collective, Good News Network and Animal Planet. Nat Geo Wild and BBC Earth are left out (predators hunting). They play through YouTube's IFrame API on youtube-nocookie.com (`player.html`, loaded from res:// so the embed gets the referrer it requires; error 153 otherwise). youtube.com pages themselves open on a consent wall in the EU.
+  - **Limits:** hashtags are chosen by uploaders, so TikTok content is steered toward upbeat, not vetted. TikTok and YouTube may change their pages or embed rules.
+  - **Bigger:** the Block Drop screen now fills nearly the whole screen (the left 65% in co-op, beside the party panel). The board and video zoom to fit (about 1.45x at 1080p), and the co-op overlay grows to the free space (about 1.3x).
+  - **Verified:**
+    - shorts-review, 21 checks: TikTok default, auto-scroll within 15 s, the switch button to YouTube and back, the end of a video loading the next, low volume, loop off, BACK hides.
+    - Desktop captures of both sources and of the co-op overlay inspected.
+    - block-drop-review, smoke, integration, shared-review and coop-dropin passed.
+- **Not verified:** the exported build with the plugin.
+- **Not verified:** how the music and effects sound (generated, not listened to), and the overlay in a real two-machine session.
+
+## Difficulty retune (October 24, bot-playtest)
+
+- **Target:** about 70% clear island 1, 25% reach the Baron, 10% beat him.
+- **Results** (24 runs each, 12 heroes and styles, 55 simulated minutes):
+
+| Setting | Clear island 1 | Reach the Baron | Beat the Baron | Evidence |
+|---|---|---|---|---|
+| Island step 0.3 (before) | 67% | 50% | 33% | batches `2026-10-23T21-18-09-505Z`, `2026-10-24T13-09-47-181Z` |
+| Island step 0.38 | 79% | 46% | 25% | `2026-10-24T13-41-23-297Z`, `14-01-46-922Z` |
+| Island step 0.45, Baron health x7.5, volley-damage fix | 71% | 42% | 25% | `2026-10-24T14-16-36-566Z`, `14-36-09-552Z` |
+
+- **Now in the game:** island step 0.45 and Baron health x7.5 (both runs at 0.38 and later also had the weapon-damage fixes).
+- **Effect so far:** island 1 is on target. Baron fights won by bots now last 9–16 minutes instead of 5–10.
+- **Still open:** islands 2–3 and the Baron remain too easy. 6 of the 10 bots that reached him won.
+- **Main killers:** enemy meteor hazards account for 6 of 13 deaths on islands 1–2. They are telegraphed, so they are left as they are.
+- **Step 0.55 tried and dropped:** over 48 runs it gave 81% / 40% / 27%, against 71% / 42% / 25% at 0.45. That is no measurable difference, so the game stays at 0.45.
+  - **Evidence:** `2026-10-24T15-02-19-270Z`, `15-18-44-994Z`, and the paired reruns `15-33-28-564Z`, `15-42-11-694Z`.
+  - **Bot runs do not repeat from their seed:** the same hero and seed went from beating the Baron to dying in the first minute, and island 1 outcomes changed in 13 of 24 runs at an unchanged island 1. Paired seeds therefore cannot reduce the noise, and 24-run batches swing by about 20 points.
+  - **Next:** a step change is not a lever this noise can measure. The Baron's own damage and patterns, judged by human playtest or batches of 48+ runs, is the next thing to try.
+
+## Final boss remade: the Ashen Colossus (user request, October 24)
+
+- **Request:** "completely remade, Dark Souls style huge monster with phases"; then "use a free asset; an HP orb in it, no HP bar, the orb changes colour per phase".
+- **Model:** OpenGameArt's [Fire/Ice/Stone Golem](https://opengameart.org/content/fireicestone-golem) by umask007, CC-BY 3.0, with textures by yughues (CC0). The user approved the download. Credits are in `assets/boss/golem/CREDITS.txt`. Replaced by the cartoon giant on October 25; the files are no longer exported.
+  - Converted by `scripts/blender/convert_golem.py`, run with Blender scripts disabled: a GLB with the idle, walk, attack, attack2, flinch and die animations, plus the stone, ice and fire textures.
+  - Scaled to 17 m (`ColossusRig`). It replaces the old Baron model; `boss_8` stays its id everywhere.
+- **Fight (`ColossusFight`):** it walks the hero down, turns to face its target as each wind-up starts, then commits. Every blow has an animation timed to land as its red marks go off. After heavy blows it is open, taking 1.35x damage while its orb flashes.
+  - **Phase I** (100–65%), stone: sweep, overhead slam with a shockwave, stomp, lunge.
+  - **Phase II** (65–30%), ice: adds leap slam, fire breath and tail spin, plus lava vents every 15 s.
+  - **Phase III** (below 30%), fire: faster wind-ups, chained second blows, meteor rain on every hero.
+  - **Phase changes:** a roar (`scripts/make-colossus-audio.py`), a shockwave ring, the new skin and a title card.
+- **Health:** 5x the Baron's (`HEALTH_MULTIPLIER` 37.5, user request), so about 3.4 million solo.
+- **Every other boss:** 5x health too (`spawn_enemy` boss factor x4 -> x20, user request, October 24).
+- **Deadlier, with potions:** every Colossus blow, vent and meteor hits 2.5x harder (`ColossusFight.DEADLY`); it sheds 3 health potions round itself every 60 s (40% max HP each, drunk by walking into one). Checked by colossus-review `deadly`, `potions_drop`, `potion_heals`.
+- **Health orb:** a glass orb on the chest bone; no boss bar. The liquid is red in phase I, icy blue in II and fire orange in III.
+- **Co-op:** the host decides; guests replay actions from `colossus_action` messages and take the phase skin from `boss_phase`.
+- **Verified:**
+  - `colossus-review`: real Red Moon entry, every action with marks, lunge and leap movement, both phases, the open-window bonus, the orb; contact sheet inspected.
+  - boss-review, red-moon-review, hermes-review and shared-review updated to the new boss and passing. Their old checks were the Baron's size, steam vents, fixed volleys and voice lines.
+  - check, smoke, integration and coop-dropin pass.
+- **Not verified:**
+  - balance against real players;
+  - how the roar sounds;
+  - the phase II ice skin and its orb in a capture (phase III fire was captured).
+
+## Next: user list (October 24)
+
+- [x] **1. Longer draw distance.** Enemies and grass appeared just in front of the hero.
+  - **Further:** fog 1.4x further, capped at 205 m where the loaded terrain ends (three chunks out instead of two). Grass shows to 100 m (was 65), scenery to 170 m (was 105). Camera range 260 m (was 180). Wave enemies spawn 28–38 m out (was 18–25).
+  - **Follows the frame rate:** `view_scale` rises to 1.5x while above 90 fps and drops back below 55 fps (`game.adapt_view`), stretching the clear zone, grass and scenery further.
+  - **Verified:** biome-review captures inspected (much deeper views), check, smoke and integration pass. crowd-spells frame median 35.8 ms against 33 before (process +1.4 ms for the extra terrain; GPU unchanged).
+- [x] **2. Enemies stand out.** The enemy shader (`painted_batch.gd`, animated variant) adds a warm rim light along the silhouette and a slight self-light, so bodies read brighter than the ground in every biome. No extra draw calls. Verified with crowd-review captures before and after.
+- [x] **3. Much harder.** XP per kill x0.75 (`XP_SCALE`), enemy speed x1.1 (`ENEMY_SPEED_SCALE`), one more enemy per wave after the opening 90 s, waves 15% closer together (spawn clock factor 2.0 to 1.7); the 125-enemy cap is unchanged. check, smoke and integration pass. Bot batch `2026-10-24T18-05-09-387Z` (12 runs): 75% clear island 1, 25% reach the Baron, 0% beat him. That is on target to the Baron and hard at the Baron; 12 runs vary a lot.
+- [x] **4. Hit knockback.** A received hit pushes the hero about 2 m back with a small hop (11 m/s, was 8 m/s and about 1 m). Area blasts and meteors now pass their centre, so they push and aim the hit-direction arrow too. Damage-over-time ticks still do not push. check, smoke, integration and playfeel-review pass.
+- [x] **5. New main music.** An original drift-phonk stem set, `phonk2_*`, made by `scripts/make-phonk-music.py`. G minor, 144 BPM: half-time drums with hi-hat rolls, distorted 808 bass with slides, 808-style cowbell melodies, dark pads per island, and double-time boss drums. It plugs into the existing arrangement (`sound.gd MUSIC`); the old `phonk_*` set stays on disk. playfeel-review confirms the new drums play in a run. **Not verified:** how it sounds. The user has a 40-second preview mix to judge.
+- [x] **6. Danger is red, safe is not.**
+  - **Enemy warnings (`DangerMark`):** fills now stay in the red family; orbital was blue, void purple, storm teal and the default green.
+  - **Biome events that hurt the hero:** spore fog, lava vents and gravity rifts get a danger-red rim and fill (`BiomeMechanics.hurts_hero`), and the spore fog has a red mist. Clover, ice and wind are harmless and keep their colours.
+  - **The hero's own areas avoid red:** Inferno Halo is amber (was red-orange), burning pools are amber, friendly meteors gold.
+  - **Verified:** biome-review captures inspected (spore fog now red, ice unchanged), fx-review and check pass.
+  - **Limit:** in Candy Hell, whose ground is red, lava's red rim has little contrast.
+
+## Damage numbers: own only, none while dead (user report, October 24, Build 22)
+
+- **Report:** "I see damage numbers when I'm dead… am I seeing other players' damage?" Yes: the host showed every confirmed hit, teammates' included. Each player now sees only their own damage (guests already did). A dead or downed hero shows no damage numbers; burns and wells left behind still tick but are not shown.
+- **Verified:**
+  - coop-feedback, updated to the current rules: own hits and burns show; a teammate's hits and burns do not; a dead hero shows none. Its old "ordinary hits hidden" and "start 200 px above the bottom" checks predated the October 21 and 23 changes.
+  - shared-review `teammate_number_hidden` and the guest's `confirmed_critical`.
+- **Tests left the user's party:** automated co-op tests used the game's real port 29736, and a test guest joined the user's own party while they played. Tests now run on their own ports (`WILDFORGE_COOP_PORT`, 39736 and 39737 for discovery, set by the agent workflow); the game itself keeps 29736.
+- One shared-review run missed `drop2.snapshots` (rejoin snapshot count); the rerun passed.
+
+## Block Drop audio and video stop (user reports, October 24, Build 22)
+
+- Block Drop music is 30% quieter.
+- **TikTok sound played on after the pause ended** (friend's report). Hiding the panel only sent a pause message, which a video still loading could miss. Hiding now stops the video outright: the TikTok player is unloaded and YouTube's is stopped. A hidden panel ignores player messages, so nothing new can start, and reopening starts a fresh video. shorts-review checks `hidden_on_back` and `plays_after_reopen`.
+
+## Hero damage and heal numbers (user request, October 24)
+
+- The hero's own numbers now fall from just under the health panel: damage in red, shield damage in blue (a hit that is partly absorbed shows both), healing in green "+N". Healing no longer goes through the enemy-number band. Hits of one kind within 0.3 s add up into one number. The fixed "−N HP" / "SHIELD HIT" label on the damage flash is gone; the red edge and direction arrow stay.
+- **Verified:** `hero-numbers-review` (all three kinds shown below the panel; capture inspected), smoke and integration (`harvest_heal` now checks the hero numbers).
+
+## Cartoon enemies and final boss (user request, October 25)
+
+The user liked the Gloop Gazer test and asked for every enemy and the final boss in the same style: adult sci-fi cartoon inspired (original designs, no show characters), very diverse, health in an orb, easy to see, simple for FPS; then for Cronenberg-style humanoid mutants too.
+
+- **Roster:** `CartoonBook` builds 60 creatures, ten per biome. Slots 0-6 keep their old roles (chaser, swooper, armoured, spitter, skitterer, charger, stalker; flyers have wings, jets or tentacles). Slots 7-9 are new humanoid body-horror mutants: a shambler, a fused brute and a spitter (Melty Mel, Two-Torso Terry, Eyeball Eddie, Leggy Lou, Tentacle Ted, Mirror Mike and others). `CreatureBook` names, weights and stats cover all ten; the mutants take about a quarter of spawns. Colours are chosen against each biome's ground.
+- **Cheap to draw:** each species is one merged mesh (`CartoonMesh`) with paint in vertex colour and animation in UV/UV2; `shaders/cartoon_creature*.gdshader` do the wobble, walk, eye sway, jaw, wing flap and tentacle wave on the GPU, plus a bold ink outline pass. Each enemy has its own small material (tint, Eclipse corruption, death dissolve keep working) and its glass health orb. Measured with crowd-review, 125 enemies, same seed: old creatures frame p50 12.7 ms / p95 16.4 ms / GPU 2.1 ms; cartoon creatures 12.5 / 15.8 / 2.6 ms.
+- **Final boss:** `ColossusRig` is now a cartoon giant (the golem looked bad): a squat flesh mountain with a mouth across its belly, seven glowing eyes around the chest orb, two huge clawed arms and two tiny ones, a spiked tail and a tiny dumb head. Phases repaint it purple, icy blue, magma red. Every action is posed from its parts. The golem files stay in the repository but are no longer exported.
+- **Evidence:** cartoon-review (`cartoon-roster.png`, `cartoon-mutants.png`, `cartoon-ingame.png` through the real spawn path), colossus-review, boss-review, red-moon-review, shared-review, crowd-review, smoke `enemy_roster`, integration.
+- **Spec changes found on the way:** shared-review still expected the old contact wind-up warning; it now checks that a host enemy touching the guest hurts the guest. red-moon-review expected three ranged marks; it now expects one.
+- **Heroes, bosses, guns and icons (user request, October 25: "remake them from scratch"):** all 25 heroes (`CartoonHeroes`), the eight realm bosses (`CartoonBosses`) and the 29 base weapon models (`CartoonWeapons`) are now generated cartoon models; `StyleModel` builds them through `CartoonCast` with the same joint names (Body, Head, Leg*, Arm*, HandSocket*, Muzzle, GlassCore), so walking, held weapons, health orbs, armour shells, boss animation and co-op all work unchanged. Heroes keep their identities (a wrench, a rubber-duck count, a teapot queen, a white Supra on wheels...). The 44 variant weapons get bright rounded add-ons in their own colours instead of the dark textured blocks. All 73 weapon icons were re-rendered from the new models (`weapon-icons`). Evidence: cartoon-review `cartoon-heroes.png`, `cartoon-bosses.png`; capture-ui `ui-hero.png`; boss-review, forge-review, weapon-review, roster-review. The old hero/boss/weapon GLBs stay in the repository.
+- **Every model built around a big health orb (user request, October 25: "make monster model build around the big orbs that show hp").** The see-through stencil orbs looked bad and were removed. Now the orb is a body part in every design: an orb belly or torso held in a fleshy frame (blobs, humanoids, heroes), the shell (Shellby, Snailbert), the whole body (Puffboy, Jellyfloat, Ringthing, Jawbreaker Joe), a body segment (Wurmo, Snowslug, Drowned Spire), a cage-framed core (Gorbo Block, Toastmaster), the eyeball itself (Witness of Knots), the final boss's gut. `CartoonMesh.core()` places it (and locks it); `CartoonScene.orb(..., body_orb)` for heroes and bosses; cartoon-review checks every species is orb-built and renders the line-up from behind (`cartoon-rear.png`). crowd-review, 125 enemies: frame p50 12.1-13.0 ms, GPU 2.6 ms.
+- **Co-op desync between different downloads (user report, October 25):** Build 23 and the first local Build 24 test builds shared protocol 15, so they connected but ran different games. Joining now also compares the exact build (`CoopSession.build_id`, the source commit in `build-info.json` beside the exe; "dev" in the editor) and refuses a different one: "Different game build (... vs ...). Both players need the same download." The main menu shows the build ID.
+- **Known flaky:** smoke `head_stomp` failed once (random spawned species, probably a shielded elite absorbing the stomp); passed on two reruns.
+- **Spell weapons** (tornado, black hole, thunderstorm, inferno and the like) keep their simple wand models; not remade.
+
+## Final boss: a giant floating head (user request, October 26)
+
+The user asked for a final boss like the floating heads of Rick and Morty S2E5, with the eyes as health orbs. Those are show characters, so this is an original design in that spirit (`ColossusRig`): a bald giant head floating out of a glowing portal ring, big ears, bulbous nose, wrinkled brow, a wide mouth of square teeth, and two giant floating hands. Its two huge bulging glass eyes are its health orbs (one liquid, black pupils, lids that blink and otherwise stay rolled back); they turn red, blue, orange with the phases, and the skin repaints. The hands do the sweeps and slams; the head head-butts (stomp), spins (tail), lunges, gapes (breath) and roars. The fight itself (ColossusFight) is unchanged. Evidence: colossus-review (all checks, `colossus-intro.png`, `colossus-sheet.png`), red-moon-review (now checks two hands, two eyes sharing the orb liquid, and the per-phase head and eye colour), boss-review, smoke.
+
+## Final boss renamed; spell weapons in the cartoon style (user request, October 26)
+
+- **The Grand Noggin:** the floating-head final boss has a name that fits it (was The Ashen Colossus). Phases: I · THE NOGGIN DESCENDS, II · THE NOGGIN BOILS, III · THE LAST TANTRUM; messages THE GRAND NOGGIN DESCENDS, THE NOGGIN MARKS ... · MOVE, THE NOGGIN SHEDS HEALTH POTIONS, THE NOGGIN FALLS. Code names (ColossusFight, ColossusRig) are unchanged. red-moon-review checks the new fall announcement.
+- **Spell weapons:** tornado, black hole, thunderstorm and inferno are cartoon wand-gadgets (CartoonWeapons `spell_<id>` through StyleModel, from `SkillBook.build_model`) with a goofy character at the tip: a funnel with eyes, a ringed black hole in claws, a grumpy cloud dropping a bolt, a grinning fireball. Their icons were re-rendered (`weapon-icons`). Checked by fx-review, weapon-review, crowd-spells, integration.
+
+## Noggin performance, Rift Dash, creature voices (user picks 3, 4, 5, October 26)
+
+- [x] **The Noggin demands a performance** (`ColossusFight.perform_*`). 35 s into the fight, then every 60 s, it stops attacking and sings while seven waves of 3×3 marks fall round the hero, one beat apart; each wave has one gold safe square. Taking no mark hit: BRAVO!, its eyes crack (lids stay up) and it takes double damage for 8 s. Any hit: BOO!, it heals 4% of max health. The host runs it; guests see the call and verdict through the `noggin_perform` message. colossus-review `perform_starts`, `perform_fail_heals`, `perform_success`; capture `colossus-perform.png`.
+- [x] **Rift Dash** (skill card, 3 ranks, `game.rift_dash`). The dash opens a green portal: the hero pops out 8/10/12 m ahead, stopped short of walls but not by enemies, with a 20-per-rank blast at both ends. The portals turn to the camera so a sideways dash still reads. Loot is now 747 cards. integration `rift_dash`; fx-review `rift_portals`, `rift_portals_fade`, capture `fx-rift.png`.
+- [x] **Creature voices** (`CreatureVoice`, sounds from `scripts/make-creature-voices.py`). Eight gibberish voices (squeak, gibber, burp, growl, honk, hiss, warble, groan) with chatter, hurt and death lines, two takes each. Each of the 60 species has a voice and pitch (elites deeper). Creatures yelp on some hits (35%, at most every 1.5 s each), always on death, and one nearby creature babbles every 2.5–5 s. The Noggin booms its own lines: a roar on each phase and sing, bravo and boo for the performance. integration `creature_voices`, `creature_death_voice`; colossus-review `noggin_sings`, `noggin_boos`, `noggin_bravo`, `noggin_roars`. **Not listened to by a person yet**; the levels and lengths were measured only.
+- **Published as Build 25 (1.8.0)**, tag `build-25` on source commit `d5e8d23` (user request, October 26). Archive `Wildforge-1.8.0-Windows.zip` (85,253,662 bytes, SHA-256 `b64afbdb…b2b43c492bc`). The unpacked ZIP passes the startup smoke and, as two copies, the co-op shared-review. Notes: `native/docs/archive/build25-release.md`.
+- **`biome_ice` flake, fixed in the check:** the ice check moved its dummy with `node.position` and ticked synchronously. With physics interpolation, the body reaches the physics server only at the engine's next physics flush. So it stayed at its random spawn spot, sometimes right on the hero, who was lifted onto it and off the ice. Neither `force_update_transform` nor `body_set_state` moved it there. The check now waits one physics frame after placing the dummy. Four integration runs passed afterwards (it had failed about half the time).
+
+## Nine picks from the idea list (user picks 11, 13, 16, 17, 18, 20, 22, 25, 27; October 29–30)
+
+Not released yet (Build 25 is the latest public build).
+
+- [x] **Combo meter** (meter only, no rewards), **exploding red barrels** (hurt enemies and heroes, chain, synced in co-op) and **death animations per creature type** (`c694187`).
+- [x] **Co-op rescue code:** enter an arrow code to revive a downed friend (`53b9454`).
+- [x] **Pets:** a run companion that fetches far coins and evolves (`bd73488`).
+- [x] **Achievement hats:** thirteen hats, each unlocked by an achievement (`8019116`).
+- [x] **Title intro:** the Noggin crashes the heroes' photo before the menu (`2ba52ee`); Noggin voice quieter, much quieter in the intro (`64e1eae`).
+- [x] **Hero tricks:** a unique trick for each of the 25 heroes on V / left trigger (`aaac705`).
+- [x] **New biome: Junkyard Planet** (biome 6). The island is now seven slices (`RealmWorld.BIOME_COUNT`, `BIOME_ARC`; terrain shader divides by TAU/7):
+  - rust-and-oil ground with scrap mounds, a smoggy mustard sky, rust flakes drifting down;
+  - scenery: crushed-car towers under crane arms with toxic warning lamps, tyre stacks by car hulks, scrap heaps round leaking drums; grey scrap shards for ground cover; landmark "The Scrap Crown"; great hall "Crusher Works";
+  - ten original cartoon creatures built round their orbs: Trashcan Stan, Propeller Pidge, Tank Tortoise, Hose Nose, Bolt Bug, Bulldozer Bruno, Lamp Lurker, and the mutants Wrenchhand Wendy, Tire Torso Tony and Battery Betty, each with a voice;
+  - fight mechanic **scrap crushers**: a press plate on a chain drops on a red circle after 1.6 s, hits heroes inside hard (18 + 6 per island + 12% max HP) and enemies for 3× damage + 30, then winches back up;
+  - harvestable **Scrap Battery** (+20% attack speed for 20 s); two bosses (The Last Receiver, Gallows Appetite) favour it;
+  - toughness tier 3 of 0–5 (`RealmWorld.BIOME_TIER`), so it is not the hardest slice;
+  - achievement now "Seven Worlds, One Map" (7 biomes).
+  - Evidence: check, smoke, integration (three runs), `biome-review` (captures `biome-6`, `biome-mechanic-6`) and `cartoon-review` (roster and mutants sheets, now 2×4) on `2026-10-30`.
+  - Announcer line "Junkyard Planet. Mind the rust, and the crusher." (`biome_6.wav`, Kokoro af_heart via Python 3.12, other voice lines left untouched).
+
+## Wisp pets (user request, October 31)
+
+- [x] **Pets are wisps** floating over the right shoulder, MMO-companion style: a glowing core in a soft halo with a fading trail and a small light. Renamed to fit: **Glint** (lime, one eye, fetches coins and treats), **Sting** (pink, flickering flame wings, stings enemies), **Halo** (blue, orbiting ring, heals). Stages add orbiting motes and a bigger glow. Internal ids unchanged, so saves carry over.
+- [x] **Pet Treats only from the final boss** (4 per kill), and kept between runs per pet (`settings.pet_treats`): one win evolves a pet to stage 2, three wins to stage 3. The hero screen shows each pet's stars. Integration `pet_wisp`, `pet_treats_final_boss_only`; `underside-review` renders all three wisps.
+
+## 60 fps, menus, the island's underside (user request, October 31)
+
+- [x] **60 fps cap:** `application/run/max_fps=60`. Draw distance grows from frame work time (under 9 ms) instead of fps above 90.
+- [x] **Main menu and settings:** menu grouped (Start, Play with friends · Achievements, Scores, Last run · Settings, Quit), About removed, no DEVELOPMENT ALPHA tag, panels inset from the gilt corners. Settings in four sections (Sound, Screen, Controls, Look) on an aligned two-column grid with percentages and On/Off buttons.
+- [x] **No deadly sea; walk under the island:** the sea plane and boiling-coast steam are gone. The island floats: the ground curves over a rounded rim (`RealmWorld.compute_height_at`, `Underside.THICK`/`RIM`) into a hanging rock belly (`under_height`, `island_underside.gdshader`, strata, roots, thin biome-coloured veins). The coast is one smooth radial ring (`make_rim`, with collision) so it is round, not the grid's saw teeth. Walking out over the rim swings the hero over it (`Underside`, 0.7 s) to walk upside down underneath; the camera rolls half a turn so the belly stays at the bottom of the screen, left/right controls follow, and walking out again swings back on top. Underneath the hero is out of the fight: no damage, weapons rest, enemies target the rim above (`CoopSession.target` id -1), drops do not fly to them, the pet waits on top; co-op shows other players upside down (`pose.under`). Enemies, drops and chests past the coast are held inside it instead of destroyed. The Red Moon arena keeps its killing void. Checks: smoke `underside_flip`/`underside_safe`/`underside_return`/`border_holds`, integration `floating_rim`, rendered `underside-review`.
+
+## Audio, glass orbs, creatures, junkyard, less text (user report, October 31)
+
+- [x] **Enemy sound spam:** `RunSound.effect` plays one sound id at most every 50 ms; enemy sounds (shots, bites, impacts, death splats, burning) go through `enemy_effect`, a shared budget of one per 0.16 s, three at once, 6 dB down. Creature voices: two channels, -9 dB, 0.6 s gap, 10% hurt and 30% death chance (elites always), chatter every 7-12 s. Integration `audio_limiter`.
+- [x] **Intro scream:** the intro still fired the Noggin rig's built-in colossus roar (+4 dB). The intro rig has no roar now (`intro-review` `no_monster_voice` covers it); the in-game roar is 8 dB quieter.
+- [x] **Glass HP orbs:** `blood_core.gdshader` draws the empty part as clear glass with a bright rim and the far inside wall, so the liquid reads as a volume. The final boss's eye-orbs keep the opaque look (`clear_glass=false`).
+- [x] **Creatures less basic:** `cartoon_creature.gdshader` adds three-band cel light with cool shadows and a gloss spot, countershading, mottling and a per-species skin pattern (spots, stripes, scales, freckles). Smoother base spheres. Crowd GPU 2.6 -> 3.4 ms at 125 enemies. Next step if still basic: thicker limbs and bigger heads on the stick-figure humanoids (CartoonBook designs).
+- [x] **Junkyard props:** crushed cars with windows and wheels under lattice cranes dangling a car, a car hulk with its bonnet up, tyre stacks with rims, a fridge, a TV, toxic drums, a gear, a washing machine, a traffic cone; ground litter instead of cone shards.
+- [x] **Too much text:** about 30 toasts removed or cut to a word (hero quips printed as text, biome mechanic intros, "move between the red marks", potion start/end, biome discovered, pet treats, magnet/supply instructions); boss and island banners lose their subtitles; zone labels became symbols (♥ ☠ ❄ ≋ ◎ ▼); no floating names over potions, harvest plants, merchant, beacon or magnet; HUD drops the biome name, armour explanation, "left" count, "READY" words and "EMPTY SLOT"; potions show their bottle and seconds (red when useless, name in the tooltip); hero screen drops the stat list and weapon paragraph (tooltip); co-op menu drops the instructions and stats.
+
+## Icons, intro, pets (user report, October 30)
+
+- [x] **Broken weapon icons:** every weapon icon was rendered on an opaque dark square, small or clipped, so weapon-upgrade medallions showed a black box. `render_weapon_icons.gd` now renders at 640 px on a transparent background, crops to the weapon and fills 86% of the 256 px icon; all 73 re-rendered. Checked in the `capture-ui` upgrade-icon sheet, offer screen and hero screen.
+- [x] **Intro replaces the Godot splash:** boot splash is a plain black screen with no image (`project.godot` `application/boot_splash/*`), so the title intro is the first thing seen. The Noggin's roar and cheer voices are gone from the intro; it plays three original stingers instead (`scripts/make-intro-audio.py`: a portal whoosh, a timpani "dun, dun, DUNN", a cymbal-and-chord title hit). `intro-review` checks the stingers played and the Noggin voice did not.
+- [x] **Pets reworked:** chosen with the hero (YOUR PET row on the hero screen, saved in settings) instead of a random one per run. Each has a job: Blip fetches coins and treats, Fuzzbat bites the nearest enemy, Zorbo pulses a heal when you are hurt. **Pet Treats** (pink glowing drops: every boss drops three, elites 60%, other enemies 2.5%) evolve the pet at 4 and 12 treats; picking one up shows the progress. Run start says which pet you have and what it does. Integration checks `pet_fetch`, `pet_evolves` (a real treat pickup), `pet_bites`, `pet_heals`.
+
+## Game icon (October 30, continues with the Build 26 work)
+
+- **New project icon:** a cartoon night scene — the green slime hero (googly eyes, two buck teeth, red shell) under a big moon and a purple planet, a sprout at its feet, in a gold frame. `native/icon.svg`, set as `application/config/icon` in `project.godot` and as `application/icon` in the Windows export preset (with `icon_interpolation=4`); Godot rasterizes that preset icon into the exe at export, and the project setting shows it as the window icon in play. Source and design iterations live in `design/wildforge-icon/` (`preview-v3.png`, `sizes-v3.png`).
+- **Exe icon needed a preset fix:** the first Build 26 export (`29fa06d`) shipped the Godot template's icon group with a solid-blue placeholder instead — the preset had `modify_resources=true` but no `application/icon`, and the exported exe's `RT_GROUP_ICON` bytes were wrong (Windows enumerated 1 icon group but `ExtractIconExW` extracted 0 icons, so Explorer showed a generic page). Added the two preset options (commit `52a5899`); the rebuilt exe extracts normally (2 handles; `exe-icon-extracted.png` shows the slime at 32 px).
+- **Small sizes:** legible at 256/128/64; at 32 px it reads as eyes and a green blob, the frame and moon turn to mush (see `sizes-v3.png`).
+- **Not chosen by a person yet:** the three design rounds (`preview-v1/v2/v3.png`) are in `design/wildforge-icon/` — v3 is what is wired in; swap it if another round is preferred.
+- Verified: `check` (import/parse clean), `smoke` 118 checks; rebuilt Build 26 export at `.build-staging/agent-workflow/2026-10-31T12-25-18-990Z-build/` (source `52a5899`, exe SHA-256 `8c60e094…`), exported smoke all green, exe icon extracted and inspected.
+
+## Player notes: 16 fixes (user list, October 25, after Build 23)
+
+1. [x] **Touching a melee enemy hurts at once.** Contact used a 0.45 s wind-up, so brushing past cost nothing. Now the first touch hits, then every 0.7 s while touching; a frozen or blinded enemy does not hit (`CombatTactics.contact_tick`). The old checks that contact "warns before damage" and "can be dodged" described the old spec and were replaced: integration `contact_hits_at_once`, `contact_stops_when_left`, `contact_repeats`, `freeze_cancels_contact`.
+2. [x] **Hero numbers stay longer.** Damage, shield and heal numbers under the health panel fall 70 px over 2.4 s (was 160 px over 1.3 s). hero-numbers-review.
+3. [x] **Bright chests.** Warm orange wood, glowing gold bands and a small warm light (`treasure_chest.gd`); they were dark teal. Seen in `native/docs/golden-scene.png`.
+4. [x] **Dash readout.** `[Shift] DASH · READY / 1.2s` above the slam readout; both turn green when ready. hero-numbers-review capture.
+5. [x] **Armor line.** Shows armor with buffs (`stat("armor")`) and the damage it takes off: `ARMOR 12 · −42% damage`, or `ARMOR 0 · no reduction`. It read `stats.armor`, which ignored potion armor and looked stuck at 0.
+6. [x] **Several levels at once** (a magnet full of XP): you get every level and its card choice, one after another. The gap between banked levels is now 3 s of play (was 8 s), and the XP bar reads `2 LEVELS READY · NEXT IN 3s`. Covered by `level_no_chain`, `level_gap`, `level_banked`.
+7. [x] **Mutations explained.** Cards now say `MUTATION · free bonus attack, fires by itself · Storm`; rules say `BOOSTS YOUR FROST MUTATIONS`, hybrids `COMBO · you carry Ember + Frost mutations`, wild cards `changes all your mutations`. capture-ui `ui-mutation-offers.png`.
+8. [x] **Only bosses slow the hero.** The one hero slow (Cloudwilds contact chill) now comes only from bosses.
+9. [x] **Dangerous, not tanky.** Ordinary enemies have 35% less health and hit 50% harder, in contact and with ranged marks (`ENEMY_HEALTH_SCALE` .65, `ENEMY_DAMAGE_SCALE` 1.5). Bosses unchanged. Not bot-measured yet.
+10. [x] **Run report in the end window.** TRY AGAIN shows the run report beside its buttons; NEW RUN is first and focused. progression-review `game_over_report`, capture-ui `ui-ended.png`.
+11. [x] **Easy achievements retired** (24): the seven "start a run as X", and ones for a single ordinary action (try a locked gate, jump during a boss, buy on sale, interest, walking or hurt coins, upgrade a weapon once, plant a flower, shield block, feedback, roadmap, mixed turret, reconnect, view builds, open run reports, ping, raised route). 93 remain. Their IDs are listed in `scripts/data/achievements.js` `RETIRED`; their three cosmetics are no longer awarded.
+12. [x] **Ranged enemies: one mark per shot, uneven timers.** Three marks per shot filled the ground; now one (radius 1.9), and each shooter waits a random 3.8–6.2 s between shots, starting from a random first delay. `distinct_biome_telegraphs` now expects one mark per shot (styles still differ per biome).
+13. [x] **Turret builds buffed.** Turrets hit 60% harder and fire 25% faster; every turret kind (flames, wells, casts) now gets the turret damage bonus, which only plain shots had; a turret left 30 m behind re-deploys beside the hero.
+14. [x] **Enemy attack sounds.** Enemy shots, enemy marks going off and melee bites have their own low, growling sounds (`scripts/make-enemy-audio.py`: enemy-shot, enemy-impact, enemy-bite); hero blasts keep "blast". Not listened to by a person yet.
+15. [x] **What the circles are.** The big green circles are Clover Woods heal zones. Every biome zone now has a floating name: `+ HEAL ZONE` (green), `POISON FOG`, `LAVA`, `GRAVITY RIFT` (red), `ICE · SLIPPERY`, `WIND`. biome-review `biome-mechanic-0.png`.
+16. [x] **Sky brighter than the ground.** The sky is drawn brighter than its fog colour (dark skies lifted toward a set brightness, at most 1.6x top, 2.2x horizon); island sun energy 15% lower. The fog keeps its dark horizon so distant ground is not washed out.
+
+- **Exported test order (fixed):** `test-build` failed progression `persisted` because feedback-review, run earlier in the same profile, left 100 fixture high scores that pushed later runs off the table. Build 23 fails the same sequence. feedback-review now removes its fixtures after its own checks.
+- **Known flaky:** integration `biome_gust` fails now and then (also seen on October 24 before these changes); it passed with wide margins on rerun. Cause not found; not loosened.
+
+## Open issues and limits
+
+- **Internet port opening failed on the user's router** (October 23): the "router did not allow automatic port opening" message appeared. UPnP was on in the modem, but no mapping was created. That message covered both "no router answered" and "router refused".
+  - **Reworked** (`coop.gd upnp_work`):
+    - three search styles with longer waits;
+    - every gateway found is tried, not only the first;
+    - a permanent mapping first, then a timed one;
+    - alternate outside ports 29746 and 29756 on a mapping conflict, with the invite code carrying the port that worked.
+  - **Diagnostics:** the panel now names the failing step and the router's own answer, and every attempt is logged to `coop-upnp.log`. The no-router message points at Windows Firewall, which drops the router's answer when Wildforge is not allowed. `coop.md` explains the firewall, the log and manual forwarding.
+  - **Verified:** integration `upnp_outcomes` and `upnp_result_names`.
+  - **Root cause found on the user's network** (October 24; read-only probes, no mapping changed):
+    - The firewall allows the downloaded Build 21 on the Private network.
+    - The modem is a Huawei EchoLife at 192.168.101.1. It answers UPnP, and its WAN service reports **Connected**, but with outside address **10.254.50.76**: a private address, meaning the provider's carrier-grade NAT. The engine labels such a gateway status 5 ("disconnected") and refuses to use it.
+    - No port mapping on this connection can be reached from the internet. Fix: a friend with a public address hosts, or the user asks the provider for a public IP.
+  - **Game fix:** a modem answering with status 5 is now reported as carrier-grade NAT, with that advice, instead of "router did not allow". Verified against the real modem: the game's `upnp_work` returns `carrier` on it. Integration check `upnp_provider_nat`.
+- **Split world snapshots** (fixed October 24, protocol `wildforge-shared-world-14`): the world now travels as about 20 packets, all under the 1,392-byte MTU (the largest is 1,200 bytes at 125 enemies and 300 orbs). It used to be one 17.7 KB message in about 13 fragments, where any lost fragment lost the whole update.
+  - **Packets:** a core packet (time, progression, events, player ids), the live enemy and orb id lists (removals come only from these), enemies 13 per packet, orbs 45 per packet, and one packet per player.
+  - **Late packets:** each enemy, orb and player keeps the newest seq it has seen, so a late packet never rolls it back. A lost packet costs only its own enemies for one tick.
+  - **Verified:** integration `net_packets_fit_mtu`; shared-review (100-enemy crowd all visible), shared-review-stress and coop-dropin. Not yet measured over a real lossy internet link.
+- **Early co-op desync:** the original symptom was never described in detail. The pause-input fix and the passing full `coop` route do not prove it is gone, so the issue stays open until a matching report or reproduction exists.
+- **Rejoin rewards** (fixed October 24): level-ups and chests the host shared while a player was away were lost, and a second shared reward arriving while one was still open replaced it. The host now keeps its last 24 shared rewards and replays those from shortly before the player's last packet when they rejoin. The guest queues a reward that arrives while another is open and never opens the same reward twice. Verified by shared-review `drop1.away_offer` and `away_offer_once`; with the replay switched off, the check fails. Replayed rewards are marked as replays, so they count even after the host has moved to another island (shared-review `drop2.earlier_island_chest`).
+- **Performance** (profiled October 24, crowd-spells): three rank-9 spells in a 125-enemy crowd run at about 30 fps (frame median 33 ms).
+  - **Where the time goes:** physics step 19 ms and process 12 ms, render about 2 ms. In the physics step, enemy collision slides take 5.8 ms (about 0.1 ms per `move_and_slide`, about 60 a frame), skills 2.6, steering 2.1 and rig posing 1.1. In process, the game's own work is about 2.3 ms (HUD 1.2, camera and effects 0.9); the other roughly 9.5 ms is engine-side, most likely transform sync for the many posed rig parts.
+  - **Tried, no worthwhile gain, reverted:** Jolt physics (slides 5.4 ms), staggering far enemies to every 4th tick (worse, 36–43 ms), skipping slides for walkers beyond 14 m (the test crowd stays close), capsule colliders instead of cylinders (frame 32 ms, about 1 ms; changes ledge behaviour).
+  - **Real fix:** a script-side crowd mover (ground following plus scenery avoidance without a physics slide for ordinary walkers) and fewer posed parts per rig. This is a larger piece of work.
+  - Profiling-only timers (`slide`, `surface`, `p_*` sections) stay for the next attempt.
+- **Balance** has been measured with bots and damage dummies only. It still needs a human playtest, especially the Baron fight and spells in moving crowds.
+- **Cleanup the user does by hand:**
+  - delete `G:\game-fxbase`;
+  - optionally delete `G:\wildforge-archive` (old runs, builds 15–18 and old release zips; every release is also on GitHub).
+
+## Deferred
+
+- A hosted relay or matchmaking server. The user chose port opening only (October 22). On October 24 a relay plan was offered: (A) an own relay on a small rented server, (B) A plus direct connection first, (C) Epic Online Services, (D) Steam, (E) NodeTunnel. The user declined it for now: they test over the MoleTun tunnel, where friends join by the host's tunnel address.
