@@ -63,7 +63,7 @@ static func run(g):
 	g.interact();checks.hidden_portal_no_travel=g.realm==3
 	g.player.position=arena_spawn
 	var boss=g.enemies[0]
-	checks.final_identity=boss.boss_id==8 and boss.height==BossBook.entry(8).height and is_equal_approx(boss.speed,BossBook.entry(8).speed) and is_equal_approx(boss.maxHp,(preload("res://scripts/final_arena.gd").TARGET_SECONDS*preload("res://scripts/final_arena.gd").REFERENCE_DPS*preload("res://scripts/final_arena.gd").HEALTH_MULTIPLIER))
+	checks.final_identity=boss.boss_id==8 and boss.height==BossBook.entry(8).height and is_equal_approx(boss.speed,BossBook.entry(8).speed*g.BOSS_SPEED_SCALE) and is_equal_approx(boss.maxHp,(preload("res://scripts/final_arena.gd").TARGET_SECONDS*preload("res://scripts/final_arena.gd").REFERENCE_DPS*preload("res://scripts/final_arena.gd").HEALTH_MULTIPLIER))
 	checks.arena_cracks=g.events.final_cracks.size()==32 and g.events.final_cracks.all(func(crack):return is_instance_valid(crack) and crack.mesh is BoxMesh and crack.is_inside_tree())
 	checks.entrance_darkened=is_equal_approx(g.world.environment.ambient_light_energy,.12) and is_equal_approx(g.world.environment.adjustment_brightness,.68) and boss.node.scale.x<.1
 	for frame in range(20):

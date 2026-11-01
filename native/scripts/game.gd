@@ -1120,7 +1120,7 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 	if structure: enemy.hp=80+realm*40;enemy.maxHp=enemy.hp;enemy.speed=0;enemy.flying=false;enemy.height=height;enemy.radius=radius_value;enemy.damage=1.2;enemy.attack=1.5;enemy.behavior="turret";enemy.name="Magnet sentry"
 	if boss:
 		enemy.boss_id=boss_id;enemy.model="boss_"+str(boss_id);enemy.name=boss_entry.name
-		enemy.damage=1.0;enemy.sound="roar_bump";enemy.speed=boss_entry.speed
+		enemy.damage=1.0;enemy.sound="roar_bump";enemy.speed=boss_entry.speed*BOSS_SPEED_SCALE
 		boss_history.append(boss_id);boss_name=boss_entry.name
 		sound.say("boss",0);update.quip("boss")
 		vibrate(.5,.8,.35)
@@ -1131,7 +1131,8 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 # Much harder (user request, October 24): a quarter less XP per kill, enemies 10%
 # faster, one more enemy per wave and waves 15% closer together.
 const XP_SCALE=.75
-const ENEMY_SPEED_SCALE=1.1
+const BOSS_SPEED_SCALE=1.1  # bosses 10% faster (user request, November 1)
+const ENEMY_SPEED_SCALE=1.21  # 1.1, then 10% faster again (user request, November 1)
 # Dangerous, not tanky (user request, October 25): ordinary enemies have 35% less
 # health and hit 50% harder, in contact and with ranged marks. Bosses keep theirs.
 const ENEMY_HEALTH_SCALE=.65

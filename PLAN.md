@@ -23,6 +23,8 @@ Rules: [AGENTS.md](AGENTS.md) and the [Godot workflow](native/docs/godot-workflo
 
 - [x] **Junkyard crushers squash and lift** (user, November 1). When the plate lands, ordinary monsters under it are squashed outright; the hero and bosses take damage and are shoved out past its edge (no clipping into or onto it). Then the plate is a solid lift (`AnimatableBody3D` on collision layer 8, which heroes and monsters now collide with): it rests 2 s as a step, rises 5.5 m over 2.4 s carrying whoever stands on it, holds 1.6 s and lets go below fall-damage height. The playtest bot no longer avoids a plate that has already struck. Rendered `crusher-review` (new action) checks squash, push-out, riding hero and monster, the safe landing; captures `crusher-rest/ride/top`.
 
+- [x] **Monsters 10% faster** (user, November 1): `ENEMY_SPEED_SCALE` 1.1 → 1.21 for every monster (elites, flyers, chargers and Eclipse ramps scale from it) and `BOSS_SPEED_SCALE` 1.1 for the realm bosses and the Noggin, whose speed came straight from BossBook. Hero speed unchanged. Not bot-measured.
+
 ## Next
 
 - [ ] **Human playtest of Build 27:** the flip under the island (feel, camera, flipped controls), the wisps in motion, the calmer audio. Decide whether hiding underneath is too safe (simple fix: a slow health drain while under).
