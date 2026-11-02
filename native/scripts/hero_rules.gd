@@ -13,6 +13,8 @@ const FLYERS=["bee"]
 const HOVERERS=["smoker","bee"]
 const SHIELD_ONLY=["bathtub"]
 const NO_WEAPON=["cactus"]
+const NO_SLAM=["clutch"]  # Clutch jumps but never slams
+const SLAM_KEYS=["slamPower","slamRadius"]
 # Cards that would do nothing for a hero.
 const JUMP_KEYS=["jumpHeight","airJumps","fallGuard","slamPower","slamRadius","bounceJump"]
 
@@ -20,7 +22,7 @@ static func hero_id(item) -> String:
 	return str(item.get("id","")) if item is Dictionary else str(item)
 
 static func can_jump(item) -> bool: return not NO_JUMP.has(hero_id(item))
-static func can_slam(item) -> bool: return not NO_JUMP.has(hero_id(item))
+static func can_slam(item) -> bool: return not NO_JUMP.has(hero_id(item)) and not NO_SLAM.has(hero_id(item))
 static func flies(item) -> bool: return FLYERS.has(hero_id(item))
 static func hovers(item) -> bool: return HOVERERS.has(hero_id(item))
 static func no_health(item) -> bool: return SHIELD_ONLY.has(hero_id(item))
@@ -39,5 +41,6 @@ static func card_fits(item,card: Dictionary) -> bool:
 	if card.get("effects",[]).is_empty(): return true
 	var key=str(card.effects[0].get("key",""))
 	if not can_jump(item) and JUMP_KEYS.has(key): return false
+	if not can_slam(item) and SLAM_KEYS.has(key): return false
 	if no_health(item) and key in ["maxHp","regen","lifesteal"]: return false
 	return true

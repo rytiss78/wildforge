@@ -333,7 +333,7 @@ static func run(game: Node3D):
 			# Digby Mole tunnels through the island (Underside), not along the ground.
 			if game.underside.digging(): game.underside.tick(game,1.0/60.0);continue
 			game.player.velocity.y-=0.4;game.player.move_and_slide()
-		var effect=target.hp<1e6 or float(target.freeze)>0 or float(target.blind)>0 or float(target.get("bubble",0))>0 or game.hp>hp_at or game.shield_hp>0 or game.stat("rate")>game.stats.rate*1.01 or game.stat("speed")>game.stats.speed*1.01 or game.player.position.distance_to(start_at)>3.0 or game.flowers.size()>=flowers_at+4
+		var effect=target.hp<1e6 or float(target.freeze)>0 or float(target.blind)>0 or float(target.get("bubble",0))>0 or game.hp>hp_at or game.shield_hp>0 or game.stat("rate")>game.stats.rate*1.01 or game.stat("speed")>game.stats.speed*1.01 or game.player.position.distance_to(start_at)>3.0 or game.flowers.size()>=flowers_at+4 or ClutchPlay.lock_until>game.elapsed
 		if not (used and effect and game.trick_cooldown>0): tricked.append(hero_def.id)
 		if game.underside.active(): game.underside.reset(game)
 	# Digby Mole's voice: hurt lines, quips and the trick shout exist and load.

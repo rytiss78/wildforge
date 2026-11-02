@@ -76,7 +76,7 @@ Done in this order: quick screen and data fixes first, then hero rework, then ne
 - [x] 30 · The shop becomes **Dyleris**: talking to him marks where three items lie under the island; they are free but you must fetch them. Ten dropai (`Dropai.ITEMS`, three rolled per island, never twice a run): Gravity Anchor (no fall damage, slams +50%), Sun Lantern (+8 armour), Golden Pickaxe (double pot coins), Moon Compass (+30% XP), Hourglass (potions +50%), Rain Cloud (lava no longer hurts you), Echo Bell (+15% fire rate), Second Heart (a free revive), Merchant's Ledger (boxes and Dyleris −25%), World Seed (+20% damage, +20 health). Local to each player.
 
 **E. Biggest**
-- [ ] 28 · **Clutch**, a first-person tactical shooter hero: no auto-aim (turrets still aim), number keys pick the active weapon, own HUD (health, armour, slots, kill combo), V = short aim lock with 5× damage and a headshot chime, Shift = slow walk that makes enemies lose him for a moment, no slam. Friendly fire on other heroes.
+- [x] 28 · **Clutch**, a first-person tactical shooter hero: no auto-aim (turrets still aim), number keys pick the active weapon, own HUD (health, armour, slots, kill combo), V = short aim lock with 5× damage and a headshot chime, Shift = slow walk that makes enemies lose him for a moment, no slam. Friendly fire on other heroes.
 
 ## Next
 

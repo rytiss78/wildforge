@@ -11,7 +11,7 @@ class_name CartoonHeroes
 const INK=CartoonMesh.INK
 const TOOTH=CartoonMesh.TOOTH
 const MOUTH=CartoonMesh.MOUTH
-const ASSETS=["hero_pipe_wrench","count_duck","hero_sweet_potato","hero_marble_bust_01","hero_street_rat","hero_hamburger_buns","hero_florist","hero_teapot","hero_octopus","hero_astronaut","hero_cactus","hero_book","hero_snail","hero_bee","hero_sushi","hero_mushroom","hero_clock","hero_icecream","hero_bathtub","hero_peacock","hero_toaster","hero_ninja","hero_smoker","hero_alcoholic","hero_white-supra","hero_mole"]
+const ASSETS=["hero_pipe_wrench","count_duck","hero_sweet_potato","hero_marble_bust_01","hero_street_rat","hero_hamburger_buns","hero_florist","hero_teapot","hero_octopus","hero_astronaut","hero_cactus","hero_book","hero_snail","hero_bee","hero_sushi","hero_mushroom","hero_clock","hero_icecream","hero_bathtub","hero_peacock","hero_toaster","hero_ninja","hero_smoker","hero_alcoholic","hero_white-supra","hero_mole","hero_clutch"]
 
 static func c(hex: String) -> Color: return Color(hex)
 
@@ -357,6 +357,25 @@ static func scene(asset: String) -> Node3D:
 			h.can(Vector3(0,.26,-.27),Vector3(0,.26,-.33),.07,c("c9c9d4"));h.ball(Vector3(0,.26,-.34),Vector3(.11,.11,.04),c("fff4b0"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
 			s.make_arms(Vector3(.38,.88,0),.3,.075,fur,pink,1.7);s.make_legs(Vector3(.16,.3,0),.2,.07,fur,pink)
 			s.orb(Vector3(0,.66,0),.35,null,true)
+		"hero_clutch":
+			# Clutch: a stubby tactical operator. Olive plate vest over a slate suit,
+			# a dome helmet with a big orange visor strip, one headset ear cup, a
+			# chewed toothpick and knee pads. The orb sits in the vest's chest plate.
+			var suit=c("4a5560");var vest=c("6b7a46");var visor=c("ff9a2e")
+			b.ball(Vector3(0,.42,0),Vector3(.5,.22,.4),suit);b.ball(Vector3(0,1.0,0),Vector3(.62,.34,.46),vest)
+			b.box(Vector3(0,.72,-.02),Vector3(.56,.34,.44),vest)
+			for x in [-.2,.2]: b.box(Vector3(x,.6,-.24),Vector3(.12,.16,.06),c("55613a"))
+			b.ring(Vector3(0,.5,0),.27,.045,c("2a2a30"))
+			var h=s.make_head(Vector3(0,1.36,0))
+			h.ball(Vector3.ZERO,Vector3(.42,.42,.42),c("d9a77a"))
+			h.ball(Vector3(0,.1,0),Vector3(.48,.36,.48),suit);h.ring(Vector3(0,.04,0),.24,.03,c("2a2a30"))
+			h.box(Vector3(0,.06,-.21),Vector3(.38,.09,.05),visor)
+			h.eye(Vector3(-.08,-.06,-.19),.045,Vector3(-.15,0,-1),c("3b7dff"));h.eye(Vector3(.08,-.06,-.19),.035,Vector3(.2,0,-1),c("3b7dff"))
+			h.can(Vector3(.22,0,0),Vector3(.27,0,0),.09,c("2a2a30"));h.rod(Vector3(.25,-.05,-.02),Vector3(.12,-.16,-.2),.012,c("2a2a30"))
+			h.rod(Vector3(.02,-.15,-.2),Vector3(.12,-.17,-.26),.01,c("e0c08a"))
+			s.make_arms(Vector3(.36,1.0,0),.36,.065,suit,c("2a2a30"));s.make_legs(Vector3(.13,.44,0),.4,.075,suit,c("2a2a30"))
+			for x in [-.13,.13]: b.ball(Vector3(x,.24,-.08),Vector3(.13,.11,.09),c("2a2a30"))
+			s.orb(Vector3(0,.82,-.02),.27,null,true)
 		"hero_white-supra":
 			var paint_c=c("f4f6ff")
 			b.ball(Vector3(0,.45,0),Vector3(.85,.32,1.5),paint_c);b.ring(Vector3(0,.6,.05),.34,.06,paint_c)

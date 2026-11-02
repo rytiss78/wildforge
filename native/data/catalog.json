@@ -619,6 +619,34 @@
       ],
       "height": 1.35,
       "radius": 0.45
+    },
+    {
+      "id": "clutch",
+      "name": "Clutch",
+      "title": "Calm hands. Loud boots.",
+      "model": "clutch",
+      "weapon": "gun",
+      "perk": "Steady Aim",
+      "description": "First person, no auto-aim: hold the left button to shoot where you look; 1-3 pick the weapon; headshots deal double; 25% more range. Shift sneaks instead of dashing; no slam. Shots also hit other heroes. Height 1.80 m · Move 100% · Jump 100%.",
+      "effects": [
+        {
+          "key": "range",
+          "amount": 0.25,
+          "mode": "multiply"
+        },
+        {
+          "key": "speed",
+          "amount": 0,
+          "mode": "multiply"
+        },
+        {
+          "key": "jumpHeight",
+          "amount": 0,
+          "mode": "multiply"
+        }
+      ],
+      "height": 1.8,
+      "radius": 0.42
     }
   ],
   "weapons": [

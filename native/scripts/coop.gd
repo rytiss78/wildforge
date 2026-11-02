@@ -620,7 +620,7 @@ func pose() -> Dictionary:
 		if weapon.turret and is_instance_valid(weapon.get("node")): state.placement=array(weapon.node.position)
 		weapons.append(state)
 	var build={"weapons":weapons,"skills":game.owned.filter(func(item):return item.kind in ["skill","mutation"]).map(func(item):return str(item.name).left(48))}
-	return {"type":"pose","flower_realm":game.realm,"flowers":flower_state(),"position":array(game.player.position),"yaw":game.avatar.rotation.y,"under":game.underside.flipped(),"model":game.hero.model,"name":player_name(),"cosmetic":str(game.career.data.settings.get("cosmetic","")),"mode":"ended" if game.run_recorded else game.mode,"weapons":weapons,"build":build,"hp":game.hp,"shield_hp":game.shield_hp,"gold":game.gold,"rescue_hold":game.update.rescue_hold,"rescue_step":game.update.rescue_step,"pet":game.pet.label() if is_instance_valid(game.pet) else "","hat":str(game.career.data.settings.get("hat","")) if HatBook.owned(game.career.data.unlocked,str(game.career.data.settings.get("hat",""))) else ""}
+	return {"type":"pose","flower_realm":game.realm,"flowers":flower_state(),"position":array(game.player.position),"yaw":game.avatar.rotation.y,"under":game.underside.flipped(),"sneak":ClutchPlay.hidden(game),"model":game.hero.model,"name":player_name(),"cosmetic":str(game.career.data.settings.get("cosmetic","")),"mode":"ended" if game.run_recorded else game.mode,"weapons":weapons,"build":build,"hp":game.hp,"shield_hp":game.shield_hp,"gold":game.gold,"rescue_hold":game.update.rescue_hold,"rescue_step":game.update.rescue_step,"pet":game.pet.label() if is_instance_valid(game.pet) else "","hat":str(game.career.data.settings.get("hat","")) if HatBook.owned(game.career.data.unlocked,str(game.career.data.settings.get("hat",""))) else ""}
 
 # Everything a client needs to construct a replica of a host enemy.
 func actor_descriptor(enemy: Dictionary) -> Dictionary:
@@ -750,6 +750,7 @@ func receive(sender: int,message):
 	if ExplosiveBarrels.receive(game,sender,message): return
 	if game.update.receive(sender,message): return
 	if Spectate.receive(game,sender,message): return
+	if ClutchPlay.receive(game,sender,message): return
 	var kind=message.type
 	if kind=="test_shared":
 		if test_mode and (members.has(sender) if hosting else sender==owner_id):
@@ -838,7 +839,7 @@ func receive(sender: int,message):
 			if members[sender].get("disconnected",false): return
 			var p=vector(message.get("position",[]))
 			if not p.is_finite() or maxf(absf(p.x),absf(p.z))>RealmWorld.EXTENT+10: return
-			for key in ["position","yaw","under","model","name","cosmetic","mode","weapons","build","hp","shield_hp","stats","gold","rescue_hold","rescue_step","pet","hat","flower_realm","flowers"]:
+			for key in ["position","yaw","under","sneak","model","name","cosmetic","mode","weapons","build","hp","shield_hp","stats","gold","rescue_hold","rescue_step","pet","hat","flower_realm","flowers"]:
 				if message.has(key): members[sender][key]=message[key]
 			if message.has("name"): members[sender].name=clean_player_name(message.name)
 			if game.run_active: ensure_avatar(sender,members[sender])
@@ -1229,11 +1230,13 @@ func target(origin: Vector3) -> Dictionary:
 	var result={"id":local_id,"position":game.player.position};var distance=origin.distance_squared_to(game.player.position) if game.hp>0 and not game.underside.active() else INF
 	# Prickle Rick draws enemies to him: he counts as nearer than he is.
 	if HeroPlay.taunts(str(game.hero.get("id",""))): distance*=HeroPlay.AGGRO
+	# A sneaking Clutch is lost: enemies head for where they last saw him.
+	if ClutchPlay.hidden(game): distance=INF;result={"id":-1,"position":ClutchPlay.last_seen}
 	if distance==INF and game.underside.active(): result={"id":-1,"position":rim_spot(game.player.position)}
 	if active and hosting:
 		for id in members:
 			var member=members[id]
-			if member.get("disconnected",false) or member.get("under",false): continue
+			if member.get("disconnected",false) or member.get("under",false) or member.get("sneak",false): continue
 			if not member.has("position") or member.get("hp",0)<=0: continue
 			var p=vector(member.position);var d=origin.distance_squared_to(p)*(HeroPlay.AGGRO if str(member.get("model",""))=="cactus" else 1.0)
 			if d<distance: distance=d;result={"id":id,"position":p}

@@ -40,6 +40,7 @@ const TRICKS={
 	"alcoholic":{"name":"Hiccup Blast","kind":"quake","cooldown":10.0,"radius":6.0,"damage":45.0,"word":"HIC!"},
 	"white-supra":{"name":"Nitro","kind":"frenzy","cooldown":16.0,"rate":1.0,"speed":1.8,"time":4.0,"word":"NITRO!"},
 	"mole":{"name":"Dig Through","kind":"dig","cooldown":9.0,"radius":6.0,"damage":50.0,"word":"DIG!"},
+	"clutch":{"name":"Lock-On","kind":"aimlock","cooldown":20.0,"time":2.5,"word":"LOCKED!"},
 }
 
 static func trick(g) -> Dictionary: return TRICKS.get(str(g.hero.id),{})
@@ -66,6 +67,7 @@ static func describe(t: Dictionary) -> String:
 		"blink": text="Vanish and reappear %d m ahead" % roundi(float(t.distance))
 		"dig": text="Dig through the island to its other side; burst out for %d damage" % dmg
 		"garden": text="Plant %d grown flowers in a ring round you" % int(t.count)
+		"aimlock": text="%.1f s of shots that snap to heads, at %d× damage" % [float(t.time),roundi(ClutchPlay.LOCK_DAMAGE)]
 		_: text=str(t.get("name",""))
 	return text+" · %d s" % roundi(float(t.cooldown))
 
@@ -116,6 +118,9 @@ static func use(g) -> bool:
 					g.burst(Vector3(at.x,g.world.height_at(at.x,at.z)+1.0,at.z),Color("f5a8c4"),6)
 				g.last_plant=p
 			g.sound.effect("heal",p)
+		"aimlock":
+			# Clutch: his shots snap to the nearest head for a moment, at 5x damage.
+			ClutchPlay.lock_until=g.elapsed+float(t.time)
 		"heal":
 			g.heal(g.stats.maxHp*float(t.heal));g.player_poison=0;g.player_fire=0
 			g.damage_area(p,t.radius,1.0,str(t.cause))

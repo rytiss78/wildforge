@@ -46,6 +46,7 @@ var dash_status: Label
 var trick_status: Label
 var combo: ComboMeter
 var rescue_code: RescueCode
+var clutch_hud: ClutchHud  # Clutch's first-person screen
 var tune_code: RescueCode  # Wrench's turret tune-up (WrenchTune)
 # Ability readouts turn green when ready.
 const READY_GREEN=Color("7dff9a")
@@ -331,6 +332,7 @@ func setup(owner_game):
 	combo=ComboMeter.new();combo.position=Vector2(1660,470);root.add_child(combo)
 	# The co-op rescue code, centred above the interaction prompt.
 	rescue_code=RescueCode.new();rescue_code.position=Vector2(960-rescue_code.size.x*.5,610);root.add_child(rescue_code)
+	clutch_hud=ClutchHud.new();clutch_hud.game=game;root.add_child(clutch_hud)
 	tune_code=RescueCode.new();tune_code.position=Vector2(960-tune_code.size.x*.5,560);root.add_child(tune_code)
 	damage_feedback=preload("res://scripts/damage_feedback.gd").new();damage_feedback.game=game;damage_feedback.mouse_filter=Control.MOUSE_FILTER_IGNORE;root.add_child(damage_feedback)
 	prompt = label("",18,ThemeTokens.BIOME_ACCENTS.verdant.petal)
@@ -750,6 +752,10 @@ func update(delta: float):
 		blast.color.a = 0
 	else: blast.color.a = 0
 	update_achievement_notification(delta)
+	# Clutch has his own vitals and weapon readout: hide the usual plates.
+	if ClutchPlay.first_person(game):
+		for widget in root.get_children():
+			if widget is Control and widget!=clutch_hud and widget!=_ach_note_panel and (VITALS.grow(40).has_point(widget.position) or LOADOUT.grow(60).has_point(widget.position)): widget.visible=false
 
 func start_menu(focus_hero: bool=false):
 	if not focus_hero: game.roll_menu_hero()

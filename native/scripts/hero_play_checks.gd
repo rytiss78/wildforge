@@ -129,6 +129,33 @@ static func run(game: Node3D) -> Dictionary:
 	var changed=Dropai.found.size()==3 and Dropai.markers().is_empty() and (Dropai.found.has("rain") or game.stats!=before_stats)
 	checks.dropai=first and not again and Dropai.hidden.size()==3 and under and changed
 	Dropai.reset()
+	# Clutch: first person, aims by hand, headshots, Lock-On, sneaking, no slam.
+	use(game,"clutch")
+	game.yaw=0.0;game.pitch=0.0;ClutchPlay.place_camera(game,1.0/60.0)
+	var fps_ok=ClutchPlay.first_person(game) and is_equal_approx(game.camera.fov,ClutchPlay.FOV) and game.camera.global_position.distance_to(game.player.position+Vector3.UP*ClutchPlay.EYE)<.05
+	game.spawn_enemy(6);var target=game.enemies[-1];target.node.position=game.player.position+Vector3(0,0,-8);target.flying=false;target.hp=99999.0;target.maxHp=99999.0
+	var gun=ClutchPlay.active_weapon(game);var hp0=float(target.hp)
+	var idle=ClutchPlay.trigger(game,gun)
+	game.set_meta("test_trigger",true)
+	var belly=target.node.position+Vector3.UP*float(target.height)*.4;var eye0=game.player.position+Vector3.UP*ClutchPlay.EYE
+	game.pitch=-atan2(belly.y-eye0.y,eye0.distance_to(Vector3(belly.x,eye0.y,belly.z)));ClutchPlay.place_camera(game,1.0/60.0)
+	var shot=ClutchPlay.trigger(game,gun);var body_hit=hp0-float(target.hp)
+	# Aim at the head: the pitch that points the eye at the top of the body.
+	var head=ClutchPlay.head_point(game,target);var eye=game.player.position+Vector3.UP*ClutchPlay.EYE
+	game.pitch=-atan2(head.y-eye.y,eye.distance_to(Vector3(head.x,eye.y,head.z)));ClutchPlay.place_camera(game,1.0/60.0)
+	var hp1=float(target.hp);ClutchPlay.trigger(game,gun);var head_hit=hp1-float(target.hp)
+	# Look away and miss; Lock-On still finds the head, at five times the damage.
+	game.yaw=PI*.5;game.pitch=0.0;ClutchPlay.place_camera(game,1.0/60.0)
+	var hp2=float(target.hp);ClutchPlay.trigger(game,gun);var missed=is_equal_approx(hp2,float(target.hp))
+	game.trick_cooldown=0.0;HeroTricks.use(game)
+	var hp3=float(target.hp);ClutchPlay.trigger(game,gun);var locked=hp3-float(target.hp)
+	game.remove_meta("test_trigger")
+	checks.clutch_aims=fps_ok and not idle and shot and body_hit>0 and head_hit>body_hit*1.5 and missed and locked>body_hit*4.0
+	checks.clutch_rules=not HeroRules.can_slam(game.hero) and HeroRules.can_jump(game.hero) and game.rules.banished.has("slamPower") and not game.rules.banished.has("jumpHeight")
+	ClutchPlay.sneaking=true;ClutchPlay.last_seen=Vector3(3,0,3)
+	var hunted=game.coop.target(target.node.position) if game.coop.has_method("target") else {"position":ClutchPlay.last_seen}
+	checks.clutch_sneak=ClutchPlay.hidden(game) and Vector3(hunted.position).distance_to(ClutchPlay.last_seen)<.01 and is_equal_approx(ClutchPlay.speed_scale(game),ClutchPlay.SNEAK_SPEED)
+	ClutchPlay.reset()
 	game.clear_entities()
 	game.select_hero(saved_hero)
 	return checks

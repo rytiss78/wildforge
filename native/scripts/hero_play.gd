@@ -42,7 +42,7 @@ static func id(g) -> String: return str(g.hero.get("id",""))
 # At the start of a run: cards the hero cannot use leave the pool, the cactus
 # drops his weapon, and per-run state is cleared.
 static func start(g):
-	for key in HeroRules.JUMP_KEYS if not HeroRules.can_jump(g.hero) else []:
+	for key in HeroRules.JUMP_KEYS if not HeroRules.can_jump(g.hero) else HeroRules.SLAM_KEYS if not HeroRules.can_slam(g.hero) else []:
 		if not g.rules.banished.has(key): g.rules.banished.append(key)
 	if HeroRules.no_health(g.hero):
 		for key in ["maxHp","regen","lifesteal","coinHeal","chestHeal","landingHeal","slamHeal"]:
@@ -91,6 +91,7 @@ static func tick(g,delta: float):
 # Car handling: the velocity turns towards the wanted one with tyre grip; holding
 # Space (the jump key) cuts the grip, so the car slides through turns at speed.
 static func drive(g,running: Vector3,delta: float) -> Vector3:
+	if id(g)=="clutch": var sneak=ClutchPlay.speed_scale(g);return Vector3(running.x*sneak,running.y,running.z*sneak)
 	# Prickle Rick: his own slow wobble plus the momentum enemies and hits gave him.
 	if id(g)=="cactus": return Vector3(running.x+roll.x,running.y,running.z+roll.z)
 	if id(g)!="white-supra": return running

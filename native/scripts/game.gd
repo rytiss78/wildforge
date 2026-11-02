@@ -527,7 +527,7 @@ func start_run(shared_seed: int=-1):
 	first.strength = 1.0
 	first.tier = 0
 	equip_weapon(first)
-	HeroPlay.start(self);WrenchTune.reset();Dropai.reset()
+	HeroPlay.start(self);WrenchTune.reset();Dropai.reset();ClutchPlay.reset()
 	career.bump("runs")
 	career.bump("play_"+hero.id)
 	sound.start(seed_value)
@@ -961,7 +961,8 @@ func camera_look(amount: Vector2):
 	if mode != "playing": return
 	var sensitivity = float(career.data.settings.lookSensitivity)
 	yaw -= amount.x*sensitivity*(-1.0 if underside.flipped() else 1.0)
-	pitch = clampf(pitch+amount.y*sensitivity*(-1 if career.data.settings.invertLook else 1),-.4,1.1)
+	var fps=ClutchPlay.first_person(self)
+	pitch = clampf(pitch+amount.y*sensitivity*(-1 if career.data.settings.invertLook else 1),-1.45 if fps else -.4,1.45 if fps else 1.1)
 
 func _input(event):
 	if hud.capture_binding(event): get_viewport().set_input_as_handled();return
@@ -1911,7 +1912,7 @@ func rift_portal(at: Vector3):
 	burst(at,Color("7dff6a"),10)
 
 func dash():
-	if dash_cooldown>0: return
+	if dash_cooldown>0 or ClutchPlay.is_clutch(self): return  # Clutch sneaks on Shift instead
 	dash_direction=preload("res://scripts/combat_tactics.gd").dash_vector(Input.get_vector("move_left","move_right","move_forward","move_back",.18),yaw,direction)
 	condition_times.dash=elapsed
 	dash_time = .2
@@ -2146,6 +2147,10 @@ func update_combat(delta: float):
 		if weapon.id in ["saw","flame","fire-turret"]: sound.weapon_loop(weapon.id,not (nearest_melee(origin,weapon.range*stat("range")/18.0) if weapon.id=="saw" else nearest_enemy(origin,weapon.range)).is_empty(),origin)
 		if weapon.turret and weapon.node.has_meta("model"):
 			weapon.node.get_meta("model").rank=weapon.rank;weapon.node.get_meta("model").tick(delta)
+		# Clutch aims by hand: only the active weapon, only while the trigger is held.
+		if not weapon.turret and ClutchPlay.is_clutch(self):
+			if weapon.clock<=0 and ClutchPlay.trigger(self,weapon): weapon.clock=1.0/(weapon.rate*stat("rate"))
+			continue
 		if weapon.clock<=0:
 			if weapon.turret and TurretPulse.pulses(str(weapon.id)): TurretPulse.fire(self,weapon)
 			else: fire(weapon,origin)
@@ -2572,6 +2577,7 @@ func _physics_process(delta: float):
 	avatar.statuses(player_fire>0,player_poison>0,player_chill>0,player_blind>0)
 	Lava.hero_flames(self,player_fire>0 and hp>0)
 	avatar.visible=burrow_time<=0 and not underside.digging()
+	ClutchPlay.late(self,delta)
 	if burrow_time==0 and events.get("burrowing",false): damage_area(player.position,5.5,stats.burrow,"burrow");events.burrowing=false
 	if burrow_time>0: events.burrowing=true
 	walking_gold+=previous.distance_to(player.position)*stats.walkGold
@@ -2681,7 +2687,9 @@ func _process(delta: float):
 		if dn.get("flash_timer",0)>0: dn.flash_timer-=delta
 	damage_numbers=damage_numbers.filter(func(dn):return dn.life>0)
 	if profile_crowd: process_mark=profile_mark("p_numbers",process_mark)
-	if not camera_locked:
+	if not camera_locked and ClutchPlay.first_person(self): ClutchPlay.place_camera(self,delta)
+	elif not camera_locked:
+		if camera.fov!=70.0: camera.fov=70.0
 		# Under the island the view is turned over, so the ground stays at the bottom.
 		var view_up=underside.camera_up()
 		var anchor=Spectate.anchor(self,player.position+view_up*1.2)
@@ -2850,7 +2858,7 @@ func run_smoke():
 	var checks = {"native":true,"initial_enemies":enemies.size(),"weapon_slots":equipped.size(),"chests":chests.size(),"first_price":rules.chest_price(0),"rarities":rules.data.loot.size(),"achievements":career.achievements.size(),"xp_target":xp_target,"realm":realm,"paid_count":paid_chests}
 	checks.main_menu=rebuilt_menu
 	checks.xbox_navigation=navigated;checks.xbox_accept=accepted;checks.pointer_focus_safe=pointer_safe
-	checks.hero_roster=rules.data.heroes.size()==19 and rules.data.heroes.all(func(h):return CartoonHeroes.has("count_duck" if h.model=="rubber_duck_toy" else "hero_"+h.model))
+	checks.hero_roster=rules.data.heroes.size()==20 and rules.data.heroes.all(func(h):return CartoonHeroes.has("count_duck" if h.model=="rubber_duck_toy" else "hero_"+h.model))
 	# Every biome's ten cartoon species build as one merged mesh (CartoonBook).
 	checks.enemy_roster=range(RealmWorld.BIOME_COUNT).all(func(b):return range(CreatureBook.WEIGHTS.size()).all(func(s):return CartoonBook.get_model(b,s).mesh.get_surface_count()==1))
 	checks.painted_terrain=range(6).all(func(i):return ResourceLoader.exists("res://assets/illustrated/terrain-%d.png" % i))
