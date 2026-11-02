@@ -68,7 +68,7 @@ Done in this order: quick screen and data fixes first, then hero rework, then ne
 - **Early co-op desync:** never described in detail; open until a matching report or reproduction.
 - **Performance:** three rank-9 spells in a 125-enemy crowd now run at about 38 fps (frame p50 about 26 ms, was 60–70 ms) since monsters on open ground glide along the terrain in script (`CrowdMover`, 98% of monster steps) instead of a physics sweep. What is left is spread over the spells, the HUD and engine work; switching to Jolt physics measured a further gain in the plain crowd (physics p95 38 → 15 ms) but needs a full physics review first.
 - **Not heard by a person:** generated creature voices, enemy attack sounds, spell sounds, the phonk music and the intro stingers.
-- **Known flaky checks** (not loosened): `shared-review` rejoin snapshot count under load, integration `biome_gust` and `spell_hits_trigger_mutations` (once, November 1), smoke `head_stomp`, exported smoke `real_ground_slam` and `mole_dig_up` (once each, November 2; reruns pass).
+- **Known flaky checks** (not loosened): `shared-review` rejoin snapshot count under load, integration `biome_gust` and `spell_hits_trigger_mutations` (once, November 1), smoke `head_stomp`.
 - **Remote co-op visuals:** teammates see an evolved weapon's halo but not gilded shots or spell synergy effects.
 
 ## Deferred
