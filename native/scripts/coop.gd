@@ -1230,8 +1230,9 @@ func target(origin: Vector3) -> Dictionary:
 	var result={"id":local_id,"position":game.player.position};var distance=origin.distance_squared_to(game.player.position) if game.hp>0 and not game.underside.active() else INF
 	# Prickle Rick draws enemies to him: he counts as nearer than he is.
 	if HeroPlay.taunts(str(game.hero.get("id",""))): distance*=HeroPlay.AGGRO
-	# A sneaking Clutch is lost: enemies head for where they last saw him.
-	if ClutchPlay.hidden(game): distance=INF;result={"id":-1,"position":ClutchPlay.last_seen}
+	# A sneaking Clutch is lost: unless another hero is in sight, enemies stop
+	# where they are and do not attack.
+	if ClutchPlay.hidden(game): distance=INF;result={"id":-1,"position":origin,"lost":true}
 	if distance==INF and game.underside.active(): result={"id":-1,"position":rim_spot(game.player.position)}
 	if active and hosting:
 		for id in members:

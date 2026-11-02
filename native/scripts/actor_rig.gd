@@ -103,6 +103,8 @@ func sync_equipment(weapons: Array):
 		var extra=add_arm(0);extra.scale=Vector3.ONE*.02
 		create_tween().tween_property(extra,"scale",Vector3.ONE,.5).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	if arms.size()>2: arms[2].visible=weapons.size()==3
+	# Clutch holds one weapon (the active one, listed first) in both hands.
+	if solid!=null and solid.identity=="hero_clutch": weapons=weapons.slice(0,1)
 	for i in range(weapons.size()):
 		if i>=arms.size(): break
 		var weapon=WeaponModel.new();weapon.setup(weapons[i].id);weapon.rank=int(weapons[i].rank);weapon.evolved=bool(weapons[i].get("evolved",false))

@@ -163,6 +163,18 @@ func animate(delta: float, speed: float = 0, grounded: bool = true):
 	if jaw!=null: jaw.rotation.x=sin(clock*3)*.12+.1*walk
 	if head!=null: head.rotation.y=sin(clock*1.8)*.06
 	if cape!=null: cape.rotation.x=-.08*walk+sin(clock*2.3)*.035
+	if identity=="hero_clutch": aim_pose(walk)
+
+# Clutch holds his weapon at the shoulder like a rifle: the left arm (weapon)
+# forward, the right arm reaching across to steady it; the hand socket is turned
+# back so the weapon points straight ahead.
+func aim_pose(walk: float):
+	var sway=sin(clock*11.0)*.03*walk
+	if arms.size()>0: arms[0].rotation=Vector3(1.3+sway,-.35,0)
+	if arms.size()>1: arms[1].rotation=Vector3(1.38+sway,.75,0)
+	for i in range(mini(arms.size(),2)):
+		var socket: Node3D=arms[i].find_child("HandSocket*",false,false)
+		if socket!=null: socket.basis=arms[i].basis.inverse()
 
 func hand_socket() -> Node3D:
 	return model.find_child("HandSocket1",true,false)

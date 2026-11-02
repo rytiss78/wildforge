@@ -2201,6 +2201,7 @@ func update_combat(delta: float):
 		update_status_indicators(enemy)
 		if enemy.has("modifier"): EliteMods.tick(self,enemy,enemy_delta)
 		var target_player=coop.target(enemy.node.position)
+		if target_player.get("lost",false): ClutchPlay.lost(self,enemy,enemy_delta);continue
 		enemy.wants_climb=target_player.position.y-enemy.node.position.y>1.5
 		var toward = target_player.position-enemy.node.position
 		toward.y = 0

@@ -167,13 +167,21 @@ static func run(g):
 	g.camera_locked=false;g.hud.visible=true;g.player_fire=0.0;mark.queue_free()
 	# Clutch in first person, with monsters ahead and his own screen (November 2).
 	g.select_hero(g.rules.data.heroes.filter(func(h):return h.id=="clutch")[0])
-	g.equip_weapon(g.rules.data.weapons.filter(func(w):return w.id=="shotgun")[0] if g.rules.data.weapons.any(func(w):return w.id=="shotgun") else g.rules.data.weapons[0])
+	for w in g.equipped:
+		if is_instance_valid(w.get("node")): w.node.queue_free()
+	g.equipped.clear();g.equip_weapon(g.rules.data.weapons.filter(func(w):return w.id=="gun")[0])
 	g.clear_entities();g.pickups.clear();g.camera_locked=false;g.hud.visible=true
 	var fps_at=Vector3(0,0,0);fps_at.y=g.world.height_at(0,0)+.1;g.world.ensure_ground(fps_at)
 	g.player.position=fps_at;g.player.velocity=Vector3.ZERO;g.player.reset_physics_interpolation()
 	g.yaw=0.0;g.pitch=.03
 	for k in range(4):
 		g.spawn_enemy(8);var foe=g.enemies[-1];foe.node.position=fps_at+Vector3(-3+k*2,0,-7-k*2.5);foe.node.position.y=g.world.height_at(foe.node.position.x,foe.node.position.z)+.1;foe.speed=0.0;foe.attack=99.0
+	# Third person first: both hands on the one weapon, aimed ahead.
+	ClutchPlay.show_active(g);g.camera_locked=true;g.hud.visible=false
+	g.camera.fov=50.0;g.camera.position=fps_at+Vector3(-2.2,1.5,-2.6);g.camera.look_at(fps_at+Vector3.UP*.95)
+	for i in range(12): await g.get_tree().process_frame
+	checks.clutch_third=await shot(g,"clutch-third")
+	g.camera_locked=false;g.hud.visible=true
 	for i in range(20): await g.get_tree().process_frame
 	ClutchPlay.kill_times=[g.elapsed,g.elapsed];ClutchPlay.hit_flash=.18;ClutchPlay.head_flash=.3
 	checks.clutch_view=ClutchPlay.first_person(g) and await shot(g,"clutch")

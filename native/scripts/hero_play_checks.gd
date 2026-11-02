@@ -144,17 +144,42 @@ static func run(game: Node3D) -> Dictionary:
 	var head=ClutchPlay.head_point(game,target);var eye=game.player.position+Vector3.UP*ClutchPlay.EYE
 	game.pitch=-atan2(head.y-eye.y,eye.distance_to(Vector3(head.x,eye.y,head.z)));ClutchPlay.place_camera(game,1.0/60.0)
 	var hp1=float(target.hp);ClutchPlay.trigger(game,gun);var head_hit=hp1-float(target.hp)
-	# Look away and miss; Lock-On still finds the head, at five times the damage.
+	# Look away and miss.
 	game.yaw=PI*.5;game.pitch=0.0;ClutchPlay.place_camera(game,1.0/60.0)
 	var hp2=float(target.hp);ClutchPlay.trigger(game,gun);var missed=is_equal_approx(hp2,float(target.hp))
-	game.trick_cooldown=0.0;HeroTricks.use(game)
-	var hp3=float(target.hp);ClutchPlay.trigger(game,gun);var locked=hp3-float(target.hp)
 	game.remove_meta("test_trigger")
-	checks.clutch_aims=fps_ok and not idle and shot and body_hit>0 and head_hit>body_hit*1.5 and missed and locked>body_hit*4.0
+	checks.clutch_aims=fps_ok and not idle and shot and body_hit>0 and head_hit>body_hit*1.5 and missed
+	# V: the aimbot swings the view onto the head, fires by itself at 5x, then
+	# moves to the next enemy when the first dies.
+	var second_spot=game.player.position+Vector3(-7,0,-3)
+	game.spawn_enemy(6);var second=game.enemies[-1];second.node.position=second_spot;second.flying=false;second.hp=99999.0;second.maxHp=99999.0
+	target.hp=99999.0
+	game.trick_cooldown=0.0;var tricked=HeroTricks.use(game)
+	var fired=0;var lock_hp=float(target.hp)
+	for i in range(40):
+		ClutchPlay.aimbot(game,1.0/60.0);ClutchPlay.place_camera(game,1.0/60.0)
+		if ClutchPlay.trigger(game,gun): fired+=1
+	var first_lock=ClutchPlay.lock_target==target or ClutchPlay.lock_target==second
+	var first_one=ClutchPlay.lock_target
+	var dealt=(lock_hp-float(target.hp)) if first_one==target else (99999.0-float(second.hp))
+	first_one.hp=0.0;first_one.dead=true
+	for i in range(40): ClutchPlay.aimbot(game,1.0/60.0);ClutchPlay.place_camera(game,1.0/60.0)
+	var switched=not ClutchPlay.lock_target.is_empty() and ClutchPlay.lock_target!=first_one and ClutchPlay.on_target(game)
+	checks.clutch_aimbot=tricked and first_lock and fired>0 and dealt>=body_hit*ClutchPlay.LOCK_DAMAGE*.99 and switched
+	ClutchPlay.lock_until=-1.0;ClutchPlay.lock_target={}
 	checks.clutch_rules=not HeroRules.can_slam(game.hero) and HeroRules.can_jump(game.hero) and game.rules.banished.has("slamPower") and not game.rules.banished.has("jumpHeight")
-	ClutchPlay.sneaking=true;ClutchPlay.last_seen=Vector3(3,0,3)
-	var hunted=game.coop.target(target.node.position) if game.coop.has_method("target") else {"position":ClutchPlay.last_seen}
-	checks.clutch_sneak=ClutchPlay.hidden(game) and Vector3(hunted.position).distance_to(ClutchPlay.last_seen)<.01 and is_equal_approx(ClutchPlay.speed_scale(game),ClutchPlay.SNEAK_SPEED)
+	# Shift: enemies lose sight of him, stop and do not attack.
+	game.clear_entities();game.hp=game.stats.maxHp;game.invulnerable=0.0
+	game.spawn_enemy(6);var stalker=game.enemies[-1];stalker.node.position=game.player.position+Vector3(4,0,0);stalker.node.position.y=game.world.height_at(stalker.node.position.x,stalker.node.position.z)+.1;stalker.flying=false;stalker.hp=99999.0;stalker.maxHp=99999.0
+	ClutchPlay.sneaking=true
+	var hunted=game.coop.target(stalker.node.position)
+	var start=stalker.node.position;var hp_sneak=game.hp
+	for i in range(90): game.update_combat(1.0/60.0)
+	var moved=Vector2(stalker.node.position.x-start.x,stalker.node.position.z-start.z).length()
+	checks.clutch_sneak=ClutchPlay.hidden(game) and bool(hunted.get("lost",false)) and moved<.3 and is_equal_approx(game.hp,hp_sneak) and is_equal_approx(ClutchPlay.speed_scale(game),ClutchPlay.SNEAK_SPEED)
+	ClutchPlay.sneaking=false
+	var seen=game.coop.target(stalker.node.position)
+	checks.clutch_sneak=checks.clutch_sneak and not seen.get("lost",false)
 	ClutchPlay.reset()
 	game.clear_entities()
 	game.select_hero(saved_hero)
