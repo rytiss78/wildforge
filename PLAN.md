@@ -1,6 +1,6 @@
 # Wildforge — plan
 
-November 2, 2026 · main branch · **Build 29 (1.12.0) is the latest public release** ([build-29](https://github.com/rytiss78/wildforge/releases/tag/build-29), notes [build29-release.md](native/docs/build29-release.md)).
+November 2, 2026 · main branch · **Build 30 (1.13.0) is the latest public release** ([build-30](https://github.com/rytiss78/wildforge/releases/tag/build-30), notes [build30-release.md](native/docs/build30-release.md)).
 
 Rules: [AGENTS.md](AGENTS.md) and the [Godot workflow](native/docs/godot-workflow.md). A checked item means the real entry point was exercised and the evidence is recorded. Everything done up to Build 28, with evidence paths, is in git history (the Build 28 plan is `PLAN.md` at tag `build-28`); release notes are on the [GitHub releases page](https://github.com/rytiss78/wildforge/releases).
 
