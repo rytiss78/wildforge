@@ -2,7 +2,8 @@ extends RefCounted
 
 static func run(game: Node3D):
 	AudioServer.set_bus_volume_db(0,-80)
-	game.hero=game.rules.data.heroes.filter(func(h):return h.id=="loaf")[0]
+	# A hero carrying the Saw (Sir Loaf, who started with it, is retired).
+	var sawyer=game.rules.data.heroes.filter(func(h):return h.id=="grandma")[0].duplicate(true);sawyer.weapon="saw";game.hero=sawyer
 	game.start_run(407);game.set_physics_process(false);game.set_process(false);game.clear_entities();game.mode="playing"
 	var weapon=game.equipped[0]
 	var checks={"eight_meter_reach":weapon.id=="saw" and weapon.range==8}

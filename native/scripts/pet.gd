@@ -24,6 +24,14 @@ const JOBS={
 	"zorbo":"Pulses a healing ring when you are hurt.",
 }
 const TREATS_AT=[0,4,12]  # Pet Treats eaten to reach each stage
+
+# What the pet does at a stage, in numbers (hero screen).
+static func benefit(pet_kind: String,pet_stage: int) -> String:
+	match pet_kind:
+		"blip": return "Fetches coins up to %d m away" % roundi(REACH[pet_stage])
+		"fuzzbat": return "Stings for %d damage every %.1f s" % [roundi(BITE[pet_stage]),BITE_EVERY[pet_stage]]
+		"zorbo": return "Heals %d%% ♥ every %d s while you are hurt" % [roundi(HEAL[pet_stage]*100),roundi(HEAL_EVERY[pet_stage])]
+	return JOBS.get(pet_kind,"")
 const SPEED=[8.0,10.5,13.0]
 const REACH=[12.0,15.0,19.0]
 const SIZE=[.85,1.0,1.2]

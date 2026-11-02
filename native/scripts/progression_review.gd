@@ -66,7 +66,7 @@ static func run(game):
 	var loaded=CareerProfile.new(game.rules.data,true)
 	checks.persisted=loaded.data.scores.any(func(r):return r.id==game.run_id and r.get("damageSources",{}).get("gun",0)==10 and not r.get("killTypes",{}).is_empty())
 	game.hud.run_report_menu();checks.recap_capture=await capture(game,"recap")
-	checks.recap_detail=game.career.data.total.get("run_reports_viewed",0)==1 and game.hud.modal.find_children("*","Label",true,false).any(func(node):return node.text.contains("BOSS PHASES") and node.text.contains("REVIVES"))
+	checks.recap_detail=game.career.data.total.get("run_reports_viewed",0)==1 and game.hud.modal.find_children("*","Label",true,false).any(func(node):return node.text.contains("BOSS PHASES") and node.text.contains("DAMAGE"))
 	# The end-of-run window carries the report beside its buttons (October 25).
 	game.hud.pause_menu(true);checks.game_over_capture=await capture(game,"game-over")
 	var over_labels=game.hud.modal.find_children("*","Label",true,false)

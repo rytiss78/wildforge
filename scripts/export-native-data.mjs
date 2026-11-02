@@ -50,7 +50,7 @@ for(const [id,name,title,weapon,key,amount,mode] of [
  ['mushroom','Chef Cap','Season the enemy. Serve hot.','flame','burn',6,'add'],
  ['clock','Sir Snooze','Five more minutes. One more run.','ice','slow',.15,'add'],
  ['icecream','Disco Scoop','Staying cool under pressure.','ice','freeze',.15,'add'],
- ['bathtub','Admiral Bubbles','Sailing on dry land since breakfast.','rocket','shield',15,'add'],
+ ['bathtub','Admiral Bubbles','Sailing on dry land since breakfast.','bubble','shield',15,'add'],
  ['peacock','Fancy Pants','Show off. Show them all.','ghost','luck',.15,'add'],
  ['toaster','Toastmaster','Breakfast comes with explosions.','flame','explosion',8,'add']
 ]) heroes.push({id,name,title,model:id,weapon,effects:[{key,amount,mode}]});
@@ -75,7 +75,7 @@ const heroPerks={
  mushroom:['Hot Seasoning','Weapon hits burn enemies for 8 damage per second.',[['burn',8,'add']]],
  clock:['Slow Time','Weapon hits slow enemies by 30%.',[['slow',.3,'add']]],
  icecream:['Brain Freeze','20% chance for weapon hits to freeze an enemy.',[['freeze',.2,'add']]],
- bathtub:['Bubble Bath','Start with 25 shield. It recharges after avoiding damage.',[['shield',25,'add']]],
+ bathtub:['Bubble Bath','No health at all: a 140-point bubble shield that recharges after 3 s without a hit. Health drops and cards skip him.',[['shield',140,'add']]],
  peacock:['Show Off','Start with +25% luck. Opening a box heals 12 health.',[['luck',.25,'add'],['chestHeal',12,'add']]],
  toaster:['Pop Goes Toast','Defeated enemies explode for 12 damage.',[['explosion',12,'add']]]
 };
@@ -89,9 +89,9 @@ for(const [id,name,archetype,damage,rate,modifiers,description] of [
  ['supra-backfire','Turbo Backfire','flame',.42,1.3,{extraShots:1,spread:.18},'Twin exhaust jets burn a broad lane.']
 ]) {const base=weapons.find(w=>w.id===archetype);weapons.push({...base,id,name,archetype,damage,rate,modifiers,description,icon:id,art:{shape:weapons.length%20,condition:18}});}
 for(const [id,name,title,weapon,perk,description,effects] of [
- ['ninja','Ninja','A small shadow with a very large grudge.','ninja-shuriken','Afterimage','Fast feet, high jumps and 12% dodge, with 15% less health.',['dodge',.12,'add']],
+ ['ninja','Ninja','A small shadow with a very large grudge.','ninja-shuriken','Afterimage','Starts with a double jump. 12% dodge, with 15% less health.',['dodge',.12,'add']],
  ['smoker','Smoker','An ash-grey coat and an ill-tempered chimney.','smoke-censer','Secondhand Hex','Poison hits deal 10 extra damage per second.',['poison',10,'add']],
- ['alcoholic','Alcoholic','Last call. First into trouble.','bottle-barrage','Last Orders','Bottle explosions and 30% more health.',['maxHp',.3,'multiply']],
+ ['alcoholic','Alcoholic','Last call. First into trouble.','bottle-barrage','Last Orders','Potions last twice as long and drop more often from his kills. 30% more health.',['maxHp',.3,'multiply']],
  ['white-supra','White Supra','The white coupe has entered the dungeon.','supra-backfire','Turbocharged','Very fast, wide, low-jumping; dashes blast for 24 damage.',['dashBlast',24,'add']],
  // The Mole (user request, November 1): his trick digs straight through the island.
  ['mole','Digby Mole','Digs first. Asks questions later.','bomb','Tunnel Vision','Dashing burrows you underground; you burst out for 30 damage.',['burrow',30,'add']]
@@ -113,7 +113,7 @@ const physiques={
  bathtub:[1.35,.58,.84,.7],peacock:[2,.48,1.08,1.15],toaster:[1.35,.45,.96,.9],ninja:[1.4,.32,1.24,1.45],smoker:[2.1,.43,.92,.9],alcoholic:[1.75,.53,.88,.8],'white-supra':[1.05,.7,1.42,.55],
  mole:[1.35,.45,1,.85]
 };
-for(const h of heroes){const [height,radius,speed,jump]=physiques[h.id];Object.assign(h,{height,radius});if(h.id==='ninja')h.effects.push({key:'maxHp',amount:-.15,mode:'multiply'});if(h.id==='snail')h.effects.push({key:'armor',amount:3,mode:'add'});h.effects.push({key:'speed',amount:speed-1,mode:'multiply'},{key:'jumpHeight',amount:jump-1,mode:'multiply'});h.description+=` Height ${height.toFixed(2)} m · Move ${Math.round(speed*100)}% · Jump ${Math.round(jump*100)}%.`;}
+for(const h of heroes){const [height,radius,speed,jump]=physiques[h.id];Object.assign(h,{height,radius});if(h.id==='ninja')h.effects.push({key:'maxHp',amount:-.15,mode:'multiply'},{key:'airJumps',amount:1,mode:'add'});if(h.id==='alcoholic')h.effects.push({key:'potionDuration',amount:1,mode:'multiply'},{key:'potionChance',amount:.1,mode:'add'});if(h.id==='snail')h.effects.push({key:'armor',amount:3,mode:'add'});h.effects.push({key:'speed',amount:speed-1,mode:'multiply'},{key:'jumpHeight',amount:jump-1,mode:'multiply'});h.description+=` Height ${height.toFixed(2)} m · Move ${Math.round(speed*100)}% · Jump ${Math.round(jump*100)}%.`;}
 
 for(const [id,name,key,amount] of [['bloom','Big Bloom','flowerPower',.35],['roots','Roots','flowerRoots',.2],['pollen','Pollen','flowerPollen',5],['nectar','Nectar','flowerHeal',2],['seed','Seeds','flowerSeeds',1]]) for(const kind of ['item','skill']) loot.push({id:id+'-'+kind,name,title:name,family:'Garden',kind,effects:[{key,amount,mode:key==='flowerPower'?'multiply':'add'}]});
 
@@ -203,6 +203,9 @@ const augments=expandContent(loot,weapons,stats,labels);
 nameUpgrades(loot);
 await mkdir(new URL('../native/data/',import.meta.url),{recursive:true});
 
+// Retired heroes (user, November 2): Roll Ronin, Tank Potato, Sir Loaf, Queen Tea,
+// Bookworm, Chef Cap and Sir Snooze. A saved choice of one falls back to the default.
+for(const id of ['sushi','broccoli','loaf','teapot','book','mushroom','clock']){const at=heroes.findIndex(h=>h.id===id);if(at>=0)heroes.splice(at,1);}
 await writeFile(new URL('../native/data/catalog.json',import.meta.url),JSON.stringify({version:8,heroes,weapons,weaponCap:WEAPON_CAP,loot,stats,labels,families,augments,chestPrices:CHEST_PRICES,achievements:[...ACHIEVEMENTS,...discoveries]},null,2));
 
 console.log(`Native content: ${loot.length} loot templates, ${weapons.length} weapons, ${ACHIEVEMENTS.length+discoveries.length} achievement IDs`);

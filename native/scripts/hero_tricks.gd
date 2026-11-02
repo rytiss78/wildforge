@@ -5,7 +5,7 @@ class_name HeroTricks
 # own button (V / left trigger), with a cooldown. They are built from a few kinds,
 # each tuned and named for its hero:
 #   shout   a cry that stuns enemies around you          (Count Duck's QUACK!)
-#   roll    you roll forward through enemies, hurting them (Tank Potato)
+#   roll    you roll forward through enemies, hurting them (Turbo Snail)
 #   quake   a big ground smash that hurts and knocks back
 #   nova    a ring of fire, ice, poison or lightning
 #   heal    heal and soothe, rooting or freezing enemies near you
@@ -23,21 +23,14 @@ class_name HeroTricks
 const TRICKS={
 	"wrench":{"name":"Overclock","kind":"frenzy","cooldown":18.0,"rate":2.0,"speed":1.0,"time":6.0,"word":"OVERCLOCK!"},
 	"duck":{"name":"QUACK!","kind":"shout","cooldown":12.0,"radius":7.0,"stun":1.6,"word":"QUACK!"},
-	"broccoli":{"name":"Spud Roll","kind":"roll","cooldown":10.0,"distance":11.0,"damage":45.0,"word":"ROLL!"},
 	"grandma":{"name":"Handbag Quake","kind":"quake","cooldown":12.0,"radius":7.0,"damage":60.0,"word":"WHACK!"},
 	"goblin":{"name":"Tax Day","kind":"coins","cooldown":16.0,"radius":8.0,"damage":25.0,"coins":3,"word":"TAXED!"},
-	"loaf":{"name":"Rise & Shine","kind":"leap","cooldown":12.0,"radius":6.0,"damage":55.0,"word":"RISE!"},
 	"florist":{"name":"Bouquet","kind":"garden","cooldown":14.0,"count":6,"radius":6.5,"heal":.3,"cause":"stun","word":"BLOOM!"},
-	"teapot":{"name":"Tea Time","kind":"heal","cooldown":20.0,"heal":.2,"radius":6.0,"cause":"ice","word":"TEA TIME!"},
 	"octopus":{"name":"Ink Cloud","kind":"cloud","cooldown":14.0,"radius":8.0,"word":"SPLOOSH!"},
 	"astronaut":{"name":"Moon Jump","kind":"leap","cooldown":11.0,"radius":7.0,"damage":50.0,"word":"BOING!"},
 	"cactus":{"name":"Needle Burst","kind":"nova","cooldown":9.0,"radius":6.0,"damage":45.0,"cause":"hit","color":"9be05a","word":"PRICKLES!"},
-	"book":{"name":"Plot Twist","kind":"nova","cooldown":12.0,"radius":10.0,"damage":35.0,"cause":"lightning","color":"8fd6ff","word":"PLOT TWIST!"},
 	"snail":{"name":"Shell Spin","kind":"roll","cooldown":9.0,"distance":9.0,"damage":40.0,"word":"WHEEE!"},
 	"bee":{"name":"Sugar Rush","kind":"frenzy","cooldown":18.0,"rate":1.6,"speed":1.4,"time":5.0,"word":"BUZZZ!"},
-	"sushi":{"name":"Rolling Cut","kind":"roll","cooldown":8.0,"distance":9.0,"damage":55.0,"word":"SLICE!"},
-	"mushroom":{"name":"Flambé","kind":"nova","cooldown":11.0,"radius":7.0,"damage":30.0,"cause":"fire","color":"ff7a2a","word":"FLAMBÉ!"},
-	"clock":{"name":"Alarm!","kind":"shout","cooldown":13.0,"radius":8.0,"stun":2.0,"word":"BRRRING!"},
 	"icecream":{"name":"Brain Freeze","kind":"nova","cooldown":13.0,"radius":7.0,"damage":20.0,"cause":"ice","color":"bfeaff","word":"BRAIN FREEZE!"},
 	"bathtub":{"name":"Bubble Bath","kind":"bubble","cooldown":18.0,"radius":7.0,"word":"SPLISH!"},
 	"peacock":{"name":"Fabulous!","kind":"cloud","cooldown":14.0,"radius":8.0,"heal":10.0,"word":"FABULOUS!"},
@@ -50,6 +43,31 @@ const TRICKS={
 }
 
 static func trick(g) -> Dictionary: return TRICKS.get(str(g.hero.id),{})
+
+# One line for the hero screen: what the trick does, in numbers, and its cooldown.
+static func describe(t: Dictionary) -> String:
+	var text=""
+	var r=float(t.get("radius",0));var dmg=roundi(float(t.get("damage",0)))
+	match str(t.kind):
+		"shout": text="Stuns enemies within %d m for %.1f s" % [r,float(t.stun)]
+		"roll": text="Roll %d m through enemies for %d damage" % [roundi(float(t.distance)),dmg]
+		"quake": text="Smash the ground: %d damage within %d m" % [dmg,r]
+		"nova": text="A ring of %s: %d damage within %d m" % [{"fire":"fire","ice":"ice","poison":"poison","lightning":"lightning"}.get(str(t.get("cause","")),"spikes"),dmg,r]
+		"heal": text="Heal %d%% ♥ and calm enemies within %d m" % [roundi(float(t.heal)*100),r]
+		"cloud": text="A cloud that blinds and slows enemies within %d m" % r
+		"frenzy":
+			var parts=[]
+			if float(t.get("rate",1))>1: parts.append("%.1f× fire rate" % float(t.rate))
+			if float(t.get("speed",1))>1: parts.append("%.1f× speed" % float(t.speed))
+			text="%d s of %s" % [roundi(float(t.time))," and ".join(parts)]
+		"leap": text="Leap high and smash down: %d damage within %d m" % [dmg,r]
+		"coins": text="%d damage within %d m; each enemy hit drops %d coins" % [dmg,r,int(t.coins)]
+		"bubble": text="Refill your shield and trap enemies within %d m in bubbles" % r
+		"blink": text="Vanish and reappear %d m ahead" % roundi(float(t.distance))
+		"dig": text="Dig through the island to its other side; burst out for %d damage" % dmg
+		"garden": text="Plant %d grown flowers in a ring round you" % int(t.count)
+		_: text=str(t.get("name",""))
+	return text+" · %d s" % roundi(float(t.cooldown))
 
 # Damage scales with the island like the enemies' health does.
 static func power(g) -> float: return float(g.realm_difficulty)*maxf(1.0,float(g.stats.get("damage",1.0))/10.0)
@@ -148,9 +166,9 @@ static func shout(g) -> bool:
 	return true
 
 # A big comic word over the hero's head.
-static func word(g,text: String):
+static func word(g,text: String,color: Color=Color("ffe14d")):
 	var label=Label3D.new();label.text=text;label.font_size=72;label.pixel_size=.012;label.billboard=BaseMaterial3D.BILLBOARD_ENABLED
-	label.modulate=Color("ffe14d");label.outline_modulate=Color("1b1a24");label.outline_size=14;label.no_depth_test=true
+	label.modulate=color;label.outline_modulate=Color("1b1a24");label.outline_size=14;label.no_depth_test=true
 	g.add_child(label);label.position=g.player.position+Vector3.UP*2.6
 	g.effects.append({"node":label,"life":.9,"velocity":Vector3.UP*1.4})
 

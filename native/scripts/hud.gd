@@ -551,7 +551,7 @@ func update(delta: float):
 	var harvest_lines=[]
 	for id in game.harvest_buffs:
 		var entry=HarvestBook.TYPES[int(id)]
-		harvest_lines.append("%s  %ds" % [entry.name,ceili(game.harvest_buffs[id])])
+		harvest_lines.append("%s  %ds" % [str(entry.effect).split(" for ")[0],ceili(game.harvest_buffs[id])])
 	harvest_status.text="\n".join(harvest_lines);harvest_status.visible=not modal.visible and not harvest_lines.is_empty()
 	if is_instance_valid(party_label): party_label.text=game.coop.status
 	if game.mode=="coop" and is_instance_valid(party_list): update_party_list();update_lobby_controls()
@@ -568,7 +568,7 @@ func update(delta: float):
 			var icon=TextureRect.new();icon.texture=load("res://assets/illustrated/potions/"+str(key)+".svg");icon.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;icon.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;icon.custom_minimum_size=Vector2(40,40);column.add_child(icon)
 			var timer=label("",12);timer.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;column.add_child(timer);buff_widgets[key]=timer
 		var benefit=UpgradeFit.for_key(game,str(PotionBook.TYPES[key].key))
-		buff_widgets[key].text="%ds" % ceil(game.buffs[key])
+		buff_widgets[key].text="%s\n%ds" % [PotionBook.benefit(key,float(game.stats.get("potionPower",1.0))),ceil(game.buffs[key])]
 		buff_widgets[key].add_theme_color_override("font_color",ink if benefit.useful else Color("f49b86"))
 		buff_widgets[key].get_parent().get_parent().tooltip_text=PotionBook.TYPES[key].name+" · "+benefit.text
 	health_text.text="HP  %d / %d" % [ceili(game.hp),roundi(game.stats.maxHp)]
@@ -796,50 +796,17 @@ func start_menu(focus_hero: bool=false):
 	modal.add_child(hero_panel)
 	for framed in [nav_panel,hero_panel]:
 		var frame=preload("res://scripts/forge_frame.gd").new();frame.panel=framed;frame.position=framed.position;frame.size=framed.size;frame.z_index=2;frame.mouse_filter=Control.MOUSE_FILTER_IGNORE;modal.add_child(frame)
-	var columns=HBoxContainer.new()
-	columns.add_theme_constant_override("separation",29)
-	var inset=MarginContainer.new();hero_panel.add_child(inset)
-	for side in ["left","right","top","bottom"]: inset.add_theme_constant_override("margin_"+side,18)
-	inset.add_child(columns)
-	var hero_list=VBoxContainer.new()
-	hero_list.custom_minimum_size.x=226
-	hero_list.add_theme_constant_override("separation",6)
-	var hero_scroll=ScrollContainer.new();hero_scroll.custom_minimum_size=Vector2(246,580);hero_scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;columns.add_child(hero_scroll);hero_scroll.add_child(hero_list)
-	hero_list.add_child(label("HERO",13,ThemeTokens.STAR_GOLD))
-	var selected_hero: Button
-	for item in game.rules.data.heroes:
-		var pick=button(item.name,func():game.select_hero(item);start_menu(true))
-		if item.id==game.hero.id: selected_hero=pick
-		if item.id==game.hero.id: pick.add_theme_stylebox_override("normal",style(ThemeTokens.BIOME_ACCENTS.verdant.blossom,ThemeTokens.EARTH_TERRACOTTA))
-		hero_list.add_child(pick)
-	portrait = HeroPortrait.new()
-	portrait.custom_minimum_size=Vector2(426,560)
-	columns.add_child(portrait)
-	var preview_stats=game.rules.data.stats.duplicate(true);game.rules.apply_effects(preview_stats,game.hero.effects)
-	portrait.setup(game.hero.model,game.hero.weapon,float(preview_stats.armor),float(preview_stats.shield))
-	var bio=VBoxContainer.new()
-	bio.custom_minimum_size.x=413
-	bio.size_flags_horizontal=Control.SIZE_EXPAND_FILL
-	bio.add_theme_constant_override("separation",8)
-	columns.add_child(bio)
-	bio.add_child(label(game.hero.name,29))
-	var description=label(game.hero.title,17)
-	description.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
-	bio.add_child(description)
-	var perk=label(game.hero.perk,19,ThemeTokens.EARTH_TERRACOTTA);bio.add_child(perk)
-	var perk_description=label(str(game.hero.description).split(" Height ")[0],15);perk_description.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;bio.add_child(perk_description)
-	var starter=HBoxContainer.new()
-	var icon=PowerIcon.new()
-	icon.key=game.hero.weapon;icon.weapon_icon=true
-	icon.custom_minimum_size=Vector2(96,96)
-	starter.add_child(icon)
-	var weapon_name=game.rules.data.weapons.filter(func(w):return w.id==game.hero.weapon)[0].name
-	starter.add_child(label(weapon_name,16));starter.alignment=BoxContainer.ALIGNMENT_BEGIN
-	icon.tooltip_text=WeaponDetails.describe(game.hero.weapon)
-	bio.add_child(starter)
-	# Pet choice: the three wisps, picked by look (names only in the tooltip).
-	bio.add_child(label("PET",13,ThemeTokens.STAR_GOLD))
-	bio.add_child(pet_picker(84.0,func():start_menu(true)))
+	hero_inset=MarginContainer.new();hero_panel.add_child(hero_inset)
+	for side in ["left","right","top","bottom"]: hero_inset.add_theme_constant_override("margin_"+side,18)
+	# The pet has its own panel under the menu (user, November 2): it stays put
+	# while heroes are browsed; only picking a pet redraws it.
+	var pet_box=PanelContainer.new();pet_box.name="PetPanel"
+	pet_box.add_theme_stylebox_override("panel",style(ThemeTokens.INK,Color("9b855e"),12))
+	pet_box.position=Vector2(96,700);pet_box.size=Vector2(374,203);modal.add_child(pet_box)
+	pet_inset=MarginContainer.new();pet_box.add_child(pet_inset)
+	for side in ["left","right","top","bottom"]: pet_inset.add_theme_constant_override("margin_"+side,12)
+	fill_pet_panel()
+	fill_hero_panel(focus_hero)
 	# Keep hero selection focused on the selected hero; repeat rules in Help only.
 	var footer=HBoxContainer.new()
 	footer.position=Vector2(120,997)
@@ -850,10 +817,119 @@ func start_menu(focus_hero: bool=false):
 	version.name="ReleaseVersion";version.position=Vector2(1280,1026);version.size=Vector2(570,28);version.horizontal_alignment=HORIZONTAL_ALIGNMENT_RIGHT
 	version.add_theme_color_override("font_color",Color("b4c9bc"))
 	modal.add_child(version)
+	if not focus_hero: menu_start.grab_focus()
+
+var hero_inset: MarginContainer
+var pet_inset: MarginContainer
+
+# The hero half of the hero screen: list, preview and facts. Picking a hero only
+# redraws this panel.
+func fill_hero_panel(focus_hero: bool=false):
+	if not is_instance_valid(hero_inset): return
+	for child in hero_inset.get_children(): hero_inset.remove_child(child);child.queue_free()
+	var columns=HBoxContainer.new()
+	columns.add_theme_constant_override("separation",29)
+	hero_inset.add_child(columns)
+	var hero_list=VBoxContainer.new()
+	hero_list.custom_minimum_size.x=226
+	hero_list.add_theme_constant_override("separation",6)
+	var hero_scroll=ScrollContainer.new();hero_scroll.custom_minimum_size=Vector2(246,580);hero_scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;columns.add_child(hero_scroll);hero_scroll.add_child(hero_list)
+	hero_list.add_child(label("HERO",13,ThemeTokens.STAR_GOLD))
+	var selected_hero: Button
+	for item in game.rules.data.heroes:
+		var pick=button(item.name,func():game.select_hero(item);fill_hero_panel(true))
+		if item.id==game.hero.id: selected_hero=pick
+		if item.id==game.hero.id: pick.add_theme_stylebox_override("normal",style(ThemeTokens.BIOME_ACCENTS.verdant.blossom,ThemeTokens.EARTH_TERRACOTTA))
+		hero_list.add_child(pick)
+	portrait = HeroPortrait.new()
+	portrait.custom_minimum_size=Vector2(426,560)
+	columns.add_child(portrait)
+	var preview_stats=game.rules.data.stats.duplicate(true);game.rules.apply_effects(preview_stats,game.hero.effects)
+	portrait.setup(game.hero.model,game.hero.weapon,float(preview_stats.armor),float(preview_stats.shield))
+	HatBook.wear(portrait.preview_actor,str(game.career.data.settings.get("hat","")) if HatBook.owned(game.career.data.unlocked,str(game.career.data.settings.get("hat",""))) else "")
+	var bio=VBoxContainer.new()
+	bio.custom_minimum_size.x=413
+	bio.size_flags_horizontal=Control.SIZE_EXPAND_FILL
+	bio.add_theme_constant_override("separation",8)
+	columns.add_child(bio)
+	bio.add_child(label(game.hero.name,29))
+	# Facts, not filler (user, November 2): health, speed and jump in numbers.
+	var facts=label(hero_facts(game.hero,preview_stats),16,Color("d6e2d4"));facts.name="HeroFacts";bio.add_child(facts)
+	var perk=label(game.hero.perk,19,ThemeTokens.EARTH_TERRACOTTA);bio.add_child(perk)
+	var perk_description=label(str(game.hero.description).split(" Height ")[0],15);perk_description.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;bio.add_child(perk_description)
+	# The V trick: its key, name, what it does and its cooldown.
+	var t=HeroTricks.TRICKS.get(str(game.hero.id),{})
+	if not t.is_empty():
+		var trick_row=HBoxContainer.new();trick_row.name="HeroTrick";trick_row.add_theme_constant_override("separation",8);bio.add_child(trick_row)
+		var key=label("[%s]" % ControlBindings.display(game.career.data.settings,"trick","controller" if game.input_kind=="xbox" else "keyboard"),19,ThemeTokens.STAR_GOLD);trick_row.add_child(key)
+		trick_row.add_child(label(str(t.name),19,ThemeTokens.EARTH_TERRACOTTA))
+		var trick_text=label(HeroTricks.describe(t),15);trick_text.name="TrickText";trick_text.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;bio.add_child(trick_text)
+	var starter=HBoxContainer.new()
+	var icon=PowerIcon.new()
+	icon.key=game.hero.weapon;icon.weapon_icon=true
+	icon.custom_minimum_size=Vector2(80,80)
+	starter.add_child(icon)
+	var weapons=game.rules.data.weapons.filter(func(w):return w.id==game.hero.weapon)
+	starter.add_child(label(weapons[0].name if not weapons.is_empty() else "No weapon",16));starter.alignment=BoxContainer.ALIGNMENT_BEGIN
+	icon.tooltip_text=WeaponDetails.describe(game.hero.weapon)
+	if not str(game.hero.weapon).is_empty(): bio.add_child(starter)
+	bio.add_child(hat_row())
 	if focus_hero and is_instance_valid(selected_hero):
 		selected_hero.grab_focus()
 		reveal_selection.call_deferred(hero_scroll,selected_hero)
-	else: menu_start.grab_focus()
+
+func hero_facts(item: Dictionary,preview_stats: Dictionary) -> String:
+	var move=1.0;var jump=1.0
+	for effect in item.effects:
+		if effect.key=="speed" and effect.mode=="multiply": move+=float(effect.amount)
+		if effect.key=="jumpHeight" and effect.mode=="multiply": jump+=float(effect.amount)
+	var health="♥ %d" % roundi(float(preview_stats.maxHp)) if not HeroRules.no_health(item) else "◯ %d shield" % roundi(float(preview_stats.shield))
+	return "%s  ·  speed %d%%  ·  %s" % [health,roundi(move*100),"jump %d%%" % roundi(jump*100) if HeroRules.can_jump(item) else HeroRules.mover(item)]
+
+# Hats on the hero screen (user, November 2: "how do I put on the hats?"): cycle
+# with the arrows; the preview wears it. Locked hats list how to earn them.
+func hat_row() -> HBoxContainer:
+	var row=HBoxContainer.new();row.name="HatRow";row.add_theme_constant_override("separation",8)
+	var owned=[""]
+	for hat in HatBook.HATS:
+		if HatBook.owned(game.career.data.unlocked,hat.id): owned.append(hat.id)
+	var current=str(game.career.data.settings.get("hat",""))
+	if not owned.has(current): current=""
+	var index=owned.find(current)
+	var cycle=func(step: int):
+		var next=owned[(index+step+owned.size())%owned.size()]
+		game.career.data.settings.hat=next;game.career.dirty=true;game.career.save();game.wear_hat()
+		HatBook.wear(portrait.preview_actor,next)
+		var holder=row.get_parent();var at=row.get_index();row.queue_free();var fresh=hat_row();holder.add_child(fresh);holder.move_child(fresh,at)
+		fresh.get_node("Next" if step>0 else "Back").grab_focus()
+	row.add_child(label("HAT",13,ThemeTokens.STAR_GOLD))
+	var back=button("◀",func():cycle.call(-1));back.name="Back";back.custom_minimum_size=Vector2(44,36);row.add_child(back)
+	var hat_name=label(HatBook.entry(current).get("name","No hat") if current!="" else "No hat",16);hat_name.custom_minimum_size.x=140;hat_name.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;row.add_child(hat_name)
+	var next=button("▶",func():cycle.call(1));next.name="Next";next.custom_minimum_size=Vector2(44,36);row.add_child(next)
+	back.disabled=owned.size()<2;next.disabled=owned.size()<2
+	var locked=HatBook.HATS.filter(func(h):return not HatBook.owned(game.career.data.unlocked,h.id))
+	row.add_child(label("%d / %d" % [owned.size()-1,HatBook.HATS.size()],13,Color("b4c9bc")))
+	row.tooltip_text="Hats come from achievements:\n"+"\n".join(locked.map(func(h):return "%s · %s" % [h.name,h.how]))
+	for child in row.get_children(): if child is Control: child.tooltip_text=row.tooltip_text
+	return row
+
+func fill_pet_panel():
+	if not is_instance_valid(pet_inset): return
+	for child in pet_inset.get_children(): pet_inset.remove_child(child);child.queue_free()
+	var column=VBoxContainer.new();column.add_theme_constant_override("separation",6);pet_inset.add_child(column)
+	column.add_child(label("PET",13,ThemeTokens.STAR_GOLD))
+	column.add_child(pet_picker(54.0,fill_pet_panel))
+	column.add_child(pet_summary())
+
+# The chosen pet's level and what it does, in numbers.
+func pet_summary() -> Label:
+	var kind=Pet.chosen(game.career.data.settings)
+	var treats=Pet.saved_treats(game.career.data.settings,kind);var stage=Pet.stage_for(treats)
+	var next=Pet.TREATS_AT[stage+1] if stage<2 else -1
+	var text="%s · LEVEL %d / 3\n%s" % [Pet.NAMES[kind],stage+1,Pet.benefit(kind,stage)]
+	text+="\n"+("🍬 %d / %d treats to level %d (final boss)" % [treats,next,stage+2] if next>0 else "★ fully grown")
+	var summary=label(text,13,Color("d6e2d4"));summary.name="PetSummary";summary.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART
+	return summary
 
 func coop_menu():
 	game.roll_menu_hero()
@@ -875,6 +951,7 @@ func coop_menu():
 	# Pet choice in co-op too (user, November 1: "where is pet choosing in coop menu?").
 	heroes.add_child(label("YOUR PET",14))
 	heroes.add_child(pet_picker(72.0,coop_menu,game.run_active))
+	heroes.add_child(pet_summary())
 	var connection=VBoxContainer.new();connection.size_flags_horizontal=Control.SIZE_EXPAND_FILL;connection.add_theme_constant_override("separation",10);columns.add_child(connection)
 	connection.add_child(label(game.hero.name+" · "+game.hero.perk,24))
 	lobby_specialty=label(game.hero.description,17);lobby_specialty.visible=false
@@ -926,6 +1003,8 @@ func pet_picker(icon_size: float,rebuild: Callable,locked: bool=false) -> HBoxCo
 		var icon=PetIcon.new();icon.kind=kind;icon.selected=kind==current
 		icon.stage=Pet.stage_for(Pet.saved_treats(game.career.data.settings,kind))
 		icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT);pick.add_child(icon)
+		var badge=label("LV %d" % (icon.stage+1),11,ThemeTokens.STAR_GOLD);badge.name="Level";badge.position=Vector2(3,icon_size-17);pick.add_child(badge)
+		pick.tooltip_text=Pet.NAMES[kind]+" · level %d / 3 · " % (icon.stage+1)+Pet.benefit(kind,icon.stage)
 		pick.pressed.connect(func():
 			game.career.data.settings.pet=kind;game.career.dirty=true;game.career.save()
 			rebuild.call())
@@ -967,12 +1046,7 @@ func update_party_list():
 
 func pause_menu(ended: bool = false, win: bool = false):
 	game.mode = "ended" if ended else "paused"
-	var extra=" · Deaths %d" % game.death_count
-	var score=game.career.data.scores.filter(func(entry):return entry.id==game.run_id)
-	if not score.is_empty():
-		extra+=" · Best run %02d:%02d" % [int(game.career.data.best.get("best_seconds",0))/60,int(game.career.data.best.get("best_seconds",0))%60]
-		extra+=" · Level %d" % game.career.data.best.get("max_level",0)
-		extra+=" · %d kills" % game.career.data.total.get("kills",0)
+	var extra=" · Deaths %d" % game.death_count if game.death_count>0 else ""
 	var box = open("YOU WON" if win else "TRY AGAIN" if ended else "PAUSED", "%s · %d coins · %d enemies · best combo x%d · ★ %d%s" % [game.hero.name,game.gold,game.kills,combo.best,game.level,extra])
 	if ended: box.add_child(label(game.update.recap(),15))
 	# At the end of a run the run report sits beside the buttons (user request,
@@ -996,7 +1070,8 @@ func pause_menu(ended: bool = false, win: bool = false):
 	box.add_child(button("♛  LOCAL SCORES",func(): career_menu(true)))
 	box.add_child(button("♫  SOUND / CONTROLS",settings_menu))
 	box.add_child(button("←  HEROES",func(): game.record_run(false,true); start_menu()))
-	box.add_child(button("QUIT",func(): game.record_run(false,true); game.career.save(); game.get_tree().quit()))
+	# No QUIT on the end-of-run screen (user, November 2); the main menu has it.
+	if not ended: box.add_child(button("QUIT",func(): game.record_run(false,true); game.career.save(); game.get_tree().quit()))
 	for control in box.get_children():
 		if control is Button and not control.disabled: control.grab_focus();break
 
@@ -1331,8 +1406,8 @@ func run_report_menu():
 	var back=button("BACK",func():pause_menu(game.run_recorded,not score.is_empty() and score[0].win),true);box.add_child(back);back.grab_focus()
 
 func run_report_rows(rows: VBoxContainer):
-	rows.add_child(label("SURVIVED %02d:%02d · %d BOSS PHASES · %d REVIVES · %d RESCUES" % [int(game.elapsed)/60,int(game.elapsed)%60,game.boss_phases_reached,game.update.run_revives,game.update.run_rescues],16))
-	rows.add_child(label("YOUR CONTRIBUTION · %d damage · PARTY TOTAL %d damage" % [game.update.run_damage,game.update.party_damage],15))
+	rows.add_child(label("SURVIVED %02d:%02d · %d BOSS PHASES · %d DAMAGE" % [int(game.elapsed)/60,int(game.elapsed)%60,game.boss_phases_reached,game.update.run_damage],16))
+	if game.coop.active: rows.add_child(label(game.update.party_line(),15))
 	rows.add_child(label("YOUR DAMAGE BY WEAPON / EFFECT",18))
 	for entry in RunReport.ranked_damage(game):
 		var weapon=game.rules.data.weapons.any(func(w):return w.id==entry.source)
@@ -1385,7 +1460,8 @@ func last_run_menu():
 	var summary="%s · %s · %d:%02d · Level %d · Deaths %d" % [hero_name,outcome,int(run.seconds)/60,int(run.seconds)%60,run.level,run.get("deaths",0)]
 	var box=open("LAST RUN",summary);var rows=report_scroll(box)
 	rows.add_child(label("%s · %d kills · %d coins · Score %d" % [run.get("date",""),run.kills,run.get("gold",0),run.score],18))
-	rows.add_child(label("%d boss phases · %d revives · %d rescues · %d damage dealt · %d party damage" % [int(run.get("bossPhases",0)),int(run.get("revives",0)),int(run.get("rescues",0)),int(run.get("localDamage",0)),int(run.get("partyDamage",0))],15))
+	rows.add_child(label("%d boss phases · %d damage dealt" % [int(run.get("bossPhases",0)),int(run.get("localDamage",0))],15))
+	if int(run.get("revives",0))+int(run.get("rescues",0))>0: rows.add_child(label("♥ GOT BACK UP ×%d · ✚ FRIENDS SAVED ×%d · PARTY DAMAGE %d" % [int(run.get("revives",0)),int(run.get("rescues",0)),int(run.get("partyDamage",0))],15))
 	rows.add_child(label("YOUR DAMAGE BY WEAPON / EFFECT",18))
 	var sources=run.get("damageSources",{});var keys=sources.keys()
 	keys.sort_custom(func(a,b):return sources[a]>sources[b])

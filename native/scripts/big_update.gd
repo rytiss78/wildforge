@@ -118,9 +118,16 @@ func note(key: String):
 	memories[key]=int(memories.get(key,0))+1;game.achievement_event(key)
 
 func recap() -> String:
-	var powers=[]
-	for weapon in game.equipped: powers.append("%s %d" % [weapon.name,weapon.rank])
-	return "SURVIVED %02d:%02d · LEVEL %d · %d BOSS PHASES\nYOUR CONTRIBUTION · %d damage · %d revives · %d rescues\nPARTY DAMAGE · %d · %d XP · %d coins found\n%d regions · %d landmarks · %s\n%s" % [int(game.elapsed)/60,int(game.elapsed)%60,game.level,game.boss_phases_reached,run_damage,run_revives,run_rescues,party_damage,run_xp,run_coins,game.biome_seen.size(),game.visited_ruins.size(),", ".join(powers)," · ".join(memories.keys())]
+	# Short and plain (user, November 2): no best-run, region or landmark counts.
+	# Co-op only: how often you got back up after being downed (revives) and how
+	# many downed friends you brought back (rescues).
+	var text="SURVIVED %02d:%02d · LEVEL %d · %d BOSS PHASES" % [int(game.elapsed)/60,int(game.elapsed)%60,game.level,game.boss_phases_reached]
+	if game.coop.active: text+="
+"+party_line()
+	return text
+
+func party_line() -> String:
+	return "♥ GOT BACK UP ×%d · ✚ FRIENDS SAVED ×%d · PARTY DAMAGE %d" % [run_revives,run_rescues,party_damage]
 
 func banish(index: int):
 	if game.mode!="offer" or banish_charges<=0 or index<0 or index>=game.offers.size(): return

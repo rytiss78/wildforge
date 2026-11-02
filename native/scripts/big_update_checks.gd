@@ -296,6 +296,9 @@ static func run(game: Node3D):
 	for weapon in game.equipped:
 		if is_instance_valid(weapon.get("node")): weapon.node.queue_free()
 	game.equipped=kept
+	# Bosses keep up with the hero when far away, and lumber when close (November 2).
+	var boss_like={"speed":1.8,"boss":true}
+	checks.boss_keeps_up=is_equal_approx(game.boss_speed(boss_like,6.0),1.8) and game.boss_speed(boss_like,40.0)>=float(game.stats.speed)*1.0 and game.boss_speed(boss_like,80.0)>float(game.stats.speed)
 	# A random hero on each visit to the hero screen (November 1): rolled once,
 	# kept while browsing, rolled again after a run starts.
 	var menu_hero=game.hero;game.hero_rolled=false
@@ -405,6 +408,12 @@ static func run(game: Node3D):
 	if checks.effect_sliders:
 		effect_sliders[3].value=0.0
 		checks.effect_sliders=is_zero_approx(float(game.career.data.settings.shake)) and is_zero_approx(EffectDetail.shake)
+	# The particle slider thins particle systems too, including ones added later.
+	var sparks=GPUParticles3D.new();game.add_child(sparks)
+	game.career.data.settings.particles=.25;EffectDetail.load_settings(game.career.data.settings)
+	var later=GPUParticles3D.new();game.add_child(later)
+	checks.particles_slider=is_equal_approx(sparks.amount_ratio,.25) and is_equal_approx(later.amount_ratio,.25) and EffectDetail.count(8)==2
+	sparks.queue_free();later.queue_free()
 	game.career.data.settings.merge({"shake":1.0,"flashes":1.0,"particles":1.0},true);EffectDetail.load_settings(game.career.data.settings)
 	game.hud.close();game.mode="playing"
 	for id in ["gun","shotgun","ice"]:
@@ -458,7 +467,7 @@ static func run(game: Node3D):
 	checks.quip_throttle=quip==45 and game.update.quip_clock==45
 	game.career.save();var reloaded=game.ProfileScript.new(game.rules.data,true)
 	checks.save_roundtrip=reloaded.data.total.get("runs",0)==game.career.data.total.get("runs",0)
-	checks.recap=game.update.recap().contains("SURVIVED") and game.update.recap().contains("YOUR CONTRIBUTION") and game.update.recap().contains("PARTY DAMAGE")
+	checks.recap=game.update.recap().contains("SURVIVED") and not game.update.recap().contains("landmarks") and game.update.party_line().contains("FRIENDS SAVED")
 	# All biome scenes, route slopes, and map edges in one rendered traversal.
 	var worst_slope=0.0
 	for biome in range(RealmWorld.BIOME_COUNT):

@@ -46,16 +46,16 @@ static func run(game):
 	# Pets are chosen by look in the co-op menu too (November 1).
 	var saved_pet=game.career.data.settings.get("pet","blip")
 	var coop_pets=game.hud.menu_controls().filter(func(c):return c is Button and c.name.begins_with("Pet_"))
-	okay=expect(coop_pets.size()==3 and coop_pets.all(func(b):return b.text=="" and b.get_child(0) is PetIcon),"co-op menu shows the three pet wisps, no names") and okay
+	okay=expect(coop_pets.size()==Pet.KINDS.size() and coop_pets.all(func(b):return b.text=="" and b.get_child(0) is PetIcon),"co-op menu shows the three pet wisps, no names") and okay
 	coop_pets.filter(func(b):return b.name=="Pet_zorbo")[0].pressed.emit()
 	await game.get_tree().process_frame
 	okay=expect(game.career.data.settings.pet=="zorbo" and game.hud.coop_name_input.text=="UI Host","picking a pet in the co-op menu saves it") and okay
 	okay=expect(await capture(game,"coop"),"ui assertion 28") and okay
-	var coop_hero=game.hud.menu_controls().filter(func(c):return c is Button and c.text=="Tank Potato")[0]
+	var coop_hero=game.hud.menu_controls().filter(func(c):return c is Button and c.text=="Stone Granny")[0]
 	coop_hero.pressed.emit()
 	for frame in range(4): await game.get_tree().process_frame
 	okay=expect(game.hud.coop_name_input.text=="UI Host","co-op name remains when rebuilding the lobby menu") and okay
-	okay=expect(is_instance_valid(game.hud.portrait) and game.hud.portrait.is_inside_tree() and game.hero.name=="Tank Potato","ui assertion 32") and okay
+	okay=expect(is_instance_valid(game.hud.portrait) and game.hud.portrait.is_inside_tree() and game.hero.name=="Stone Granny","ui assertion 32") and okay
 	okay=expect(game.hud.lobby_specialty.text.contains(game.hero.description),"ui assertion 33") and okay
 	game.hud.update_lobby_controls()
 	okay=expect(not game.coop.local_ready and game.hud.lobby_start.disabled,"ui assertion 35") and okay
@@ -63,13 +63,13 @@ static func run(game):
 	game.coop.leave()
 	game.hud.start_menu()
 	var original_hero=game.hero
-	var hero_button=game.hud.menu_controls().filter(func(c):return c is Button and c.text=="Tank Potato")[0]
+	var hero_button=game.hud.menu_controls().filter(func(c):return c is Button and c.text=="Stone Granny")[0]
 	hero_button.grab_focus();game.hud.controller_accept()
 	for frame in range(4): await game.get_tree().process_frame
-	okay=expect(game.get_viewport().gui_get_focus_owner().text=="Tank Potato" and game.hero.name=="Tank Potato","ui assertion 43") and okay
+	okay=expect(game.get_viewport().gui_get_focus_owner().text=="Stone Granny" and game.hero.name=="Stone Granny","ui assertion 43") and okay
 	okay=expect(await capture(game,"hero"),"ui assertion 44") and okay
 	var hero_pets=game.hud.menu_controls().filter(func(c):return c is Button and c.name.begins_with("Pet_"))
-	okay=expect(hero_pets.size()==3 and hero_pets.all(func(b):return b.text==""),"hero screen shows the pet wisps, no names") and okay
+	okay=expect(hero_pets.size()==Pet.KINDS.size() and hero_pets.all(func(b):return b.text==""),"hero screen shows the pet wisps, no names") and okay
 	hero_pets.filter(func(b):return b.name=="Pet_fuzzbat")[0].pressed.emit()
 	await game.get_tree().process_frame
 	okay=expect(game.career.data.settings.pet=="fuzzbat","picking a pet on the hero screen saves it") and okay

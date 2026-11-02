@@ -2,7 +2,7 @@ extends RefCounted
 
 static func run(game):
 	seed(407);AudioServer.set_bus_volume_db(0,-80)
-	game.select_hero(game.rules.data.heroes.filter(func(h):return h.name=="Tank Potato")[0]);game.start_run(407)
+	game.select_hero(game.rules.data.heroes.filter(func(h):return h.name=="Stone Granny")[0]);game.start_run(407)
 	# Controlled pacing sample: normal starter damage, no deaths. Invulnerability
 	# separates XP cadence from the bot's combat survival skill. Simulation runs 3x.
 	game.invulnerable=10000;Engine.time_scale=3;Engine.physics_ticks_per_second=180

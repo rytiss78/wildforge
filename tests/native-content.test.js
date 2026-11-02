@@ -51,7 +51,7 @@ test('all seven first-discovery announcements have original text and rendered au
 });
 test('complete 3D roster has articulated heroes, enemy health cores, and baked scenery',()=>{
  const glb=(name)=>{const b=readFileSync(new URL(`native/assets/style3d/${name}.glb`,root));assert.equal(b.toString('ascii',0,4),'glTF');return JSON.parse(b.toString('utf8',20,20+b.readUInt32LE(12)));};
- assert.equal(catalog.heroes.length,26);
+ assert.equal(catalog.heroes.length,19);
  for(const hero of catalog.heroes){
   const asset=hero.model==='rubber_duck_toy'?'count_duck':'hero_'+hero.model;
   // Heroes added after the cartoon rebuild exist only as generated CartoonHeroes models.

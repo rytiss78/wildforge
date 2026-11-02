@@ -18,6 +18,18 @@ static func load_settings(settings: Dictionary):
 	shake=clampf(float(settings.get("shake",1.0)),0,1)
 	flashes=clampf(float(settings.get("flashes",1.0)),0,1)
 	particles=clampf(float(settings.get("particles",1.0)),.25,1)
+	# Particle systems (spells, flames, trails, blood rain) follow the slider too,
+	# not only shards and puffs (user, November 2: "does the particles slider work?").
+	var tree=Engine.get_main_loop()
+	if tree is SceneTree and tree.root!=null:
+		for node in tree.root.find_children("*","GPUParticles3D",true,false): scale_particles(node)
+
+static func scale_particles(node: Node):
+	if node is GPUParticles3D: node.amount_ratio=particles
+
+# Every particle system added later takes the slider's share as it enters.
+static func watch(tree: SceneTree):
+	if not tree.node_added.is_connected(scale_particles): tree.node_added.connect(scale_particles)
 
 static func tick(g,delta: float):
 	clock-=delta

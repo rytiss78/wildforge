@@ -4,7 +4,7 @@ static func run(game: Node3D):
 	AudioServer.set_bus_volume_db(0,-80)
 	game.select_hero(game.rules.data.heroes.filter(func(h):return h.id=="bathtub")[0])
 	game.start_run(407);game.set_physics_process(false);game.set_process(false);game.mode="playing"
-	var checks={"starts_with_shield":game.shield_hp==25}
+	var checks={"starts_with_shield":game.shield_hp==140}
 	var signatures=[];var perks=[];var rigs=[]
 	var viewport=SubViewport.new();viewport.size=Vector2i(1920,1080);viewport.own_world_3d=true;viewport.render_target_update_mode=SubViewport.UPDATE_ALWAYS;game.add_child(viewport)
 	var stage=Node3D.new();viewport.add_child(stage)
@@ -36,7 +36,7 @@ static func run(game: Node3D):
 	checks.armour_coating_visible=game.avatar.solid.armour_shells[0].visible and float(game.avatar.solid.armour_materials[0].get_shader_parameter("armour"))>0
 	game.hud.update(0)
 	checks.no_hud_hp_or_armour=not game.hud.status.text.contains("♥") and game.hud.root.find_children("*","ProgressBar",true,false).size()==1
-	# Roll Ronin's critical bonus must work with the starting Saw.
+	# A critical bonus must work with the starting Saw.
 	game.stats.crit=1;game.stats.critPower=2;game.stats.burn=0;game.stats.poison=0;game.stats.chain=0;game.stats.splash=0
 	game.clear_entities();game.spawn_enemy(6);var enemy=game.enemies[0];enemy.node.position=game.player.position+Vector3(0,0,-6);enemy.hp=1000;enemy.maxHp=1000
 	game.melee_attacks.append({"origin":game.player.position+Vector3.UP*.9,"target":game.enemy_center(enemy),"aim":Vector3.FORWARD,"reach":8,"damage":10,"delay":.01});game.update_melee(.02)

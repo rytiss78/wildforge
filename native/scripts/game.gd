@@ -266,7 +266,7 @@ func _ready():
 	orb_mesh.rings = 4
 	add_child(sound)
 	sound.setup(career.data.settings)
-	EffectDetail.load_settings(career.data.settings)
+	EffectDetail.load_settings(career.data.settings);EffectDetail.watch(get_tree())
 	add_child(hud)
 	hud.setup(self)
 	hud.start_menu()
@@ -1151,6 +1151,15 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 # faster, one more enemy per wave and waves 15% closer together.
 const XP_SCALE=.75
 const BOSS_SPEED_SCALE=1.1  # bosses 10% faster (user request, November 1)
+# Bosses keep up (user, November 2: "bosses are way too slow, you can run away and
+# forget them"): close by they lumber at their own pace and attack; further away
+# they hurry after the hero, from 85% of hero speed at BOSS_CLOSE to 125% at 60 m.
+const BOSS_CLOSE=12.0
+
+func boss_speed(enemy: Dictionary,distance: float) -> float:
+	if distance<=BOSS_CLOSE: return float(enemy.speed)
+	var hero_speed=float(stats.get("speed",8.0))
+	return maxf(float(enemy.speed),hero_speed*lerpf(.85,1.25,clampf((distance-BOSS_CLOSE)/48.0,0.0,1.0)))
 const ENEMY_SPEED_SCALE=1.21  # 1.1, then 10% faster again (user request, November 1)
 # Dangerous, not tanky (user request, October 25): ordinary enemies have 35% less
 # health and hit 50% harder, in contact and with ranged marks. Bosses keep theirs.
@@ -2226,13 +2235,15 @@ func update_combat(delta: float):
 		if not enemy.boss and enemy.behavior=="charge":
 			enemy.attack-=enemy_delta
 			aim=preload("res://scripts/combat_tactics.gd").charge_movement(self,enemy,aim,distance,enemy_delta)
+		var move_speed=enemy.speed
 		if enemy.boss:
 			var cycle=fmod(realm_time+enemy.net_id,8.0)
-			if cycle>5: aim=aim.rotated(Vector3.UP,1.1)*.5
+			if cycle>5 and distance<BOSS_CLOSE: aim=aim.rotated(Vector3.UP,1.1)*.5
+			move_speed=boss_speed(enemy,distance)
 			if enemy.get("recovery",0)>realm_time: aim=Vector3.ZERO
 		if enemy.get("contact_windup",0)>0: aim=Vector3.ZERO
 		var is_stunned=enemy.freeze>0
-		var velocity=(aim*enemy.speed*(2 if enemy.get("charge",0)>0 else 1)*(1-minf(.7,enemy.slow))+separation.limit_length(enemy.speed*1.4)) if not is_stunned else Vector3.ZERO
+		var velocity=(aim*move_speed*(2 if enemy.get("charge",0)>0 else 1)*(1-minf(.7,enemy.slow))+separation.limit_length(enemy.speed*1.4)) if not is_stunned else Vector3.ZERO
 		# Spell pulls (SkillBook) ride on this movement step instead of extra physics moves.
 		var pull: Vector3=enemy.get("pull",Vector3.ZERO)
 		if pull!=Vector3.ZERO: velocity+=pull;enemy.pull=Vector3.ZERO
@@ -2822,7 +2833,7 @@ func run_smoke():
 	var checks = {"native":true,"initial_enemies":enemies.size(),"weapon_slots":equipped.size(),"chests":chests.size(),"first_price":rules.chest_price(0),"rarities":rules.data.loot.size(),"achievements":career.achievements.size(),"xp_target":xp_target,"realm":realm,"paid_count":paid_chests}
 	checks.main_menu=rebuilt_menu
 	checks.xbox_navigation=navigated;checks.xbox_accept=accepted;checks.pointer_focus_safe=pointer_safe
-	checks.hero_roster=rules.data.heroes.size()==26 and rules.data.heroes.all(func(h):return CartoonHeroes.has("count_duck" if h.model=="rubber_duck_toy" else "hero_"+h.model))
+	checks.hero_roster=rules.data.heroes.size()==19 and rules.data.heroes.all(func(h):return CartoonHeroes.has("count_duck" if h.model=="rubber_duck_toy" else "hero_"+h.model))
 	# Every biome's ten cartoon species build as one merged mesh (CartoonBook).
 	checks.enemy_roster=range(RealmWorld.BIOME_COUNT).all(func(b):return range(CreatureBook.WEIGHTS.size()).all(func(s):return CartoonBook.get_model(b,s).mesh.get_surface_count()==1))
 	checks.painted_terrain=range(6).all(func(i):return ResourceLoader.exists("res://assets/illustrated/terrain-%d.png" % i))
@@ -3612,7 +3623,10 @@ func activate_consumable(kind: String):
 		heal(stats.maxHp*ColossusFight.POTION_HEAL);sound.effect("drink");vibrate(.2,.2,.1);return
 	if not PotionBook.TYPES.has(kind): return
 	var duration=25.0*stats.get("potionDuration",1.0)
+	var fresh=not buffs.has(kind)
 	buffs[kind]=maxf(float(buffs.get(kind,0)),duration)
+	# The benefit pops over the hero, once per new buff (a refill only resets its time).
+	if fresh: HeroTricks.word(self,PotionBook.benefit(kind,float(stats.get("potionPower",1.0))).to_upper()+" · %ds" % roundi(duration),Color(PotionBook.TYPES[kind].color).lightened(.3))
 	if kind=="poison": player_poison=0
 	if kind=="fire": player_fire=0
 	sound.effect("drink");vibrate(.2,.2,.1)
@@ -3632,6 +3646,7 @@ func drop_consumable(p: Vector3, force: bool=false, kind: String=""):
 	ToonArt.part(node,badge,Color("f2e4cb"),Vector3(0,0,-.22))
 	var mark=Label3D.new();mark.text=entry.mark;mark.font_size=30;mark.modulate=Color("584735");mark.position=Vector3(0,0,-.24);node.add_child(mark)
 	var title=entry.name
+	PotionBook.tag(node,"+%d%% ♥" % roundi(ColossusFight.POTION_HEAL*100) if kind=="health" else PotionBook.benefit(kind,float(stats.get("potionPower",1.0))),Color(entry.color),.6)
 	consumables.append({"node":node,"kind":kind,"title":title,"base_y":node.position.y,"age":0.0})
 
 func stat(key: String) -> float:
