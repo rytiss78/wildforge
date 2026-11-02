@@ -18,6 +18,19 @@ const SLAM_KEYS=["slamPower","slamRadius"]
 # Cards that would do nothing for a hero.
 const JUMP_KEYS=["jumpHeight","airJumps","fallGuard","slamPower","slamRadius","bounceJump"]
 
+# Card keys that only matter with a weapon or turret in hand.
+const WEAPON_STATS=["rate","multishot","pierce","projectileSpeed","ricochet","boomerang","boomerangPierce","discBounces","range","size","bombSize","gravitySize","harpoonPull","hornStun","meteorCount","bubbleTime","splash","chain","crit","critPower","execute","knockback","turretDamage","turretRange","turretRate","burn","freeze","slow","explosion","stun","blind"]
+const NOT_WEAPON_POWER=["slamPower","keyPower","potionPower","flowerPower"]
+
+# Is this card key (augments included: "augment-<when>-<stat>") weapon-only?
+static func weapon_key(key: String) -> bool:
+	if key.begins_with("augment-"):
+		var parts=key.split("-")
+		if parts.size()>=3 and parts[1] in ["turret","flower"]: return true
+		key=parts[parts.size()-1]
+	if key.ends_with("Power") and not NOT_WEAPON_POWER.has(key): return true
+	return WEAPON_STATS.has(key)
+
 static func hero_id(item) -> String:
 	return str(item.get("id","")) if item is Dictionary else str(item)
 
@@ -43,4 +56,16 @@ static func card_fits(item,card: Dictionary) -> bool:
 	if not can_jump(item) and JUMP_KEYS.has(key): return false
 	if not can_slam(item) and SLAM_KEYS.has(key): return false
 	if no_health(item) and key in ["maxHp","regen","lifesteal"]: return false
+	if not armed(item) and weapon_key(key): return false
 	return true
+
+# Prickle Rick lies on his side wherever his model is shown (run, hero screen,
+# friends' screens): the standing pickle is turned onto its side, curve up.
+const LYING=["cactus"]
+static func lies(item) -> bool: return LYING.has(hero_id(item))
+static func lie(rig: Node,item):
+	if not is_instance_valid(rig): return
+	var model=rig.find_child("CartoonModel",true,false)
+	if model==null: return
+	if lies(item): model.rotation=Vector3(0,0,PI*.5);model.position=Vector3(.8,.2,0)
+	else: model.rotation=Vector3.ZERO;model.position=Vector3.ZERO

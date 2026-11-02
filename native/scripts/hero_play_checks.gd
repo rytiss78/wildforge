@@ -73,6 +73,27 @@ static func run(game: Node3D) -> Dictionary:
 	for i in range(10): HeroPlay.tick(game,1.0/60.0)
 	# Pushed away from the enemy, and still rolling a moment later (friction, not a stop).
 	checks.cactus_shoved=shove.x<0.0 and HeroPlay.roll.x<0.0 and HeroPlay.roll.length()<shove.length()+.001 and HeroPlay.drive(game,Vector3.ZERO,1.0/60.0).x<0.0
+	# No weapon cards at all (masteries, rate, range, turrets...), only usable ones.
+	var pool=[]
+	for kind in ["item","skill"]: pool.append_array(game.rules.offers(kind,0.0,false,game.stats,game.equipped))
+	var any_weapon_card=pool.any(func(o):return not o.get("effects",[]).is_empty() and HeroRules.weapon_key(str(o.effects[0].key)))
+	checks.cactus_cards=not pool.is_empty() and not any_weapon_card and game.rules.banished.has("boomerangPower") and game.rules.banished.has("rate") and not game.rules.banished.has("poison")
+	# Toxic Hug: an enemy touching him is poisoned.
+	game.spawn_enemy(6);var hugger=game.enemies[-1];hugger.poison=0.0;hugger.status_time=0.0
+	HeroPlay.hug(game,hugger)
+	checks.cactus_poison=float(hugger.poison)>=25.0 and float(hugger.status_time)>=3.0
+	# A pickle, not a wheel: sideways momentum dies faster than lengthways, and the
+	# model only rocks a little.
+	game.clear_entities();game.avatar.rotation.y=0.0
+	HeroPlay.roll=Vector3(4,0,0);for i in range(20): HeroPlay.tick(game,1.0/60.0)
+	var lengthways=HeroPlay.roll.length()
+	HeroPlay.roll=Vector3(0,0,4);for i in range(20): HeroPlay.tick(game,1.0/60.0)
+	var sideways=HeroPlay.roll.length()
+	checks.cactus_pickle=sideways<lengthways*.8 and absf(model.rotation.x)<.4
+	# The HUD has no weapon slots for him.
+	game.hud.update(1.0/60.0)
+	checks.cactus_no_slots=not game.hud.weapons.visible and not game.hud.turret_hints.visible
+	HeroPlay.roll=Vector3.ZERO
 	# Digby Mole sees glowing roots under the Florist's flowers and eats them to heal.
 	use(game,"mole")
 	var garden=game.rules.data.weapons.filter(func(w):return w.id=="flowers")[0].duplicate(true);garden.kind="weapon";garden.strength=1.0;game.equip_weapon(garden)

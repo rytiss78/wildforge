@@ -36,7 +36,10 @@ func setup(model_name: String,weapon: String="gun",armour: float=0,shield_capaci
 	hero.rotation.y=.28
 	stage.add_child(hero)
 	hero.set_defense(armour,shield_capacity,shield_capacity)
-	hero.sync_equipment([{"id":weapon,"rank":1}]);hero.arms[0].rotation.x=.06
+	if not weapon.is_empty():
+		hero.sync_equipment([{"id":weapon,"rank":1}])
+		if not hero.arms.is_empty(): hero.arms[0].rotation.x=.06
+	HeroRules.lie(hero,model_name)
 	var floor_mesh=CylinderMesh.new()
 	floor_mesh.top_radius=1.2;floor_mesh.bottom_radius=1.2;floor_mesh.height=.06
 	ToonArt.part(stage,floor_mesh,Color("263b38"),Vector3(0,-.03,0))
@@ -57,5 +60,5 @@ func setup(model_name: String,weapon: String="gun",armour: float=0,shield_capaci
 	camera.position=Vector3(2.0,1.8,-4.5)
 	camera.projection=Camera3D.PROJECTION_ORTHOGONAL
 	camera.size=2.65
-	camera.look_at(Vector3(0,.8,0))
+	camera.look_at(Vector3(0,.45 if HeroRules.lies(model_name) else .8,0))
 	texture=viewport.get_texture()

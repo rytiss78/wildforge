@@ -178,20 +178,28 @@ static func scene(asset: String) -> Node3D:
 			s.make_arms(Vector3(.4,.95,0),.34,.09,suit,trim);s.make_legs(Vector3(.15,.38,0),.28,.09,suit,trim)
 			s.orb(Vector3(0,.72,0),.33,null,true)
 		"hero_cactus":
-			var green=c("4fc94a")
-			b.rod(Vector3(0,.4,0),Vector3(0,.5,0),.22,green);b.rod(Vector3(0,1.0,0),Vector3(0,1.2,0),.24,green)
-			for i in range(10):
-				var a=i*2.4;var y=1.0+fmod(i*.07,.25);var d=Vector3(cos(a),0,sin(a))
-				if d.z<-.4: continue
-				b.spike(Vector3(0,y,0)+d*.23,Vector3(0,y+.03,0)+d*.35,.02,c("fff1cf"))
-			for i in range(5): var a=i*TAU/5;b.ball(Vector3(cos(a)*.08,1.46,sin(a)*.08),Vector3.ONE*.13,c("ff5f9e"))
-			var h=s.make_head(Vector3(0,1.12,-.24))
-			h.eye(Vector3(-.09,.04,0),.07);h.eye(Vector3(.1,.04,0),.065,Vector3(.3,0,-1))
-			h.box(Vector3(0,.11,-.02),Vector3(.32,.045,.04),c("2a6a1a"),CartoonMesh.BODY,Vector3(0,0,.12))
-			h.grin(Vector3(0,-.1,0),.18,.05,0,false)
-			# No arms and no legs (user, November 2): he lies there and gets shoved about.
-			b.ball(Vector3(0,.3,0),Vector3(.5,.3,.5),green)
-			s.orb(Vector3(0,.74,0),.29,null,true)
+			# Prickle Rick (user, November 2): a big curved pickle, no arms or legs.
+			# Built standing (HeroRules.lie turns him onto his side, curve up), with a
+			# bumpy skin, a few spines, a darker stripe and the face near the top.
+			var green=c("5fae3a");var dark=c("3f7f26");var bump=c("78c24a")
+			# One long smooth body (separate balls read as a caterpillar).
+			b.ball(Vector3(.06,.82,0),Vector3(.62,1.66,.58),green,CartoonMesh.BODY,0.0,Vector2(0,1),false,Vector3(0,0,-.06))
+			var spine=[]
+			for k in range(19):
+				var t=float(k)/18.0
+				spine.append([Vector3(.06,.82,0)+Vector3(0,(t-.5)*1.5,0),.31*sqrt(maxf(.05,1.0-pow((t-.5)*2.0*.92,2.0)))])
+			for k in range(2,17,2):
+				var r=float(spine[k][1]);var at: Vector3=spine[k][0]
+				for m in range(5):
+					var a=float(m)*1.26+float(k)*.7;var d=Vector3(cos(a),0,sin(a))
+					if d.z<-.55: continue
+					b.ball(at+d*r*.97+Vector3(0,fmod(m*.05,.1),0),Vector3(.1,.12,.1),bump)
+					if (m+k)%3==0: b.spike(at+d*r*.98,at+d*(r+.1)+Vector3(0,.02,0),.012,c("fff1cf"))
+			var h=s.make_head(Vector3(.1,1.14,-.25))
+			h.eye(Vector3(-.09,.04,0),.075,Vector3(-.1,0,-1),c("ffd23f"));h.eye(Vector3(.1,.06,0),.06,Vector3(.3,0,-1),c("ffd23f"))
+			h.box(Vector3(-.09,.15,-.01),Vector3(.14,.03,.03),c("2a4a1a"),CartoonMesh.BODY,Vector3(0,0,-.25));h.box(Vector3(.1,.15,-.01),Vector3(.12,.03,.03),c("2a4a1a"),CartoonMesh.BODY,Vector3(0,0,.3))
+			h.grin(Vector3(0,-.1,0),.2,.06,4,false)
+			s.orb(Vector3(.1,.74,0),.29,null,true)
 		"hero_book":
 			var cover=c("c0392b")
 			for side in [-1.0,1.0]: b.box(Vector3(side*.33,.8,.02),Vector3(.05,.86,.62),cover,CartoonMesh.BODY,Vector3(0,side*.3,0))

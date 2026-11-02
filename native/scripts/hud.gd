@@ -752,6 +752,9 @@ func update(delta: float):
 		blast.color.a = 0
 	else: blast.color.a = 0
 	update_achievement_notification(delta)
+	# Prickle Rick carries no weapons: no slots, no turret readout.
+	if not HeroRules.armed(game.hero): weapons.visible=false;turret_hints.visible=false
+	if not HeroRules.can_slam(game.hero): slam_status.visible=false
 	# Clutch has his own vitals and weapon readout: hide the usual plates.
 	if ClutchPlay.first_person(game):
 		for widget in root.get_children():
@@ -858,7 +861,7 @@ func fill_hero_panel(focus_hero: bool=false):
 	portrait.custom_minimum_size=Vector2(426,560)
 	columns.add_child(portrait)
 	var preview_stats=game.rules.data.stats.duplicate(true);game.rules.apply_effects(preview_stats,game.hero.effects)
-	portrait.setup(game.hero.model,game.hero.weapon,float(preview_stats.armor),float(preview_stats.shield))
+	portrait.setup(game.hero.model,game.hero.weapon if HeroRules.armed(game.hero) else "",float(preview_stats.armor),float(preview_stats.shield))
 	HatBook.wear(portrait.preview_actor,str(game.career.data.settings.get("hat","")) if HatBook.owned(game.career.data.unlocked,str(game.career.data.settings.get("hat",""))) else "")
 	var bio=VBoxContainer.new()
 	bio.custom_minimum_size.x=413
@@ -885,7 +888,8 @@ func fill_hero_panel(focus_hero: bool=false):
 	var weapons=game.rules.data.weapons.filter(func(w):return w.id==game.hero.weapon)
 	starter.add_child(label(weapons[0].name if not weapons.is_empty() else "No weapon",16));starter.alignment=BoxContainer.ALIGNMENT_BEGIN
 	icon.tooltip_text=WeaponDetails.describe(game.hero.weapon)
-	if not str(game.hero.weapon).is_empty(): bio.add_child(starter)
+	if not str(game.hero.weapon).is_empty() and HeroRules.armed(game.hero): bio.add_child(starter)
+	else: starter.queue_free()
 	bio.add_child(hat_row())
 	if focus_hero and is_instance_valid(selected_hero):
 		selected_hero.grab_focus()
@@ -953,7 +957,7 @@ func coop_menu():
 	heroes.add_child(label("YOUR HERO",14))
 	portrait = HeroPortrait.new()
 	portrait.custom_minimum_size=Vector2(333,220);heroes.add_child(portrait)
-	portrait.setup(game.hero.model,game.hero.weapon,0,0)
+	portrait.setup(game.hero.model,game.hero.weapon if HeroRules.armed(game.hero) else "",0,0)
 	var scroll=ScrollContainer.new();scroll.custom_minimum_size=Vector2(333,220);scroll.horizontal_scroll_mode=ScrollContainer.SCROLL_MODE_DISABLED;heroes.add_child(scroll)
 	var choices=VBoxContainer.new();choices.size_flags_horizontal=Control.SIZE_EXPAND_FILL;scroll.add_child(choices)
 	var selected: Button

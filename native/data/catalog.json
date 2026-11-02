@@ -252,7 +252,7 @@
       "weapon": "saw",
       "effects": [
         {
-          "key": "thorns",
+          "key": "poison",
           "amount": 25,
           "mode": "add"
         },
@@ -272,8 +272,8 @@
           "mode": "multiply"
         }
       ],
-      "perk": "Bad Hug",
-      "description": "No arms, legs or weapon: he lies there, rolls slowly and enemies shove him about. Triple health; enemies touching him take 25 thorn damage twice a second and come for him first. Height 1.95 m · Move 40% · Jump 90%.",
+      "perk": "Toxic Hug",
+      "description": "No arms, legs or weapon: a big pickle lying on his side that enemies shove about. Triple health; enemies touching him are poisoned (25 damage a second for 3 s; poison cards add to it) and come for him first. Height 1.95 m · Move 40% · Jump 90%.",
       "height": 1.95,
       "radius": 0.48
     },

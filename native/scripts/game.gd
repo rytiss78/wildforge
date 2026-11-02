@@ -2176,6 +2176,7 @@ func update_combat(delta: float):
 			enemy.thorn_clock=maxf(0,enemy.get("thorn_clock",0)-enemy_delta)
 			if hp>0 and stats.thorns>0 and enemy.thorn_clock<=0 and enemy_touching(enemy,player.position):
 				enemy.thorn_clock=.5;hurt_enemy(enemy,stats.thorns,"thorn")
+			if hp>0 and HeroPlay.hugs(self) and enemy_touching(enemy,player.position): HeroPlay.hug(self,enemy)
 			if enemy.get("windup",0)>0: update.eyebrows(enemy)
 			preload("res://scripts/combat_tactics.gd").contact_warning(enemy)
 			if enemy.get("slip_until",0)>realm_time:
@@ -2313,6 +2314,7 @@ func update_combat(delta: float):
 		else: body.get_meta("rig").rotation.z=float(enemy.get("corruption_lean",0))
 		var touching=enemy_touching(enemy,target_player.position)
 		enemy.thorn_clock=maxf(0,enemy.get("thorn_clock",0)-enemy_delta)
+		if touching and target_player.id==coop.local_id and hp>0 and HeroPlay.hugs(self): HeroPlay.hug(self,enemy)
 		if touching and target_player.id==coop.local_id and stats.thorns>0 and enemy.thorn_clock<=0:
 			enemy.thorn_clock=.5;hurt_enemy(enemy,stats.thorns,"thorn")
 			if enemy.dead: continue
@@ -2535,7 +2537,7 @@ func _physics_process(delta: float):
 	var facing=direction
 	var target=nearest_enemy(player.position,24)
 	if not target.is_empty(): facing=(target.node.position-player.position).normalized()
-	avatar.rotation.y=lerp_angle(avatar.rotation.y,atan2(-facing.x,-facing.z),delta*9)
+	if not HeroPlay.turns_himself(self): avatar.rotation.y=lerp_angle(avatar.rotation.y,atan2(-facing.x,-facing.z),delta*9)
 	var previous = player.position
 	dash_time=maxf(0,dash_time-delta)
 	dash_cooldown=maxf(0,dash_cooldown-delta)

@@ -1061,6 +1061,7 @@ func ensure_avatar(id: int,state: Dictionary):
 		if definition.id=="white-supra":
 			var box=BoxShape3D.new();box.size=Vector3(capsule.radius*2,definition.height,2.3);collider.shape=box;collider.position.y=definition.height*.5
 		var rig=game.world.model(model,float(definition.get("height",1.65)));node.add_child(rig);node.set_meta("rig",rig);game.add_child(node);avatars[id]=node
+		HeroRules.lie(rig,definition)
 		var nameplate=Label3D.new();nameplate.text=clean_player_name(state.get("name","Player"));nameplate.position.y=float(definition.get("height",1.65))+.55;nameplate.font_size=26;nameplate.pixel_size=.01;nameplate.billboard=BaseMaterial3D.BILLBOARD_ENABLED;nameplate.modulate=Color("fff1d1");nameplate.outline_modulate=Color("263138");nameplate.outline_size=6;node.add_child(nameplate);node.set_meta("nameplate",nameplate)
 		# A long, translucent cyan column makes a fallen teammate findable
 		# over terrain, while the screen-edge marker works out of view.

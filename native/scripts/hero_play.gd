@@ -34,8 +34,8 @@ static var trail_clock=0.0
 static var nectar=[]
 static var sip_clock=0.0
 static var roll=Vector3.ZERO  # Prickle Rick's rolling momentum
-const ROLL_FRICTION=3.0
-const ROLL_MAX=14.0
+const ROLL_FRICTION=7.0
+const ROLL_MAX=8.0
 
 static func id(g) -> String: return str(g.hero.get("id",""))
 
@@ -49,10 +49,14 @@ static func start(g):
 			if not g.rules.banished.has(key): g.rules.banished.append(key)
 	g.rules.no_weapons=not HeroRules.armed(g.hero)
 	if g.rules.no_weapons:
+		# Weapon masteries, rate, range, turret cards and the rest leave the pool.
+		for card in g.rules.data.loot:
+			var key=str(card.effects[0].key) if not card.get("effects",[]).is_empty() else ""
+			if HeroRules.weapon_key(key) and not g.rules.banished.has(key): g.rules.banished.append(key)
 		for weapon in g.equipped:
 			if is_instance_valid(weapon.get("node")): weapon.node.queue_free()
 		g.equipped.clear();g.avatar.sync_equipment(g.equipped)
-	drifting=false;roll=Vector3.ZERO;clear_trail(g)
+	drifting=false;roll=Vector3.ZERO;spin=0.0;rock=0.0;clear_trail(g)
 
 # Each island starts a fresh trail and fresh nectar flowers.
 static func realm_started(g):
@@ -66,10 +70,7 @@ static func realm_started(g):
 # Called on each hero change too (the hero screen preview uses its own model).
 static func lay_down(g):
 	if not is_instance_valid(g.avatar): return
-	var model=g.avatar.find_child("CartoonModel",true,false)
-	if model==null: return
-	if id(g)=="cactus": model.rotation=Vector3(0,0,PI*.5);model.position=Vector3(.75,.32,0)
-	else: model.rotation=Vector3.ZERO;model.position=Vector3.ZERO
+	HeroRules.lie(g.avatar,g.hero)
 	# No health, no glass health orb on the hero.
 	for core in g.avatar.find_children("GlassCore*","",true,false): core.visible=not HeroRules.no_health(g.hero)
 
@@ -221,30 +222,58 @@ static func sip(g,delta: float):
 # --- Prickle Rick ----------------------------------------------------------------
 
 # He lies on his side and is pushed about with some physics (user, November 2):
-# each enemy pressing on him adds momentum away from it (bosses push harder),
-# hits shove him too (game.take_damage's knock), and he keeps rolling until
-# friction stops him, bouncing off walls. The model rolls about its long axis.
+# each enemy pressing on him adds momentum away from it (bosses push harder) and,
+# pressing off-centre, turns him about; hits shove him too (game.take_damage's
+# knock). He is a long, curved pickle, not a wheel: he slides lengthways more
+# easily than sideways, only rocks a little about his long axis, and friction
+# soon stops him. Walls bounce him back.
+const ACROSS_FRICTION=2.4  # sideways friction, times ROLL_FRICTION
+static var spin=0.0
+static var rock=0.0
+
+# He never turns to face enemies (game.gd skips its facing turn); pushes spin him.
+static func turns_himself(g) -> bool: return id(g)=="cactus"
+static func hugs(g) -> bool: return id(g)=="cactus"
+
+# Enemies touching him are poisoned (the "Toxic Hug"; poison cards add to it).
+static func hug(g,enemy: Dictionary):
+	if id(g)!="cactus" or float(g.stats.poison)<=0: return
+	g.set_damage_status(enemy,"poison",float(g.stats.poison),g.coop.local_id)
+	enemy.status_time=maxf(float(enemy.status_time),3.0)
+
 static func shoved(g,delta: float):
-	var p=g.player.position;var push=Vector3.ZERO
+	var p=g.player.position;var push=Vector3.ZERO;var torque=0.0
+	var axis=Vector3.RIGHT
+	if is_instance_valid(g.avatar): axis=(g.avatar.global_basis.x*Vector3(1,0,1)).normalized()
 	for enemy in g.enemies:
 		if enemy.dead: continue
 		var away=p-enemy.node.position;away.y=0
-		var reach=float(enemy.radius)+.9
+		var reach=float(enemy.radius)+1.0
 		if away.length_squared()<reach*reach:
 			var weight=3.0 if enemy.boss else 1.0+float(enemy.get("height",1.7))*.3
-			push+=(away.normalized() if away.length_squared()>.0001 else Vector3.RIGHT)*(reach-away.length())*weight
-	roll+=push.limit_length(3.0)*22.0*delta
-	# A hit's knock-back becomes rolling momentum instead of a short hop.
-	if g.knock_velocity.length()>.1: roll+=g.knock_velocity*.6;g.knock_velocity=Vector3.ZERO
+			var force=(away.normalized() if away.length_squared()>.0001 else Vector3.RIGHT)*(reach-away.length())*weight
+			push+=force
+			# Pressing near one end turns him about his middle.
+			var lever=axis*clampf((-away).dot(axis),-.8,.8)
+			torque+=lever.cross(force).y
+	roll+=push.limit_length(3.0)*12.0*delta
+	spin=clampf(spin+torque*3.0*delta,-3.0,3.0)*exp(-delta*3.0)
+	# A hit's knock-back becomes sliding momentum instead of a short hop.
+	if g.knock_velocity.length()>.1: roll+=g.knock_velocity*.35;g.knock_velocity=Vector3.ZERO
 	if g.player.is_on_wall():
 		var wall=g.player.get_wall_normal();wall.y=0
-		if roll.dot(wall)<0: roll=roll.bounce(wall.normalized())*.5
-	roll=roll.limit_length(ROLL_MAX).move_toward(Vector3.ZERO,ROLL_FRICTION*delta)
-	# Roll the lying model: along its rolling direction it turns, sideways it slides.
+		if roll.dot(wall)<0: roll=roll.bounce(wall.normalized())*.4
+	# Lengthways he slides; sideways the curve and bumps drag.
+	var along=axis*roll.dot(axis);var across=roll-along
+	along=along.move_toward(Vector3.ZERO,ROLL_FRICTION*delta);across=across.move_toward(Vector3.ZERO,ROLL_FRICTION*ACROSS_FRICTION*delta)
+	roll=(along+across).limit_length(ROLL_MAX)
+	if is_instance_valid(g.avatar): g.avatar.rotation.y+=spin*delta
+	# The lying model only rocks a little toward the side he is pushed to.
 	var model=g.avatar.find_child("CartoonModel",true,false) if is_instance_valid(g.avatar) else null
 	if model!=null:
-		var local=g.avatar.global_basis.inverse()*Vector3(g.player.velocity.x,0,g.player.velocity.z)
-		model.rotation.x=fmod(model.rotation.x-local.z*delta/.35,TAU)
+		var side=Vector3.UP.cross(axis).normalized()
+		var lean=clampf(Vector3(g.player.velocity.x,0,g.player.velocity.z).dot(side)*.07,-.35,.35)+sin(g.elapsed*2.3)*.02
+		rock=lerpf(rock,lean,minf(1.0,delta*6.0));model.rotation.x=rock
 
 # --- Flower roots under the island (Digby Mole) ---------------------------------
 
