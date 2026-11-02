@@ -573,6 +573,8 @@ func update(delta: float):
 		buff_widgets[key].get_parent().get_parent().tooltip_text=PotionBook.TYPES[key].name+" · "+benefit.text
 	health_text.text="HP  %d / %d" % [ceili(game.hp),roundi(game.stats.maxHp)]
 	health_orb.fill=clampf(game.hp/maxf(1,game.stats.maxHp),0,1)
+	# No health (Admiral Bubbles): the vitals show only his bubble.
+	if HeroRules.no_health(game.hero): health_text.text="◯  %d / %d" % [ceili(game.shield_hp),roundi(game.stats.shield)];health_orb.fill=0.0
 	health_orb.shield_fill=clampf(game.shield_hp/maxf(1,game.stats.shield),0,1);health_orb.queue_redraw()
 	shield_text.text="SHIELD  %d / %d" % [ceili(game.shield_hp),ceili(game.stats.shield)]
 	shield_text.visible=true

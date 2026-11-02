@@ -11,6 +11,8 @@ var loot_pools={}
 var loot_by_id={}
 var mechanic_pools={}
 var banished=[]
+# Prickle Rick carries no weapon: weapon cards leave his pool (HeroPlay.start).
+var no_weapons=false
 
 func _init():
 	data = JSON.parse_string(FileAccess.get_file_as_string("res://data/catalog.json"))
@@ -80,6 +82,7 @@ func offers(kind: String, luck: float, elite: bool = false, current_stats: Dicti
 	var floor_tier=minimum if minimum>=0 else (1 if elite else 0)
 	var result = []
 	var attempts = 0
+	if no_weapons and kind=="weapon": kind="skill"
 	if kind=="weapon" and equipped.size()>=WEAPON_CAP:
 		var item=equipped[rng.randi_range(0,equipped.size()-1)].duplicate(true)
 		item.tier=maxi(floor_tier,rarity(luck));item.strength=[1.0,2.0,3.5,5.5][item.tier];item.kind="weapon"
@@ -94,6 +97,7 @@ func offers(kind: String, luck: float, elite: bool = false, current_stats: Dicti
 		if filtered_weapon != "":
 			if not card_targets_weapon(item, filtered_weapon): continue
 		if item.kind!="weapon" and banished.has(item.effects[0].key): continue
+		if no_weapons and item.kind in ["weapon","evolution"]: continue
 		if attempts<80 and excluded_ids.has(item.id): continue
 		if item.kind!="weapon" and not current_stats.is_empty():
 			var candidate=current_stats.duplicate(true)
@@ -108,7 +112,7 @@ func offers(kind: String, luck: float, elite: bool = false, current_stats: Dicti
 		if attempts < 80 and result.any(func(a): return a.id == item.id or a.name == item.name or a.kind!="weapon" and item.kind!="weapon" and a.effects[0].key==item.effects[0].key): continue
 		result.append(item)
 	if result.size()<OFFER_COUNT:
-		var fallback=offers("weapon",luck,elite,{},equipped) if kind!="weapon" else []
+		var fallback=offers("weapon",luck,elite,{},equipped) if kind!="weapon" and not no_weapons else []
 		while result.size()<OFFER_COUNT and not fallback.is_empty(): result.append(fallback.pop_front())
 	# A mild single-slot preference, never a fixed recipe or a banned/capped bonus.
 	if kind!="weapon" and rng.randf()<.3 and not equipped.is_empty():

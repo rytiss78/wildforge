@@ -253,12 +253,17 @@
       "effects": [
         {
           "key": "thorns",
-          "amount": 12,
+          "amount": 25,
           "mode": "add"
         },
         {
+          "key": "maxHp",
+          "amount": 2,
+          "mode": "multiply"
+        },
+        {
           "key": "speed",
-          "amount": -0.09999999999999998,
+          "amount": -0.6,
           "mode": "multiply"
         },
         {
@@ -268,7 +273,7 @@
         }
       ],
       "perk": "Bad Hug",
-      "description": "Enemies touching you take 12 thorn damage twice per second. Height 1.95 m · Move 90% · Jump 90%.",
+      "description": "No arms, legs or weapon: he lies there, rolls slowly and enemies shove him about. Triple health; enemies touching him take 25 thorn damage twice a second and come for him first. Height 1.95 m · Move 40% · Jump 90%.",
       "height": 1.95,
       "radius": 0.48
     },
@@ -301,7 +306,7 @@
         }
       ],
       "perk": "Slime Trail",
-      "description": "Weapon hits poison enemies for 8 damage per second. A sturdy shell adds 3 armour. Height 1.25 m · Move 85% · Jump 70%.",
+      "description": "Leaves a slime trail for the whole island that slows enemies crossing it by 50%. Hits poison for 8 a second; shell adds 3 armour. Height 1.25 m · Move 85% · Jump 70%.",
       "height": 1.25,
       "radius": 0.47
     },
@@ -334,7 +339,7 @@
         }
       ],
       "perk": "Honey Money",
-      "description": "Walking earns 0.25 coins per metre. Each coin drop heals 0.5 health. Height 1.20 m · Move 120% · Jump 135%.",
+      "description": "Flies: no jumps or slams. Sips XP from wild flowers (a little from Florist flowers). Walking earns 0.25 coins a metre. Height 1.20 m · Move 120% · Jump 135%.",
       "height": 1.2,
       "radius": 0.3
     },
@@ -500,7 +505,7 @@
       "model": "smoker",
       "weapon": "smoke-censer",
       "perk": "Secondhand Hex",
-      "description": "Poison hits deal 10 extra damage per second. Height 2.10 m · Move 92% · Jump 90%.",
+      "description": "Hovers all the time, so lava and ground hazards miss her. Poison hits deal 10 extra damage a second. Height 2.10 m · Move 92% · Jump 90%.",
       "effects": [
         {
           "key": "poison",
@@ -566,7 +571,7 @@
       "model": "white-supra",
       "weapon": "supra-backfire",
       "perk": "Turbocharged",
-      "description": "Very fast, wide, low-jumping; dashes blast for 24 damage. Height 1.05 m · Move 142% · Jump 55%.",
+      "description": "Twice the usual speed; hold Space to drift. No jumps or slams. Dashes blast for 24 damage. Height 1.05 m · Move 200% · Jump 55%.",
       "effects": [
         {
           "key": "dashBlast",
@@ -575,7 +580,7 @@
         },
         {
           "key": "speed",
-          "amount": 0.41999999999999993,
+          "amount": 1,
           "mode": "multiply"
         },
         {

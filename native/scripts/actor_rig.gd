@@ -104,6 +104,7 @@ func sync_equipment(weapons: Array):
 		create_tween().tween_property(extra,"scale",Vector3.ONE,.5).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 	if arms.size()>2: arms[2].visible=weapons.size()==3
 	for i in range(weapons.size()):
+		if i>=arms.size(): break
 		var weapon=WeaponModel.new();weapon.setup(weapons[i].id);weapon.rank=int(weapons[i].rank);weapon.evolved=bool(weapons[i].get("evolved",false))
 		weapon.position.y=.18
 		arms[i].get_meta("hand").add_child(weapon)

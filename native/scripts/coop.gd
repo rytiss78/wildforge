@@ -1226,13 +1226,15 @@ func died(enemy: Dictionary,cause: String):
 
 func target(origin: Vector3) -> Dictionary:
 	var result={"id":local_id,"position":game.player.position};var distance=origin.distance_squared_to(game.player.position) if game.hp>0 and not game.underside.active() else INF
+	# Prickle Rick draws enemies to him: he counts as nearer than he is.
+	if HeroPlay.taunts(str(game.hero.get("id",""))): distance*=HeroPlay.AGGRO
 	if distance==INF and game.underside.active(): result={"id":-1,"position":rim_spot(game.player.position)}
 	if active and hosting:
 		for id in members:
 			var member=members[id]
 			if member.get("disconnected",false) or member.get("under",false): continue
 			if not member.has("position") or member.get("hp",0)<=0: continue
-			var p=vector(member.position);var d=origin.distance_squared_to(p)
+			var p=vector(member.position);var d=origin.distance_squared_to(p)*(HeroPlay.AGGRO if str(member.get("model",""))=="cactus" else 1.0)
 			if d<distance: distance=d;result={"id":id,"position":p}
 	return result
 

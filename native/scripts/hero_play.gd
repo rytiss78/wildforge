@@ -1,0 +1,247 @@
+extends RefCounted
+class_name HeroPlay
+
+# Hero-specific play (user list, November 2). HeroRules says who breaks which
+# rule; this does the work each frame:
+#   White Supra    drives: twice the usual speed, Space is a handbrake drift with
+#                  a tyre squeal, skid marks and smoke; a hit is a car crash
+#   Smoker, Bee    hover over the ground (lava and ground hazards miss them)
+#   Honey Hustler  sips nectar from wild flowers for XP (a little from Florist's)
+#   Admiral Bubbles no health: the bubble shield is his life (see game.take_damage)
+#   Turbo Snail    leaves a lasting slime trail that slows enemies crossing it
+#   Prickle Rick   no limbs or weapon: lies on his side, rolls slowly, gets shoved
+#                  about by enemies, and draws them to him (CoopSession.target)
+
+const SUPRA_GRIP=9.0
+const DRIFT_GRIP=1.4
+const HOVER={"smoker":.45,"bee":1.0}
+const TRAIL_STEP=.9
+const TRAIL_CELL=1.2
+const TRAIL_MAX=6000
+const TRAIL_SLOW=.5
+const NECTAR_COUNT=34
+const NECTAR_REGROW=40.0
+const AGGRO=.25  # a taunting hero counts as this much nearer to enemies (distance²)
+
+static var drifting=false
+static var drift_sound: AudioStreamPlayer3D
+static var skid_clock=0.0
+static var trail_cells={}
+static var trail_points=0
+static var trail_mesh: MultiMeshInstance3D
+static var last_trail=Vector3.INF
+static var trail_clock=0.0
+static var nectar=[]
+static var sip_clock=0.0
+static var roll=Vector3.ZERO  # Prickle Rick's rolling momentum
+const ROLL_FRICTION=3.0
+const ROLL_MAX=14.0
+
+static func id(g) -> String: return str(g.hero.get("id",""))
+
+# At the start of a run: cards the hero cannot use leave the pool, the cactus
+# drops his weapon, and per-run state is cleared.
+static func start(g):
+	for key in HeroRules.JUMP_KEYS if not HeroRules.can_jump(g.hero) else []:
+		if not g.rules.banished.has(key): g.rules.banished.append(key)
+	if HeroRules.no_health(g.hero):
+		for key in ["maxHp","regen","lifesteal","coinHeal","chestHeal","landingHeal","slamHeal"]:
+			if not g.rules.banished.has(key): g.rules.banished.append(key)
+	g.rules.no_weapons=not HeroRules.armed(g.hero)
+	if g.rules.no_weapons:
+		for weapon in g.equipped:
+			if is_instance_valid(weapon.get("node")): weapon.node.queue_free()
+		g.equipped.clear();g.avatar.sync_equipment(g.equipped)
+	drifting=false;roll=Vector3.ZERO;clear_trail(g)
+
+# Each island starts a fresh trail and fresh nectar flowers.
+static func realm_started(g):
+	clear_trail(g)
+	for flower in nectar:
+		if is_instance_valid(flower.node): flower.node.queue_free()
+	nectar.clear()
+	if id(g)=="bee" and g.realm<3: plant_nectar(g)
+	lay_down(g)
+
+# Called on each hero change too (the hero screen preview uses its own model).
+static func lay_down(g):
+	if not is_instance_valid(g.avatar): return
+	var model=g.avatar.find_child("CartoonModel",true,false)
+	if model==null: return
+	if id(g)=="cactus": model.rotation=Vector3(0,0,PI*.5);model.position=Vector3(.75,.32,0)
+	else: model.rotation=Vector3.ZERO;model.position=Vector3.ZERO
+	# No health, no glass health orb on the hero.
+	for core in g.avatar.find_children("GlassCore*","",true,false): core.visible=not HeroRules.no_health(g.hero)
+
+static func tick(g,delta: float):
+	var hero=id(g)
+	var hover=float(HOVER.get(hero,0.0))
+	if is_instance_valid(g.avatar):
+		g.avatar.position.y=lerpf(g.avatar.position.y,hover+sin(g.elapsed*2.2)*.08*signf(hover),minf(1.0,delta*6.0)) if hover>0 else 0.0
+	if hero=="white-supra": drift_fx(g,delta)
+	elif is_instance_valid(drift_sound): drift_sound.stop()
+	if hero=="snail": lay_trail(g,delta)
+	if not trail_cells.is_empty(): slow_on_trail(g,delta)
+	if hero=="bee": sip(g,delta)
+	if hero=="cactus": shoved(g,delta)
+
+# --- White Supra -----------------------------------------------------------
+
+# Car handling: the velocity turns towards the wanted one with tyre grip; holding
+# Space (the jump key) cuts the grip, so the car slides through turns at speed.
+static func drive(g,running: Vector3,delta: float) -> Vector3:
+	# Prickle Rick: his own slow wobble plus the momentum enemies and hits gave him.
+	if id(g)=="cactus": return Vector3(running.x+roll.x,running.y,running.z+roll.z)
+	if id(g)!="white-supra": return running
+	var held=Input.is_action_pressed("jump") or g.get_meta("test_drift",false)
+	var now=Vector3(g.player.velocity.x,0,g.player.velocity.z)
+	var want=Vector3(running.x,0,running.z)
+	var v=now.lerp(want,1.0-exp(-(DRIFT_GRIP if held else SUPRA_GRIP)*delta))
+	if held and now.length()>4.0: v=v.normalized()*maxf(v.length(),now.length()*.99)
+	drifting=held and v.length()>5.0 and (want.length()<.5 or absf(now.signed_angle_to(want,Vector3.UP))>.2)
+	return Vector3(v.x,running.y,v.z)
+
+static func drift_fx(g,delta: float):
+	if not is_instance_valid(drift_sound):
+		drift_sound=AudioStreamPlayer3D.new();drift_sound.name="DriftSound"
+		var stream: AudioStreamWAV=load("res://assets/audio/effects/drift-loop.wav").duplicate()
+		stream.loop_mode=AudioStreamWAV.LOOP_FORWARD;stream.loop_begin=0;stream.loop_end=int(stream.data.size()/2)
+		drift_sound.stream=stream;drift_sound.unit_size=8;g.player.add_child(drift_sound)
+	if drifting and not drift_sound.playing: drift_sound.play()
+	if not drifting and drift_sound.playing: drift_sound.stop()
+	drift_sound.volume_db=linear_to_db(maxf(.0001,float(g.sound.settings.get("sfx",.65))))-4
+	if not drifting: return
+	skid_clock-=delta
+	if skid_clock>0: return
+	skid_clock=.06
+	var back=g.player.position-Vector3(g.player.velocity.x,0,g.player.velocity.z).normalized()*.9
+	for side in [-.45,.45]:
+		var across=Vector3(g.player.velocity.z,0,-g.player.velocity.x).normalized()*side
+		var mark=MeshInstance3D.new();var quad=PlaneMesh.new();quad.size=Vector2(.22,.5);mark.mesh=quad
+		mark.material_override=skid_paint();mark.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		g.add_child(mark);var at=back+across;at.y=g.world.height_at(at.x,at.z)+.03;mark.position=at
+		mark.rotation.y=atan2(g.player.velocity.x,g.player.velocity.z)
+		g.effects.append({"node":mark,"life":3.0,"velocity":Vector3.ZERO,"stationary":true})
+	if randf()<.5: g.burst(back+Vector3.UP*.3,Color("d8d8d8"),2)
+
+static var skid_material: StandardMaterial3D
+static func skid_paint() -> StandardMaterial3D:
+	if skid_material==null:
+		skid_material=StandardMaterial3D.new();skid_material.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED
+		skid_material.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA;skid_material.albedo_color=Color(.08,.07,.08,.55)
+	return skid_material
+
+# The car's "voice" when hit.
+static func hurt_sound(g) -> bool:
+	if id(g)!="white-supra": return false
+	g.sound.effect("car-crash",g.player.position)
+	return true
+
+# --- Turbo Snail -------------------------------------------------------------
+
+static func clear_trail(g):
+	trail_cells.clear();trail_points=0;last_trail=Vector3.INF
+	if is_instance_valid(trail_mesh): trail_mesh.queue_free()
+	trail_mesh=null
+
+static func lay_trail(g,_delta: float):
+	if not g.player.is_on_floor() or g.underside.active() or trail_points>=TRAIL_MAX: return
+	var p=g.player.position
+	if last_trail!=Vector3.INF and Vector2(p.x-last_trail.x,p.z-last_trail.z).length()<TRAIL_STEP: return
+	var heading=Vector2(p.x-last_trail.x,p.z-last_trail.z) if last_trail!=Vector3.INF else Vector2.UP
+	last_trail=p
+	trail_cells[Vector2i(floori(p.x/TRAIL_CELL),floori(p.z/TRAIL_CELL))]=true
+	if trail_mesh==null:
+		trail_mesh=MultiMeshInstance3D.new();trail_mesh.name="SlimeTrail";trail_mesh.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+		var mm=MultiMesh.new();mm.transform_format=MultiMesh.TRANSFORM_3D
+		var blob=SphereMesh.new();blob.radius=.55;blob.height=.08;blob.radial_segments=12;blob.rings=3;mm.mesh=blob
+		mm.instance_count=TRAIL_MAX;mm.visible_instance_count=0;trail_mesh.multimesh=mm
+		var slime=StandardMaterial3D.new();slime.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED;slime.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA
+		slime.albedo_color=Color(.62,1.0,.45,.38);slime.emission_enabled=true;slime.emission=Color("8dff5a");slime.emission_energy_multiplier=.25
+		trail_mesh.material_override=slime;g.add_child(trail_mesh)
+	var spot=Transform3D(Basis(Vector3.UP,atan2(heading.x,heading.y)).scaled(Vector3(.8,1,1.3)),Vector3(p.x,g.world.height_at(p.x,p.z)+.02,p.z))
+	trail_mesh.multimesh.set_instance_transform(trail_points,spot);trail_points+=1;trail_mesh.multimesh.visible_instance_count=trail_points
+
+static func on_trail(p: Vector3) -> bool:
+	return trail_cells.has(Vector2i(floori(p.x/TRAIL_CELL),floori(p.z/TRAIL_CELL)))
+
+static func slow_on_trail(g,delta: float):
+	trail_clock-=delta
+	if trail_clock>0: return
+	trail_clock=.2
+	for enemy in g.enemies:
+		if enemy.dead or enemy.get("flying",false) or not on_trail(enemy.node.position): continue
+		if float(enemy.slow)<TRAIL_SLOW: g.sound.enemy_effect("slime",enemy.node.position)
+		enemy.slow=maxf(float(enemy.slow),TRAIL_SLOW*(.5 if enemy.boss else 1.0));enemy.status_time=maxf(float(enemy.status_time),.6)
+
+# --- Honey Hustler -------------------------------------------------------------
+
+static func plant_nectar(g):
+	var rng=RandomNumberGenerator.new();rng.seed=g.seed_value+g.realm*911
+	var tries=0
+	while nectar.size()<NECTAR_COUNT and tries<600:
+		tries+=1
+		var angle=rng.randf()*TAU;var radius=rng.randf_range(10,RealmWorld.SPAWN_EXTENT-40)
+		var p=Vector3(cos(angle)*radius,0,sin(angle)*radius)
+		if radius>g.world.shore_radius(p)-26 or g.world.lava_at(p): continue
+		p.y=g.world.height_at(p.x,p.z)
+		var node=Node3D.new();node.name="Nectar";g.add_child(node);node.position=p
+		var colors=[Color("ff7ac8"),Color("ffd23f"),Color("9fe9ff"),Color("c69bff")]
+		for k in range(5):
+			var at=Vector3(cos(k*1.3)*.5,0,sin(k*1.3)*.5)*(k%3)
+			ToonArt.tube(node,Color("3f9a3a"),at+Vector3(0,.3,0),.03,.03,.6)
+			NatureScenery.blossom(node,at+Vector3(0,.62,0),colors[(k+nectar.size())%colors.size()],.38)
+		PotionBook.tag(node,"✿ XP",Color("ffd23f"),1.3)
+		nectar.append({"node":node,"ready":0.0})
+
+static func sip(g,delta: float):
+	sip_clock-=delta
+	if sip_clock>0: return
+	sip_clock=.25
+	var p=g.player.position
+	for flower in nectar:
+		if not is_instance_valid(flower.node): continue
+		var ready=g.elapsed>=float(flower.ready)
+		flower.node.scale=flower.node.scale.lerp(Vector3.ONE if ready else Vector3(.55,.35,.55),.3)
+		if not ready: continue
+		var at: Vector3=flower.node.position
+		if Vector2(at.x-p.x,at.z-p.z).length()<2.6:
+			flower.ready=g.elapsed+NECTAR_REGROW
+			g.spawn_pickup(p+Vector3.UP*.5,"xp",6+g.realm*4)
+			g.burst(at+Vector3.UP*.8,Color("ffd23f"),6);g.sound.effect("heal",at)
+	# Florist flowers give a little too, each once in a while.
+	for flower in g.flowers:
+		if not is_instance_valid(flower.get("node")): continue
+		var at: Vector3=flower.node.position
+		if Vector2(at.x-p.x,at.z-p.z).length()<2.2 and g.elapsed>=float(flower.get("sipped",-99.0))+15.0:
+			flower.sipped=g.elapsed;g.spawn_pickup(p+Vector3.UP*.5,"xp",1)
+
+# --- Prickle Rick ----------------------------------------------------------------
+
+# He lies on his side and is pushed about with some physics (user, November 2):
+# each enemy pressing on him adds momentum away from it (bosses push harder),
+# hits shove him too (game.take_damage's knock), and he keeps rolling until
+# friction stops him, bouncing off walls. The model rolls about its long axis.
+static func shoved(g,delta: float):
+	var p=g.player.position;var push=Vector3.ZERO
+	for enemy in g.enemies:
+		if enemy.dead: continue
+		var away=p-enemy.node.position;away.y=0
+		var reach=float(enemy.radius)+.9
+		if away.length_squared()<reach*reach:
+			var weight=3.0 if enemy.boss else 1.0+float(enemy.get("height",1.7))*.3
+			push+=(away.normalized() if away.length_squared()>.0001 else Vector3.RIGHT)*(reach-away.length())*weight
+	roll+=push.limit_length(3.0)*22.0*delta
+	# A hit's knock-back becomes rolling momentum instead of a short hop.
+	if g.knock_velocity.length()>.1: roll+=g.knock_velocity*.6;g.knock_velocity=Vector3.ZERO
+	if g.player.is_on_wall():
+		var wall=g.player.get_wall_normal();wall.y=0
+		if roll.dot(wall)<0: roll=roll.bounce(wall.normalized())*.5
+	roll=roll.limit_length(ROLL_MAX).move_toward(Vector3.ZERO,ROLL_FRICTION*delta)
+	# Roll the lying model: along its rolling direction it turns, sideways it slides.
+	var model=g.avatar.find_child("CartoonModel",true,false) if is_instance_valid(g.avatar) else null
+	if model!=null:
+		var local=g.avatar.global_basis.inverse()*Vector3(g.player.velocity.x,0,g.player.velocity.z)
+		model.rotation.x=fmod(model.rotation.x-local.z*delta/.35,TAU)
+
+static func taunts(hero_id: String) -> bool: return hero_id=="cactus"

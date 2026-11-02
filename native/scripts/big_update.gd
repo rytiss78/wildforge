@@ -39,7 +39,7 @@ var mimic_clock=0.0
 func setup(owner_game): game=owner_game
 
 func new_run():
-	game.rules.banished.clear();downed=false;downed_ids.clear();rescue_progress.clear()
+	game.rules.banished.clear();game.rules.no_weapons=false;downed=false;downed_ids.clear();rescue_progress.clear()
 	run_damage=0;party_damage=0;run_xp=0;run_coins=0;run_revives=0;run_rescues=0;memories.clear();quip_times.clear();quip_clock=0
 	if is_instance_valid(magnet_node): magnet_node.queue_free();magnet_node=null
 	magnet_turrets=[];magnet_active=false;magnet_spent=false;magnet_hold=0.0
@@ -209,6 +209,9 @@ func merchant_item(i: int,weapons: Array) -> Dictionary:
 	var item=stock[i].duplicate(true)
 	if item.kind!="weapon" and game.rules.banished.has(item.effects[0].key):
 		item=game.rules.data.weapons.filter(func(w):return w.id==game.hero.weapon)[0].duplicate(true);item.kind="weapon";item.tier=1;item.strength=2.0
+	if item.kind=="weapon" and game.rules.no_weapons:
+		var cards=game.rules.offers("skill",0.0)
+		if not cards.is_empty(): return cards[0]
 	if item.kind=="weapon" and weapons.size()>=3 and not weapons.any(func(w):return w.id==item.id):
 		item=game.rules.data.weapons.filter(func(w):return w.id==weapons[0].id)[0].duplicate(true)
 		item.kind="weapon";item.tier=1;item.strength=2.0

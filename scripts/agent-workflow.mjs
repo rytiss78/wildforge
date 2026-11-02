@@ -219,7 +219,7 @@ async function main(action) {
       const line=output.split(/\r?\n/).findLast(x=>x.startsWith('UNDERSIDE_REVIEW '));
       if(!line) throw new Error('Missing underside review');report.underside=JSON.parse(line.slice(17));
       if(Object.values(report.underside.checks).some(v=>v===false)) throw new Error('Underside review assertions failed');
-      report.capture=['top','pet-blip','pet-fuzzbat','pet-zorbo','flip','under','under-back','return','mole','mole-dig','mole-under','mole-up','under-turret','turrets-flowers','flowers','florist','fire','side'].map(n=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','underside-'+n+'.png'),started));
+      report.capture=['top','pet-blip','pet-fuzzbat','pet-zorbo','flip','under','under-back','return','mole','mole-dig','mole-under','mole-up','under-turret','turrets-flowers','flowers','florist','fire','pickle','side'].map(n=>assessPng(join(env.APPDATA,'Godot/app_userdata/Wildforge','underside-'+n+'.png'),started));
     }
     if (action === 'crusher-review') {
       const output=await step('crusher-review',godot,['--path',join(root,'native'),'--resolution','1440x810','--','--crusher-review'],180000);

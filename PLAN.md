@@ -59,14 +59,14 @@ Done in this order: quick screen and data fixes first, then hero rework, then ne
 - [x] 26 · Bosses keep up: they run at hero speed (faster when far away) so you cannot outrun and forget them.
 
 **C. Heroes that play differently**
-- [ ] 11 · White Supra: no jump/slam (and no jump/slam cards), twice normal speed, Space = handbrake drift with tyre squeal, a car-crash sound when hit.
-- [ ] 12 · Smoker (witch): hovers all the time, which keeps her out of lava and ground effects.
-- [ ] 18 · Honey Hustler: flies (no jump/slam or their cards); gains XP from map flowers and a little from hero flowers.
-- [ ] 21 · Admiral Bubbles: starts with the Bubble Gun; no health and no health orb, only a big bubble shield; no health drops for him.
-- [ ] 20 · Turbo Snail: leaves a lasting slime trail that slows enemies crossing it.
-- [ ] 17 · Prickle Rick: no arms, legs or weapon; lies there and gets shoved around; thorns build (much more health; tank, poison, thorns and aggro cards). Marked as a party hero.
-- [ ] 13 · Tax Rat: runs on all fours with a long tail (no hitbox), jumps like a four-legged animal.
-- [ ] 16 · Captain Eight: eight tentacles instead of human arms and legs.
+- [x] 11 · White Supra: no jump/slam (and no jump/slam cards), twice normal speed, Space = handbrake drift with tyre squeal, a car-crash sound when hit.
+- [x] 12 · Smoker (witch): hovers all the time, which keeps her out of lava and ground effects.
+- [x] 18 · Honey Hustler: flies (no jump/slam or their cards); gains XP from map flowers and a little from hero flowers.
+- [x] 21 · Admiral Bubbles: starts with the Bubble Gun; no health and no health orb, only a big bubble shield; no health drops for him.
+- [x] 20 · Turbo Snail: leaves a lasting slime trail that slows enemies crossing it.
+- [x] 17 · Prickle Rick: no arms, legs or weapon; lies there and gets shoved around; thorns build (much more health; tank, poison, thorns and aggro cards). He lies on his side and rolls with momentum when shoved (`HeroPlay.roll`). Marked as a party hero.
+- [x] 13 · Tax Rat: runs on all fours with a long tail (no hitbox), jumps like a four-legged animal.
+- [x] 16 · Captain Eight: eight tentacles instead of human arms and legs.
 
 **D. New systems**
 - [ ] 9, 10 · Flowers grow roots under the island; only Digby Mole sees them (green glow) and eats them to heal.

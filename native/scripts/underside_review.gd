@@ -149,6 +149,13 @@ static func run(g):
 	g.camera.position=trick_at+Vector3(2.6,2.0,2.6);g.camera.look_at(trick_at+Vector3.UP*.9)
 	for i in range(8): await g.get_tree().process_frame
 	checks.fire_shot=await shot(g,"fire")
+	# Prickle Rick lying on his side among a few monsters (November 2).
+	g.player_fire=0.0
+	g.select_hero(g.rules.data.heroes.filter(func(h):return h.id=="cactus")[0])
+	for i in range(3): await g.get_tree().process_frame
+	g.camera.position=trick_at+Vector3(3.2,2.2,3.2);g.camera.look_at(trick_at+Vector3.UP*.4)
+	for i in range(8): await g.get_tree().process_frame
+	checks.pickle_shot=await shot(g,"pickle")
 	g.camera_locked=false;g.hud.visible=true;g.player_fire=0.0;mark.queue_free()
 	# The island from outside: rim and belly.
 	g.camera_locked=true;g.hud.visible=false

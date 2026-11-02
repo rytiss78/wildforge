@@ -77,17 +77,32 @@ static func scene(asset: String) -> Node3D:
 			s.make_arms(Vector3(.36,.92,0),.34,.06,marble,marble);s.make_legs(Vector3(.15,.28,0),.22,.07,c("c8c8d6"),c("8a8a9a"))
 			s.orb(Vector3(0,.55,0),.27,null,true)
 		"hero_street_rat":
-			var fur=c("a89ac9")
-			b.ball(Vector3(0,.44,0),Vector3(.46,.2,.4),fur);b.ball(Vector3(0,1.0,0),Vector3(.5,.18,.42),c("ffffff"))
-			b.spike(Vector3(0,1.02,-.2),Vector3(0,.88,-.32),.05,c("ff3b3b"))
-			var tail=s.joint("Tail",s.body,Vector3(0,.5,.25));s.paint(tail,"TailPaint").rod(Vector3.ZERO,Vector3(0,-.15,.5),.03,c("ff9ec7"))
-			var h=s.make_head(Vector3(0,1.25,-.05))
-			h.ball(Vector3.ZERO,Vector3(.45,.42,.48),fur);h.ball(Vector3(0,-.05,-.28),Vector3(.22,.18,.25),fur);h.ball(Vector3(0,-.02,-.42),Vector3.ONE*.07,c("ff7aa0"))
-			for x in [-.2,.2]: h.ball(Vector3(x,.22,0),Vector3(.25,.25,.06),c("ff9ec7"))
-			h.eye(Vector3(-.09,.07,-.2),.06,Vector3(-.2,0,-1),c("ffd23f"));h.eye(Vector3(.1,.06,-.2),.07,Vector3(.2,0,-1),c("ffd23f"))
-			h.ball(Vector3(0,.2,-.12),Vector3(.42,.04,.3),c("2fd38a"));h.box(Vector3(0,-.15,-.38),Vector3(.08,.08,.02),TOOTH)
-			s.make_arms(Vector3(.3,.95,0),.35,.055,fur,c("ff9ec7"));s.make_legs(Vector3(.12,.4,0),.28,.06,c("6b5a8a"),c("ff7aa0"))
-			s.orb(Vector3(0,.72,0),.29,null,true)
+			# On all fours like a real rat (user, November 2): a long low body, four
+			# paws in a diagonal trot, and a long bare tail (no hitbox). The weapons
+			# ride on shoulder mounts.
+			var fur=c("a89ac9");var pink=c("ff9ec7")
+			b.ball(Vector3(0,.62,-.3),Vector3(.5,.46,.5),fur);b.ball(Vector3(0,.6,.36),Vector3(.56,.5,.58),fur)
+			b.ball(Vector3(0,.66,-.3),Vector3(.46,.36,.36),c("ffffff"));b.spike(Vector3(0,.56,-.52),Vector3(0,.4,-.56),.05,c("ff3b3b"))
+			var tail=s.joint("Tail",s.body,Vector3(0,.62,.62));var tp=s.paint(tail,"TailPaint");var last=Vector3.ZERO
+			for k in range(7):
+				var next_point=Vector3(sin(k*.8)*.1,.07*k-.012*k*k,.2*(k+1));tp.rod(last,next_point,.04-.004*k,pink);last=next_point
+			var h=s.make_head(Vector3(0,.78,-.66))
+			h.ball(Vector3.ZERO,Vector3(.4,.36,.42),fur);h.ball(Vector3(0,-.06,-.25),Vector3(.2,.16,.26),fur);h.ball(Vector3(0,-.03,-.39),Vector3.ONE*.07,pink)
+			for x in [-.18,.18]: h.ball(Vector3(x,.2,.04),Vector3(.24,.24,.05),pink)
+			h.eye(Vector3(-.09,.07,-.18),.06,Vector3(-.2,0,-1),c("ffd23f"));h.eye(Vector3(.1,.06,-.18),.065,Vector3(.2,0,-1),c("ffd23f"))
+			h.ball(Vector3(0,.19,-.06),Vector3(.4,.04,.3),c("2fd38a"));h.box(Vector3(0,-.15,-.34),Vector3(.07,.07,.02),TOOTH)
+			# Four legs: front left, front right, back right, back left, so the
+			# alternating swing makes a diagonal trot.
+			var paws=[Vector3(-.17,.48,-.36),Vector3(.17,.48,-.36),Vector3(.18,.48,.42),Vector3(-.18,.48,.42)]
+			for k in range(4):
+				var leg=s.joint(["LegL","LegR","LegR2","LegL2"][k],s.root,paws[k]);s.legs.append(leg)
+				var lm=s.paint(leg,"LegPaint"+str(k));lm.rod(Vector3.ZERO,Vector3(0,-.4,-.03),.06,fur);lm.ball(Vector3(0,-.44,-.08),Vector3(.13,.07,.17),pink)
+			for k in range(2):
+				var side=-1.0 if k==0 else 1.0
+				var mount=s.joint("ArmL" if k==0 else "ArmR",s.body,Vector3(side*.3,.9,-.18));s.arms.append(mount)
+				s.paint(mount,"MountPaint"+str(k)).can(Vector3(0,-.06,0),Vector3(0,.02,0),.07,c("6b5a8a"))
+				s.joint("HandSocket"+str(k+1),mount,Vector3(0,.0,-.12))
+			s.orb(Vector3(0,.64,.04),.27,null,true)
 		"hero_hamburger_buns":
 			b.ball(Vector3(0,.42,0),Vector3(.85,.3,.85),c("e8a24a"));b.ring(Vector3(0,.55,0),.36,.06,c("6bd63a"))
 			b.ball(Vector3(0,1.08,0),Vector3(.9,.55,.9),c("f0b45a"));b.spots(Vector3(0,1.08,0),Vector3(.45,.27,.45),c("fff8e0"),12,.06,306)
@@ -122,17 +137,37 @@ static func scene(asset: String) -> Node3D:
 			s.make_arms(Vector3(.4,.7,0),.25,.055,china,c("ffffff"));s.make_legs(Vector3(.16,.28,0),.18,.06,china,c("2a3a8a"))
 			s.orb(Vector3(0,.65,0),.39,null,true)
 		"hero_octopus":
-			var skin=c("ff8a2b")
-			for i in range(6):
-				var a=PI*.25+i*TAU/6;var t=s.joint("Tentacle"+str(i),s.body,Vector3(cos(a)*.24,.55,sin(a)*.24))
-				var m=s.paint(t,"TentaclePaint"+str(i))
-				for k in range(5): m.ball(Vector3(cos(a)*k*.06,-k*.11,sin(a)*k*.06),Vector3.ONE*(.16-k*.022),skin)
+			# Eight tentacles and nothing human (user, November 2): two curl up to
+			# hold the weapons, four walk, two wave behind.
+			var skin=c("ff8a2b");var sucker=c("ffd0a8")
 			b.ball(Vector3(0,.6,0),Vector3(.62,.18,.58),skin)
 			var h=s.make_head(Vector3(0,1.42,0))
 			h.ball(Vector3(0,-.02,0),Vector3(.6,.2,.5),c("2a3a8a"));h.box(Vector3(0,-.08,-.2),Vector3(.7,.04,.25),c("1a2a6a"));h.ball(Vector3(0,.02,-.25),Vector3(.1,.08,.04),c("ffd23f"))
 			b.eye(Vector3(.14,1.08,-.38),.1,Vector3.FORWARD,c("2adfff"));b.ball(Vector3(-.14,1.08,-.4),Vector3(.18,.16,.05),INK);b.box(Vector3(0,1.16,-.36),Vector3(.7,.025,.03),INK)
 			b.grin(Vector3(0,.86,-.38),.24,.08,4,false)
-			s.make_arms(Vector3(.42,.85,0),.32,.06,skin,skin);s.make_legs(Vector3(.12,.5,0),.4,.08,skin,c("ff5a1f"))
+			var walkers=[PI*1.25,PI*1.75,PI*.25,PI*.75]
+			for k in range(4):
+				var a=walkers[k];var out=Vector3(cos(a),0,sin(a))
+				var leg=s.joint(["LegL","LegR","LegR2","LegL2"][k],s.root,out*.22+Vector3(0,.58,0));s.legs.append(leg)
+				var lm=s.paint(leg,"LegPaint"+str(k))
+				var prev=Vector3.ZERO
+				for seg in range(1,11):
+					var t=float(seg)/10.0;var at=out*(.22*t+.42*t*t)-Vector3(0,.56*minf(1.0,t*1.4),0)+Vector3(0,.1*maxf(0.0,t-.75)*4.0,0)
+					lm.rod(prev,at,.15-.11*t,skin);if seg%2==0: lm.ball(at-Vector3(0,.05-.03*t,0),Vector3.ONE*(.05-.025*t),sucker)
+					prev=at
+			for k in range(2):
+				var a=PI*(.4+.2*k);var wave=s.joint("Tentacle"+str(k),s.body,Vector3(cos(a)*.24,.62,sin(a)*.24));var wm=s.paint(wave,"TentaclePaint"+str(k))
+				var wprev=Vector3.ZERO
+				for seg in range(1,9):
+					var t=float(seg)/8.0;var at=Vector3(cos(a)*.3*t,-.25*t+.35*t*t,sin(a)*.5*t);wm.rod(wprev,at,.13-.09*t,skin);wprev=at
+			for k in range(2):
+				var side=-1.0 if k==0 else 1.0
+				var arm=s.joint("ArmL" if k==0 else "ArmR",s.body,Vector3(side*.36,.82,0));s.arms.append(arm);var am=s.paint(arm,"ArmPaint"+str(k))
+				var aprev=Vector3.ZERO
+				for seg in range(1,9):
+					var t=float(seg)/8.0;var at=Vector3(side*(.14*t-.12*t*t),-.36*t,-.08*t*t);am.rod(aprev,at,.12-.06*t,skin);aprev=at
+				am.ball(aprev,Vector3.ONE*.07,sucker)
+				s.joint("HandSocket"+str(k+1),arm,Vector3(side*.02,-.38,-.1))
 			s.orb(Vector3(0,1.0,0),.42,null,true)
 		"hero_astronaut":
 			var suit=c("f4f6ff");var trim=c("ff9a3c")
@@ -154,7 +189,8 @@ static func scene(asset: String) -> Node3D:
 			h.eye(Vector3(-.09,.04,0),.07);h.eye(Vector3(.1,.04,0),.065,Vector3(.3,0,-1))
 			h.box(Vector3(0,.11,-.02),Vector3(.32,.045,.04),c("2a6a1a"),CartoonMesh.BODY,Vector3(0,0,.12))
 			h.grin(Vector3(0,-.1,0),.18,.05,0,false)
-			s.make_arms(Vector3(.3,.92,0),.32,.075,green,green);s.make_legs(Vector3(.12,.4,0),.3,.07,green,c("c9673a"))
+			# No arms and no legs (user, November 2): he lies there and gets shoved about.
+			b.ball(Vector3(0,.3,0),Vector3(.5,.3,.5),green)
 			s.orb(Vector3(0,.74,0),.29,null,true)
 		"hero_book":
 			var cover=c("c0392b")

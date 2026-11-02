@@ -426,12 +426,16 @@ func select_hero(item: Dictionary):
 			var height=float(hero.get("height",1.65));var radius=float(hero.get("radius",.42))
 			if hero.id=="white-supra":
 				var box=BoxShape3D.new();box.size=Vector3(radius*2,height,2.3);child.shape=box
+			elif hero.id=="cactus":
+				# Prickle Rick lies on his side: a low round body.
+				var lying=CapsuleShape3D.new();lying.radius=.5;lying.height=1.0;child.shape=lying;child.position.y=.5;continue
 			else:
 				var capsule=CapsuleShape3D.new();capsule.radius=radius;capsule.height=maxf(height,radius*2);child.shape=capsule
 			child.position.y=height*.5
 	avatar.rotation.y=PI
 	player.add_child(avatar)
 	wear_hat()
+	HeroPlay.lay_down(self)
 	if is_instance_valid(pet): pet.facing=avatar
 
 # The chosen achievement hat on the local hero (HatBook), if still owned.
@@ -523,6 +527,7 @@ func start_run(shared_seed: int=-1):
 	first.strength = 1.0
 	first.tier = 0
 	equip_weapon(first)
+	HeroPlay.start(self)
 	career.bump("runs")
 	career.bump("play_"+hero.id)
 	sound.start(seed_value)
@@ -575,6 +580,7 @@ func enter_realm(index: int,broadcast_transition: bool=true):
 		ExplosiveBarrels.setup(self)
 	make_gate()
 	update.realm_started()
+	HeroPlay.realm_started(self)
 	if realm<3: Hunt.setup(self)
 	for weapon in equipped:
 		weapon.clock = 0
@@ -1802,6 +1808,7 @@ func take_damage(amount: float, source: Vector3=Vector3.ZERO, voice_type: String
 	if hud.rescue_code: hud.rescue_code.interrupt()
 	if invulnerable>0 or mode != "playing": return
 	if rules.rng.randf()<stat("dodge"): invulnerable=.18;return
+	if HeroRules.no_health(hero) and shield_hp>=stats.shield*.95 and amount>=shield_hp: amount=shield_hp*.85
 	var absorbed = minf(shield_hp,amount)
 	shield_hp -= absorbed
 	shield_delay = 4
@@ -1813,6 +1820,9 @@ func take_damage(amount: float, source: Vector3=Vector3.ZERO, voice_type: String
 	# Full-health heroes survive one readable hit; follow-up hits remain lethal.
 	# Prevent sudden unavoidable one-hit deaths without weakening repeated attacks.
 	if hp>=stats.maxHp*.95 and taken>=hp: taken=stats.maxHp*.85
+	# Admiral Bubbles has no health: while his bubble holds he takes nothing; a
+	# hit that breaks through it is the end (a full bubble always survives one).
+	if HeroRules.no_health(hero): taken=hp if taken>0 else 0.0
 	hp -= taken
 	if taken>0 and hud.combo: hud.combo.hit()
 	hud.hero_number(absorbed,"shield");hud.hero_number(taken,"damage")
@@ -1838,7 +1848,7 @@ func take_damage(amount: float, source: Vector3=Vector3.ZERO, voice_type: String
 		knock_velocity=((player.position-source)*Vector3(1,0,1)).normalized()*11
 		player.velocity.y=maxf(player.velocity.y,2.6)
 	sound.effect("shield-hit" if absorbed>0 and taken<=0 else voice_type,source)
-	sound.hero_hurt(hero.id,player)
+	if not HeroPlay.hurt_sound(self): sound.hero_hurt(hero.id,player)
 	vibrate(.35,.65,.13)
 	if hp < stats.maxHp*.28 and not low_health_warned:
 		low_health_warned = true
@@ -2479,6 +2489,7 @@ func _physics_process(delta: float):
 	update.tick(delta)
 	if not update.downed: MutationBook.tick(self,delta)
 	HeroTricks.tick(self,delta)
+	HeroPlay.tick(self,delta)
 	update.contact_shadows()
 	if update.downed:
 		# Preserve gravity after a co-op knockout. Otherwise an airborne hero
@@ -2532,7 +2543,7 @@ func _physics_process(delta: float):
 			trail.scale=Vector3(.08,.08,.08)
 			effects.append({"node":trail,"life":.25,"velocity":Vector3.ZERO,"stationary":true,"trail":true})
 	else:
-		var running=BiomeMechanics.steer(self,eclipse_running(wish,delta,player.is_on_floor()),player.velocity,delta)
+		var running=HeroPlay.drive(self,BiomeMechanics.steer(self,eclipse_running(wish,delta,player.is_on_floor()),player.velocity,delta),delta)
 		player.velocity.x=running.x;player.velocity.z=running.z
 	if player_chill>0: player.velocity.x*=.7;player.velocity.z*=.7
 	player.velocity.x+=knock_velocity.x;player.velocity.z+=knock_velocity.z
@@ -3261,6 +3272,7 @@ func slam_recovery() -> float:
 	return 4.5/(1.0+clampf(stat("slamRecovery"),0,5))
 
 func try_slam() -> bool:
+	if not HeroRules.can_slam(hero): return false
 	if underside.active(): return underside.slam(self)
 	if player.is_on_floor() or slamming or slam_cooldown>0: return false
 	slamming=true;slam_cooldown=slam_recovery();player.velocity.y=-24
@@ -3268,6 +3280,8 @@ func try_slam() -> bool:
 	return true
 
 func try_jump():
+	# The Supra, the bee and the cactus never jump (Space is the Supra's drift).
+	if not HeroRules.can_jump(hero): return
 	if underside.active():
 		underside.jump(self);return
 	if not player.is_on_floor() and air_jumps>=int(stat("airJumps")): return
@@ -3542,7 +3556,7 @@ func update_exploration(delta: float):
 	# Lava (rivers and vent pools) also sets the hero on fire for a moment
 	# (user request, November 1), and monsters too; see Lava.
 	Lava.tick(self,delta)
-	if player.is_on_floor() and world.lava_at(player.position):
+	if player.is_on_floor() and world.lava_at(player.position) and not HeroRules.hovers(hero):
 		if not buffs.has("fire"): player_fire=maxf(player_fire,Lava.HERO_BURN)
 		lava_clock+=delta
 		if lava_clock>=1.0:
@@ -3635,6 +3649,7 @@ func drop_consumable(p: Vector3, force: bool=false, kind: String=""):
 	if not force and rules.rng.randf()>minf(.75,.22+maxf(0,stats.luck)*.12+stats.potionChance*.5): return
 	var kinds=PotionBook.TYPES.keys()
 	if kind=="": kind=kinds[rules.rng.randi_range(0,kinds.size()-1)]
+	if kind=="blood" and HeroRules.no_health(hero): kind="stone"  # no health drops for a hero with no health
 	var entry=HEALTH_POTION if kind=="health" else PotionBook.TYPES[kind]
 	var node=Node3D.new();add_child(node)
 	p.x=clampf(p.x,-RealmWorld.SPAWN_EXTENT,RealmWorld.SPAWN_EXTENT);p.z=clampf(p.z,-RealmWorld.SPAWN_EXTENT,RealmWorld.SPAWN_EXTENT);p.y=world.height_at(p.x,p.z)

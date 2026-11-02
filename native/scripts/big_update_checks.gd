@@ -499,6 +499,7 @@ static func run(game: Node3D):
 	checks.merge(preload("res://scripts/synergy_checks.gd").run(game))
 	checks.merge(await preload("res://scripts/biome_checks.gd").run(game))
 	checks.merge(preload("res://scripts/net_size_checks.gd").run(game))
+	checks.merge(await preload("res://scripts/hero_play_checks.gd").run(game))
 	var result={"checks":checks,"route_max_slope":worst_slope,"passed":checks.values().all(func(v):return bool(v))}
 	var file=FileAccess.open("user://big-update-results.json",FileAccess.WRITE);file.store_string(JSON.stringify(result,"  "));file.close()
 	game.set_process(false);game.sound.shutdown()
