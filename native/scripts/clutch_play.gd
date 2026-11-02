@@ -5,8 +5,8 @@ class_name ClutchPlay
 # look are our own). First person with a wide shooter field of view, no auto-aim:
 # hold the left mouse button to fire the active weapon where the crosshair points
 # (hitscan; turrets still aim themselves). Number keys 1-3 pick the active weapon.
-# Hits on a creature's glass health orb are weak-spot shots (double damage, a
-# chime); for Clutch only. V (Lock-On) is a
+# Hits on a creature's glass health orb are weak-spot shots (double damage;
+# a chime only in Lock-On); for Clutch only. V (Lock-On) is a
 # full aimbot for a few seconds: the view swings onto the orb of the enemy
 # nearest the hero (in view or not, through walls), fires by itself at five times
 # the damage and moves on to the next enemy when one dies. Shift (instead of the dash) is a slow, quiet walk: enemies lose sight
@@ -217,7 +217,9 @@ static func shoot(g,weapon: Dictionary):
 			g.hurt_enemy(hit.enemy,damage,"crit" if head else "hit",weapon.id)
 			hit_flash=.18
 			if head:
-				head_flash=.35;g.sound.effect("headshot",g.player.position+Vector3.UP*EYE)
+				# The chime only rings in Lock-On (aimbot) mode (user, November 2).
+				head_flash=.35
+				if locked: g.sound.effect("headshot",g.player.position+Vector3.UP*EYE)
 				if hit.enemy.dead: headshot_kills+=1
 		elif hit.has("hero"):
 			friendly_hit(g,int(hit.hero),base*FRIENDLY)
