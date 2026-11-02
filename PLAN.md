@@ -1,6 +1,6 @@
 # Wildforge — plan
 
-November 2, 2026 · main branch · **Build 30 (1.13.0) is the latest public release** ([build-30](https://github.com/rytiss78/wildforge/releases/tag/build-30), notes [build30-release.md](native/docs/build30-release.md)).
+November 2, 2026 · main branch · **Build 31 (1.14.0) is the latest public release** ([build-31](https://github.com/rytiss78/wildforge/releases/tag/build-31), notes [build31-release.md](native/docs/build31-release.md)).
 
 Rules: [AGENTS.md](AGENTS.md) and the [Godot workflow](native/docs/godot-workflow.md). A checked item means the real entry point was exercised and the evidence is recorded. Everything done up to Build 28, with evidence paths, is in git history (the Build 28 plan is `PLAN.md` at tag `build-28`); release notes are on the [GitHub releases page](https://github.com/rytiss78/wildforge/releases).
 
@@ -61,7 +61,7 @@ Done in this order: quick screen and data fixes first, then hero rework, then ne
 - [ ] **Balance with people.** Bots last measured 75% clear island 1 / 25% reach the final boss / 0% beat it (12 runs, before the October 25 "dangerous, not tanky" change, which is not bot-measured). Target about 70 / 25 / 10. Use 48+ run batches; 24-run batches swing about 20 points.
 - [ ] **Creatures still too basic?** If so: thicker limbs and bigger heads on the stick-figure humanoid mutants (`CartoonBook` designs).
 - [ ] **Two-machine co-op over the internet** with packet loss; all co-op tests so far run on one PC.
-- [ ] **Co-op playtest of the Build 30 fixes:** the C rope (pull a downed friend's body down through the island from underneath and rescue them there with the usual code; drag living friends or toss monsters, harmless), wild roots under every island (glowing for everyone, eaten for good by Digby, shared in co-op), a friend's new hero showing in the second run, Block Drop and videos after a Clutch run, spectating as a downed Clutch.
+- [ ] **Co-op playtest of Build 31:** the C rope (pull a downed friend's body down through the island from underneath and rescue them there with the usual code; drag living friends or toss monsters, harmless), wild roots under every island (glowing for everyone, eaten for good by Digby, shared in co-op), a friend's new hero showing in the second run, Block Drop and videos after a Clutch run, spectating as a downed Clutch.
 
 ## Open issues and limits
 
