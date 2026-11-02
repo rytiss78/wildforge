@@ -2,7 +2,7 @@
 
 Build 29 is a Windows alpha. `build-info.json` beside the executable records the exact source commit and artifact hashes. **Every player in a party needs Build 29**: co-op refuses any other download (network protocol `wildforge-shared-world-20`). The main menu shows the build ID (bottom right) to compare.
 
-**Install:** extract the whole ZIP into a folder and run `Wildforge.exe`. Keep `Wildforge.pck` and `godot_wry.dll` beside it. Archive `Wildforge-1.12.0-Windows.zip`.
+**Install:** extract the whole ZIP into a folder and run `Wildforge.exe`. Keep `Wildforge.pck` and `godot_wry.dll` beside it. Archive `Wildforge-1.12.0-Windows.zip`, SHA-256 `9297cde37ed5cf59ef1f7300e4cc9570e58ab485afc194bbcc6c0cd003ac4fe1`.
 
 ## New hero: Clutch
 
@@ -49,5 +49,5 @@ Build 29 is a Windows alpha. `build-info.json` beside the executable records the
 
 ## Verified
 
-- The export from the tagged source commit reports 1.12.0 / Build 29 and passes `test-build`.
+- The export from source commit `f920a06` reports 1.12.0 / Build 29 and passes `test-build`.
 - `check`, `smoke`, `integration`, `capture-ui` and `underside-review` pass on the source.
