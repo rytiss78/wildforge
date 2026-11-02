@@ -97,6 +97,21 @@ static func run(game: Node3D) -> Dictionary:
 	pet.kind="rime";pet.rebuild();pet.work=0.0
 	game.spawn_enemy(6);var chilly=game.enemies[-1];chilly.boss=false;chilly.node.position=game.player.position+Vector3(2,0,0);chilly.slow=0.0
 	pet.duty();checks.pet_rime=chilly.slow>=Pet.RIME_SLOW[0]-.01
+	# Wrench tunes a placed turret with arrows: twice as fast while he keeps it up.
+	use(game,"wrench")
+	var tool=game.equipped.filter(func(w):return w.turret)
+	if not tool.is_empty():
+		var placed=tool[0];game.player.position=placed.node.position+Vector3(1.5,0,0)
+		var started=WrenchTune.try_start(game)
+		var arrow=game.hud.tune_code.code[0] if started else "up"
+		WrenchTune.enter(game,game.hud.tune_code.press(arrow))
+		var fast=WrenchTune.rate(game,placed)
+		var wrong="down" if game.hud.tune_code.code[game.hud.tune_code.step]!="down" else "up"
+		WrenchTune.enter(game,game.hud.tune_code.press(wrong))
+		var broken=WrenchTune.rate(game,placed)
+		game.player.position+=Vector3(9,0,0);WrenchTune.tick(game,1.0/60.0)
+		checks.wrench_tune=started and is_equal_approx(fast,2.0) and is_equal_approx(broken,1.0) and not WrenchTune.active
+	else: checks.wrench_tune=false
 	game.clear_entities()
 	game.select_hero(saved_hero)
 	return checks

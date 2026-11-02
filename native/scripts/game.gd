@@ -527,7 +527,7 @@ func start_run(shared_seed: int=-1):
 	first.strength = 1.0
 	first.tier = 0
 	equip_weapon(first)
-	HeroPlay.start(self)
+	HeroPlay.start(self);WrenchTune.reset()
 	career.bump("runs")
 	career.bump("play_"+hero.id)
 	sound.start(seed_value)
@@ -638,6 +638,8 @@ func pick_harvestable(h: Dictionary):
 	HarvestBook.pick(self,h)
 
 func interaction_hint() -> String:
+	if WrenchTune.active: return "↑↓←→ · TUNE THE TURRET · E STOP"
+	if str(hero.get("id",""))=="wrench" and not WrenchTune.nearest_turret(self).is_empty(): return "E / X · TUNE TURRET (×2 SPEED)"
 	var hunt_hint=Hunt.hint(self)
 	if not hunt_hint.is_empty(): return hunt_hint
 	var special=update.hint()
@@ -656,6 +658,7 @@ func interaction_hint() -> String:
 	return ""
 
 func interact():
+	if WrenchTune.try_start(self): return
 	if Hunt.interact(self): return
 	if update.interact(): return
 	var drop=nearest_consumable()
@@ -1806,6 +1809,7 @@ func take_damage(amount: float, source: Vector3=Vector3.ZERO, voice_type: String
 	update.rescue_interrupt_until=elapsed+.4
 	update.rescue_progress.clear()
 	if hud.rescue_code: hud.rescue_code.interrupt()
+	WrenchTune.interrupt(self)
 	if invulnerable>0 or mode != "playing": return
 	if rules.rng.randf()<stat("dodge"): invulnerable=.18;return
 	if HeroRules.no_health(hero) and shield_hp>=stats.shield*.95 and amount>=shield_hp: amount=shield_hp*.85
@@ -2145,7 +2149,7 @@ func update_combat(delta: float):
 		if weapon.clock<=0:
 			if weapon.turret and TurretPulse.pulses(str(weapon.id)): TurretPulse.fire(self,weapon)
 			else: fire(weapon,origin)
-			weapon.clock = 1.0/(weapon.rate*(stat("turretRate")*TURRET_RATE if weapon.turret else stat("rate")))
+			weapon.clock = 1.0/(weapon.rate*(stat("turretRate")*TURRET_RATE*WrenchTune.rate(self,weapon) if weapon.turret else stat("rate")))
 	for enemy in enemies:
 		if enemy.dead: continue
 		# Stagger large crowds; bosses and contact-range actors retain 30 Hz.
@@ -2490,6 +2494,7 @@ func _physics_process(delta: float):
 	if not update.downed: MutationBook.tick(self,delta)
 	HeroTricks.tick(self,delta)
 	HeroPlay.tick(self,delta)
+	WrenchTune.tick(self,delta)
 	update.contact_shadows()
 	if update.downed:
 		# Preserve gravity after a co-op knockout. Otherwise an airborne hero
@@ -2509,7 +2514,7 @@ func _physics_process(delta: float):
 	realm_time+=delta
 	var movement = Input.get_vector("move_left","move_right","move_forward","move_back",.18)
 	# Entering a rescue code: the movement keys are the arrows, the hero stays put.
-	if update.rescue_coding: movement=Vector2.ZERO
+	if update.rescue_coding or WrenchTune.active: movement=Vector2.ZERO
 	if network_test_role=="client" and player.position.x<4: movement=Vector2.RIGHT
 	var look=Input.get_vector("look_left","look_right","look_up","look_down",.18)
 	if look.length()>.01: camera_look(look*Vector2(2,.65)*delta)

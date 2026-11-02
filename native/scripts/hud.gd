@@ -46,6 +46,7 @@ var dash_status: Label
 var trick_status: Label
 var combo: ComboMeter
 var rescue_code: RescueCode
+var tune_code: RescueCode  # Wrench's turret tune-up (WrenchTune)
 # Ability readouts turn green when ready.
 const READY_GREEN=Color("7dff9a")
 var damage_feedback: Control
@@ -330,6 +331,7 @@ func setup(owner_game):
 	combo=ComboMeter.new();combo.position=Vector2(1660,470);root.add_child(combo)
 	# The co-op rescue code, centred above the interaction prompt.
 	rescue_code=RescueCode.new();rescue_code.position=Vector2(960-rescue_code.size.x*.5,610);root.add_child(rescue_code)
+	tune_code=RescueCode.new();tune_code.position=Vector2(960-tune_code.size.x*.5,560);root.add_child(tune_code)
 	damage_feedback=preload("res://scripts/damage_feedback.gd").new();damage_feedback.game=game;damage_feedback.mouse_filter=Control.MOUSE_FILTER_IGNORE;root.add_child(damage_feedback)
 	prompt = label("",18,ThemeTokens.BIOME_ACCENTS.verdant.petal)
 	prompt.position = Vector2(540,682);prompt.size=Vector2(840,42)
@@ -684,6 +686,8 @@ func update(delta: float):
 		if toast_time <= 0: toast.text = ""
 	combo.visible=not modal.visible and game.mode=="playing";combo.tick(delta)
 	rescue_code.visible=not modal.visible and game.mode=="playing" and rescue_code.target!=0
+	tune_code.visible=not modal.visible and game.mode=="playing" and WrenchTune.active
+	tune_code.modulate=Color(1.25,1.15,.7) if WrenchTune.active and game.elapsed<WrenchTune.boost_until else Color.WHITE
 	update_hero_numbers(delta)
 	# Render damage numbers (2D UI - rise from bottom)
 	for damage_label in damage_labels: damage_label.visible=false
