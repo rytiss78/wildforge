@@ -62,6 +62,8 @@ static func run(game):
 	await RenderingServer.frame_post_draw
 	var saved=game.get_viewport().get_texture().get_image().save_png("user://crowd-review.png")==OK
 	var result={"seed":81173,"spells":kinds if spells else [],"statuses":spells and statuses,"eclipse":eclipse,"surface_stress":surface_stress,"max_climbers":max_climbers,"spawned":count,"remaining":game.enemies.size(),"samples":frames.size(),"frame_p50_ms":frames[frames.size()/2],"frame_p95_ms":frames[int(frames.size()*.95)],"physics_p95_ms":physics[int(physics.size()*.95)],"physics_p50_ms":physics[physics.size()/2],"process_p50_ms":process[process.size()/2],"gpu_p50_ms":gpu[gpu.size()/2],"render_cpu_p50_ms":render_cpu[render_cpu.size()/2],"combat_p95_ms":game.combat_profile[int(game.combat_profile.size()*.95)],"capture_saved":saved}
+	# Share of monster steps moved by the script-side CrowdMover instead of a physics sweep.
+	result.glide_share=snappedf(float(CrowdMover.glided)/maxf(1.0,float(CrowdMover.glided+CrowdMover.slid)),.01)
 	result.sections={}
 	for key in game.crowd_sections:
 		var values=game.crowd_sections[key];values.sort();result.sections[key]=values[int(values.size()*.95)]

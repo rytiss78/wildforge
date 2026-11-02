@@ -2260,8 +2260,12 @@ func update_combat(delta: float):
 			if enemy.freeze>0 and (enemy.flying or enemy.bubble>0): vertical=0
 			body.velocity.y=vertical*(enemy_delta/delta)
 			var slide_start=Time.get_ticks_usec() if profile_crowd else 0
-			EnemySurface.step_up(enemy,Vector3(body.velocity.x,0,body.velocity.z)*delta)
-			body.move_and_slide()
+			# On open ground the monster glides along the terrain without a physics
+			# sweep (CrowdMover); near anything solid it slides as before.
+			enemy.glided=CrowdMover.glide(self,enemy,body,delta)
+			if not enemy.glided:
+				EnemySurface.step_up(enemy,Vector3(body.velocity.x,0,body.velocity.z)*delta)
+				body.move_and_slide()
 			if profile_crowd: section_times.slide=float(section_times.get("slide",0.0))+(Time.get_ticks_usec()-slide_start)/1000.0
 			enemy.vertical=body.velocity.y/(enemy_delta/delta)
 			if body.position.y<world.height_at(body.position.x,body.position.z)-4: body.position.y=world.height_at(body.position.x,body.position.z)+.3;body.velocity.y=0
@@ -2271,7 +2275,7 @@ func update_combat(delta: float):
 		if body.has_meta("rig"):
 			var rig: ActorRig=body.get_meta("rig")
 			rig.set_health(enemy.hp/enemy.maxHp,enemy.boss or enemy.health>=1.8)
-			rig.animate(enemy_delta,body.velocity if surface_moved else body.velocity/(enemy_delta/delta),body.is_on_floor() or enemy.get("surface_attached",false))
+			rig.animate(enemy_delta,body.velocity if surface_moved else body.velocity/(enemy_delta/delta),body.is_on_floor() or enemy.get("glided",false) or enemy.get("surface_attached",false))
 			rig.statuses(enemy.fire>0,enemy.poison>0,enemy.freeze>0,enemy.blind>0)
 		if profile_crowd: section_times.visuals+=(Time.get_ticks_usec()-section_start)/1000.0
 		if enemy.get("slip_until",0)>realm_time: body.get_meta("rig").rotation.z=sin((enemy.slip_until-realm_time)*9)*.4

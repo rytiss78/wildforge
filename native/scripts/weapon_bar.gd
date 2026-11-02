@@ -45,7 +45,6 @@ func refresh():
 			if weapon.id==selected.get("id",""):
 				var selected_style=game.hud.style(ThemeTokens.PAPER_RUNTIME,ThemeTokens.STAR_GOLD,3);selected_style.set_border_width_all(2)
 				panel.add_theme_stylebox_override("panel",selected_style);panel.set_meta("selected_turret",true)
-				var selected_label=game.hud.label("SELECTED",11,ThemeTokens.STAR_GOLD);selected_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;column.add_child(selected_label)
 			panel.tooltip_text = weapon.name+" · Level "+str(weapon.rank)+"\n"+WeaponDetails.describe(weapon.id)
 			var recipe=WeaponEvolution.recipe(game,weapon)
 			if not recipe.is_empty(): panel.tooltip_text+="\n"+recipe

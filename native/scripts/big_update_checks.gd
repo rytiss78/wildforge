@@ -68,6 +68,14 @@ static func run(game: Node3D):
 	# Enemy now climbs over walls - verify it reached the player after climbing.
 	checks.contact_collision=Vector2(ordinary.node.position.x,ordinary.node.position.z).length()<1.5
 	wall.queue_free();await game.get_tree().physics_frame
+	# On open ground, away from walls and heroes, it glides along the terrain
+	# without a physics sweep (CrowdMover) and still closes in.
+	var glide_from=Vector3(16,0,6);glide_from.y=game.world.height_at(glide_from.x,glide_from.z);ordinary.node.position=glide_from;ordinary.vertical=0.0
+	var glided_before=CrowdMover.glided
+	for i in range(60):
+		await game.get_tree().physics_frame;game.update_combat(1.0/60)
+	var glide_at=ordinary.node.position
+	checks.crowd_glides=CrowdMover.glided>glided_before+20 and glide_at.distance_to(game.player.position)<glide_from.distance_to(game.player.position)-3 and absf(glide_at.y-game.world.height_at(glide_at.x,glide_at.z))<.05
 	ordinary.freeze=3;var frozen=ordinary.node.position
 	for i in range(15):
 		await game.get_tree().physics_frame;game.update_combat(1.0/60)

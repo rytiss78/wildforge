@@ -37,6 +37,10 @@ var control_hints: HBoxContainer
 var hint_device = ""
 var turret_hints = HBoxContainer.new()
 var turret_status: Label
+var turret_icon: TextureRect
+var turret_shade: ColorRect
+var turret_next: Label
+var turret_next_icon: TextureRect
 var slam_status: Label
 var dash_status: Label
 var trick_status: Label
@@ -312,7 +316,13 @@ func setup(owner_game):
 	# Ability readouts sit beside the weapon slots inside the loadout plate.
 	turret_hints.position=LOADOUT.position+Vector2(400,86)
 	root.add_child(turret_hints)
-	turret_status=label("",14,ThemeTokens.STAR_GOLD);turret_hints.add_child(turret_status)
+	turret_hints.position=LOADOUT.position+Vector2(400,78);turret_hints.add_theme_constant_override("separation",6)
+	turret_icon=TextureRect.new();turret_icon.custom_minimum_size=Vector2(34,34);turret_icon.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;turret_icon.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;turret_icon.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	turret_shade=ColorRect.new();turret_shade.color=Color(0,0,0,.6);turret_shade.mouse_filter=Control.MOUSE_FILTER_IGNORE;turret_icon.add_child(turret_shade)
+	turret_status=label("",14,ThemeTokens.STAR_GOLD);turret_status.size_flags_vertical=Control.SIZE_SHRINK_CENTER
+	turret_next=label("",13,Color("a1ada8"));turret_next.size_flags_vertical=Control.SIZE_SHRINK_CENTER
+	turret_next_icon=TextureRect.new();turret_next_icon.custom_minimum_size=Vector2(22,22);turret_next_icon.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;turret_next_icon.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;turret_next_icon.size_flags_vertical=Control.SIZE_SHRINK_CENTER;turret_next_icon.modulate=Color(1,1,1,.7);turret_next_icon.mouse_filter=Control.MOUSE_FILTER_IGNORE
+	for part in [turret_status,turret_icon,turret_next,turret_next_icon]: turret_hints.add_child(part)
 	slam_status=label("",14,ThemeTokens.STAR_GOLD);slam_status.position=LOADOUT.position+Vector2(400,56);root.add_child(slam_status)
 	dash_status=label("",14,ThemeTokens.STAR_GOLD);dash_status.position=LOADOUT.position+Vector2(400,34);root.add_child(dash_status)
 	trick_status=label("",14,ThemeTokens.STAR_GOLD);trick_status.position=LOADOUT.position+Vector2(400,12);root.add_child(trick_status)
@@ -611,9 +621,19 @@ func update(delta: float):
 	turret_hints.visible=not modal.visible and not turrets.is_empty()
 	if turret_hints.visible:
 		var selected=turrets[game.selected_turret%turrets.size()];var device="controller" if game.input_kind=="xbox" else "keyboard"
-		var readiness="READY" if selected.deploy_clock<=0 else "%.1fs" % selected.deploy_clock
-		turret_status.text="[%s] %s" % [ControlBindings.display(game.career.data.settings,"deploy",device),selected.name if selected.deploy_clock<=0 else readiness]
-		if turrets.size()>1: turret_status.text+="   [%s] »" % ControlBindings.display(game.career.data.settings,"next_turret",device)
+		var ready=selected.deploy_clock<=0
+		turret_status.text="[%s]" % ControlBindings.display(game.career.data.settings,"deploy",device)+("" if ready else " %.1f" % selected.deploy_clock)
+		turret_status.add_theme_color_override("font_color",READY_GREEN if ready else ThemeTokens.STAR_GOLD)
+		if turret_icon.get_meta("turret_id","")!=selected.id: turret_icon.texture=IllustratedIcons.texture(selected.id,true);turret_icon.set_meta("turret_id",selected.id)
+		turret_icon.tooltip_text=selected.name
+		# The shade drains from the top as the turret recharges (2 s).
+		var left=clampf(float(selected.deploy_clock)/2.0,0.0,1.0)
+		turret_shade.position=Vector2.ZERO;turret_shade.size=Vector2(34,34*left);turret_shade.visible=left>0
+		turret_next.visible=turrets.size()>1;turret_next_icon.visible=turret_next.visible
+		if turret_next.visible:
+			var upcoming=turrets[(game.selected_turret+1)%turrets.size()]
+			turret_next.text="[%s]" % ControlBindings.display(game.career.data.settings,"next_turret",device)
+			if turret_next_icon.get_meta("turret_id","")!=upcoming.id: turret_next_icon.texture=IllustratedIcons.texture(upcoming.id,true);turret_next_icon.set_meta("turret_id",upcoming.id)
 	if hint_device != game.input_kind:
 		hint_device = game.input_kind;hints_until=game.elapsed+8
 		var device="controller" if game.input_kind=="xbox" else "keyboard"

@@ -303,7 +303,7 @@ func make_chunk(cell: Vector2i):
 	if top_faces>0:
 		surface.generate_normals()
 		var terrain=MeshInstance3D.new();terrain.mesh=surface.commit();terrain.material_override=terrain_material;root.add_child(terrain)
-		terrain.create_trimesh_collision()
+		terrain.create_trimesh_collision();CrowdMover.mark_terrain(terrain)
 	if belly_faces>0:
 		belly.generate_normals()
 		var underneath=MeshInstance3D.new();underneath.name="Underside";underneath.mesh=belly.commit();underneath.material_override=under_material
@@ -322,6 +322,8 @@ func make_chunk(cell: Vector2i):
 		if lava_at(p): continue  # Keep the molten channels legible and traversable.
 		if crossing_distance(p)<12 and i%3!=0: continue
 		if MassiveArchitecture.occupied(self,p): continue
+		# The landmark groves bring their own trees; stray ones would block the lane.
+		if landmarks.any(func(site):return Vector2(site.x-p.x,site.z-p.z).length()<24): continue
 		if harvest_sites.any(func(site):return Vector2(site.x-p.x,site.z-p.z).length()<4): continue
 		p.y=height_at(p.x,p.z)
 		var biome=biome_at(p)
@@ -468,7 +470,7 @@ func make_rim():
 		var node=MeshInstance3D.new();node.name=pair[2];node.mesh=pair[0].commit();node.material_override=pair[1]
 		node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF if pair[2]=="RimWall" else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 		add_child(node)
-		if pair[2]=="RimGround": node.create_trimesh_collision()
+		if pair[2]=="RimGround": node.create_trimesh_collision();CrowdMover.mark_terrain(node)
 
 # Two neighbouring profile rows joined into quads. With flip, the ground and rim
 # face up and out and the belly faces down (Godot's front faces are clockwise).

@@ -70,7 +70,7 @@ static func run(g):
 	for id in ["turret","pulse-turret"]:
 		var weapon=g.rules.data.weapons.filter(func(w):return w.id==id)[0].duplicate(true);weapon.kind="weapon";weapon.strength=1;weapon.tier=0;g.equip_weapon(weapon)
 	g.selected_turret=0;g.hud.update(0);press(g,"next_turret");g.hud.update(0)
-	checks.turret_selected=g.selected_turret==1 and g.hud.turret_status.text.contains(g.equipped[1].name)
+	checks.turret_selected=g.selected_turret==1 and g.hud.turret_icon.get_meta("turret_id","")==g.equipped[1].id and g.hud.turret_next_icon.get_meta("turret_id","")==g.equipped[0].id
 	ControlBindings.bind(g.career.data.settings,"deploy","keyboard",{"type":"key","code":KEY_H});g.hud.update(0)
 	var old=g.equipped[1].node;g.equipped[1].deploy_clock=0;press(g,"deploy")
 	checks.remapped_deploy=g.equipped[1].node!=old and g.hud.turret_status.text.contains("H")
