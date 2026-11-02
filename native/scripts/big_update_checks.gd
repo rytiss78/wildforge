@@ -198,6 +198,17 @@ static func run(game: Node3D):
 		ExplosiveBarrels.tick(game,1.0/60.0)
 		game.invulnerable=0.0
 	checks.barrels=placed>=ExplosiveBarrels.SPOTS and lit and blasted.hp<1e6 and game.hp<barrel_hp and not game.barrels.has(first_barrel) and not game.barrels.has(second_barrel)
+	# Slot-machine rolls (November 2): reels stop left to right, a legendary or
+	# epic reel crawls longer before stopping, every reel ends on its prize, and
+	# the slot sounds exist; a level-up card is not pickable while it spins.
+	var slot_items=[]
+	for slot_tier in [0,1,3,0,2]: slot_items.append({"id":"maxHp","name":"Test","kind":"item","tier":slot_tier,"effects":[{"key":"maxHp","amount":1,"mode":"add"}]})
+	var slot_show=ChestShow.new();slot_show.setup(slot_items,3.0)
+	var slot_order=range(4).all(func(k):return float(slot_show.stops[k])<float(slot_show.stops[k+1]))
+	var slot_land=range(5).all(func(k):return is_equal_approx(slot_show.reel_pos(k,float(slot_show.stops[k])),float(slot_show.strips[k].size()-1)) and int(slot_show.strips[k][-1])==k)
+	var slot_sounds=["slot-spin","slot-stop-0","slot-stop-1","slot-stop-2","slot-stop-3","slot-tension","slot-jackpot"].all(func(n):return ResourceLoader.exists("res://assets/audio/effects/"+n+".wav"))
+	checks.slot_reels=slot_order and slot_land and float(slot_show.decels[2])>float(slot_show.decels[0])*2.0 and float(slot_show.decels[4])>float(slot_show.decels[0]) and slot_sounds and float(slot_show.stops[4])<=3.0
+	slot_show.free()
 	game.stats.dodge=combo_dodge;game.hp=combo_hp;game.invulnerable=5.0
 	# Rescue code (October 29): beside a downed friend the code appears; half of it
 	# shows half progress, a wrong arrow starts over, a hit resets it, and the full

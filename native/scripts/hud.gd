@@ -1287,7 +1287,7 @@ func preview_offer(item: Dictionary):
 		if not source.is_empty() and item.tier>0 and source.has("effects") and source.effects.size()>0: comparison+="  ·  Common version: "+game.rules.describe(source.effects[0])
 	var detail=label(comparison,15);detail.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;offer_detail.add_child(detail)
 
-func show_offers(items: Array, source: String,animate: bool=true):
+func show_offers(items: Array, source: String,animate: bool=true,spin: int=-1):
 	var coop_split=game.coop.active and game.run_active
 	offer_guard=.8
 	var box=open("LEVEL %d · CHOOSE YOUR NEXT POWER" % game.level if source=="level" else "TREASURE FOUND", "Choose one reward. Shape your next fight.")
@@ -1304,20 +1304,49 @@ func show_offers(items: Array, source: String,animate: bool=true):
 	box.get_child(1).add_theme_color_override("font_color",Color("b5c5cf"))
 	box.add_theme_constant_override("separation",8 if coop_split else 16)
 	var choices=HBoxContainer.new();choices.add_theme_constant_override("separation",8 if coop_split else 16);box.add_child(choices)
-	for i in range(items.size()): choices.add_child(offer_card(items[i],i,func():game.choose_offer(i)))
+	for i in range(items.size()): choices.add_child(offer_card(items[i],i,func():if not card_rolling(i): game.choose_offer(i)))
+	# Level-ups and rerolls roll like a slot machine; a chest has already spun
+	# its own reels (ChestShow), so its cards just appear.
+	var rolling=(source!="chest") if spin<0 else spin==1
+	if rolling and animate and not items.is_empty():
+		var pool=[]
+		for k in range(12): pool.append(items[k%items.size()])
+		for i in range(cards.size()):
+			var roll=OfferSpin.new();roll.setup(items[i],pool,i,items,game.sound);cards[i].add_child(roll)
+		game.sound.slot_spin(true,1.15)
+		offer_guard=maxf(offer_guard,OfferSpin.total_time(items))
 	var detail_panel=PanelContainer.new();detail_panel.custom_minimum_size.y=64 if coop_split else 95
 	detail_panel.add_theme_stylebox_override("panel",style(paper,Color("a99070"),12));box.add_child(detail_panel)
 	offer_detail=VBoxContainer.new();offer_detail.add_theme_constant_override("separation",6);detail_panel.add_child(offer_detail)
 	var actions=HBoxContainer.new();actions.add_theme_constant_override("separation",12);box.add_child(actions)
 	var reroll=button("Reroll · %d gold" % game.reroll_price(),func():game.reroll_offers(),true,"large")
 	reroll.custom_minimum_size=Vector2(220,44);reroll.disabled=game.gold<game.reroll_price();actions.add_child(reroll)
+	paint_button(reroll,Color("2f9e4f"))  # reroll is green (user, November 2)
 	if game.update.banish_charges>0 and items.any(func(i):return i.kind!="weapon"):
-		actions.add_child(button("Banish selected · %d left" % game.update.banish_charges,func():game.update.banish(game.update.focused_offer),false,"large"))
+		var ban=button("Banish selected · %d left" % game.update.banish_charges,func():game.update.banish(game.update.focused_offer),false,"large")
+		paint_button(ban,Color("c0392b"));actions.add_child(ban)  # banish is red
 	if items.any(func(item):return item.kind=="weapon"):
 		actions.add_child(button("Keep my weapons",func():game.skip_offer(),false,"large"))
 	var hints=label("1–5 choose   ·   ← → / D-pad browse   ·   Enter / A confirm   ·   R / Y reroll",14,Color("b5c5cf"));hints.add_theme_color_override("font_color",Color("b5c5cf"));box.add_child(hints)
 	if not cards.is_empty(): cards[0].grab_focus();preview_offer(items[0])
 	if animate: animate_offers()
+
+# Is this card still spinning (not yet showing what it is)?
+func card_rolling(i: int) -> bool:
+	if i<0 or i>=cards.size() or not is_instance_valid(cards[i]): return false
+	for child in cards[i].get_children():
+		if child is OfferSpin and not child.stopped: return true
+	return false
+
+# A solid coloured button (reroll green, banish red) with white text.
+func paint_button(item: Button,color: Color):
+	for state in [["normal",color],["hover",color.lightened(.15)],["pressed",color.darkened(.2)],["disabled",color.lerp(Color("5a5a5a"),.35)]]:
+		var look=StyleBoxFlat.new();look.bg_color=state[1];look.border_color=color.darkened(.35);look.set_border_width_all(2);look.set_corner_radius_all(ThemeTokens.RADIUS.large if "large" in ThemeTokens.RADIUS else 8)
+		item.add_theme_stylebox_override(state[0],look)
+	var focus=StyleBoxFlat.new();focus.bg_color=color.lightened(.1);focus.border_color=ThemeTokens.STAR_GOLD;focus.set_border_width_all(3);focus.set_corner_radius_all(ThemeTokens.RADIUS.large if "large" in ThemeTokens.RADIUS else 8)
+	item.add_theme_stylebox_override("focus",focus)
+	for key in ["font_color","font_hover_color","font_focus_color","font_pressed_color"]: item.add_theme_color_override(key,Color.WHITE)
+	item.add_theme_color_override("font_disabled_color",Color(1,1,1,.55))
 
 func offer_layout_fits() -> bool:
 	if cards.is_empty(): return false
@@ -1340,14 +1369,15 @@ func animate_offers():
 func chest_reveal(tier: int, progress_value: float):
 	if not modal.visible: open("TREASURE REELS", "Items from exploration · Choose one lasting bonus")
 	if content.get_child_count() <= 2:
-		var display=preload("res://scripts/chest_show.gd").new()
+		var display=ChestShow.new()
 		display.tier=tier;display.sound=game.sound
 		display.custom_minimum_size=Vector2(1226,453)
-		display.setup(game.offers)
+		display.setup(game.offers,game.reveal_duration-.8)
 		content.add_child(display)
 		content.add_child(label("",28,RunRules.COLORS[tier]))
 	content.get_child(2).animate(progress_value)
-	content.get_child(3).text="●".repeat(tier+1)+"  "+RunRules.RARITIES[tier].to_upper()
+	# The best rarity is named only once the reels have shown it.
+	content.get_child(3).text="●".repeat(tier+1)+"  "+RunRules.RARITIES[tier].to_upper() if content.get_child(2).finished else ""
 	blast.color=Color(0,0,0,0)
 
 func replace_menu(item: Dictionary):

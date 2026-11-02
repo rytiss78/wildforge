@@ -750,6 +750,7 @@ func buy_chest(chest: Dictionary,payer: int=-1):
 		coop.broadcast({"type":"chest_hide","realm":realm,"pos":[int(chest.node.position.x),int(chest.node.position.y),int(chest.node.position.z)]})
 	reveal_duration = [2.6,2.9,3.3,3.8][reveal_tier]
 	sound.chest_open(reveal_tier,reveal_duration)
+	ChestShow.beam(self,chest.node.position,reveal_tier)
 	reveal_clock = 0
 	mode = "reveal"
 	hud.modal.visible=false
@@ -843,7 +844,7 @@ func reroll_offers():
 	var new_offers=roll_offers(offers.map(func(item):return item.id))
 	if new_offers.is_empty(): return
 	gold-=price;offer_rerolls+=1;offers=new_offers
-	sound.ui_effect("reroll");hud.show_offers(offers,offer_source)
+	sound.ui_effect("reroll");hud.show_offers(offers,offer_source,true,1)
 
 func skip_offer():
 	if mode!="offer" or not offers.any(func(item):return item.kind=="weapon"): return
@@ -1014,7 +1015,7 @@ func _input(event):
 	if mode == "offer" and event is InputEventKey and event.pressed:
 		if event.physical_keycode==KEY_R and not event.echo: reroll_offers();get_viewport().set_input_as_handled();return
 		var index = int(event.physical_keycode)-KEY_1
-		if index >= 0 and index < offers.size(): choose_offer(index)
+		if index >= 0 and index < offers.size() and not hud.card_rolling(index): choose_offer(index)
 	if mode == "reveal" and (event.is_action_pressed("jump") or event.is_action_pressed("interact")):
 		finish_reveal();get_viewport().set_input_as_handled();return
 	if coop.active and mode=="offer" and event.is_action_pressed("party"):

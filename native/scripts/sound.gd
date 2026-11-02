@@ -116,9 +116,11 @@ func hero_hurt(id: String,source: Node3D):
 	hurt_voice.stream=cache[path];hurt_voice.volume_db=linear_to_db(maxf(.0001,float(settings.voice)));hurt_voice.play()
 
 func chest_open(tier: int,_duration: float):
+	# The reels play their own spin and stop sounds now (ChestShow); the opening
+	# itself is a latch, with a rising swell for epic and legendary chests.
 	if float(settings.sfx)<=0: return
-	chest_voice.stream=load("res://assets/music/chest_reels_%d.wav" % tier)
-	chest_voice.volume_db=linear_to_db(maxf(.0001,float(settings.sfx)))-3;chest_voice.play()
+	ui_effect("chest_latch")
+	if tier>=2: slot("slot-tension",.8 if tier==2 else .7,-4.0)
 
 func start(seed_value: int):
 	rng.seed = seed_value
@@ -491,6 +493,33 @@ static func make_achievement_chime() -> AudioStreamWAV:
 		bytes.encode_s16(i*2,int(clampf(sample,-.9,.9)*32767))
 	audio.data=bytes
 	return audio
+
+# Slot-machine sounds for chest reels and card rolls (scripts/make-slot-audio.py).
+# Each plays on its own short-lived player so quick reel stops never cut each
+# other off; the spin is one looping player.
+var slot_spinner: AudioStreamPlayer
+func slot(id: String,pitch: float=1.0,db: float=0.0):
+	if float(settings.get("sfx",0))<=0: return
+	var key="slot_"+id
+	if not cache.has(key):
+		var path="res://assets/audio/effects/"+id+".wav"
+		if not ResourceLoader.exists(path): return
+		cache[key]=load(path)
+	var player=AudioStreamPlayer.new();player.stream=cache[key];player.pitch_scale=pitch
+	player.volume_db=linear_to_db(maxf(.0001,float(settings.sfx)))-2.0+db
+	add_child(player);player.play();player.finished.connect(player.queue_free)
+
+func slot_spin(on: bool,pitch: float=1.0):
+	if not on:
+		if is_instance_valid(slot_spinner): slot_spinner.stop()
+		return
+	if float(settings.get("sfx",0))<=0: return
+	if not is_instance_valid(slot_spinner):
+		var loop=(load("res://assets/audio/effects/slot-spin.wav") as AudioStreamWAV).duplicate() as AudioStreamWAV
+		loop.loop_mode=AudioStreamWAV.LOOP_FORWARD;loop.loop_begin=0;loop.loop_end=loop.data.size()/2
+		slot_spinner=AudioStreamPlayer.new();slot_spinner.stream=loop;add_child(slot_spinner)
+	slot_spinner.volume_db=linear_to_db(maxf(.0001,float(settings.sfx)))-8.0;slot_spinner.pitch_scale=pitch
+	if not slot_spinner.playing: slot_spinner.play()
 
 func ui_effect(id: String):
 	if float(settings.sfx)<=0: return
