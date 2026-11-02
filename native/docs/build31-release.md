@@ -2,7 +2,7 @@
 
 Build 31 is a Windows alpha. `build-info.json` beside the executable records the exact source commit and artifact hashes. **Every player in a party needs Build 31**: co-op refuses any other download (network protocol `wildforge-shared-world-21`). The main menu shows the build ID (bottom right) to compare.
 
-**Install:** extract the whole ZIP into a folder and run `Wildforge.exe`. Keep `Wildforge.pck` and `godot_wry.dll` beside it.
+**Install:** extract the whole ZIP into a folder and run `Wildforge.exe`. Keep `Wildforge.pck` and `godot_wry.dll` beside it. Archive `Wildforge-1.14.0-Windows.zip`, SHA-256 `04aff4c9f602823e4e9fa62e002b284e836569ec7369728c7f8d3b603267bc88`, source commit `117a8e9`.
 
 ## The rope (C / L3)
 
