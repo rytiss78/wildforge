@@ -57,6 +57,7 @@ var effect_samples={}
 # all enemy sounds together share a small budget: one every ENEMY_GAP, at most
 # ENEMY_MAX at once, a few dB under the hero's own sounds.
 const MIN_GAP=.05
+const MUSIC_TRIM=5.0  # dB off every music layer (user, November 2: too loud)
 const GAPS={"coin":.06,"melee_hit":.08,"hit":.08,"shell_bump":.25,"wing_bump":.25,"stone_bump":.25,"wet_bump":.25,"buzz_bump":.25,"roar_bump":.25,"shield-hit":.2}
 const ENEMY_GAP=.16
 const ENEMY_MAX=3
@@ -70,7 +71,7 @@ func setup(options: Dictionary):
 	settings = options
 	# enemy-*: the enemies' own low, growling attack sounds (scripts/make-enemy-audio.py),
 	# never used for a hero, so a player can tell by ear who is attacking.
-	for id in ["slam","dash","hit","shield-hit","deploy","switch","jump","land","freeze","heal","blast","nova","enemy-shot","enemy-impact","enemy-bite"]:
+	for id in ["slam","dash","hit","shield-hit","deploy","switch","jump","land","freeze","heal","blast","nova","enemy-shot","enemy-impact","enemy-bite","headshot","car-crash","slime","pop"]:
 		effect_samples[id]=load("res://assets/audio/effects/"+id+".wav")
 	for id in WEAPON_SFX:
 		weapon_samples[id]=load("res://assets/audio/weapons/"+id+".wav")
@@ -141,7 +142,7 @@ func start(seed_value: int):
 func play_phrase():
 	var riff = arrangement[phrase % arrangement.size()]
 	var volume = 0.0 if eclipse_active else float(settings.music)
-	for player in [drums,rhythm,lead,synth]: player.volume_db = linear_to_db(maxf(.0001, volume))
+	for player in [drums,rhythm,lead,synth]: player.volume_db = linear_to_db(maxf(.0001, volume))-MUSIC_TRIM
 	drums.stream = stream(MUSIC+("boss_drums" if boss else "drums"))
 	rhythm.stream = stream(MUSIC+"bass_"+str(riff))
 	lead.stream = stream(MUSIC+"bell_"+str(riff))
@@ -158,7 +159,7 @@ func play_phrase():
 		else: player.play()
 	# Distinct, original minor-key boss motif layered over the existing drums.
 	# Reset on phrase boundaries to avoid drift, and silence it during Eclipse.
-	boss_melody.volume_db=linear_to_db(maxf(.0001,volume))-9
+	boss_melody.volume_db=linear_to_db(maxf(.0001,volume))-9-MUSIC_TRIM
 	if boss and not eclipse_active: boss_melody.play()
 	else: boss_melody.stop()
 
@@ -173,7 +174,7 @@ func hunt_music(remaining: float):
 			hunt_player.pitch_scale=1.0;hunt_player.play()
 		else: hunt_player.stop()
 	if not hunt_active: return
-	hunt_player.volume_db=linear_to_db(maxf(.0001,float(settings.music)))-4
+	hunt_player.volume_db=linear_to_db(maxf(.0001,float(settings.music)))-4-MUSIC_TRIM
 	hunt_player.pitch_scale=1.0+clampf((20.0-remaining)/20.0,0.0,1.0)*.3
 
 # Two bars at 140 BPM: low toms and a kick on a tribal pattern, a shaker, and a
@@ -234,7 +235,7 @@ func tick(delta: float, playing: bool, has_boss: bool):
 			eclipse_music.stop();clock=0
 			if active: play_phrase()
 	eclipse_music.stream_paused=not playing
-	eclipse_music.volume_db=linear_to_db(maxf(.0001,float(settings.music)))-8
+	eclipse_music.volume_db=linear_to_db(maxf(.0001,float(settings.music)))-8-MUSIC_TRIM
 	for channel in [drums,rhythm,lead,synth,boss_melody]:
 		if eclipse_active or hunt_active: channel.volume_db=-80
 	if eclipse_active and hunt_active: eclipse_music.volume_db=-80
@@ -257,7 +258,7 @@ func tick(delta: float, playing: bool, has_boss: bool):
 		var theme=stream(MUSIC+"air_"+str(realm_index)).duplicate() as AudioStreamWAV
 		theme.loop_mode=AudioStreamWAV.LOOP_FORWARD;theme.loop_begin=0;theme.loop_end=roundi(theme.get_length()*theme.mix_rate)
 		atmosphere.stream=theme;atmosphere.play();atmosphere.stream_paused=not playing
-	atmosphere.volume_db=-80 if eclipse_active or boss or hunt_active else linear_to_db(maxf(.0001,float(settings.music)))-(24 if boss else 18)
+	atmosphere.volume_db=-80 if eclipse_active or boss or hunt_active else linear_to_db(maxf(.0001,float(settings.music)))-(24 if boss else 18)-MUSIC_TRIM
 	voice.volume_db = linear_to_db(maxf(.0001, float(settings.voice)))
 	if not playing or not active: return
 	if genre != settings.get("genre", "metal"):

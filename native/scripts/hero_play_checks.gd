@@ -158,18 +158,24 @@ static func run(game: Node3D) -> Dictionary:
 	var gun=ClutchPlay.active_weapon(game);var hp0=float(target.hp)
 	var idle=ClutchPlay.trigger(game,gun)
 	game.set_meta("test_trigger",true)
-	var belly=target.node.position+Vector3.UP*float(target.height)*.4;var eye0=game.player.position+Vector3.UP*ClutchPlay.EYE
+	# A body shot well away from the glass orb, then a shot on the orb.
+	var orb_at=ClutchPlay.head_point(game,target);var low=orb_at.y>target.node.position.y+float(target.height)*.5
+	var belly=target.node.position+Vector3.UP*float(target.height)*(.25 if low else .9);var eye0=game.player.position+Vector3.UP*ClutchPlay.EYE
 	game.pitch=-atan2(belly.y-eye0.y,eye0.distance_to(Vector3(belly.x,eye0.y,belly.z)));ClutchPlay.place_camera(game,1.0/60.0)
 	var shot=ClutchPlay.trigger(game,gun);var body_hit=hp0-float(target.hp)
-	# Aim at the head: the pitch that points the eye at the top of the body.
 	var head=ClutchPlay.head_point(game,target);var eye=game.player.position+Vector3.UP*ClutchPlay.EYE
+	game.yaw=atan2(-(head.x-eye.x),-(head.z-eye.z))
 	game.pitch=-atan2(head.y-eye.y,eye.distance_to(Vector3(head.x,eye.y,head.z)));ClutchPlay.place_camera(game,1.0/60.0)
 	var hp1=float(target.hp);ClutchPlay.trigger(game,gun);var head_hit=hp1-float(target.hp)
 	# Look away and miss.
 	game.yaw=PI*.5;game.pitch=0.0;ClutchPlay.place_camera(game,1.0/60.0)
 	var hp2=float(target.hp);ClutchPlay.trigger(game,gun);var missed=is_equal_approx(hp2,float(target.hp))
 	game.remove_meta("test_trigger")
-	checks.clutch_aims=fps_ok and not idle and shot and body_hit>0 and head_hit>body_hit*1.5 and missed
+	checks.clutch_aims=fps_ok and not idle and shot and body_hit>0 and head_hit>body_hit*1.5 and missed and not ClutchPlay.orbs(target).is_empty()
+	# The orb chime is a real sample, and first-person looking turns at 0.7 speed.
+	var yaw_before=game.yaw;game.camera_look(Vector2(.1,0));var fps_turn=absf(game.yaw-yaw_before)
+	checks.clutch_feel=game.sound.effect_samples.has("headshot") and game.sound.effect_samples.has("car-crash") and is_equal_approx(fps_turn,.1*float(game.career.data.settings.lookSensitivity)*ClutchPlay.LOOK_SCALE)
+	game.yaw=PI*.5
 	# His shots set off explosive barrels like any other hero's.
 	var drum={"id":-77,"node":ExplosiveBarrels.model(game,game.player.position+Vector3(-6,0,0)),"fuse":-1.0,"asked":false}
 	drum.node.position.y=game.world.height_at(drum.node.position.x,drum.node.position.z);game.barrels.append(drum)

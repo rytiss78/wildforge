@@ -5,8 +5,9 @@ class_name ClutchPlay
 # look are our own). First person with a wide shooter field of view, no auto-aim:
 # hold the left mouse button to fire the active weapon where the crosshair points
 # (hitscan; turrets still aim themselves). Number keys 1-3 pick the active weapon.
-# Hits high on a body are headshots (double damage, a chime). V (Lock-On) is a
-# full aimbot for a few seconds: the view swings onto the head of the enemy
+# Hits on a creature's glass health orb are weak-spot shots (double damage, a
+# chime); for Clutch only. V (Lock-On) is a
+# full aimbot for a few seconds: the view swings onto the orb of the enemy
 # nearest the hero (in view or not, through walls), fires by itself at five times
 # the damage and moves on to the next enemy when one dies. Shift (instead of the dash) is a slow, quiet walk: enemies lose sight
 # of him, stop where they are and do not attack (CoopSession.target "lost").
@@ -14,8 +15,9 @@ class_name ClutchPlay
 
 const EYE=1.55
 const FOV=74.0          # vertical; about a 106° horizontal view at 16:9
-const HEAD=.78          # hits above this share of the body height are headshots
-const HEADSHOT=2.0
+const HEADSHOT=2.0      # damage on the glass orb (the weak spot)
+const ORB_GRACE=1.25    # the orb counts a little bigger than drawn
+const LOOK_SCALE=.7     # first-person look speed, of the third-person setting
 const LOCK_DAMAGE=5.0
 const STEALTH=4.0
 const LOCK_TIME=4.0
@@ -215,13 +217,40 @@ static func shoot(g,weapon: Dictionary):
 			g.hurt_enemy(hit.enemy,damage,"crit" if head else "hit",weapon.id)
 			hit_flash=.18
 			if head:
-				head_flash=.35;g.sound.effect("headshot",end)
+				head_flash=.35;g.sound.effect("headshot",g.player.position+Vector3.UP*EYE)
 				if hit.enemy.dead: headshot_kills+=1
 		elif hit.has("hero"):
 			friendly_hit(g,int(hit.hero),base*FRIENDLY)
 
+# The glass orbs of an enemy (most have one; the Grand Noggin's eyes are two),
+# as world centres and radii. Found once per enemy and kept on it.
+static func orbs(enemy: Dictionary) -> Array:
+	if not enemy.has("orb_nodes"):
+		var found=[]
+		if is_instance_valid(enemy.get("node")):
+			for node in enemy.node.find_children("GlassCore*","MeshInstance3D",true,false): found.append(node)
+		enemy.orb_nodes=found
+	var out=[]
+	for node in enemy.orb_nodes:
+		if not is_instance_valid(node) or not node.is_visible_in_tree(): continue
+		var box: AABB=node.get_aabb()
+		var radius=maxf(box.size.x,maxf(box.size.y,box.size.z))*.5*node.global_basis.get_scale().x
+		out.append({"center":node.global_transform*box.get_center(),"radius":maxf(.08,radius)})
+	return out
+
+# Where the aimbot aims: the nearest orb, or high on the body when it has none.
 static func head_point(g,enemy: Dictionary) -> Vector3:
-	return enemy.node.position+Vector3.UP*float(enemy.get("height",1.7))*.88
+	var list=orbs(enemy)
+	if not list.is_empty(): return list[0].center
+	return enemy.node.position+Vector3.UP*float(enemy.get("height",1.7))*.6
+
+# Ray against sphere: the distance to the first hit, or INF.
+static func sphere_hit(origin: Vector3,dir: Vector3,center: Vector3,radius: float) -> float:
+	var to=center-origin;var t=to.dot(dir)
+	var miss=to.length_squared()-t*t
+	if miss>radius*radius: return INF
+	var entry=t-sqrt(radius*radius-miss)
+	return entry if entry>=0 else (t if t>=0 else INF)
 
 # The first enemy, hero or wall along the ray.
 static func cast(g,origin: Vector3,dir: Vector3,reach: float,through_walls: bool=false) -> Dictionary:
@@ -235,10 +264,17 @@ static func cast(g,origin: Vector3,dir: Vector3,reach: float,through_walls: bool
 		var base: Vector3=enemy.node.position;var height=float(enemy.get("height",1.7));var radius=float(enemy.get("radius",.5))*1.15
 		var center=base+Vector3.UP*height*.5
 		var t=(center-origin).dot(dir)
+		# The orb: hit when it is on the near side of the body (not through it).
+		var orb_t=INF
+		for orb in orbs(enemy):
+			var hit_t=sphere_hit(origin,dir,orb.center,float(orb.radius)*ORB_GRACE)
+			if hit_t<orb_t: orb_t=hit_t
+		if orb_t<nearest and orb_t<=t+radius*.5:
+			nearest=orb_t;result={"point":origin+dir*orb_t,"enemy":enemy,"head":true};continue
 		if t<0 or t>nearest: continue
 		var q=origin+dir*t
 		if Vector2(q.x-center.x,q.z-center.z).length()>radius or q.y<base.y-.1 or q.y>base.y+height+.1: continue
-		nearest=t;result={"point":q,"enemy":enemy,"head":q.y>base.y+height*HEAD}
+		nearest=t;result={"point":q,"enemy":enemy,"head":false}
 	for id in g.coop.avatars:
 		var body=g.coop.avatars[id]
 		if not is_instance_valid(body) or float(g.coop.members.get(id,{}).get("hp",0))<=0: continue

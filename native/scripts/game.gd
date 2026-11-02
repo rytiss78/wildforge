@@ -959,9 +959,9 @@ func _notification(what):
 
 func camera_look(amount: Vector2):
 	if mode != "playing": return
-	var sensitivity = float(career.data.settings.lookSensitivity)
-	yaw -= amount.x*sensitivity*(-1.0 if underside.flipped() else 1.0)
 	var fps=ClutchPlay.first_person(self)
+	var sensitivity = float(career.data.settings.lookSensitivity)*(ClutchPlay.LOOK_SCALE if fps else 1.0)
+	yaw -= amount.x*sensitivity*(-1.0 if underside.flipped() else 1.0)
 	pitch = clampf(pitch+amount.y*sensitivity*(-1 if career.data.settings.invertLook else 1),-1.45 if fps else -.4,1.45 if fps else 1.1)
 
 func _input(event):
