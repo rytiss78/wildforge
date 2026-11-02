@@ -146,8 +146,8 @@ static func clear_trail(g):
 	trail_mesh=null
 
 static func lay_trail(g,_delta: float):
-	if not g.player.is_on_floor() or g.underside.active() or trail_points>=TRAIL_MAX: return
 	var p=g.player.position
+	if g.underside.active() or trail_points>=TRAIL_MAX or p.y>g.world.height_at(p.x,p.z)+.35: return
 	if last_trail!=Vector3.INF and Vector2(p.x-last_trail.x,p.z-last_trail.z).length()<TRAIL_STEP: return
 	var heading=Vector2(p.x-last_trail.x,p.z-last_trail.z) if last_trail!=Vector3.INF else Vector2.UP
 	last_trail=p

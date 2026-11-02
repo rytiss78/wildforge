@@ -1,0 +1,83 @@
+{
+ "engine": "Kokoro-82M v1.0, offline; air horn synthesized",
+ "type": "Original lines with synthetic neural voices; no recordings or cloning",
+ "lines": [
+  {
+   "id": "cheer_go",
+   "voice": "am_puck",
+   "text": "Go, go, go!",
+   "duration": 0.896,
+   "sha256": "8824bf85f94767fd55eb397a9c3050243ed40a8cbbefb33f37acab9ede38631e"
+  },
+  {
+   "id": "cheer_got_this",
+   "voice": "af_heart",
+   "text": "You got this!",
+   "duration": 0.917,
+   "sha256": "e1ada59f6830d701b0b312b974fdd9d88557450c437635787bc6079cbeae1eef"
+  },
+  {
+   "id": "cheer_behind",
+   "voice": "am_adam",
+   "text": "Behind you!",
+   "duration": 0.789,
+   "sha256": "7a7d6573becfe08c66234bf0a3182dfa421b1da9702f0e8c77a656292dbe71ae"
+  },
+  {
+   "id": "cheer_nice",
+   "voice": "bf_emma",
+   "text": "Nice one!",
+   "duration": 1.208,
+   "sha256": "4e9e245f6443ad3136f9346ff9aa40689d42dfb74f83e996866869c5c722299b"
+  },
+  {
+   "id": "cheer_dont_give_up",
+   "voice": "am_michael",
+   "text": "Don't give up!",
+   "duration": 1.003,
+   "sha256": "74468240c053d09ed4e37ee9b399d7e35667ea77509363d29cd557a985b7b1a6"
+  },
+  {
+   "id": "cheer_help",
+   "voice": "af_bella",
+   "text": "Help me up!",
+   "duration": 0.704,
+   "sha256": "d5f8a5e89d550295d61d968fa698228e89db923ae5e1358b1c7e7a178d3346b2"
+  },
+  {
+   "id": "cheer_wow",
+   "voice": "am_fenrir",
+   "text": "Wooow!",
+   "duration": 0.533,
+   "sha256": "c6fac52a7b173860c85a6ca2fb540e9e335f7236775b47da73d12e441da22d6b"
+  },
+  {
+   "id": "cheer_lets_go",
+   "voice": "bm_george",
+   "text": "Let's go!",
+   "duration": 0.939,
+   "sha256": "f6b03ae813997a7ca92c66d601c7676b7840a3bc7f4ec5e35afcb5c16822c591"
+  },
+  {
+   "id": "cheer_watch_out",
+   "voice": "af_nicole",
+   "text": "Watch out!",
+   "duration": 1.173,
+   "sha256": "2b57fa195cc2f1fb03ce5c8113f7fe34dff08f4f00b43ea974c667e1b7f28a40"
+  },
+  {
+   "id": "cheer_legend",
+   "voice": "am_echo",
+   "text": "Absolute legend!",
+   "duration": 1.6,
+   "sha256": "8a5c07b862e495a14491d83604c1be7fd797abf5a12b506ea60cf27c6c1f0d38"
+  },
+  {
+   "id": "cheer_horn",
+   "voice": "synth",
+   "text": "(air horn)",
+   "duration": 0.9,
+   "sha256": "a39a3b43856fb80d179a66fc9d36640513c883e782c9766f74a6f818a1091377"
+  }
+ ]
+}

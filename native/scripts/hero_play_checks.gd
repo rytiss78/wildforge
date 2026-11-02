@@ -112,6 +112,14 @@ static func run(game: Node3D) -> Dictionary:
 		game.player.position+=Vector3(9,0,0);WrenchTune.tick(game,1.0/60.0)
 		checks.wrench_tune=started and is_equal_approx(fast,2.0) and is_equal_approx(broken,1.0) and not WrenchTune.active
 	else: checks.wrench_tune=false
+	# Downed in co-op: the camera follows a living friend; cheers play for all.
+	var friend=CharacterBody3D.new();game.add_child(friend);friend.position=game.player.position+Vector3(20,0,0)
+	game.coop.active=true;game.coop.avatars[77]=friend;game.coop.members[77]={"hp":50.0,"name":"Friend"};game.update.downed=true
+	Spectate.tick(game,1.0/60.0)
+	var watching=Spectate.target_id==77 and Spectate.anchor(game,Vector3.ZERO).distance_to(friend.position+Vector3.UP*1.2)<.01
+	Spectate.last_cheer=-99.0;var cheered=Spectate.cheer(game,0) and int(Spectate.last_heard.get("index",-1))==0 and not Spectate.cheer(game,1)
+	checks.downed_spectate=watching and cheered and ResourceLoader.exists("res://assets/voices/cheers/cheer_horn.wav")
+	game.update.downed=false;game.coop.avatars.erase(77);game.coop.members.erase(77);game.coop.active=false;friend.queue_free();Spectate.tick(game,1.0/60.0)
 	game.clear_entities()
 	game.select_hero(saved_hero)
 	return checks

@@ -72,7 +72,7 @@ Done in this order: quick screen and data fixes first, then hero rework, then ne
 - [x] 9, 10 · Flowers grow roots under the island; only Digby Mole sees them (green glow) and eats them to heal.
 - [x] 25 · Three more pets (Ward +shield, Mote pulls XP, Rime slows nearby enemies); the pet picker gets its own panel on the hero screen and no longer rebuilds with every hero.
 - [x] 14 · Wrench: E at a placed turret starts an arrow-key sequence; while he keeps hitting the right arrows, that turret works twice as fast.
-- [ ] 29 · Co-op: a downed player spectates the living (free camera) and has a soundboard of about 10 cheers; no Block Drop or shorts while downed.
+- [x] 29 · Co-op: a downed player spectates the living (free camera) and has a soundboard of about 10 cheers; no Block Drop or shorts while downed.
 - [ ] 30 · The shop becomes **Dyleris**: talking to him marks where three items lie under the island; they are free but you must fetch them. Item ideas (three rolled per island): Gravity Anchor (no fall damage, slam from any height), Sun Lantern (night monsters weaker), Root Map (minimap shows chests), Golden Pickaxe (all pots drop coins ×2), Moon Compass (boss revealed on the map), Hourglass (+30 s before each boss), Rain Cloud (lava cools to rock), Echo Bell (every 10th shot repeats), Second Heart (one free revive), Merchant's Ledger (shop prices −30%).
 
 **E. Biggest**

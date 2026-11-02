@@ -749,6 +749,7 @@ func receive(sender: int,message):
 	if not message is Dictionary or not message.get("type","") is String: return
 	if ExplosiveBarrels.receive(game,sender,message): return
 	if game.update.receive(sender,message): return
+	if Spectate.receive(game,sender,message): return
 	var kind=message.type
 	if kind=="test_shared":
 		if test_mode and (members.has(sender) if hosting else sender==owner_id):

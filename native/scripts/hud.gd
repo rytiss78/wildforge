@@ -1070,7 +1070,7 @@ func pause_menu(ended: bool = false, win: bool = false):
 	# After a run ends, NEW RUN comes first and takes the focus.
 	if ended: box.add_child(button("↻  NEW RUN",game.start_run,true))
 	if not ended: box.add_child(button("▶  CONTINUE",close,true))
-	if not ended: box.add_child(button("▦  BLOCK DROP",block_drop_menu))
+	if not ended and not game.update.downed: box.add_child(button("▦  BLOCK DROP",block_drop_menu))
 	box.add_child(button("HERO STATS & EQUIPMENT",func():build_menu(true)))
 	if not ended: box.add_child(button("RUN REPORT",run_report_menu))
 	if not ended: box.add_child(button("↻  NEW RUN",game.start_run))
@@ -1149,7 +1149,7 @@ func block_drop_active() -> bool:
 
 # While a co-op friend chooses a reward, players who are done get the board.
 func update_block_drop_overlay():
-	var wanted=game.coop.frozen() and game.mode=="playing" and game.run_active
+	var wanted=game.coop.frozen() and game.mode=="playing" and game.run_active and not game.update.downed
 	if wanted and wait_room.get_parent()!=root:
 		if wait_room.get_parent()!=null: wait_room.get_parent().remove_child(wait_room)
 		root.add_child(wait_room)

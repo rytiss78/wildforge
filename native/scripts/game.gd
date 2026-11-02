@@ -2496,6 +2496,7 @@ func _physics_process(delta: float):
 	HeroPlay.tick(self,delta)
 	WrenchTune.tick(self,delta)
 	update.contact_shadows()
+	Spectate.tick(self,delta)
 	if update.downed:
 		# Preserve gravity after a co-op knockout. Otherwise an airborne hero
 		# freezes in midair because normal movement stops while downed.
@@ -2683,7 +2684,7 @@ func _process(delta: float):
 	if not camera_locked:
 		# Under the island the view is turned over, so the ground stays at the bottom.
 		var view_up=underside.camera_up()
-		var anchor=player.position+view_up*1.2
+		var anchor=Spectate.anchor(self,player.position+view_up*1.2)
 		update_fight_zoom(delta)
 		# TPS camera: spherical coords around player
 		var cos_p=cos(pitch);var distance_value=camera_distance*fight_zoom
