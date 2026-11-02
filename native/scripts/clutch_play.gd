@@ -206,6 +206,9 @@ static func shoot(g,weapon: Dictionary):
 		var hit=cast(g,origin,dir,reach,locked)
 		var end: Vector3=hit.get("point",origin+dir*reach)
 		g.beam(muzzle,end,PowerIcon.color_for(kind))
+		# Explosive barrels are solid (layer 1), so the ray stops on them: light
+		# the one it struck (any barrel along the line up to the hit point).
+		if not g.barrels.is_empty(): ExplosiveBarrels.shot(g,origin,end+dir*.3)
 		if hit.has("enemy"):
 			var head=bool(hit.head) or locked
 			var damage=base*(HEADSHOT if head else 1.0)

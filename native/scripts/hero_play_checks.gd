@@ -170,6 +170,15 @@ static func run(game: Node3D) -> Dictionary:
 	var hp2=float(target.hp);ClutchPlay.trigger(game,gun);var missed=is_equal_approx(hp2,float(target.hp))
 	game.remove_meta("test_trigger")
 	checks.clutch_aims=fps_ok and not idle and shot and body_hit>0 and head_hit>body_hit*1.5 and missed
+	# His shots set off explosive barrels like any other hero's.
+	var drum={"id":-77,"node":ExplosiveBarrels.model(game,game.player.position+Vector3(-6,0,0)),"fuse":-1.0,"asked":false}
+	drum.node.position.y=game.world.height_at(drum.node.position.x,drum.node.position.z);game.barrels.append(drum)
+	for i in range(2): await game.get_tree().physics_frame
+	game.yaw=PI*.5;var aim_at=drum.node.position+Vector3.UP*.56;var eye_b=game.player.position+Vector3.UP*ClutchPlay.EYE
+	game.pitch=-atan2(aim_at.y-eye_b.y,eye_b.distance_to(Vector3(aim_at.x,eye_b.y,aim_at.z)));ClutchPlay.place_camera(game,1.0/60.0)
+	game.set_meta("test_trigger",true);ClutchPlay.trigger(game,gun);game.remove_meta("test_trigger")
+	checks.clutch_barrels=float(drum.fuse)>=0.0
+	game.barrels.erase(drum);drum.node.queue_free()
 	# V: the aimbot swings the view onto the head, fires by itself at 5x, then
 	# moves to the next enemy when the first dies.
 	# The nearer enemy is behind him, out of view: the aimbot still takes it first.
