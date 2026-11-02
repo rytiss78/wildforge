@@ -407,6 +407,12 @@ func shape(mesh_value: Mesh, color: Color, parent: Node3D, position_value: Vecto
 # run. Automated reviews keep their fixed hero.
 var hero_rolled=false
 
+# For checks that measure exact damage: no elite modifier (a shielded elite's
+# bubble soaks hits) and no damage-taking quirks from being elite.
+func plain_enemy(enemy: Dictionary):
+	enemy.erase("modifier");enemy.shield=0.0;enemy.shield_max=0.0;enemy.elite_shield=0.0
+	if enemy.node.has_meta("elite_badge") and is_instance_valid(enemy.node.get_meta("elite_badge")): enemy.node.get_meta("elite_badge").queue_free()
+
 func roll_menu_hero(force: bool=false) -> bool:
 	if hero_rolled: return false
 	if not force and (run_active or smoke or not OS.get_cmdline_user_args().is_empty()): return false
@@ -3083,7 +3089,7 @@ func run_smoke():
 	await get_tree().create_timer(.2).timeout
 	checks.single_landing_damage=is_equal_approx(landed_damage,health_damage)
 	spawn_enemy(8)
-	var slam_target=enemies[0];slam_target.node.position=Vector3(2.5,world.height_at(2.5,0),0);slam_target.hp=1000;slam_target.maxHp=1000;slam_target.freeze=3
+	var slam_target=enemies[0];plain_enemy(slam_target);slam_target.node.position=Vector3(2.5,world.height_at(2.5,0),0);slam_target.hp=1000;slam_target.maxHp=1000;slam_target.freeze=3
 	player.position=Vector3(0,8,0);player.velocity=Vector3(0,-24,0);player.reset_physics_interpolation();peak_height=8;landing_ready=true;slamming=true;invulnerable=1000
 	var slam_expected=stat("damage")*2*stats.slamPower
 	await get_tree().create_timer(.65).timeout
@@ -3149,7 +3155,7 @@ func run_smoke():
 	for i in range(90):
 		if underside.tick(self,1.0/60.0) and underside.state=="under": break
 	checks.mole_dig_down=underside.state=="under" and underside.flipped() and Vector2(player.position.x-dig_at.x,player.position.z-dig_at.z).length()<.01 and player.position.y<world.height_at(dig_at.x,dig_at.z)-8
-	spawn_enemy(0);var dug_enemy=enemies[-1];dug_enemy.node.position=dig_at+Vector3(1.5,0,0);var dug_hp=float(dug_enemy.hp)
+	spawn_enemy(0);var dug_enemy=enemies[-1];plain_enemy(dug_enemy);dug_enemy.node.position=dig_at+Vector3(1.5,0,0);var dug_hp=float(dug_enemy.hp)
 	underside.dig(self,40.0,6.0)
 	for i in range(90):
 		if underside.tick(self,1.0/60.0) and underside.state=="top": break
