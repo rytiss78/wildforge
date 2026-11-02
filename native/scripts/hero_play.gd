@@ -88,7 +88,7 @@ static func tick(g,delta: float):
 	if not trail_cells.is_empty(): slow_on_trail(g,delta)
 	if hero=="bee": sip(g,delta)
 	if hero=="cactus": shoved(g,delta)
-	if hero=="mole" or not roots.is_empty(): update_roots(g,delta)
+	update_roots(g,delta)
 
 # --- White Supra -----------------------------------------------------------
 
@@ -280,15 +280,16 @@ static func shoved(g,delta: float):
 
 # --- Flower roots under the island (Digby Mole) ---------------------------------
 
-# Every flower grows roots down through the island (user, November 2). Only
-# Digby Mole sees them, glowing green on the belly, and eats them to heal.
-# Each island also has its own wild roots hanging from the belly (user: "I saw
-# no flower roots in the underworld"), which grow back ROOT_REGROW s after a munch.
+# Every flower grows roots down through the island (user, November 2), and
+# each island has its own wild roots hanging from the belly. Everyone sees them
+# glowing green; only Digby Mole eats them to heal. An eaten root is gone for
+# good (no regrowth), and in co-op it is gone for every player ("root_eaten").
 const ROOT_REACH=2.4
 const ROOT_HEAL=.08
 const WILD_ROOTS=18
-const ROOT_REGROW=40.0
 static var roots={}
+static var eaten_wild={}
+static var glow_material: StandardMaterial3D
 static var root_clock=0.0
 static var root_material: StandardMaterial3D
 
@@ -298,27 +299,27 @@ static func update_roots(g,delta: float,force_under: bool=false):
 	root_clock=.3
 	var mole=id(g)=="mole"
 	var sources={}
-	if mole:
-		for flower in g.flowers:
-			if is_instance_valid(flower.get("node")): sources["l"+str(flower.node.get_instance_id())]=flower.node.position
-		for key in g.coop.flower_visuals:
-			if is_instance_valid(g.coop.flower_visuals[key]): sources["r"+str(key)]=g.coop.flower_visuals[key].position
-		if g.world.realm!=3:
-			var rng=RandomNumberGenerator.new();rng.seed=int(g.seed_value)*31+int(g.world.realm)
-			for i in range(WILD_ROOTS):
-				var a=rng.randf()*TAU;var edge=Vector3(cos(a),0,sin(a))
-				var reach=g.world.shore_radius(edge*40.0)-Underside.INSET*2.0
-				var spot=edge*reach*sqrt(rng.randf_range(.04,1.0))
-				sources["w%d_%d_%d" % [int(g.seed_value),int(g.world.realm),i]]=spot
+	for flower in g.flowers:
+		if is_instance_valid(flower.get("node")): sources["l"+str(flower.node.get_instance_id())]=flower.node.position
+	for key in g.coop.flower_visuals:
+		if is_instance_valid(g.coop.flower_visuals[key]): sources["r"+str(key)]=g.coop.flower_visuals[key].position
+	if g.world.realm!=3:
+		var rng=RandomNumberGenerator.new();rng.seed=int(g.seed_value)*31+int(g.world.realm)
+		for i in range(WILD_ROOTS):
+			var a=rng.randf()*TAU;var edge=Vector3(cos(a),0,sin(a))
+			var reach=g.world.shore_radius(edge*40.0)-Underside.INSET*2.0
+			var spot=edge*reach*sqrt(rng.randf_range(.04,1.0))
+			sources["w%d_%d_%d" % [int(g.seed_value),int(g.world.realm),i]]=spot
 	for key in roots.keys():
 		if not sources.has(key):
 			if is_instance_valid(roots[key].node): roots[key].node.queue_free()
 			roots.erase(key)
 	for key in sources:
-		if not roots.has(key): roots[key]={"node":grow_root(g,sources[key]),"eaten":false,"eaten_at":0.0}
-		elif roots[key].eaten and str(key).begins_with("w") and g.elapsed-float(roots[key].get("eaten_at",0.0))>ROOT_REGROW:
-			roots[key].eaten=false
-			if is_instance_valid(roots[key].node): roots[key].node.visible=true
+		if not roots.has(key):
+			roots[key]={"node":grow_root(g,sources[key]),"eaten":eaten_wild.has(key)}
+			roots[key].node.visible=not roots[key].eaten
+		elif not is_instance_valid(roots[key].node):
+			roots[key].node=grow_root(g,sources[key]);roots[key].node.visible=not roots[key].eaten
 	if not mole or not (force_under or g.underside.flipped()): return
 	var p=g.player.position
 	for key in roots:
@@ -326,14 +327,40 @@ static func update_roots(g,delta: float,force_under: bool=false):
 		if root.eaten or not is_instance_valid(root.node): continue
 		var at: Vector3=root.node.position
 		if Vector2(at.x-p.x,at.z-p.z).length()<ROOT_REACH:
-			root.eaten=true;root.eaten_at=g.elapsed;root.node.visible=false
+			eat_root(g,key)
+			if str(key).begins_with("w") and g.coop.active: g.coop.broadcast({"type":"root_eaten","key":str(key)})
 			g.heal(g.stats.maxHp*ROOT_HEAL);g.burst(at+Vector3.DOWN*.8,Color("7dff6a"),8);g.sound.effect("heal",at)
 			HeroTricks.word(g,"MUNCH! +%d ♥" % roundi(g.stats.maxHp*ROOT_HEAL),Color("9dff7a"))
+
+static func eat_root(g,key):
+	if str(key).begins_with("w"): eaten_wild[str(key)]=true
+	if roots.has(key):
+		roots[key].eaten=true
+		if is_instance_valid(roots[key].node): roots[key].node.visible=false
+
+# A friend's Digby ate a wild root: it is gone here too. The host passes it on.
+static func receive(g,sender: int,message) -> bool:
+	if not message is Dictionary or message.get("type","")!="root_eaten": return false
+	var key=str(message.get("key",""))
+	if not key.begins_with("w"): return true
+	eat_root(g,key)
+	if g.coop.hosting:
+		for id in g.coop.members:
+			if int(id)!=sender and g.coop.transport_peer_connected(int(id)): g.coop.send_to(int(id),message)
+	return true
 
 static func grow_root(g,top: Vector3) -> Node3D:
 	if root_material==null:
 		root_material=StandardMaterial3D.new();root_material.albedo_color=Color("5a8a3a");root_material.emission_enabled=true
-		root_material.emission=Color("6dff4a");root_material.emission_energy_multiplier=1.6
+		root_material.emission=Color("6dff4a");root_material.emission_energy_multiplier=3.2
+		glow_material=StandardMaterial3D.new();glow_material.shading_mode=BaseMaterial3D.SHADING_MODE_UNSHADED
+		glow_material.transparency=BaseMaterial3D.TRANSPARENCY_ALPHA;glow_material.blend_mode=BaseMaterial3D.BLEND_MODE_ADD
+		glow_material.albedo_color=Color(.4,1.0,.35,.85);glow_material.cull_mode=BaseMaterial3D.CULL_DISABLED
+		glow_material.billboard_mode=BaseMaterial3D.BILLBOARD_ENABLED;glow_material.no_depth_test=false
+		# A soft round glow: bright in the middle, fading to nothing at the edge.
+		var fade=Gradient.new();fade.set_color(0,Color(1,1,1,1));fade.set_color(1,Color(1,1,1,0));fade.add_point(.45,Color(1,1,1,.35))
+		var spot=GradientTexture2D.new();spot.gradient=fade;spot.fill=GradientTexture2D.FILL_RADIAL;spot.fill_from=Vector2(.5,.5);spot.fill_to=Vector2(1,.5);spot.width=64;spot.height=64
+		glow_material.albedo_texture=spot
 	var node=Node3D.new();node.name="FlowerRoot";g.add_child(node)
 	node.position=Vector3(top.x,g.world.under_height(top.x,top.z),top.z)
 	for k in range(7):
@@ -345,6 +372,10 @@ static func grow_root(g,top: Vector3) -> Node3D:
 	var bulb=MeshInstance3D.new();var ball=SphereMesh.new();ball.radius=.3;ball.height=.55;ball.radial_segments=10;ball.rings=6
 	bulb.mesh=ball;bulb.material_override=root_material;bulb.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	node.add_child(bulb);bulb.position=Vector3(0,-1.5,0)
+	# A soft green halo round the clump, so roots read from far away.
+	var halo=MeshInstance3D.new();var quad=QuadMesh.new();quad.size=Vector2(3.6,3.6)
+	halo.mesh=quad;halo.material_override=glow_material;halo.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	node.add_child(halo);halo.position=Vector3(0,-1.2,0)
 	return node
 
 static func taunts(hero_id: String) -> bool: return hero_id=="cactus"

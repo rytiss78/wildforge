@@ -751,6 +751,7 @@ func receive(sender: int,message):
 	if game.update.receive(sender,message): return
 	if Spectate.receive(game,sender,message): return
 	if ClutchPlay.receive(game,sender,message): return
+	if HeroPlay.receive(game,sender,message): return
 	var kind=message.type
 	if kind=="test_shared":
 		if test_mode and (members.has(sender) if hosting else sender==owner_id):

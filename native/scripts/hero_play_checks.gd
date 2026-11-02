@@ -112,10 +112,17 @@ static func run(game: Node3D) -> Dictionary:
 	# Wild roots hang under every island and grow back after a munch.
 	var wild_root=HeroPlay.roots[wild[0]] if not wild.is_empty() else {}
 	var hangs=not wild_root.is_empty() and wild.all(func(k):var at=HeroPlay.roots[k].node.position;return absf(at.y-game.world.under_height(at.x,at.z))<.01)
+	# An eaten root stays gone, also when a friend's Digby ate it ("root_eaten").
+	var other_key=wild[1] if wild.size()>1 else ""
 	if not wild_root.is_empty():
-		wild_root.eaten=true;wild_root.eaten_at=game.elapsed-HeroPlay.ROOT_REGROW-1.0;wild_root.node.visible=false
+		HeroPlay.eat_root(game,wild[0]);HeroPlay.receive(game,0,{"type":"root_eaten","key":other_key})
 		HeroPlay.root_clock=0.0;HeroPlay.update_roots(game,0.0,false)
-	checks.wild_roots=hangs and not wild_root.get("eaten",true) and wild_root.node.visible
+	var stays=not wild_root.is_empty() and wild_root.eaten and not wild_root.node.visible and HeroPlay.roots[other_key].eaten
+	# Everyone sees them, not only Digby.
+	use(game,"duck");HeroPlay.root_clock=0.0;HeroPlay.update_roots(game,0.0,false)
+	var shared=HeroPlay.roots.keys().filter(func(k):return str(k).begins_with("w")).size()==HeroPlay.WILD_ROOTS and HeroPlay.roots.values().any(func(r):return not r.eaten and r.node.visible)
+	use(game,"mole")
+	checks.wild_roots=hangs and stays and shared
 	# Three more pets (November 2): Ward shields, Mote pulls XP in, Rime slows.
 	game.clear_entities();game.mode="playing";game.hp=game.stats.maxHp
 	var pet=game.pet
