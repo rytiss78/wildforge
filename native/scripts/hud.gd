@@ -45,6 +45,7 @@ var turret_next_icon: TextureRect
 var slam_status: Label
 var dash_status: Label
 var trick_status: Label
+var rope_status: Label
 var combo: ComboMeter
 var rescue_code: RescueCode
 var clutch_hud: ClutchHud  # Clutch's first-person screen
@@ -329,6 +330,7 @@ func setup(owner_game):
 	slam_status=label("",14,ThemeTokens.STAR_GOLD);slam_status.position=LOADOUT.position+Vector2(400,56);root.add_child(slam_status)
 	dash_status=label("",14,ThemeTokens.STAR_GOLD);dash_status.position=LOADOUT.position+Vector2(400,34);root.add_child(dash_status)
 	trick_status=label("",14,ThemeTokens.STAR_GOLD);trick_status.position=LOADOUT.position+Vector2(400,12);root.add_child(trick_status)
+	rope_status=label("",14,ThemeTokens.STAR_GOLD);rope_status.position=LOADOUT.position+Vector2(400,-10);root.add_child(rope_status)
 	# The combo meter on the right edge, under the map and timer.
 	combo=ComboMeter.new();combo.position=Vector2(1660,470);root.add_child(combo)
 	# The co-op rescue code, centred above the interaction prompt.
@@ -619,6 +621,10 @@ func update(delta: float):
 	dash_status.visible=slam_status.visible
 	dash_status.text="[%s] %s" % [ControlBindings.display(game.career.data.settings,"dash","controller" if game.input_kind=="xbox" else "keyboard"),"DASH" if game.dash_cooldown<=0 else "%.1fs" % game.dash_cooldown]
 	dash_status.add_theme_color_override("font_color",READY_GREEN if game.dash_cooldown<=0 else ThemeTokens.STAR_GOLD)
+	# The rope (C): ready, held (throw), or recharging.
+	rope_status.visible=not modal.visible and game.mode=="playing" and not game.update.downed
+	rope_status.text="[%s] %s" % [ControlBindings.display(game.career.data.settings,"carry","controller" if game.input_kind=="xbox" else "keyboard"),"TOSS" if Lasso.mine>=0 else "ROPE" if Lasso.cooldown<=0 else "%.1fs" % Lasso.cooldown]
+	rope_status.add_theme_color_override("font_color",READY_GREEN if Lasso.cooldown<=0 else ThemeTokens.STAR_GOLD)
 	var hero_trick=HeroTricks.trick(game)
 	trick_status.visible=slam_status.visible and not hero_trick.is_empty()
 	if trick_status.visible:

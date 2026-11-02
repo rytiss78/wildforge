@@ -139,12 +139,9 @@ func banish(index: int):
 
 func hint() -> String:
 	var drag=ControlBindings.display(game.career.data.settings,"carry","controller" if game.input_kind=="xbox" else "keyboard")
-	if downed and (CarryRescue.carried_by>=0 or game.underside.state=="under"):
-		if game.underside.state=="under": return "⛓ UNDER THE ISLAND · BACK UP %d%%" % roundi(CarryRescue.revive_share(game,game.coop.local_id)*100)
-		return "⛓ DRAGGED · UNDER THE ISLAND YOU GET BACK UP"
-	if CarryRescue.carrying>=0:
-		if game.underside.flipped(): return "⛓ BACK UP %d%% · %s LET GO" % [roundi(CarryRescue.revive_share(game,CarryRescue.carrying)*100),drag]
-		return "⛓ OVER THE EDGE · UNDER THE ISLAND THEY GET BACK UP · %s LET GO" % drag
+	if not downed and CarryRescue.carrying>=0 and rescue_target(game.player.position,game.coop.local_id)<=0: return "⛓ %s LET GO" % drag
+	if not downed and CarryRescue.carrying<0 and CarryRescue.through(game,CarryRescue.find(game)): return "⛓ %s · PULL THEM THROUGH" % drag
+	if not downed and Lasso.mine>=0: return "⛓ %s · TOSS" % drag
 	if downed:
 		var seconds=float(rescue_progress.get(game.coop.local_id,rescue_progress.get(str(game.coop.local_id),0)))
 		return "DOWNED · CODE %d / %d · SPACE: WATCH NEXT · 1–0: CHEER" % [roundi(seconds/3.0*RescueCode.LENGTH),RescueCode.LENGTH]
@@ -353,7 +350,6 @@ func host_tick(delta: float):
 			revive(target)
 			if int(helper)==game.coop.local_id: run_rescues+=1;note("RESCUE")
 			else: game.coop.send_to(int(helper),{"type":"big_memory","key":"RESCUE"})
-	CarryRescue.host_tick(game,delta,working)
 	for id in rescue_progress.keys():
 		if not working.has(id): rescue_progress.erase(id)
 	if not downed_ids.is_empty() and helpers.values().all(func(m):return float(m.get("hp",0))<=0):
@@ -406,6 +402,7 @@ func receive(sender: int,message: Dictionary) -> bool:
 			var action=message.get("action","")
 			if action=="down": downed_ids[sender]=true;member.hp=0
 			elif action=="beacon" and p.distance_to(beacon_position)<4 and float(member.get("hp",0))>0: activate_beacon()
+			elif action in ["lasso","hurl"]: Lasso.receive(game,sender,message)
 			elif action=="magnet" and p.distance_to(magnet_position)<5 and float(member.get("hp",0))>0: activate_magnet()
 			elif action=="purchase":
 				var i=int(message.get("index",-1));var key=str(sender)+":"+str(i)

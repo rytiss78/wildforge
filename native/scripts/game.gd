@@ -2208,6 +2208,8 @@ func update_combat(delta: float):
 			enemy.poison=0;enemy.fire=0;enemy.slow=0
 		update_status_indicators(enemy)
 		if enemy.has("modifier"): EliteMods.tick(self,enemy,enemy_delta)
+		# Thrown by a rope (Lasso): the throw moves it until it lands.
+		if enemy.get("thrown",false): continue
 		var target_player=coop.target(enemy.node.position)
 		if target_player.get("lost",false): ClutchPlay.lost(self,enemy,enemy_delta);continue
 		enemy.wants_climb=target_player.position.y-enemy.node.position.y>1.5

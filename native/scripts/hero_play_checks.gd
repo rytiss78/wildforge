@@ -99,14 +99,23 @@ static func run(game: Node3D) -> Dictionary:
 	var garden=game.rules.data.weapons.filter(func(w):return w.id=="flowers")[0].duplicate(true);garden.kind="weapon";garden.strength=1.0;game.equip_weapon(garden)
 	game.plant_flower(Vector3(4,0,0),game.equipped[-1])
 	HeroPlay.root_clock=0.0;HeroPlay.update_roots(game,0.0,false)
-	var root=HeroPlay.roots.values()[0] if not HeroPlay.roots.is_empty() else {}
+	var flower_keys=HeroPlay.roots.keys().filter(func(k):return str(k).begins_with("l"))
+	var root=HeroPlay.roots[flower_keys[0]] if not flower_keys.is_empty() else {}
 	game.hp=game.stats.maxHp*.5;var hungry=game.hp
 	game.player.position=Vector3(4.5,game.world.under_height(4,0)-1.6,0)
 	HeroPlay.update_roots(game,0.0,true)
 	checks.mole_eats_roots=not root.is_empty() and root.eaten and game.hp>hungry and root.node.position.y<game.world.height_at(4,0)-5
 	for bloom in game.flowers: bloom.node.queue_free()
 	game.flowers.clear();HeroPlay.root_clock=0.0;HeroPlay.update_roots(game,0.0,false)
-	checks.roots_follow_flowers=HeroPlay.roots.is_empty()
+	var wild=HeroPlay.roots.keys().filter(func(k):return str(k).begins_with("w"))
+	checks.roots_follow_flowers=not HeroPlay.roots.keys().any(func(k):return str(k).begins_with("l")) and wild.size()==HeroPlay.WILD_ROOTS
+	# Wild roots hang under every island and grow back after a munch.
+	var wild_root=HeroPlay.roots[wild[0]] if not wild.is_empty() else {}
+	var hangs=not wild_root.is_empty() and wild.all(func(k):var at=HeroPlay.roots[k].node.position;return absf(at.y-game.world.under_height(at.x,at.z))<.01)
+	if not wild_root.is_empty():
+		wild_root.eaten=true;wild_root.eaten_at=game.elapsed-HeroPlay.ROOT_REGROW-1.0;wild_root.node.visible=false
+		HeroPlay.root_clock=0.0;HeroPlay.update_roots(game,0.0,false)
+	checks.wild_roots=hangs and not wild_root.get("eaten",true) and wild_root.node.visible
 	# Three more pets (November 2): Ward shields, Mote pulls XP in, Rime slows.
 	game.clear_entities();game.mode="playing";game.hp=game.stats.maxHp
 	var pet=game.pet
@@ -141,32 +150,45 @@ static func run(game: Node3D) -> Dictionary:
 	Spectate.last_cheer=-99.0;var cheered=Spectate.cheer(game,0) and int(Spectate.last_heard.get("index",-1))==0 and not Spectate.cheer(game,1)
 	checks.downed_spectate=watching and cheered and ResourceLoader.exists("res://assets/voices/cheers/cheer_horn.wav")
 	game.update.downed=false;game.coop.avatars.erase(77);game.coop.members.erase(77);game.coop.active=false;friend.queue_free();Spectate.tick(game,1.0/60.0)
-	# Dragged under the island (November 2): C beside a downed friend grabs them
-	# (the helper slows, a rope shows); on top nothing happens, under the island
-	# the host brings them back after CarryRescue.REVIVE seconds.
-	var hurt=CharacterBody3D.new();game.add_child(hurt);var hurt_at=game.player.position+Vector3(1.5,0,0);hurt.position=hurt_at
-	game.coop.active=true;game.coop.avatars[78]=hurt;game.coop.members[78]={"hp":0.0,"position":CoopSession.array(hurt_at),"name":"Friend"}
+	# Pulling a downed friend through the island (November 2): a helper under the
+	# island, below a body lying on top, grabs it with C; the downed side then
+	# follows its carrier down through the rock. No revive by itself: the usual
+	# rescue code still does that.
+	var hurt=CharacterBody3D.new();game.add_child(hurt);var hurt_at=game.player.position+Vector3(1.0,0,0);hurt.position=hurt_at
+	game.coop.active=true;game.coop.avatars[78]=hurt;game.coop.members[78]={"hp":0.0,"position":CoopSession.array(hurt_at),"name":"Friend","under":false}
 	game.update.downed_ids[78]=true;game.mode="playing";CarryRescue.reset()
+	var helper_at=game.player.position
+	game.underside.state="under";game.player.position=Vector3(helper_at.x,game.world.under_height(helper_at.x,helper_at.z),helper_at.z)
+	var through=CarryRescue.find(game)==78 and CarryRescue.through(game,78)
 	Input.action_press("carry");CarryRescue.tick(game,1.0/60.0);Input.action_release("carry");CarryRescue.tick(game,1.0/60.0)
 	var grabbed=CarryRescue.carrying==78 and is_equal_approx(CarryRescue.speed_scale(game),CarryRescue.SLOW) and CarryRescue.ropes.any(func(r):return is_instance_valid(r) and r.visible)
-	var carry_work={};CarryRescue.host_tick(game,1.0,carry_work)
-	var none_on_top=not carry_work.has(78) and game.update.downed_ids.has(78)
-	game.underside.state="under"
-	CarryRescue.host_tick(game,CarryRescue.REVIVE*.5,carry_work);var half_back=is_equal_approx(CarryRescue.revive_share(game,78),.5)
-	CarryRescue.host_tick(game,CarryRescue.REVIVE*.6,carry_work);var carried_back=not game.update.downed_ids.has(78)
-	CarryRescue.tick(game,1.0/60.0);var let_go=CarryRescue.carrying==-1
-	game.underside.state="top";game.update.rescue_progress.clear()
-	# The downed side: the body follows its carrier on the rope, and goes under
-	# the island with them.
+	game.update.host_tick(1.0)
+	var no_auto=game.update.downed_ids.has(78)
+	Input.action_press("carry");CarryRescue.tick(game,1.0/60.0);Input.action_release("carry");CarryRescue.tick(game,1.0/60.0)
+	var let_go=CarryRescue.carrying==-1
+	game.underside.state="top";game.player.position=helper_at;game.update.rescue_progress.clear()
+	# The downed side: the body follows its carrier on the rope and goes down
+	# through the rock when the carrier is under the island.
 	var lying=game.player.position;game.update.downed=true
 	var carrier_at=lying+Vector3(5,0,0)
 	game.coop.members[78]={"hp":50.0,"carry":game.coop.local_id,"under":false,"position":CoopSession.array(carrier_at)}
 	var followed=CarryRescue.follow(game) and Vector2(game.player.position.x-carrier_at.x,game.player.position.z-carrier_at.z).length()<=CarryRescue.ROPE+.01
 	game.coop.members[78].under=true;CarryRescue.follow(game)
 	var went_under=game.underside.state=="under" and absf(game.player.position.y-game.world.under_height(game.player.position.x,game.player.position.z))<.01 and Spectate.up(game,Vector3.UP)==Vector3.DOWN
-	game.update.downed=false;game.underside.reset(game);game.player.position=lying;CarryRescue.reset();CarryRescue.draw_ropes(game)
+	game.update.downed=false;game.update.downed_ids.erase(78);game.underside.reset(game);game.player.position=lying;CarryRescue.reset();CarryRescue.draw_ropes(game)
 	game.coop.avatars.erase(78);game.coop.members.erase(78);hurt.queue_free()
-	checks.carry_rescue=grabbed and none_on_top and half_back and carried_back and let_go and followed and went_under
+	checks.carry_rescue=through and grabbed and no_auto and let_go and followed and went_under
+	# A living friend roped for fun: C beside them grabs them; on their side the
+	# rope tugs them toward the one holding it.
+	var buddy=CharacterBody3D.new();game.add_child(buddy);buddy.position=game.player.position+Vector3(1.5,0,0)
+	game.coop.active=true;game.coop.avatars[79]=buddy;game.coop.members[79]={"hp":50.0,"position":CoopSession.array(buddy.position),"under":false}
+	Input.action_press("carry");CarryRescue.tick(game,1.0/60.0);Input.action_release("carry");CarryRescue.tick(game,1.0/60.0)
+	var roped_friend=CarryRescue.carrying==79
+	CarryRescue.reset();game.knock_velocity=Vector3.ZERO
+	game.coop.members[79]={"hp":50.0,"carry":game.coop.local_id,"under":false,"position":CoopSession.array(game.player.position+Vector3(6,0,0))}
+	CarryRescue.tick(game,1.0/60.0)
+	checks.rope_friend=roped_friend and game.knock_velocity.x>1.0
+	game.knock_velocity=Vector3.ZERO;game.coop.avatars.erase(79);game.coop.members.erase(79);buddy.queue_free();game.coop.active=false
 	# A friend who picks another hero for the next run is seen as the new hero.
 	var models=game.rules.data.heroes.map(func(h):return str(h.model))
 	game.coop.ensure_avatar(80,{"model":models[0],"position":CoopSession.array(game.player.position+Vector3(4,0,0)),"hp":50.0})
@@ -263,6 +285,21 @@ static func run(game: Node3D) -> Dictionary:
 	ClutchPlay.sneaking=false
 	var seen=game.coop.target(stalker.node.position)
 	checks.clutch_sneak=checks.clutch_sneak and not seen.get("lost",false)
+	# The rope (November 2): C ropes the monster in front, which is stunned and
+	# pulled after the hero; C again throws it, and it lands with a blast.
+	game.coop.active=false;game.update.downed=false;game.mode="playing";CarryRescue.reset()
+	game.clear_entities();game.spawn_enemy(8)
+	var roped=game.enemies[-1];game.plain_enemy(roped);roped.hp=1e6;roped.maxHp=1e6
+	var ahead=Lasso.forward(game);roped.node.position=game.player.position+ahead*4.0
+	Input.action_press("carry");CarryRescue.tick(game,1.0/60.0);Input.action_release("carry");CarryRescue.tick(game,1.0/60.0)
+	var caught=Lasso.mine==int(roped.net_id) and Lasso.held.has(0)
+	game.player.position-=ahead*5.0;CarryRescue.tick(game,1.0/60.0)
+	var pulled=float(roped.freeze)>0 and Vector3(roped.get("pull",Vector3.ZERO)).dot(-ahead)>0
+	Input.action_press("carry");CarryRescue.tick(game,1.0/60.0);Input.action_release("carry")
+	var thrown=Lasso.mine==-1 and Lasso.cooldown>0 and Lasso.flights.size()==1 and roped.get("thrown",false)
+	for i in range(int(Lasso.FLY*60)+5): CarryRescue.tick(game,1.0/60.0)
+	checks.lasso=caught and pulled and thrown and Lasso.flights.is_empty() and is_equal_approx(roped.hp,1e6) and not roped.get("thrown",false)
+	game.player.position+=ahead*5.0;CarryRescue.reset();game.clear_entities()
 	# Downed Clutch (November 2): his first-person gun leaves the screen, his body
 	# shows again, the hidden HUD plates come back and the Block Drop room stays.
 	game.mode="playing";game.update.downed=false;ClutchPlay.late(game,1.0/60.0);game.hud.update(0)
