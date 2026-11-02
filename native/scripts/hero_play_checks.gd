@@ -120,6 +120,15 @@ static func run(game: Node3D) -> Dictionary:
 	Spectate.last_cheer=-99.0;var cheered=Spectate.cheer(game,0) and int(Spectate.last_heard.get("index",-1))==0 and not Spectate.cheer(game,1)
 	checks.downed_spectate=watching and cheered and ResourceLoader.exists("res://assets/voices/cheers/cheer_horn.wav")
 	game.update.downed=false;game.coop.avatars.erase(77);game.coop.members.erase(77);game.coop.active=false;friend.queue_free();Spectate.tick(game,1.0/60.0)
+	# Dyleris reveals three dropai under the island; each changes the run when taken.
+	use(game,"duck")
+	var first=Dropai.reveal(game);var again=Dropai.reveal(game)
+	var under=Dropai.hidden.all(func(h):return h.position.y<game.world.height_at(h.position.x,h.position.z)-5.0 and is_instance_valid(h.node))
+	var before_stats=game.stats.duplicate(true)
+	for item in Dropai.hidden.duplicate(): Dropai.take(game,item)
+	var changed=Dropai.found.size()==3 and Dropai.markers().is_empty() and (Dropai.found.has("rain") or game.stats!=before_stats)
+	checks.dropai=first and not again and Dropai.hidden.size()==3 and under and changed
+	Dropai.reset()
 	game.clear_entities()
 	game.select_hero(saved_hero)
 	return checks

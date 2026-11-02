@@ -50,6 +50,11 @@ func _draw():
 			"hunt_target": draw_circle(p,4,Color("e17afa"));draw_circle(p,2,Color("fff2ff"))
 			"hunt":
 				draw_circle(p,6,Color("46235c"));draw_line(p-Vector2(3,3),p+Vector2(3,3),Color("efb5ff"),2);draw_line(p+Vector2(-3,3),p+Vector2(3,-3),Color("efb5ff"),2)
+			"dropai":
+				# A dropai under the island: a violet star with a downward notch.
+				var star=PackedVector2Array()
+				for k in range(10): star.append(p+Vector2.UP.rotated(k*PI/5.0)*(7.0 if k%2==0 else 3.0))
+				draw_colored_polygon(star,Color("c69bff"));draw_line(p+Vector2(0,3),p+Vector2(0,8),Color("fff2ff"),2)
 			"merchant":
 				draw_circle(p,6,Color("654a30"));draw_circle(p,4,Color("ffd767"))
 				draw_line(p+Vector2(-2,-2),p+Vector2(2,2),Color("654a30"),2)

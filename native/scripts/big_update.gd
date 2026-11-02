@@ -142,7 +142,7 @@ func hint() -> String:
 		var seconds=float(rescue_progress.get(game.coop.local_id,rescue_progress.get(str(game.coop.local_id),0)))
 		return "DOWNED · CODE %d / %d · SPACE: WATCH NEXT · 1–0: CHEER" % [roundi(seconds/3.0*RescueCode.LENGTH),RescueCode.LENGTH]
 	if rescue_target(game.player.position,game.coop.local_id)>0: return "HOLD E / X + MOVE KEYS · ENTER THE RESCUE CODE"
-	if is_instance_valid(merchant) and game.player.position.distance_to(merchant.position)<3.5: return "E / X · WANDERING MERCHANT"
+	if is_instance_valid(merchant) and game.player.position.distance_to(merchant.position)<3.5: return "E / X · DYLERIS"
 	if is_instance_valid(beacon) and game.player.position.distance_to(beacon_position)<4 and beacon_state=="idle": return "E / X · ACTIVATE SUPPLY · DEFEND 25 s"
 	if beacon_state=="defending": return "SUPPLY · %d s · STAY WITHIN 14 m" % ceili(25-beacon_seconds)
 	if is_instance_valid(magnet_node) and game.player.position.distance_to(magnet_position)<5:
@@ -191,7 +191,10 @@ func magnet_tick(delta: float):
 func merchant_menu():
 	quip("discovery")
 	game.mode="merchant"
-	var box=game.hud.open("WANDERING MERCHANT","One positive purchase per offer · coins stay yours")
+	# The shop is Dyleris now (user, November 2): talking to him also reveals
+	# where three dropai lie hidden under this island.
+	var first_talk=Dropai.reveal(game)
+	var box=game.hud.open("DYLERIS","Three dropai lie under this island, free for whoever goes down for them · marked on your map" if first_talk or not Dropai.hidden.is_empty() else "One positive purchase per offer · coins stay yours")
 	for i in range(stock.size()):
 		var item=merchant_item(i,game.equipped)
 		var text=item.name+" · "+(WeaponDetails.describe(item.id) if item.kind=="weapon" else game.rules.describe(item.effects[0]))
@@ -203,7 +206,7 @@ func merchant_menu():
 	for control in box.get_children():
 		if control is Button and not control.disabled: control.grab_focus();break
 
-func merchant_price(i: int) -> int: return 35+game.realm*15+i*10
+func merchant_price(i: int) -> int: return roundi((35+game.realm*15+i*10)*(1.0-minf(.6,float(game.stats.get("discount",0.0)))))
 
 func merchant_item(i: int,weapons: Array) -> Dictionary:
 	var item=stock[i].duplicate(true)

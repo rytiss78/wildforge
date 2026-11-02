@@ -658,6 +658,7 @@ func update(delta: float):
 	var hunt_shrine=game.Hunt.shrine(game)
 	if hunt_shrine and game.Hunt.state(game) in ["idle","active"]: map_view.interactables.append({"position":hunt_shrine.position,"kind":"hunt"})
 	if is_instance_valid(game.update.merchant): map_view.interactables.append({"position":game.update.merchant.position,"kind":"merchant"})
+	for spot in Dropai.markers(): map_view.interactables.append({"position":spot,"kind":"dropai"})
 	if is_instance_valid(game.update.beacon) and game.update.beacon_state in ["idle","defending"]: map_view.interactables.append({"position":game.update.beacon_position,"kind":"supply"})
 	if is_instance_valid(game.update.magnet_node) and not game.update.magnet_active: map_view.interactables.append({"position":game.update.magnet_node.position,"kind":"magnet"})
 	if game.Hunt.state(game)=="active":

@@ -201,7 +201,7 @@ static func tick(g,delta: float):
 					for enemy in near(g,zone):
 						if not enemy.boss: enemy.node.move_and_collide(zone.dir*7.0*delta)
 			"lava":
-				if inside(zone,hero) and g.player.is_on_floor() and not HeroRules.hovers(g.hero):
+				if inside(zone,hero) and g.player.is_on_floor() and not HeroRules.hovers(g.hero) and not Dropai.owns("rain"):
 					if not g.buffs.has("fire"): g.player_fire=maxf(g.player_fire,Lava.HERO_BURN)
 					zone.burn=float(zone.get("burn",0))+delta
 					if zone.burn>=1.0: zone.burn-=1.0;g.take_damage(maxf(5.0,g.stats.maxHp*.05),hero,"fire")

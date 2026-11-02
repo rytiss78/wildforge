@@ -527,7 +527,7 @@ func start_run(shared_seed: int=-1):
 	first.strength = 1.0
 	first.tier = 0
 	equip_weapon(first)
-	HeroPlay.start(self);WrenchTune.reset()
+	HeroPlay.start(self);WrenchTune.reset();Dropai.reset()
 	career.bump("runs")
 	career.bump("play_"+hero.id)
 	sound.start(seed_value)
@@ -580,7 +580,7 @@ func enter_realm(index: int,broadcast_transition: bool=true):
 		ExplosiveBarrels.setup(self)
 	make_gate()
 	update.realm_started()
-	HeroPlay.realm_started(self)
+	HeroPlay.realm_started(self);Dropai.clear_island()
 	if realm<3: Hunt.setup(self)
 	for weapon in equipped:
 		weapon.clock = 0
@@ -2494,7 +2494,7 @@ func _physics_process(delta: float):
 	if not update.downed: MutationBook.tick(self,delta)
 	HeroTricks.tick(self,delta)
 	HeroPlay.tick(self,delta)
-	WrenchTune.tick(self,delta)
+	WrenchTune.tick(self,delta);Dropai.tick(self,delta)
 	update.contact_shadows()
 	Spectate.tick(self,delta)
 	if update.downed:
@@ -3562,7 +3562,7 @@ func update_exploration(delta: float):
 	# Lava (rivers and vent pools) also sets the hero on fire for a moment
 	# (user request, November 1), and monsters too; see Lava.
 	Lava.tick(self,delta)
-	if player.is_on_floor() and world.lava_at(player.position) and not HeroRules.hovers(hero):
+	if player.is_on_floor() and world.lava_at(player.position) and not HeroRules.hovers(hero) and not Dropai.owns("rain"):
 		if not buffs.has("fire"): player_fire=maxf(player_fire,Lava.HERO_BURN)
 		lava_clock+=delta
 		if lava_clock>=1.0:

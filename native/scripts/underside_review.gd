@@ -63,6 +63,14 @@ static func run(g):
 	for i in range(10): await g.get_tree().physics_frame
 	checks.under_hop=g.underside.hop>.4
 	checks.under_turret_shot=await shot(g,"under-turret")
+	# A dropai hanging from the rock near the hero (Dyleris, November 2).
+	Dropai.reveal(g)
+	if not Dropai.hidden.is_empty():
+		var near=g.player.position+g.avatar.global_basis.z*-4.0;near.y=g.world.under_height(near.x,near.z)
+		var gift=Dropai.hidden[0];gift.node.position=near;gift.position=near+Vector3(500,0,0)
+		for i in range(10): await g.get_tree().process_frame
+		checks.dropai_shot=await shot(g,"dropai")
+	Dropai.clear_island()
 	for i in range(60):
 		await g.get_tree().physics_frame
 		if g.underside.grounded(): break
