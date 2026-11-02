@@ -13,16 +13,26 @@ class_name Pet
 # In co-op every player sees the others' pets follow them (pose "pet"), but only
 # your own pet works for you.
 
-const KINDS=["blip","fuzzbat","zorbo"]
+const KINDS=["blip","fuzzbat","zorbo","ward","mote","rime"]
+# Three more (user, November 2): Ward shields you, Mote pulls XP orbs in, Rime
+# chills enemies near you.
 # Wisp names (October 31): Glint grabs shiny things, Sting bites, Halo heals.
 # The ids stay blip/fuzzbat/zorbo so saved choices and treats carry over.
-const NAMES={"blip":"Glint","fuzzbat":"Sting","zorbo":"Halo"}
-const ROLES={"blip":"FETCHER","fuzzbat":"BITER","zorbo":"MEDIC"}
+const NAMES={"blip":"Glint","fuzzbat":"Sting","zorbo":"Halo","ward":"Ward","mote":"Mote","rime":"Rime"}
+const ROLES={"blip":"FETCHER","fuzzbat":"BITER","zorbo":"MEDIC","ward":"GUARD","mote":"MAGNET","rime":"FROST"}
 const JOBS={
 	"blip":"Fetches coins and Pet Treats lying beyond your pickup reach.",
 	"fuzzbat":"Darts at the nearest enemy and stings it, over and over.",
 	"zorbo":"Pulses a healing ring when you are hurt.",
+	"ward":"Wraps you in a bubble of shield every few seconds.",
+	"mote":"Pulls XP orbs to you from far away.",
+	"rime":"Chills enemies close to you, slowing them.",
 }
+const WARD_SHIELD=[6.0,10.0,16.0]
+const WARD_EVERY=[8.0,7.0,6.0]
+const PULL_REACH=[9.0,12.0,16.0]
+const RIME_REACH=[4.0,5.0,6.5]
+const RIME_SLOW=[.25,.35,.45]
 const TREATS_AT=[0,4,12]  # Pet Treats eaten to reach each stage
 
 # What the pet does at a stage, in numbers (hero screen).
@@ -31,6 +41,9 @@ static func benefit(pet_kind: String,pet_stage: int) -> String:
 		"blip": return "Fetches coins up to %d m away" % roundi(REACH[pet_stage])
 		"fuzzbat": return "Stings for %d damage every %.1f s" % [roundi(BITE[pet_stage]),BITE_EVERY[pet_stage]]
 		"zorbo": return "Heals %d%% ♥ every %d s while you are hurt" % [roundi(HEAL[pet_stage]*100),roundi(HEAL_EVERY[pet_stage])]
+		"ward": return "+%d shield every %d s" % [roundi(WARD_SHIELD[pet_stage]),roundi(WARD_EVERY[pet_stage])]
+		"mote": return "Pulls XP orbs to you from %d m" % roundi(PULL_REACH[pet_stage])
+		"rime": return "Slows enemies within %d m by %d%%" % [roundi(RIME_REACH[pet_stage]),roundi(RIME_SLOW[pet_stage]*100)]
 	return JOBS.get(pet_kind,"")
 const SPEED=[8.0,10.5,13.0]
 const REACH=[12.0,15.0,19.0]
@@ -85,7 +98,7 @@ func rebuild():
 # its own colour and a small mark: Glint one big eye, Sting two flickering flame
 # wings, Halo an orbiting ring. Growing a stage adds orbiting motes (two, then
 # four) and a brighter, larger glow.
-const COLORS={"blip":Color("b6ff5a"),"fuzzbat":Color("ff7ac8"),"zorbo":Color("6fd2ff")}
+const COLORS={"blip":Color("b6ff5a"),"fuzzbat":Color("ff7ac8"),"zorbo":Color("6fd2ff"),"ward":Color("ffd23f"),"mote":Color("c69bff"),"rime":Color("dff8ff")}
 static var halo_texture: Texture2D
 
 static func glow_paint(color: Color,alpha: float,additive: bool=true) -> StandardMaterial3D:
@@ -125,6 +138,23 @@ static func build(pet_kind: String,pet_stage: int) -> Node3D:
 			for side in [-1.0,1.0]:
 				var eye=ball(.02,eye_paint);eye.position=Vector3(side*.03,.02,-.07);root.add_child(eye)
 				var wing=halo(color.lerp(Color("ffd0f0"),.3),.28,.8);wing.name="Wing";wing.position=Vector3(side*.15,.04,.02);wing.scale=Vector3(1,.55,1);root.add_child(wing)
+		"ward":
+			for side in [-1.0,1.0]:
+				var eye=ball(.02,eye_paint);eye.position=Vector3(side*.03,.02,-.07);root.add_child(eye)
+			var plate=MeshInstance3D.new();plate.name="Shield";var diamond=BoxMesh.new();diamond.size=Vector3(.2,.2,.02);plate.mesh=diamond
+			plate.material_override=glow_paint(color.lerp(Color.WHITE,.3),.7);plate.rotation.z=PI*.25;plate.position=Vector3(0,0,-.16);root.add_child(plate)
+		"mote":
+			var eye=ball(.03,eye_paint);eye.position=Vector3(0,.015,-.07);root.add_child(eye)
+			var swirl=Node3D.new();swirl.name="Ring";root.add_child(swirl)
+			for k in range(6):
+				var spark=halo(color.lerp(Color.WHITE,.3),.1,.9);var a=k*1.05;spark.position=Vector3(cos(a)*(.1+k*.03),0,sin(a)*(.1+k*.03));swirl.add_child(spark)
+		"rime":
+			for side in [-1.0,1.0]:
+				var eye=ball(.02,eye_paint);eye.position=Vector3(side*.03,.02,-.07);root.add_child(eye)
+			var flake=Node3D.new();flake.name="Ring";root.add_child(flake)
+			for k in range(3):
+				var spoke=MeshInstance3D.new();var rod=BoxMesh.new();rod.size=Vector3(.42,.018,.018);spoke.mesh=rod
+				spoke.material_override=glow_paint(Color(.85,.97,1.0),.9);spoke.rotation.y=k*PI/3.0;flake.add_child(spoke)
 		_:
 			for side in [-1.0,1.0]:
 				var eye=ball(.02,eye_paint);eye.position=Vector3(side*.03,.02,-.07);root.add_child(eye)
@@ -220,6 +250,23 @@ func duty():
 			game.heal(game.stats.maxHp*HEAL[stage])
 			CombatInk.wave(game,leader.position+Vector3.UP*.1,2.4,Color("7dffb0"))
 			game.burst(position,Color("7dffb0"),8)
+		"ward":
+			if work>0 or game.mode!="playing" or game.hp<=0: return
+			work=WARD_EVERY[stage]
+			var bonus=WARD_SHIELD[stage]
+			game.shield_hp=minf(game.shield_hp+bonus,maxf(float(game.stats.shield),bonus*2.0))
+			game.burst(leader.position+Vector3.UP*1.0,Color("ffe27a"),8)
+		"mote":
+			var reach=PULL_REACH[stage]
+			for pickup in game.pickups:
+				if pickup.kind=="xp" and pickup.age>=0 and pickup.get("settled",false) and not pickup.get("attracted",false) and pickup.node.position.distance_to(leader.position)<reach:
+					pickup.attracted=true;fetched+=1
+		"rime":
+			var reach=RIME_REACH[stage]
+			for enemy in game.enemies:
+				if enemy.dead or enemy.node.position.distance_to(leader.position)>reach: continue
+				enemy.slow=maxf(float(enemy.slow),RIME_SLOW[stage]*(.5 if enemy.boss else 1.0));enemy.status_time=maxf(float(enemy.status_time),.6)
+			if work<=0: work=1.2;CombatInk.wave(game,leader.position+Vector3.UP*.1,reach,Color("bfeaff"))
 
 func bite():
 	var damage=BITE[stage]*(1.0+float(game.realm)*.6)

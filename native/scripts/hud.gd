@@ -920,7 +920,7 @@ func fill_pet_panel():
 	for child in pet_inset.get_children(): pet_inset.remove_child(child);child.queue_free()
 	var column=VBoxContainer.new();column.add_theme_constant_override("separation",6);pet_inset.add_child(column)
 	column.add_child(label("PET",13,ThemeTokens.STAR_GOLD))
-	column.add_child(pet_picker(54.0,fill_pet_panel))
+	column.add_child(pet_picker(50.0,fill_pet_panel))
 	column.add_child(pet_summary())
 
 # The chosen pet's level and what it does, in numbers.
@@ -952,7 +952,7 @@ func coop_menu():
 		if hero.id==game.hero.id: selected=pick
 	# Pet choice in co-op too (user, November 1: "where is pet choosing in coop menu?").
 	heroes.add_child(label("YOUR PET",14))
-	heroes.add_child(pet_picker(72.0,coop_menu,game.run_active))
+	heroes.add_child(pet_picker(60.0,coop_menu,game.run_active))
 	heroes.add_child(pet_summary())
 	var connection=VBoxContainer.new();connection.size_flags_horizontal=Control.SIZE_EXPAND_FILL;connection.add_theme_constant_override("separation",10);columns.add_child(connection)
 	connection.add_child(label(game.hero.name+" · "+game.hero.perk,24))
@@ -990,8 +990,10 @@ func coop_menu():
 # The pet wisps as buttons (November 1, user: "make pets visible in selection, not
 # names"). Each shows the wisp as it looks now (its motes are its stage); the
 # chosen one is ringed in gold. Used on the hero screen and in the co-op menu.
-func pet_picker(icon_size: float,rebuild: Callable,locked: bool=false) -> HBoxContainer:
-	var row=HBoxContainer.new();row.name="PetPicker";row.add_theme_constant_override("separation",10)
+func pet_picker(icon_size: float,rebuild: Callable,locked: bool=false) -> GridContainer:
+	# Six wisps: one row on the hero screen, two rows of three in the co-op menu.
+	var row=GridContainer.new();row.name="PetPicker";row.columns=6 if icon_size<=52.0 else 3
+	row.add_theme_constant_override("h_separation",6);row.add_theme_constant_override("v_separation",6)
 	var current=Pet.chosen(game.career.data.settings)
 	for kind in Pet.KINDS:
 		var pick=Button.new();pick.name="Pet_"+kind;pick.custom_minimum_size=Vector2(icon_size,icon_size)

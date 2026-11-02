@@ -86,6 +86,17 @@ static func run(game: Node3D) -> Dictionary:
 	for bloom in game.flowers: bloom.node.queue_free()
 	game.flowers.clear();HeroPlay.root_clock=0.0;HeroPlay.update_roots(game,0.0,false)
 	checks.roots_follow_flowers=HeroPlay.roots.is_empty()
+	# Three more pets (November 2): Ward shields, Mote pulls XP in, Rime slows.
+	game.clear_entities();game.mode="playing";game.hp=game.stats.maxHp
+	var pet=game.pet
+	pet.kind="ward";pet.stage=0;pet.rebuild();pet.work=0.0;pet.state="follow";game.shield_hp=0.0
+	pet.duty();checks.pet_ward=Pet.KINDS.size()==6 and game.shield_hp>=Pet.WARD_SHIELD[0]-.01
+	pet.kind="mote";pet.rebuild()
+	game.spawn_pickup(game.player.position+Vector3(7,.3,0),"xp",3);var orb=game.pickups[-1];orb.settled=true;orb.attracted=false
+	pet.duty();checks.pet_mote=orb.attracted
+	pet.kind="rime";pet.rebuild();pet.work=0.0
+	game.spawn_enemy(6);var chilly=game.enemies[-1];chilly.boss=false;chilly.node.position=game.player.position+Vector3(2,0,0);chilly.slow=0.0
+	pet.duty();checks.pet_rime=chilly.slow>=Pet.RIME_SLOW[0]-.01
 	game.clear_entities()
 	game.select_hero(saved_hero)
 	return checks

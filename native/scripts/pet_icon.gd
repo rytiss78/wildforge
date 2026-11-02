@@ -43,6 +43,22 @@ func _draw():
 					wing.append(center+Vector2(side*r*.38+cos(a)*r*.2,sin(a)*r*.2*flap-r*.05))
 				draw_colored_polygon(wing,Color(color.lerp(Color("ffd0f0"),.3),.75))
 				draw_circle(center+Vector2(side*r*.06,-r*.02),r*.035,ink)
+		"ward":
+			for side in [-1.0,1.0]: draw_circle(center+Vector2(side*r*.06,-r*.02),r*.035,ink)
+			var plate=PackedVector2Array([center+Vector2(0,-r*.42),center+Vector2(r*.3,-r*.12),center+Vector2(0,r*.4),center+Vector2(-r*.3,-r*.12)])
+			draw_polyline(plate+PackedVector2Array([plate[0]]),color.lerp(Color.WHITE,.4),maxf(2.0,r*.06),true)
+		"mote":
+			draw_circle(center+Vector2(0,-r*.02),r*.07,ink)
+			var swirl=PackedVector2Array()
+			for k in range(40):
+				var a=clock*2.0+float(k)/40.0*TAU*1.6;var d=r*(.14+.34*float(k)/40.0)
+				swirl.append(center+Vector2(cos(a)*d,sin(a)*d*.6))
+			draw_polyline(swirl,color.lerp(Color.WHITE,.4),maxf(1.5,r*.04),true)
+		"rime":
+			for side in [-1.0,1.0]: draw_circle(center+Vector2(side*r*.06,-r*.02),r*.035,ink)
+			for k in range(3):
+				var a=clock*.6+k*PI/3.0;var arm=Vector2(cos(a),sin(a))*r*.48
+				draw_line(center-arm,center+arm,Color(.9,.98,1.0,.9),maxf(1.5,r*.04),true)
 		_:
 			for side in [-1.0,1.0]: draw_circle(center+Vector2(side*r*.06,-r*.02),r*.035,ink)
 			var ring=PackedVector2Array();var tilt=.32+sin(clock*1.5)*.06

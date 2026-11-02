@@ -31,8 +31,8 @@ static func run(g):
 	for i in range(30): await g.get_tree().process_frame
 	checks.top=await shot(g,"top")
 	# The three pet wisps at the hero's shoulder, at stages 1, 2 and 3, close up.
-	for i in range(3):
-		var kind=Pet.KINDS[i];g.pet.kind=kind;g.pet.stage=i;g.pet.rebuild();g.pet.position=g.pet.home()
+	for i in range(Pet.KINDS.size()):
+		var kind=Pet.KINDS[i];g.pet.kind=kind;g.pet.stage=i%3;g.pet.rebuild();g.pet.position=g.pet.home()
 		g.camera_locked=true
 		var hero=g.player.position;var side=g.avatar.global_basis.x.normalized()
 		var behind=g.avatar.global_basis.z.normalized()
