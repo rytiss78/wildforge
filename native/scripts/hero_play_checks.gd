@@ -151,7 +151,8 @@ static func run(game: Node3D) -> Dictionary:
 	checks.clutch_aims=fps_ok and not idle and shot and body_hit>0 and head_hit>body_hit*1.5 and missed
 	# V: the aimbot swings the view onto the head, fires by itself at 5x, then
 	# moves to the next enemy when the first dies.
-	var second_spot=game.player.position+Vector3(-7,0,-3)
+	# The nearer enemy is behind him, out of view: the aimbot still takes it first.
+	var second_spot=game.player.position+Vector3(0,0,5)
 	game.spawn_enemy(6);var second=game.enemies[-1];second.node.position=second_spot;second.flying=false;second.hp=99999.0;second.maxHp=99999.0
 	target.hp=99999.0
 	game.trick_cooldown=0.0;var tricked=HeroTricks.use(game)
@@ -159,7 +160,7 @@ static func run(game: Node3D) -> Dictionary:
 	for i in range(40):
 		ClutchPlay.aimbot(game,1.0/60.0);ClutchPlay.place_camera(game,1.0/60.0)
 		if ClutchPlay.trigger(game,gun): fired+=1
-	var first_lock=ClutchPlay.lock_target==target or ClutchPlay.lock_target==second
+	var first_lock=ClutchPlay.lock_target==second
 	var first_one=ClutchPlay.lock_target
 	var dealt=(lock_hp-float(target.hp)) if first_one==target else (99999.0-float(second.hp))
 	first_one.hp=0.0;first_one.dead=true

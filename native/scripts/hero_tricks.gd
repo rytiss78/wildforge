@@ -67,7 +67,7 @@ static func describe(t: Dictionary) -> String:
 		"blink": text="Vanish and reappear %d m ahead" % roundi(float(t.distance))
 		"dig": text="Dig through the island to its other side; burst out for %d damage" % dmg
 		"garden": text="Plant %d grown flowers in a ring round you" % int(t.count)
-		"aimlock": text="%.0f s aimbot: aims at heads and fires by itself, %d× damage" % [float(t.time),roundi(ClutchPlay.LOCK_DAMAGE)]
+		"aimlock": text="%.0f s aimbot: locks on the nearest enemy's head and fires by itself, %d× damage" % [float(t.time),roundi(ClutchPlay.LOCK_DAMAGE)]
 		_: text=str(t.get("name",""))
 	return text+" · %d s" % roundi(float(t.cooldown))
 

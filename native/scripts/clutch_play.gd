@@ -6,9 +6,9 @@ class_name ClutchPlay
 # hold the left mouse button to fire the active weapon where the crosshair points
 # (hitscan; turrets still aim themselves). Number keys 1-3 pick the active weapon.
 # Hits high on a body are headshots (double damage, a chime). V (Lock-On) is a
-# full aimbot for a few seconds: the view swings onto the nearest visible head,
-# fires by itself at five times the damage and moves on to the next enemy when
-# one dies. Shift (instead of the dash) is a slow, quiet walk: enemies lose sight
+# full aimbot for a few seconds: the view swings onto the head of the enemy
+# nearest the hero (in view or not, through walls), fires by itself at five times
+# the damage and moves on to the next enemy when one dies. Shift (instead of the dash) is a slow, quiet walk: enemies lose sight
 # of him, stop where they are and do not attack (CoopSession.target "lost").
 # No slam. His shots also hurt other heroes.
 
@@ -149,27 +149,25 @@ static func locked(g) -> bool: return is_clutch(g) and g.elapsed<lock_until
 static func aimbot(g,delta: float):
 	if not locked(g): lock_target={};return
 	var eye=g.camera.global_position
-	if lock_target.is_empty() or lock_target.dead or not sees(g,eye,head_point(g,lock_target)) or eye.distance_to(head_point(g,lock_target))>LOCK_REACH:
-		lock_target=pick(g,eye)
+	var nearest=pick(g)
+	# Keep the current target until it dies or leaves reach, unless another
+	# enemy comes clearly nearer to the hero.
+	if lock_target.is_empty() or lock_target.dead or g.player.position.distance_to(lock_target.node.position)>LOCK_REACH: lock_target=nearest
+	elif not nearest.is_empty() and nearest!=lock_target and g.player.position.distance_to(nearest.node.position)<g.player.position.distance_to(lock_target.node.position)*.7: lock_target=nearest
 	if lock_target.is_empty(): return
 	var to=(head_point(g,lock_target)-eye).normalized()
 	var want_yaw=atan2(-to.x,-to.z);var want_pitch=-asin(clampf(to.y,-1,1))
 	var t=1.0-exp(-delta*LOCK_TURN)
 	g.yaw=lerp_angle(g.yaw,want_yaw,t);g.pitch=clampf(lerpf(g.pitch,want_pitch,t),-1.45,1.45)
 
-static func pick(g,eye: Vector3) -> Dictionary:
-	var aim=-g.camera.global_basis.z;var best={};var best_dot=-2.0
+# The living enemy nearest the hero, wherever it is.
+static func pick(g) -> Dictionary:
+	var best={};var best_d=LOCK_REACH
 	for enemy in g.enemies:
 		if enemy.dead: continue
-		var head=head_point(g,enemy);var to=head-eye
-		if to.length()>LOCK_REACH or not sees(g,eye,head): continue
-		var d=to.normalized().dot(aim)
-		if d>best_dot: best_dot=d;best=enemy
+		var d=g.player.position.distance_to(enemy.node.position)
+		if d<best_d: best_d=d;best=enemy
 	return best
-
-static func sees(g,eye: Vector3,point: Vector3) -> bool:
-	var ray=PhysicsRayQueryParameters3D.create(eye,point,1,[g.player.get_rid()])
-	return g.get_world_3d().direct_space_state.intersect_ray(ray).is_empty()
 
 # Is the crosshair on the locked head (close enough to pull the trigger)?
 static func on_target(g) -> bool:
@@ -193,6 +191,7 @@ static func shoot(g,weapon: Dictionary):
 	var kind=ContentExpansion.kind(weapon.id);var mods=weapon.get("modifiers",{})
 	var origin=g.camera.global_position;var aim=-g.camera.global_basis.z
 	var reach=maxf(30.0,float(weapon.range)*g.stat("range")*1.6)
+	if locked(g): reach=maxf(reach,LOCK_REACH+5.0)
 	var locked=locked(g)
 	if locked and not lock_target.is_empty() and not lock_target.dead: aim=(head_point(g,lock_target)-origin).normalized()
 	var pellets=(3 if kind=="shotgun" else 1)+int(mods.get("extraShots",0))+mini(4,int(g.stats.multishot))
@@ -204,7 +203,7 @@ static func shoot(g,weapon: Dictionary):
 	g.hit_shake=maxf(g.hit_shake,.03);kick=1.0
 	for i in range(pellets):
 		var dir=aim.rotated(Vector3.UP,(i-(pellets-1)*.5)*float(mods.get("spread",.05)))
-		var hit=cast(g,origin,dir,reach)
+		var hit=cast(g,origin,dir,reach,locked)
 		var end: Vector3=hit.get("point",origin+dir*reach)
 		g.beam(muzzle,end,PowerIcon.color_for(kind))
 		if hit.has("enemy"):
@@ -222,11 +221,12 @@ static func head_point(g,enemy: Dictionary) -> Vector3:
 	return enemy.node.position+Vector3.UP*float(enemy.get("height",1.7))*.88
 
 # The first enemy, hero or wall along the ray.
-static func cast(g,origin: Vector3,dir: Vector3,reach: float) -> Dictionary:
+static func cast(g,origin: Vector3,dir: Vector3,reach: float,through_walls: bool=false) -> Dictionary:
 	var result={};var nearest=reach
-	var ray=PhysicsRayQueryParameters3D.create(origin,origin+dir*reach,1,[g.player.get_rid()])
-	var wall=g.get_world_3d().direct_space_state.intersect_ray(ray)
-	if not wall.is_empty(): nearest=origin.distance_to(wall.position);result={"point":wall.position}
+	if not through_walls:
+		var ray=PhysicsRayQueryParameters3D.create(origin,origin+dir*reach,1,[g.player.get_rid()])
+		var wall=g.get_world_3d().direct_space_state.intersect_ray(ray)
+		if not wall.is_empty(): nearest=origin.distance_to(wall.position);result={"point":wall.position}
 	for enemy in g.enemies:
 		if enemy.dead: continue
 		var base: Vector3=enemy.node.position;var height=float(enemy.get("height",1.7));var radius=float(enemy.get("radius",.5))*1.15
