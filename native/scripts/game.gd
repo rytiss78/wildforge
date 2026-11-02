@@ -3103,7 +3103,7 @@ func run_smoke():
 	checks.achievement_art=rules.data.achievements.all(func(a):return ResourceLoader.exists("res://assets/illustrated/achievements/"+a.id+".svg"))
 	clear_entities()
 	mode="playing";spawn_enemy(12)
-	var stomp_target=enemies[0];stomp_target.node.position=Vector3.ZERO;stomp_target.hp=10000
+	var stomp_target=enemies[0];plain_enemy(stomp_target);stomp_target.node.position=Vector3.ZERO;stomp_target.hp=10000
 	slam_cooldown=0;slamming=false
 	player.position=Vector3(0,stomp_target.height-.05,0);check_stomp(Vector3(0,stomp_target.height+.7,0),-8)
 	checks.head_stomp=not stomp_target.dead and is_equal_approx(10000-stomp_target.hp,stat("damage")*2*stat("slamPower")) and player.velocity.y>0 and slam_cooldown>0
