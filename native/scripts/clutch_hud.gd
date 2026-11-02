@@ -3,8 +3,8 @@ class_name ClutchHud
 
 # Clutch's own screen (first person): a gapped crosshair with hit markers,
 # health and armour in big digits bottom left, the weapon slots with their
-# number keys bottom right, a kill row of skulls for the current streak, and the
-# Lock-On / Sneak readouts. Our own tactical-shooter style; drawn, no assets.
+# number keys bottom right, and the Lock-On / Sneak readouts. Kills count on the
+# game's usual combo meter (right edge). Our own tactical-shooter style; drawn, no assets.
 
 var game: Node3D
 const GREEN=Color("6dff7a")
@@ -50,11 +50,6 @@ func _draw():
 		var text="%s   %d" % [str(hands[i].name).to_upper(),i+1]
 		draw_rect(Rect2(Vector2(right-330,y-30),Vector2(330,36)),Color(0,0,0,.55) if on else BACK)
 		draw_string(font,Vector2(right-322,y),text,HORIZONTAL_ALIGNMENT_RIGHT,310,24 if on else 20,WHITE if on else DIM)
-	# Kill streak: one skull per kill in the last five seconds.
-	var kills=mini(ClutchPlay.kill_times.size(),10)
-	if kills>0:
-		var top=Vector2(view.x*.5-kills*16,96)
-		for i in range(kills): draw_string(font,top+Vector2(i*32,0),"☠",HORIZONTAL_ALIGNMENT_LEFT,-1,28,Color(1,.85,.3) if i==kills-1 else WHITE)
 	# Lock-On (V) and Sneak (Shift).
 	var device="controller" if game.input_kind=="xbox" else "keyboard"
 	var lock="[%s] LOCK-ON  %s" % [ControlBindings.display(game.career.data.settings,"trick",device),"READY" if game.trick_cooldown<=0 else "%.0fs" % game.trick_cooldown]

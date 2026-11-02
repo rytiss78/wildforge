@@ -755,6 +755,7 @@ func update(delta: float):
 	# Prickle Rick carries no weapons: no slots, no turret readout.
 	if not HeroRules.armed(game.hero): weapons.visible=false;turret_hints.visible=false
 	if not HeroRules.can_slam(game.hero): slam_status.visible=false
+	if not HeroRules.can_dash(game.hero): dash_status.visible=false
 	# Clutch has his own vitals and weapon readout: hide the usual plates.
 	if ClutchPlay.first_person(game):
 		for widget in root.get_children():

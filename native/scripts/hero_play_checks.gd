@@ -154,7 +154,15 @@ static func run(game: Node3D) -> Dictionary:
 	use(game,"clutch")
 	game.yaw=0.0;game.pitch=0.0;ClutchPlay.place_camera(game,1.0/60.0)
 	var fps_ok=ClutchPlay.first_person(game) and is_equal_approx(game.camera.fov,ClutchPlay.FOV) and game.camera.global_position.distance_to(game.player.position+Vector3.UP*ClutchPlay.EYE)<.05
-	game.spawn_enemy(6);var target=game.enemies[-1];target.node.position=game.player.position+Vector3(0,0,-8);target.flying=false;target.hp=99999.0;target.maxHp=99999.0
+	# A creature with a small orb (on some designs the orb is the whole body, so
+	# every hit is an orb hit): try a few spawns.
+	var target={}
+	for attempt in range(12):
+		game.spawn_enemy(6);var candidate=game.enemies[-1];game.plain_enemy(candidate)
+		candidate.node.position=game.player.position+Vector3(0,0,-8);candidate.flying=false;candidate.hp=99999.0;candidate.maxHp=99999.0
+		var orb_list=ClutchPlay.orbs(candidate)
+		if not orb_list.is_empty() and float(orb_list[0].radius)*ClutchPlay.ORB_GRACE<float(candidate.height)*.22: target=candidate;break
+		candidate.dead=true;candidate.node.queue_free();game.enemies.erase(candidate)
 	var gun=ClutchPlay.active_weapon(game);var hp0=float(target.hp)
 	var idle=ClutchPlay.trigger(game,gun)
 	game.set_meta("test_trigger",true)
@@ -205,6 +213,10 @@ static func run(game: Node3D) -> Dictionary:
 	checks.clutch_aimbot=tricked and first_lock and fired>0 and dealt>=body_hit*ClutchPlay.LOCK_DAMAGE*.99 and switched
 	ClutchPlay.lock_until=-1.0;ClutchPlay.lock_target={}
 	checks.clutch_rules=not HeroRules.can_slam(game.hero) and HeroRules.can_jump(game.hero) and game.rules.banished.has("slamPower") and not game.rules.banished.has("jumpHeight")
+	var dash_pool=[]
+	for kind in ["item","skill"]:
+		for i in range(6): dash_pool.append_array(game.rules.offers(kind,1.0,false,game.stats,game.equipped))
+	checks.clutch_no_dash=not dash_pool.is_empty() and not dash_pool.any(func(o):return not o.get("effects",[]).is_empty() and (HeroRules.DASH_KEYS.has(str(o.effects[0].key)) or str(o.effects[0].key).begins_with("augment-dash-") or str(o.effects[0].key).begins_with("augment-slam-"))) and game.rules.banished.has("mut:frost_dash") and game.rules.banished.has("mut:wild_momentum") and not game.rules.banished.has("mut:frost_jump")
 	# Shift: enemies lose sight of him, stop and do not attack.
 	game.clear_entities();game.hp=game.stats.maxHp;game.invulnerable=0.0
 	game.spawn_enemy(6);var stalker=game.enemies[-1];stalker.node.position=game.player.position+Vector3(4,0,0);stalker.node.position.y=game.world.height_at(stalker.node.position.x,stalker.node.position.z)+.1;stalker.flying=false;stalker.hp=99999.0;stalker.maxHp=99999.0

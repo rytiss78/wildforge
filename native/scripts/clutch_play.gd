@@ -36,8 +36,6 @@ static var sneaking=false
 static var lock_target={}
 static var hit_flash=0.0
 static var head_flash=0.0
-static var kill_times=[]
-static var last_kills=0
 static var headshot_kills=0
 
 static func is_clutch(g) -> bool: return str(g.hero.get("id",""))=="clutch"
@@ -46,7 +44,7 @@ static func first_person(g) -> bool: return is_clutch(g) and g.mode in ["playing
 static func reset():
 	if is_instance_valid(view): view.queue_free()
 	view=null;view_id="";lock_target={}
-	active_slot=0;lock_until=-1.0;stealth_left=STEALTH;stealth_cooldown=0.0;sneaking=false;hit_flash=0.0;head_flash=0.0;kill_times.clear();last_kills=0;headshot_kills=0
+	active_slot=0;lock_until=-1.0;stealth_left=STEALTH;stealth_cooldown=0.0;sneaking=false;hit_flash=0.0;head_flash=0.0;headshot_kills=0
 
 # The hand weapons he can switch between (turrets are not held).
 static func held(g) -> Array: return g.equipped.filter(func(w):return not w.get("turret",false))
@@ -91,11 +89,6 @@ static func late(g,delta: float):
 		if stealth_left<=0: sneaking=false;stealth_cooldown=STEALTH_COOLDOWN
 	elif stealth_left<STEALTH:
 		stealth_left=minf(STEALTH,stealth_left+delta*.5)
-	# Kills for the combo counter.
-	if g.kills>last_kills:
-		for i in range(g.kills-last_kills): kill_times.append(g.elapsed)
-	last_kills=g.kills
-	kill_times=kill_times.filter(func(t):return g.elapsed-t<5.0)
 
 # The active weapon held low on the right of the view, kicking back on shots.
 static var view: Node3D

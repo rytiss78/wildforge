@@ -183,7 +183,7 @@ static func run(g):
 	checks.clutch_third=await shot(g,"clutch-third")
 	g.camera_locked=false;g.hud.visible=true
 	for i in range(20): await g.get_tree().process_frame
-	ClutchPlay.kill_times=[g.elapsed,g.elapsed];ClutchPlay.hit_flash=.18;ClutchPlay.head_flash=.3
+	ClutchPlay.hit_flash=.18;ClutchPlay.head_flash=.3
 	checks.clutch_view=ClutchPlay.first_person(g) and await shot(g,"clutch")
 	g.clear_entities()
 	# The island from outside: rim and belly.

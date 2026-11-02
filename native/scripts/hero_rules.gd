@@ -14,7 +14,12 @@ const HOVERERS=["smoker","bee"]
 const SHIELD_ONLY=["bathtub"]
 const NO_WEAPON=["cactus"]
 const NO_SLAM=["clutch"]  # Clutch jumps but never slams
-const SLAM_KEYS=["slamPower","slamRadius"]
+const NO_DASH=["clutch"]  # Shift is Clutch's sneak, not a dash
+const SLAM_KEYS=["slamPower","slamRadius","slamFire","slamHeal","slamPoison","slamRecovery"]
+const DASH_KEYS=["dashCooldown","dashBlast","riftDash"]
+# Mutations and augments that fire on an action the hero never makes.
+const DASH_MUTATIONS=["wild_bloodrush","wild_momentum"]
+const ACTION_AUGMENTS={"dash":"augment-dash-","jump":"augment-air-","slam":"augment-slam-"}
 # Cards that would do nothing for a hero.
 const JUMP_KEYS=["jumpHeight","airJumps","fallGuard","slamPower","slamRadius","bounceJump"]
 
@@ -36,6 +41,22 @@ static func hero_id(item) -> String:
 
 static func can_jump(item) -> bool: return not NO_JUMP.has(hero_id(item))
 static func can_slam(item) -> bool: return not NO_JUMP.has(hero_id(item)) and not NO_SLAM.has(hero_id(item))
+static func can_dash(item) -> bool: return not NO_DASH.has(hero_id(item))
+
+# The actions (dash, jump, slam) this hero never makes.
+static func dead_actions(item) -> Array:
+	var dead=[]
+	if not can_dash(item): dead.append("dash")
+	if not can_jump(item): dead.append("jump")
+	if not can_slam(item): dead.append("slam")
+	return dead
+
+# A mutation that only fires on one of those actions.
+static func mutation_fits(item,mutation_id: String) -> bool:
+	for action in dead_actions(item):
+		if mutation_id.ends_with("_"+action): return false
+		if action=="dash" and DASH_MUTATIONS.has(mutation_id): return false
+	return true
 static func flies(item) -> bool: return FLYERS.has(hero_id(item))
 static func hovers(item) -> bool: return HOVERERS.has(hero_id(item))
 static func no_health(item) -> bool: return SHIELD_ONLY.has(hero_id(item))
@@ -55,6 +76,9 @@ static func card_fits(item,card: Dictionary) -> bool:
 	var key=str(card.effects[0].get("key",""))
 	if not can_jump(item) and JUMP_KEYS.has(key): return false
 	if not can_slam(item) and SLAM_KEYS.has(key): return false
+	if not can_dash(item) and DASH_KEYS.has(key): return false
+	for action in dead_actions(item):
+		if key.begins_with(ACTION_AUGMENTS[action]): return false
 	if no_health(item) and key in ["maxHp","regen","lifesteal"]: return false
 	if not armed(item) and weapon_key(key): return false
 	return true

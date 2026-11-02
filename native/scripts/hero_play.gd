@@ -42,17 +42,20 @@ static func id(g) -> String: return str(g.hero.get("id",""))
 # At the start of a run: cards the hero cannot use leave the pool, the cactus
 # drops his weapon, and per-run state is cleared.
 static func start(g):
-	for key in HeroRules.JUMP_KEYS if not HeroRules.can_jump(g.hero) else HeroRules.SLAM_KEYS if not HeroRules.can_slam(g.hero) else []:
-		if not g.rules.banished.has(key): g.rules.banished.append(key)
+	# Every card the hero cannot use (HeroRules.card_fits: jump, slam and dash
+	# cards for heroes without them, health cards for the shield-only hero,
+	# weapon cards for the unarmed) and every mutation that fires on an action he
+	# never makes leave the pool.
+	for card in g.rules.data.loot:
+		var key=str(card.effects[0].key) if not card.get("effects",[]).is_empty() else ""
+		if not key.is_empty() and not HeroRules.card_fits(g.hero,card) and not g.rules.banished.has(key): g.rules.banished.append(key)
 	if HeroRules.no_health(g.hero):
 		for key in ["maxHp","regen","lifesteal","coinHeal","chestHeal","landingHeal","slamHeal"]:
 			if not g.rules.banished.has(key): g.rules.banished.append(key)
+	for mutation_id in MutationBook.all():
+		if not HeroRules.mutation_fits(g.hero,mutation_id) and not g.rules.banished.has("mut:"+mutation_id): g.rules.banished.append("mut:"+mutation_id)
 	g.rules.no_weapons=not HeroRules.armed(g.hero)
 	if g.rules.no_weapons:
-		# Weapon masteries, rate, range, turret cards and the rest leave the pool.
-		for card in g.rules.data.loot:
-			var key=str(card.effects[0].key) if not card.get("effects",[]).is_empty() else ""
-			if HeroRules.weapon_key(key) and not g.rules.banished.has(key): g.rules.banished.append(key)
 		for weapon in g.equipped:
 			if is_instance_valid(weapon.get("node")): weapon.node.queue_free()
 		g.equipped.clear();g.avatar.sync_equipment(g.equipped)
