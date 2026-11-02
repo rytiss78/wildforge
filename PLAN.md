@@ -69,7 +69,7 @@ Done in this order: quick screen and data fixes first, then hero rework, then ne
 - [x] 16 · Captain Eight: eight tentacles instead of human arms and legs.
 
 **D. New systems**
-- [ ] 9, 10 · Flowers grow roots under the island; only Digby Mole sees them (green glow) and eats them to heal.
+- [x] 9, 10 · Flowers grow roots under the island; only Digby Mole sees them (green glow) and eats them to heal.
 - [ ] 25 · Three more pets; the pet picker gets its own panel on the hero screen and no longer rebuilds with every hero.
 - [ ] 14 · Wrench: E at a placed turret starts an arrow-key sequence; while he keeps hitting the right arrows, that turret works twice as fast.
 - [ ] 29 · Co-op: a downed player spectates the living (free camera) and has a soundboard of about 10 cheers; no Block Drop or shorts while downed.

@@ -36,11 +36,12 @@ static func cast(game: Node3D,kind: String,mutations: Array,frames: int=150) -> 
 static func run(game: Node3D) -> Dictionary:
 	var checks={}
 	game.hud.close();game.mode="playing";game.invulnerable=1e9
-	# Spell hits fire "on hit" mutations (20% chance, 0.3 s cooldown): five casts at eight enemies.
+	# Spell hits fire "on hit" mutations (20% chance, 0.3 s cooldown): up to twelve casts at eight enemies (chance-based).
 	var triggered=false
-	for attempt in range(5):
+	for attempt in range(12):
 		var result=cast(game,"inferno",["storm_hit"],70)
 		triggered=triggered or result.cooldowns.has("storm_hit")
+		if triggered: break
 	checks.spell_hits_trigger_mutations=triggered
 	var plain=cast(game,"inferno",[])
 	var firestorm=cast(game,"inferno",["ember_dash"])

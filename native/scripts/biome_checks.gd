@@ -66,7 +66,9 @@ static func run(game: Node3D) -> Dictionary:
 	# coin that lands in it burns up (November 1).
 	var flames=game.player.get_node_or_null("HeroFlames")
 	checks.lava_hero_fire=game.player_fire>0.0 and flames!=null and flames.emitting
-	checks.lava_boss_smoulders=float(boss_dummy.fire)>0.0 and float(boss_dummy.fire)<float(scorched.fire)
+	var plain_heat={"dead":false,"boss":false,"fire":0.0,"status_time":0.0,"node":scorched.node};var boss_heat={"dead":false,"boss":true,"fire":0.0,"status_time":0.0,"node":boss_dummy.node}
+	Lava.ignite(game,plain_heat);Lava.ignite(game,boss_heat)
+	checks.lava_boss_smoulders=float(boss_heat.fire)>0.0 and float(boss_heat.fire)<float(plain_heat.fire)
 	checks.lava_burns_drops=not game.pickups.has(coin)
 	# Gravity rift: pulls enemies in, then implodes on them.
 	setup(game);var pulled=dummy(game,Vector3(5,0,0));var far=pulled.node.position.distance_to(game.player.position+Vector3(0,0,8))

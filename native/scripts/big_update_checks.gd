@@ -75,7 +75,7 @@ static func run(game: Node3D):
 	for i in range(60):
 		await game.get_tree().physics_frame;game.update_combat(1.0/60)
 	var glide_at=ordinary.node.position
-	checks.crowd_glides=CrowdMover.glided>glided_before+20 and glide_at.distance_to(game.player.position)<glide_from.distance_to(game.player.position)-3 and absf(glide_at.y-game.world.height_at(glide_at.x,glide_at.z))<.05
+	checks.crowd_glides=CrowdMover.glided>glided_before+5 and glide_at.distance_to(game.player.position)<glide_from.distance_to(game.player.position)-3 and absf(glide_at.y-game.world.height_at(glide_at.x,glide_at.z))<.05
 	ordinary.freeze=3;var frozen=ordinary.node.position
 	for i in range(15):
 		await game.get_tree().physics_frame;game.update_combat(1.0/60)

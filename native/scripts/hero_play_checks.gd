@@ -73,6 +73,19 @@ static func run(game: Node3D) -> Dictionary:
 	for i in range(10): HeroPlay.tick(game,1.0/60.0)
 	# Pushed away from the enemy, and still rolling a moment later (friction, not a stop).
 	checks.cactus_shoved=shove.x<0.0 and HeroPlay.roll.x<0.0 and HeroPlay.roll.length()<shove.length()+.001 and HeroPlay.drive(game,Vector3.ZERO,1.0/60.0).x<0.0
+	# Digby Mole sees glowing roots under the Florist's flowers and eats them to heal.
+	use(game,"mole")
+	var garden=game.rules.data.weapons.filter(func(w):return w.id=="flowers")[0].duplicate(true);garden.kind="weapon";garden.strength=1.0;game.equip_weapon(garden)
+	game.plant_flower(Vector3(4,0,0),game.equipped[-1])
+	HeroPlay.root_clock=0.0;HeroPlay.update_roots(game,0.0,false)
+	var root=HeroPlay.roots.values()[0] if not HeroPlay.roots.is_empty() else {}
+	game.hp=game.stats.maxHp*.5;var hungry=game.hp
+	game.player.position=Vector3(4.5,game.world.under_height(4,0)-1.6,0)
+	HeroPlay.update_roots(game,0.0,true)
+	checks.mole_eats_roots=not root.is_empty() and root.eaten and game.hp>hungry and root.node.position.y<game.world.height_at(4,0)-5
+	for bloom in game.flowers: bloom.node.queue_free()
+	game.flowers.clear();HeroPlay.root_clock=0.0;HeroPlay.update_roots(game,0.0,false)
+	checks.roots_follow_flowers=HeroPlay.roots.is_empty()
 	game.clear_entities()
 	game.select_hero(saved_hero)
 	return checks
