@@ -533,7 +533,7 @@ func start_run(shared_seed: int=-1):
 	first.strength = 1.0
 	first.tier = 0
 	equip_weapon(first)
-	HeroPlay.start(self);WrenchTune.reset();Dropai.reset();ClutchPlay.reset()
+	HeroPlay.start(self);WrenchTune.reset();Dropai.reset();ClutchPlay.reset();CarryRescue.reset()
 	career.bump("runs")
 	career.bump("play_"+hero.id)
 	sound.start(seed_value)
@@ -2512,7 +2512,12 @@ func _physics_process(delta: float):
 	WrenchTune.tick(self,delta);Dropai.tick(self,delta)
 	update.contact_shadows()
 	Spectate.tick(self,delta)
+	CarryRescue.tick(self,delta)
 	if update.downed:
+		# Clutch's first-person gun and hidden body go back to normal.
+		avatar.visible=true;ClutchPlay.late(self,delta)
+		# Dragged by a friend (or lying under the island): the body goes with them.
+		if CarryRescue.follow(self): elapsed+=delta;realm_time+=delta;update_events();update_combat(delta);return
 		# Preserve gravity after a co-op knockout. Otherwise an airborne hero
 		# freezes in midair because normal movement stops while downed.
 		player.velocity.x=move_toward(player.velocity.x,0,10*delta)
@@ -2564,7 +2569,7 @@ func _physics_process(delta: float):
 			trail.scale=Vector3(.08,.08,.08)
 			effects.append({"node":trail,"life":.25,"velocity":Vector3.ZERO,"stationary":true,"trail":true})
 	else:
-		var running=HeroPlay.drive(self,BiomeMechanics.steer(self,eclipse_running(wish,delta,player.is_on_floor()),player.velocity,delta),delta)
+		var running=HeroPlay.drive(self,BiomeMechanics.steer(self,eclipse_running(wish,delta,player.is_on_floor()),player.velocity,delta),delta)*Vector3(CarryRescue.speed_scale(self),1,CarryRescue.speed_scale(self))
 		player.velocity.x=running.x;player.velocity.z=running.z
 	if player_chill>0: player.velocity.x*=.7;player.velocity.z*=.7
 	player.velocity.x+=knock_velocity.x;player.velocity.z+=knock_velocity.z
@@ -2701,8 +2706,10 @@ func _process(delta: float):
 	elif not camera_locked:
 		if camera.fov!=70.0: camera.fov=70.0
 		# Under the island the view is turned over, so the ground stays at the bottom.
-		var view_up=underside.camera_up()
+		var view_up=Spectate.up(self,underside.camera_up())
 		var anchor=Spectate.anchor(self,player.position+view_up*1.2)
+		# Back from Clutch's first person (downed): the third-person pitch range.
+		pitch=clampf(pitch,-.4,1.1)
 		update_fight_zoom(delta)
 		# TPS camera: spherical coords around player
 		var cos_p=cos(pitch);var distance_value=camera_distance*fight_zoom

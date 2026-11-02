@@ -138,10 +138,17 @@ func banish(index: int):
 	game.hud.show_offers(game.offers,game.offer_source,false);game.hud.tell("Banished "+game.rules.data.labels.get(key,key)+" for this run")
 
 func hint() -> String:
+	var drag=ControlBindings.display(game.career.data.settings,"carry","controller" if game.input_kind=="xbox" else "keyboard")
+	if downed and (CarryRescue.carried_by>=0 or game.underside.state=="under"):
+		if game.underside.state=="under": return "⛓ UNDER THE ISLAND · BACK UP %d%%" % roundi(CarryRescue.revive_share(game,game.coop.local_id)*100)
+		return "⛓ DRAGGED · UNDER THE ISLAND YOU GET BACK UP"
+	if CarryRescue.carrying>=0:
+		if game.underside.flipped(): return "⛓ BACK UP %d%% · %s LET GO" % [roundi(CarryRescue.revive_share(game,CarryRescue.carrying)*100),drag]
+		return "⛓ OVER THE EDGE · UNDER THE ISLAND THEY GET BACK UP · %s LET GO" % drag
 	if downed:
 		var seconds=float(rescue_progress.get(game.coop.local_id,rescue_progress.get(str(game.coop.local_id),0)))
 		return "DOWNED · CODE %d / %d · SPACE: WATCH NEXT · 1–0: CHEER" % [roundi(seconds/3.0*RescueCode.LENGTH),RescueCode.LENGTH]
-	if rescue_target(game.player.position,game.coop.local_id)>0: return "HOLD E / X + MOVE KEYS · ENTER THE RESCUE CODE"
+	if rescue_target(game.player.position,game.coop.local_id)>0: return "HOLD E / X + MOVE KEYS · RESCUE CODE · %s · DRAG UNDER THE ISLAND" % drag
 	if is_instance_valid(merchant) and game.player.position.distance_to(merchant.position)<3.5: return "E / X · DYLERIS"
 	if is_instance_valid(beacon) and game.player.position.distance_to(beacon_position)<4 and beacon_state=="idle": return "E / X · ACTIVATE SUPPLY · DEFEND 25 s"
 	if beacon_state=="defending": return "SUPPLY · %d s · STAY WITHIN 14 m" % ceili(25-beacon_seconds)
@@ -346,6 +353,7 @@ func host_tick(delta: float):
 			revive(target)
 			if int(helper)==game.coop.local_id: run_rescues+=1;note("RESCUE")
 			else: game.coop.send_to(int(helper),{"type":"big_memory","key":"RESCUE"})
+	CarryRescue.host_tick(game,delta,working)
 	for id in rescue_progress.keys():
 		if not working.has(id): rescue_progress.erase(id)
 	if not downed_ids.is_empty() and helpers.values().all(func(m):return float(m.get("hp",0))<=0):

@@ -30,7 +30,13 @@ static func living(g) -> Array:
 # Where the camera looks: the watched friend (plus the free pan), or the hero.
 static func anchor(g,fallback: Vector3) -> Vector3:
 	if not active(g) or not g.coop.avatars.has(target_id) or not is_instance_valid(g.coop.avatars[target_id]): return fallback
-	return g.coop.avatars[target_id].position+Vector3.UP*1.2+pan
+	return g.coop.avatars[target_id].position+up(g,Vector3.UP)*1.2+pan
+
+# Which way is up for the camera: a friend under the island is watched upside
+# down, like they see themselves.
+static func up(g,fallback: Vector3) -> Vector3:
+	if not active(g) or not g.coop.avatars.has(target_id) or not is_instance_valid(g.coop.avatars[target_id]): return fallback
+	return Vector3.DOWN if bool(g.coop.members.get(target_id,{}).get("under",false)) else Vector3.UP
 
 static func tick(g,delta: float):
 	if not active(g):

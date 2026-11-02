@@ -61,6 +61,7 @@ Done in this order: quick screen and data fixes first, then hero rework, then ne
 - [ ] **Balance with people.** Bots last measured 75% clear island 1 / 25% reach the final boss / 0% beat it (12 runs, before the October 25 "dangerous, not tanky" change, which is not bot-measured). Target about 70 / 25 / 10. Use 48+ run batches; 24-run batches swing about 20 points.
 - [ ] **Creatures still too basic?** If so: thicker limbs and bigger heads on the stick-figure humanoid mutants (`CartoonBook` designs).
 - [ ] **Two-machine co-op over the internet** with packet loss; all co-op tests so far run on one PC.
+- [ ] **Co-op playtest of the Build 30 fixes:** dragging a downed friend under the island with C / L3 (back up after 3 s underneath), a friend's new hero showing in the second run, Block Drop and videos after a Clutch run, spectating as a downed Clutch.
 
 ## Open issues and limits
 

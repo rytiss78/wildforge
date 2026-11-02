@@ -141,6 +141,40 @@ static func run(game: Node3D) -> Dictionary:
 	Spectate.last_cheer=-99.0;var cheered=Spectate.cheer(game,0) and int(Spectate.last_heard.get("index",-1))==0 and not Spectate.cheer(game,1)
 	checks.downed_spectate=watching and cheered and ResourceLoader.exists("res://assets/voices/cheers/cheer_horn.wav")
 	game.update.downed=false;game.coop.avatars.erase(77);game.coop.members.erase(77);game.coop.active=false;friend.queue_free();Spectate.tick(game,1.0/60.0)
+	# Dragged under the island (November 2): C beside a downed friend grabs them
+	# (the helper slows, a rope shows); on top nothing happens, under the island
+	# the host brings them back after CarryRescue.REVIVE seconds.
+	var hurt=CharacterBody3D.new();game.add_child(hurt);var hurt_at=game.player.position+Vector3(1.5,0,0);hurt.position=hurt_at
+	game.coop.active=true;game.coop.avatars[78]=hurt;game.coop.members[78]={"hp":0.0,"position":CoopSession.array(hurt_at),"name":"Friend"}
+	game.update.downed_ids[78]=true;game.mode="playing";CarryRescue.reset()
+	Input.action_press("carry");CarryRescue.tick(game,1.0/60.0);Input.action_release("carry");CarryRescue.tick(game,1.0/60.0)
+	var grabbed=CarryRescue.carrying==78 and is_equal_approx(CarryRescue.speed_scale(game),CarryRescue.SLOW) and CarryRescue.ropes.any(func(r):return is_instance_valid(r) and r.visible)
+	var carry_work={};CarryRescue.host_tick(game,1.0,carry_work)
+	var none_on_top=not carry_work.has(78) and game.update.downed_ids.has(78)
+	game.underside.state="under"
+	CarryRescue.host_tick(game,CarryRescue.REVIVE*.5,carry_work);var half_back=is_equal_approx(CarryRescue.revive_share(game,78),.5)
+	CarryRescue.host_tick(game,CarryRescue.REVIVE*.6,carry_work);var carried_back=not game.update.downed_ids.has(78)
+	CarryRescue.tick(game,1.0/60.0);var let_go=CarryRescue.carrying==-1
+	game.underside.state="top";game.update.rescue_progress.clear()
+	# The downed side: the body follows its carrier on the rope, and goes under
+	# the island with them.
+	var lying=game.player.position;game.update.downed=true
+	var carrier_at=lying+Vector3(5,0,0)
+	game.coop.members[78]={"hp":50.0,"carry":game.coop.local_id,"under":false,"position":CoopSession.array(carrier_at)}
+	var followed=CarryRescue.follow(game) and Vector2(game.player.position.x-carrier_at.x,game.player.position.z-carrier_at.z).length()<=CarryRescue.ROPE+.01
+	game.coop.members[78].under=true;CarryRescue.follow(game)
+	var went_under=game.underside.state=="under" and absf(game.player.position.y-game.world.under_height(game.player.position.x,game.player.position.z))<.01 and Spectate.up(game,Vector3.UP)==Vector3.DOWN
+	game.update.downed=false;game.underside.reset(game);game.player.position=lying;CarryRescue.reset();CarryRescue.draw_ropes(game)
+	game.coop.avatars.erase(78);game.coop.members.erase(78);hurt.queue_free()
+	checks.carry_rescue=grabbed and none_on_top and half_back and carried_back and let_go and followed and went_under
+	# A friend who picks another hero for the next run is seen as the new hero.
+	var models=game.rules.data.heroes.map(func(h):return str(h.model))
+	game.coop.ensure_avatar(80,{"model":models[0],"position":CoopSession.array(game.player.position+Vector3(4,0,0)),"hp":50.0})
+	var old_body=game.coop.avatars.get(80,null)
+	game.coop.ensure_avatar(80,{"model":models[1],"position":CoopSession.array(game.player.position+Vector3(4,0,0)),"hp":50.0})
+	checks.coop_hero_change=is_instance_valid(old_body) and old_body.is_queued_for_deletion() and game.coop.avatars.has(80) and str(game.coop.avatars[80].get_meta("model",""))==models[1]
+	if game.coop.avatars.has(80): game.coop.avatars[80].queue_free();game.coop.avatars.erase(80)
+	game.coop.active=false
 	# Dyleris reveals three dropai under the island; each changes the run when taken.
 	use(game,"duck")
 	var first=Dropai.reveal(game);var again=Dropai.reveal(game)
@@ -229,6 +263,13 @@ static func run(game: Node3D) -> Dictionary:
 	ClutchPlay.sneaking=false
 	var seen=game.coop.target(stalker.node.position)
 	checks.clutch_sneak=checks.clutch_sneak and not seen.get("lost",false)
+	# Downed Clutch (November 2): his first-person gun leaves the screen, his body
+	# shows again, the hidden HUD plates come back and the Block Drop room stays.
+	game.mode="playing";game.update.downed=false;ClutchPlay.late(game,1.0/60.0);game.hud.update(0)
+	var had_view=is_instance_valid(ClutchPlay.view) and not game.hud.clutch_hidden.is_empty()
+	game.update.downed=true;game.avatar.visible=true;ClutchPlay.late(game,1.0/60.0);game.hud.update(0)
+	checks.clutch_downed=had_view and ClutchPlay.view==null and game.avatar.visible and game.hud.clutch_hidden.is_empty() and game.hud.wait_room.visible
+	game.update.downed=false
 	ClutchPlay.reset()
 	game.clear_entities()
 	game.select_hero(saved_hero)

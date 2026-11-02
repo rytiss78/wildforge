@@ -68,7 +68,7 @@ static func place_camera(g,delta: float):
 static func late(g,delta: float):
 	hit_flash=maxf(0,hit_flash-delta);head_flash=maxf(0,head_flash-delta)
 	if not is_clutch(g): return
-	g.avatar.rotation.y=g.yaw
+	if not g.update.downed: g.avatar.rotation.y=g.yaw
 	# In first person his own body, hat and floating hand weapons would sit in
 	# front of the lens.
 	var fps=first_person(g) and not g.camera_locked
@@ -76,6 +76,8 @@ static func late(g,delta: float):
 	for weapon in held(g):
 		if is_instance_valid(weapon.get("node")): weapon.node.visible=not fps
 	view_model(g,fps,delta)
+	# Downed: watching a friend; the number keys are cheers, not weapons.
+	if g.update.downed: sneaking=false;return
 	if fps: aimbot(g,delta)
 	for i in range(3):
 		if Input.is_physical_key_pressed(KEY_1+i) and i<held(g).size() and active_slot!=i:

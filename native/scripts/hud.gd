@@ -20,6 +20,7 @@ var hero_lane=0
 var hero_layer=Control.new()
 var shorts
 var wait_room: HBoxContainer
+var clutch_hidden=[]
 # A new offer ignores confirm presses for a moment: Space and A spammed in Block
 # Drop used to pick whichever card had focus.
 var offer_guard=0.0
@@ -757,9 +758,23 @@ func update(delta: float):
 	if not HeroRules.can_slam(game.hero): slam_status.visible=false
 	if not HeroRules.can_dash(game.hero): dash_status.visible=false
 	# Clutch has his own vitals and weapon readout: hide the usual plates.
+	# Only the plates themselves: the Block Drop wait room can sit in that corner
+	# too (it vanished for good after a Clutch run), and what was hidden comes
+	# back when he is down or the run is over.
 	if ClutchPlay.first_person(game):
 		for widget in root.get_children():
-			if widget is Control and widget!=clutch_hud and widget!=_ach_note_panel and (VITALS.grow(40).has_point(widget.position) or LOADOUT.grow(60).has_point(widget.position)): widget.visible=false
+			if widget is Control and widget.visible and widget!=clutch_hud and widget!=_ach_note_panel and widget!=wait_room and (VITALS.grow(40).has_point(widget.position) or LOADOUT.grow(60).has_point(widget.position)):
+				widget.visible=false
+				if not clutch_hidden.has(widget): clutch_hidden.append(widget)
+	elif not clutch_hidden.is_empty():
+		for widget in clutch_hidden:
+			if is_instance_valid(widget): widget.visible=true
+		clutch_hidden.clear()
+		# The hero's own rules hide these again.
+		if not HeroRules.armed(game.hero): weapons.visible=false;turret_hints.visible=false
+		if not HeroRules.can_slam(game.hero): slam_status.visible=false
+		if not HeroRules.can_dash(game.hero): dash_status.visible=false
+	if is_instance_valid(wait_room) and not wait_room.visible: wait_room.visible=true
 
 func start_menu(focus_hero: bool=false):
 	if not focus_hero: game.roll_menu_hero()
