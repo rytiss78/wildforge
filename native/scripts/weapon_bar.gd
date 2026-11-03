@@ -15,65 +15,72 @@ func refresh():
 	var selected=turrets[game.selected_turret%turrets.size()] if not turrets.is_empty() else {}
 	var next = str(selected.get("id",""))+":"+str(ceili(selected.get("deploy_clock",0)))+":"
 	for weapon in game.equipped: next += weapon.id+str(weapon.rank)+("*" if weapon.get("evolved",false) else "!" if WeaponEvolution.ready(game,weapon) else "")+";"
-	if next==signature and get_child_count()==3: return
+	if next==signature and get_child_count()==RunRules.WEAPON_CAP: return
 	# Track which slots are newly filled for entrance animation
 	var new_slots: Array[int]=[]
 	if next!=signature:
-		for i in range(3):
+		for i in range(RunRules.WEAPON_CAP):
 			if i<game.equipped.size() and (i>=signature.split(";",false).size()):
 				new_slots.append(i)
 	signature = next
 	for child in get_children():
 		remove_child(child)
 		child.queue_free()
-	for i in range(3):
+	# Four slots since big update MB, a little narrower to fit beside the key hints.
+	# Minimal tiles like the card slots (user, November 3: "the four card slots
+	# are very minimal, I like that; make the weapons minimal too"): the weapon's
+	# picture and its level, nothing written; the name and details in the tooltip.
+	for i in range(RunRules.WEAPON_CAP):
 		var filled = i < game.equipped.size()
 		var panel = PanelContainer.new()
-		panel.custom_minimum_size = Vector2(116,78)
-		panel.add_theme_stylebox_override("panel",game.hud.style(ThemeTokens.PAPER_RUNTIME,Color("a7885c") if filled else Color("b9ad93"),12))
-		# Subtle entrance pop for newly equipped weapons
+		panel.custom_minimum_size = TILE
+		panel.add_theme_stylebox_override("panel",tile_style(ThemeTokens.STAR_GOLD if filled else Color(ThemeTokens.STAR_GOLD,.3),.85 if filled else .35,2))
 		if filled and new_slots.has(i):
-			panel.scale=Vector2(.88,.88)
+			panel.pivot_offset=TILE*.5;panel.scale=Vector2(.8,.8)
 			panel.create_tween().tween_property(panel,"scale",Vector2.ONE,.2).set_trans(Tween.TRANS_BACK).set_ease(Tween.EASE_OUT)
 		add_child(panel)
-		var column = VBoxContainer.new()
-		column.add_theme_constant_override("separation",0)
-		panel.add_child(column)
-		if filled:
-			var weapon = game.equipped[i]
-			panel.set_meta("weapon_id",weapon.id)
-			if weapon.id==selected.get("id",""):
-				var selected_style=game.hud.style(ThemeTokens.PAPER_RUNTIME,ThemeTokens.STAR_GOLD,3);selected_style.set_border_width_all(2)
-				panel.add_theme_stylebox_override("panel",selected_style);panel.set_meta("selected_turret",true)
-			panel.tooltip_text = weapon.name+" · Level "+str(weapon.rank)+"\n"+WeaponDetails.describe(weapon.id)
-			var recipe=WeaponEvolution.recipe(game,weapon)
-			if not recipe.is_empty(): panel.tooltip_text+="\n"+recipe
-			var spell_name=SpellSynergy.SPELL_NAMES.get(ContentExpansion.kind(weapon.id),"")
-			for line in SpellSynergy.lines(game):
-				if not spell_name.is_empty() and line.contains(spell_name): panel.tooltip_text+="\n"+line
-			# Evolved: a thick gold frame. Ready to evolve: a thin one until a chest offers it.
-			var evolved=weapon.get("evolved",false)
-			if evolved or WeaponEvolution.ready(game,weapon):
-				var gilded=game.hud.style(ThemeTokens.PAPER_RUNTIME,WeaponEvolution.GOLD,12);gilded.set_border_width_all(3 if evolved else 2)
-				gilded.shadow_color=Color(WeaponEvolution.GOLD,.45);gilded.shadow_size=8 if evolved else 4
-				panel.add_theme_stylebox_override("panel",gilded)
-			var icon = PowerIcon.new()
-			icon.key = weapon.id
-			icon.weapon_icon = true
-			icon.color = PowerIcon.color_for(icon.key)
-			icon.custom_minimum_size = Vector2(88,48)
-			column.add_child(icon)
-			var badge = game.hud.label("Lv. %d" % weapon.rank,13,ThemeTokens.STAR_GOLD)
-			badge.position=Vector2(65,0)
-			icon.add_child(badge)
-			if evolved or WeaponEvolution.ready(game,weapon):
-				var tag=game.hud.label("EVOLVED" if evolved else "EVOLVE READY",10,WeaponEvolution.GOLD);tag.name="EvolveTag"
-				tag.add_theme_color_override("font_outline_color",ThemeTokens.INK);tag.add_theme_constant_override("outline_size",4)
-				tag.position=Vector2(0,0);icon.add_child(tag)
-			var name_label = game.hud.label(weapon.name,12 if weapon.name.length()<16 else 10)
-			name_label.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-			column.add_child(name_label)
-		else:
-			var empty=game.hud.label("+",22,Color("a1ada8"))
-			empty.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER
-			column.add_child(empty)
+		if not filled:
+			var empty=game.hud.label("+",20,Color(1,1,1,.25))
+			empty.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;empty.vertical_alignment=VERTICAL_ALIGNMENT_CENTER
+			panel.add_child(empty)
+			continue
+		var weapon = game.equipped[i]
+		panel.set_meta("weapon_id",weapon.id)
+		panel.tooltip_text = weapon.name+" · Level "+str(weapon.rank)+"\n"+WeaponDetails.describe(weapon.id)
+		var recipe=WeaponEvolution.recipe(game,weapon)
+		if not recipe.is_empty(): panel.tooltip_text+="\n"+recipe
+		var spell_name=SpellSynergy.SPELL_NAMES.get(ContentExpansion.kind(weapon.id),"")
+		for line in SpellSynergy.lines(game):
+			if not spell_name.is_empty() and line.contains(spell_name): panel.tooltip_text+="\n"+line
+		var evolved=weapon.get("evolved",false)
+		if weapon.id==selected.get("id",""):
+			panel.add_theme_stylebox_override("panel",tile_style(Color("fff0c9"),.85,3));panel.set_meta("selected_turret",true)
+		# Evolved: a thick gold frame with a glow. Ready to evolve: a thin glow.
+		if evolved or WeaponEvolution.ready(game,weapon):
+			var gilded=tile_style(WeaponEvolution.GOLD,.85,3 if evolved else 2)
+			gilded.shadow_color=Color(WeaponEvolution.GOLD,.45);gilded.shadow_size=8 if evolved else 4
+			panel.add_theme_stylebox_override("panel",gilded)
+		var holder=Control.new();holder.mouse_filter=Control.MOUSE_FILTER_IGNORE;panel.add_child(holder)
+		var icon = PowerIcon.new()
+		icon.key = weapon.id
+		icon.weapon_icon = true
+		icon.color = PowerIcon.color_for(icon.key)
+		icon.mouse_filter=Control.MOUSE_FILTER_IGNORE
+		icon.position=Vector2(2,4);icon.size=Vector2(TILE.x-8,TILE.y-28)
+		holder.add_child(icon)
+		var level=game.hud.label(str(weapon.rank),17,Color("fff0c9"))
+		level.add_theme_color_override("font_outline_color",Color(0,0,0,.85));level.add_theme_constant_override("outline_size",4)
+		level.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;level.position=Vector2(-4,TILE.y-28);level.size=Vector2(TILE.x,20)
+		holder.add_child(level)
+		if evolved or WeaponEvolution.ready(game,weapon):
+			var tag=game.hud.label("★" if evolved else "✦",12,WeaponEvolution.GOLD);tag.name="EvolveTag"
+			tag.add_theme_color_override("font_outline_color",ThemeTokens.INK);tag.add_theme_constant_override("outline_size",4)
+			tag.position=Vector2(TILE.x-20,-4);holder.add_child(tag)
+
+const TILE=Vector2(76,84)
+
+func tile_style(border: Color,fill: float,width: int) -> StyleBoxFlat:
+	var look=StyleBoxFlat.new();look.bg_color=Color(.1,.12,.16,fill);look.border_color=border
+	look.set_border_width_all(width);look.set_corner_radius_all(8)
+	look.content_margin_left=2;look.content_margin_right=2;look.content_margin_top=2;look.content_margin_bottom=2
+	return look

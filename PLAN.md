@@ -55,6 +55,16 @@ Done in this order: quick screen and data fixes first, then hero rework, then ne
 **E. Biggest**
 - [x] 28 · **Clutch**, a first-person tactical shooter hero: no auto-aim (turrets still aim), number keys pick the active weapon, own HUD (health, armour, slots, kill combo), V = short aim lock with 5× damage and a headshot chime, Shift = slow walk that makes enemies lose him for a moment, no slam. Friendly fire on other heroes.
 
+## Big update MB (user, November 2)
+
+Megabonk-style structure with this game's own content: Megabonk's own items, books, weapons and heroes are not copied, only the kind of structure (slot limits, stat cards, chest items, climbing maps).
+
+- [x] 1 · **Loadout:** 4 weapon slots (no other weapon appears once full, only ranks and upgrades for those), 4 card slots (24 stat cards of our own, e.g. Might, Haste, Vigor, Stride, levelled by level-ups; once 4 are held only their levels appear), items with no limit from chests. All 747 old cards are kept and sorted (`Loadout.slot_of`): core stats → card levels, single-weapon upgrades → weapon upgrades offered while carrying that weapon, everything conditional / on-hit / on-kill / hero-mechanic / economy → chest items. One mutation per level-up. Minimal HUD: card and weapon tiles centred at the bottom (gun damage numbers rise from the weapon tiles), no dark plates behind vitals, loadout or timer.
+- [ ] 2 · **One biome per map:** seven maps (one per biome, that biome's creatures only) played in a row, then the Red Moon.
+- [ ] 3 · **Climbing maps:** height, ledges and jumps, chests spread over high places to reach in time; the underside stays.
+- [ ] 4 · **More content of our own** filling the same roles (more cards, chest items and weapons where the sort leaves gaps).
+- [ ] 5 · **Heroes:** compare with how Megabonk heroes work (starting weapon plus a passive that grows with level) and give ours level-scaling passives where it fits.
+
 ## Next
 
 - [ ] **Human playtest of Build 29:** Clutch (aim, aimbot, sneak, hands), the pickle being shoved, co-op spectating and cheers, Dyleris and the dropai, the flip under the island. Decide whether hiding underneath is too safe (simple fix: a slow health drain while under).

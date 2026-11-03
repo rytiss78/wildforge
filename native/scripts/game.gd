@@ -109,6 +109,8 @@ var melee_attacks = []
 var hazards = []
 var equipped = []
 var owned = []
+# Big update MB: held stat cards, stat -> level (Loadout, at most four).
+var cards = {}
 var mutations = {}          # mutation id -> level; see MutationBook
 var mutation_state = {}
 var flowers = []
@@ -524,7 +526,7 @@ func start_run(shared_seed: int=-1):
 	garden_patches.clear()
 	visited_ruins.clear()
 	last_plant = Vector3(9999,0,9999)
-	owned.clear()
+	owned.clear();cards.clear()
 	MutationBook.reset(self)
 	equipped.clear()
 	buffs.clear();harvest_buffs.clear();biome_seen.clear();player_poison=0;player_fire=0;player_chill=0;player_blind=0
@@ -771,10 +773,12 @@ func level_up():
 	# Levels feel like milestones: heal and reveal a weapon/skill choice, not a tiny stat pop.
 	heal(stats.maxHp*.15)
 	shield_hp = stats.shield
-	var kind = "weapon" if level == 2 or level%3 == 0 else "skill"
+	# One pool for every level (big update MB): weapons while a weapon slot is
+	# free, ranks, cards, card levels and weapon upgrades (RunRules.level_offers).
+	var kind = "level"
 	offer_kind=kind;offer_elite=false;offer_rerolls=0
 	party_reward_id=run_id+":level:"+str(realm)+":"+str(level)
-	offers = WeaponEvolution.inject(self,MutationBook.mix(self,rules.offers(kind,stats.luck,false,stats,equipped,early_avoid()),"level"),"level")
+	offers = WeaponEvolution.inject(self,MutationBook.mix(self,level_pool(early_avoid()),"level"),"level")
 	offer_source = "level"
 	mode = "level_reveal"
 	level_reveal = .95
@@ -811,6 +815,7 @@ func choose_offer(index: int):
 		hp += maxf(0,stats.maxHp-previous_hp)
 		shield_hp = minf(stats.shield+stats.jumpShield,shield_hp+float(item_effects.filter(func(e):return e.key=="shield").reduce(func(sum,e):return sum+e.amount,0)))
 		owned.append(item)
+		if item.kind=="card": cards[str(item.stat)]=int(cards.get(str(item.stat),0))+1
 		career.bump("loot")
 		families[item.family] = int(families.get(item.family,0))+1
 		career.best("family_"+item.family,families[item.family])
@@ -822,10 +827,14 @@ func choose_offer(index: int):
 	hud.close()
 	if (not coop.active or coop.hosting) and xp >= xp_target: level_up()
 
+# This player's level-up choices from their own weapons and cards.
+func level_pool(excluded: Array=[]) -> Array:
+	return rules.level_offers(stats.luck,stats,equipped,cards,excluded,level==2 or level%3==0)
+
 # Weapons from the last few runs sit out a new run's first weapon offers (levels
 # 2, 3 and 6), so runs do not keep starting with the same picks (October 24 request).
 func early_avoid() -> Array:
-	if offer_kind!="weapon" or level>6: return []
+	if offer_kind not in ["weapon","level"] or level>6: return []
 	return career.data.get("recentWeapons",[]).filter(func(id):return not equipped.any(func(w):return w.id==id))
 
 func reroll_price() -> int:
@@ -834,6 +843,7 @@ func reroll_price() -> int:
 # A fresh set for the open offer, as rolled at its source: level offers carry
 # mutations, chest offers the chest luck bonus. Used by reroll and banish.
 func roll_offers(excluded: Array=[]) -> Array:
+	if offer_kind=="level": return WeaponEvolution.inject(self,MutationBook.mix(self,level_pool(excluded+early_avoid()),"level"),"level")
 	var event=offer_event and offer_source=="chest"
 	return WeaponEvolution.inject(self,MutationBook.mix(self,rules.offers(offer_kind,stats.luck+(stats.chestBonus*.2 if offer_source=="chest" else 0),offer_elite,stats,equipped,excluded+early_avoid(),"",EventLoot.MIN_TIER if event else -1),offer_source,event),offer_source)
 
@@ -2899,7 +2909,7 @@ func run_smoke():
 	var starter=equipped[0].duplicate(true)
 	equip_weapon(starter)
 	hud.weapons.refresh()
-	checks.weapon_rank=equipped[0].rank==2 and hud.weapons.get_child_count()==3
+	checks.weapon_rank=equipped[0].rank==2 and hud.weapons.get_child_count()==RunRules.WEAPON_CAP
 	var weapon_desc_ok = true
 	for w in rules.data.weapons:
 		if w.get("archetype"):
@@ -2950,6 +2960,10 @@ func run_smoke():
 	a=rules.data.weapons.filter(func(w):return w.id=="ice")[0].duplicate(true)
 	a.kind="weapon";a.strength=1.0;a.tier=2
 	equip_weapon(a)
+	# Four weapon slots since big update MB: fill the fourth too.
+	while equipped.size()<RunRules.WEAPON_CAP:
+		var extra=rules.data.weapons.filter(func(w):return not w.get("turret",false) and w.id!="rocket" and not equipped.any(func(e):return e.id==w.id))[0].duplicate(true)
+		extra.kind="weapon";extra.strength=1.0;extra.tier=0;equip_weapon(extra)
 	hud.weapons.refresh()
 	if DisplayServer.get_name()!="headless":
 		await RenderingServer.frame_post_draw
@@ -2987,7 +3001,7 @@ func run_smoke():
 		await RenderingServer.frame_post_draw
 		get_viewport().get_texture().get_image().save_png("user://native-items.png")
 	hud.close()
-	checks.weapon_limit = not rules.can_weapon(equipped,"rocket") and equipped.size()==3
+	checks.weapon_limit = not rules.can_weapon(equipped,"rocket") and equipped.size()==RunRules.WEAPON_CAP
 	checks.key_free = rules.free_chance(.3)>.2
 	checks.portal_locked = realm_bosses<2
 	career.dirty=true

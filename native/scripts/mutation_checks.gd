@@ -35,8 +35,8 @@ static func run(g) -> Dictionary:
 	checks.offers_no_duplicate_effects=not duplicate_keys
 	var level_offer=MutationBook.mix(g,g.rules.offers("skill",0,false,g.stats,g.equipped),"level")
 	var ids=level_offer.map(func(item):return item.id)
-	checks.level_offer_has_mutations=level_offer.size()==5 and level_offer.filter(func(item):return item.kind=="mutation").size()==3 and ids.size()==ids.filter(func(id):return ids.count(id)==1).size()
-	checks.mutation_card_describes=g.rules.describe(level_offer[0].effects[0]).length()>20
+	checks.level_offer_has_mutations=level_offer.size()==5 and level_offer.filter(func(item):return item.kind=="mutation").size()==1 and ids.size()==ids.filter(func(id):return ids.count(id)==1).size()
+	checks.mutation_card_describes=g.rules.describe(level_offer[-1].effects[0]).length()>20
 	# A dash with Cinder Step erupts in flame around the hero.
 	choose(g,"ember_dash")
 	checks.choose_takes_mutation=g.mutations.get("ember_dash",0)==1 and g.owned.any(func(item):return item.id=="mut:ember_dash") and g.mode=="playing"

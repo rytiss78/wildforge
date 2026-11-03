@@ -165,13 +165,15 @@ static func roll(g,exclude: Array) -> Dictionary:
 # Level-up skill offers become mostly mutations; chests sometimes carry one.
 # guaranteed: an event chest always carries one mutation.
 static func mix(g,offers: Array,source: String,guaranteed: bool=false) -> Array:
-	if offers.is_empty() or offers.any(func(item):return item.kind=="weapon"): return offers
-	var count=3 if source=="level" else (1 if guaranteed or g.rules.rng.randf()<.4 else 0)
+	# Big update MB: a level-up shows weapons and cards first, so one mutation
+	# takes the last place (it used to be three of five, crowding out cards).
+	if offers.is_empty() or source!="level" and offers.any(func(item):return item.kind=="weapon"): return offers
+	var count=1 if source=="level" else (1 if guaranteed or g.rules.rng.randf()<.4 else 0)
 	var result=offers.duplicate();var taken=offers.map(func(item):return item.id)
 	for slot in range(mini(count,result.size())):
 		var mutation=roll(g,taken)
 		if mutation.is_empty(): break
-		result[slot]=mutation;taken.append(mutation.id)
+		result[result.size()-1-slot]=mutation;taken.append(mutation.id)
 	return result
 
 static func take(g,item: Dictionary):

@@ -19,7 +19,9 @@ static func run(game):
 	var reachable=[]
 	for kind in game.rules.mechanic_pools:
 		for pool in game.rules.mechanic_pools[kind].values(): reachable.append_array(pool.map(func(i):return i.id))
-	checks.every_card_reachable=reachable.size()==game.rules.data.loot.size() and game.rules.data.loot.all(func(i):return reachable.has(i.id))
+	# Card stats are rolled from Loadout.CARDS (big update MB); the rest from pools.
+	var folded=game.rules.data.loot.filter(func(i):return i.slot=="card")
+	checks.every_card_reachable=reachable.size()+folded.size()==game.rules.data.loot.size() and game.rules.data.loot.all(func(i):return reachable.has(i.id) or Loadout.CARDS.has(str(i.effects[0].key)))
 	game.rules.banished=["airJumps"]
 	checks.banished=true
 	for i in range(20): checks.banished=checks.banished and game.rules.offers("skill",0,false,game.stats,game.equipped).all(func(item):return item.kind=="weapon" or item.effects[0].key!="airJumps")

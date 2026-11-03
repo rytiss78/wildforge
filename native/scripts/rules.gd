@@ -1,7 +1,7 @@
 extends RefCounted
 class_name RunRules
 
-const WEAPON_CAP = 3
+const WEAPON_CAP = Loadout.WEAPON_SLOTS
 const OFFER_COUNT = 5
 const RARITIES = ["Common", "Rare", "Epic", "Legendary"]
 const COLORS = [Color("93b6a1"), Color("54b7ef"), Color("b17bea"), Color("ffd36b")]
@@ -16,16 +16,21 @@ var no_weapons=false
 
 func _init():
 	data = JSON.parse_string(FileAccess.get_file_as_string("res://data/catalog.json"))
+	# Big update MB: every loot entry is now a card level, a weapon upgrade or a
+	# chest item (Loadout.slot_of). Cards are rolled from Loadout.CARDS, so the
+	# pools hold items ("item") and weapon upgrades ("weapon_up").
 	for item in data.loot:
 		loot_by_id[item.id]=item
+		item.slot=Loadout.slot_of(item,data.augments)
 		if not loot_pools.has(item.kind): loot_pools[item.kind]={}
 		if not loot_pools[item.kind].has(item.family): loot_pools[item.kind][item.family]=[]
 		loot_pools[item.kind][item.family].append(item)
+		if item.slot=="card": continue
 		var key=str(item.effects[0].key)
 		var mechanic=str(data.augments[key].stat) if data.augments.has(key) else key
-		if not mechanic_pools.has(item.kind): mechanic_pools[item.kind]={}
-		if not mechanic_pools[item.kind].has(mechanic): mechanic_pools[item.kind][mechanic]=[]
-		mechanic_pools[item.kind][mechanic].append(item)
+		if not mechanic_pools.has(item.slot): mechanic_pools[item.slot]={}
+		if not mechanic_pools[item.slot].has(mechanic): mechanic_pools[item.slot][mechanic]=[]
+		mechanic_pools[item.slot][mechanic].append(item)
 	rng.randomize()
 
 func chest_price(paid: int, discount: float = 0.0) -> int:
@@ -63,6 +68,7 @@ func roll(kind: String, luck: float = 0.0, minimum: int = 0) -> Dictionary:
 		return result
 	# Pick a gameplay mechanic first, then a card. Large families cannot suppress unique powers.
 	# Equal mechanic odds keep adding themed cards from diluting basic upgrades.
+	if kind=="skill": kind="item"
 	var mechanics=mechanic_pools[kind].keys()
 	var mechanic=mechanics[rng.randi_range(0,mechanics.size()-1)]
 	var pool: Array=mechanic_pools[kind][mechanic]
@@ -84,9 +90,14 @@ func offers(kind: String, luck: float, elite: bool = false, current_stats: Dicti
 	var attempts = 0
 	if no_weapons and kind=="weapon": kind="skill"
 	if kind=="weapon" and equipped.size()>=WEAPON_CAP:
-		var item=equipped[rng.randi_range(0,equipped.size()-1)].duplicate(true)
-		item.tier=maxi(floor_tier,rarity(luck));item.strength=[1.0,2.0,3.5,5.5][item.tier];item.kind="weapon"
-		result.append(item)
+		# Full weapon slots: no other weapon appears, only ranks for these.
+		var mine=equipped.duplicate();mine.shuffle()
+		for weapon in mine:
+			var item=weapon.duplicate(true)
+			item.tier=maxi(floor_tier,rarity(luck));item.strength=[1.0,2.0,3.5,5.5][item.tier];item.kind="weapon"
+			item.erase("node")
+			result.append(item)
+		return result
 	while result.size() < OFFER_COUNT and attempts<1000:
 		var item = roll(kind, luck, floor_tier)
 		attempts += 1
@@ -131,6 +142,68 @@ func offers(kind: String, luck: float, elite: bool = false, current_stats: Dicti
 				item.effects[0].amount=candidate[key]/current_stats[key]-1 if item.effects[0].get("mode","add")=="multiply" and current_stats[key]!=0 else candidate[key]-current_stats[key]
 			if not result.is_empty(): result[0]=item
 			break
+	return result
+
+# Level-up offers (big update MB): new weapons while a weapon slot is free,
+# ranks for the weapons you carry, new cards while a card slot is free, levels
+# for the cards you hold, and upgrades for your own weapons. weapon_focus (level
+# 2 and every third level) makes at least two of the five weapons.
+func level_offers(luck: float,current_stats: Dictionary,equipped: Array,cards: Dictionary,excluded_ids: Array=[],weapon_focus: bool=false) -> Array:
+	var pools={"weapon":[],"card":[],"weapon_up":[]}
+	if not no_weapons:
+		if equipped.size()<WEAPON_CAP:
+			var fresh={}
+			for attempt in range(60):
+				if fresh.size()>=3: break
+				var weapon=roll("weapon",luck)
+				if equipped.any(func(w):return w.id==weapon.id) or (attempt<40 and excluded_ids.has(weapon.id)): continue
+				fresh[weapon.id]=weapon
+			pools.weapon.append_array(fresh.values())
+		for weapon in equipped:
+			var rank_up=weapon.duplicate(true);rank_up.erase("node")
+			rank_up.tier=rarity(luck);rank_up.strength=[1.0,2.0,3.5,5.5][rank_up.tier];rank_up.kind="weapon"
+			pools.weapon.append(rank_up)
+	var stats_known=not current_stats.is_empty()
+	for stat in Loadout.CARDS:
+		var held=cards.has(stat)
+		if banished.has(stat) or (not held and cards.size()>=Loadout.CARD_SLOTS): continue
+		var card=Loadout.card_offer(stat,rarity(luck),int(cards.get(stat,0)))
+		if stats_known and current_stats.has(stat):
+			var candidate=current_stats.duplicate(true);apply_effects(candidate,card.effects)
+			if is_equal_approx(float(candidate[stat]),float(current_stats[stat])): continue
+		pools.card.append(card)
+	if not equipped.is_empty() and mechanic_pools.has("weapon_up"):
+		for attempt in range(40):
+			if pools.weapon_up.size()>=3: break
+			var up=roll("weapon_up",luck)
+			var key=str(up.effects[0].key)
+			if banished.has(key) or pools.weapon_up.any(func(u):return u.effects[0].key==key): continue
+			if not equipped.any(func(w):return card_targets_weapon(up,str(w.id))): continue
+			pools.weapon_up.append(up)
+	for key in pools: pools[key].shuffle()
+	var result=[]
+	if weapon_focus:
+		while result.size()<2 and not pools.weapon.is_empty(): result.append(pools.weapon.pop_front())
+	var weights={"card":.45,"weapon":.35,"weapon_up":.2}
+	var guard=0
+	while result.size()<OFFER_COUNT and guard<50:
+		guard+=1
+		var open=weights.keys().filter(func(k):return not pools[k].is_empty())
+		if open.is_empty(): break
+		var total=0.0
+		for k in open: total+=weights[k]
+		var pick=rng.randf()*total;var chosen=open[0]
+		for k in open:
+			pick-=weights[k]
+			if pick<=0: chosen=k;break
+		var item=pools[chosen].pop_front()
+		if result.any(func(r):return r.id==item.id): continue
+		result.append(item)
+	# A full loadout with nothing left to grow still gets a choice: chest items.
+	if result.size()<OFFER_COUNT:
+		for item in offers("item",luck,false,current_stats,equipped,excluded_ids):
+			if result.size()>=OFFER_COUNT: break
+			if not result.any(func(r):return r.id==item.id): result.append(item)
 	return result
 
 func apply_effects(stats: Dictionary, effects: Array):

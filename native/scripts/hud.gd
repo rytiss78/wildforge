@@ -34,6 +34,7 @@ var rescue_text: Label
 var coins: Label
 var status: Label
 var weapons: WeaponBar
+var card_bar: CardBar
 var control_hints: HBoxContainer
 var hint_device = ""
 var turret_hints = HBoxContainer.new()
@@ -208,6 +209,12 @@ func button(text: String, action: Callable, accent: bool = false, radius_key: St
 
 const VITALS=Rect2(22,18,352,150)
 const LOADOUT=Rect2(676,900,568,140)
+const CARD_ROW_W=240.0
+const ROW_GAP=24.0
+const WEAPON_ROW_W=328.0
+const LOADOUT_ROW_X=960.0-(CARD_ROW_W+ROW_GAP+WEAPON_ROW_W)*.5
+const HINT_X=LOADOUT_ROW_X+CARD_ROW_W+ROW_GAP+WEAPON_ROW_W+22.0
+const HINT_Y=1080-WeaponBar.TILE.y-56.0
 const MAP_CLOCK=Vector2(1613,332)
 
 # A framed backing plate in the in-game window style, drawn behind its cluster.
@@ -254,7 +261,8 @@ func setup(owner_game):
 	clock.scale=Vector2.ONE*.75
 	clock.size = Vector2(400,149)
 	root.add_child(clock)
-	for area in [VITALS,LOADOUT]: cluster_plate(area)
+	# No dark plates with gilt corners behind the vitals and the loadout (user,
+	# November 3: minimal like the card slots); text carries its own outline.
 	var health_panel=PanelContainer.new();health_panel.position=VITALS.position+Vector2(12,10);health_panel.custom_minimum_size=Vector2(VITALS.size.x-24,76)
 	health_panel.add_theme_stylebox_override("panel",StyleBoxEmpty.new());root.add_child(health_panel)
 	var health_row=HBoxContainer.new();health_panel.add_child(health_row)
@@ -305,32 +313,42 @@ func setup(owner_game):
 	box_counter=label("",15);box_counter.position=Vector2(32,243);box_counter.add_theme_stylebox_override("normal",style());root.add_child(box_counter)
 	# Coins sit in the vitals plate under a thin gilt divider.
 	var coins_panel=PanelContainer.new();coins_panel.position=VITALS.position+Vector2(12,94);coins_panel.custom_minimum_size=Vector2(VITALS.size.x-24,40)
-	var divider=StyleBoxFlat.new();divider.bg_color=Color.TRANSPARENT;divider.border_color=Color(ThemeTokens.STAR_GOLD,.45);divider.border_width_top=1
+	var divider=StyleBoxFlat.new();divider.bg_color=Color.TRANSPARENT;divider.border_width_top=0
 	divider.content_margin_left=8;divider.content_margin_top=6;coins_panel.add_theme_stylebox_override("panel",divider);root.add_child(coins_panel)
 	coins.add_theme_color_override("font_color",ink);coins_panel.add_child(coins)
 	weapons = WeaponBar.new()
 	weapons.game = game
-	weapons.position = LOADOUT.position+Vector2(14,44)
-	weapons.add_theme_constant_override("separation",10)
+	# Cards and weapons sit in one row centred at the bottom (user, November 3:
+	# "centre and bigger gun icons, so damage numbers work"); gun damage numbers
+	# rise from these tiles (WeaponBar.slot_rect).
+	weapons.position = Vector2(LOADOUT_ROW_X+CARD_ROW_W+ROW_GAP,1080-WeaponBar.TILE.y-50)
+	weapons.add_theme_constant_override("separation",int(CardBar.GAP))
 	root.add_child(weapons)
+	# The four card slots, left of the weapons (big update MB).
+	card_bar=CardBar.new();card_bar.game=game
+	card_bar.position=Vector2(LOADOUT_ROW_X,weapons.position.y+WeaponBar.TILE.y-CardBar.TILE.y)
+	root.add_child(card_bar)
 	control_hints = HBoxContainer.new()
 	control_hints.position = Vector2(32,1033)
 	control_hints.add_theme_constant_override("separation",10)
 	root.add_child(control_hints)
 	# Ability readouts sit beside the weapon slots inside the loadout plate.
-	turret_hints.position=LOADOUT.position+Vector2(400,86)
+	turret_hints.position=Vector2(HINT_X,HINT_Y+96)
 	root.add_child(turret_hints)
-	turret_hints.position=LOADOUT.position+Vector2(400,78);turret_hints.add_theme_constant_override("separation",6)
+	turret_hints.position=Vector2(HINT_X,HINT_Y+88);turret_hints.add_theme_constant_override("separation",6)
 	turret_icon=TextureRect.new();turret_icon.custom_minimum_size=Vector2(34,34);turret_icon.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;turret_icon.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;turret_icon.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	turret_shade=ColorRect.new();turret_shade.color=Color(0,0,0,.6);turret_shade.mouse_filter=Control.MOUSE_FILTER_IGNORE;turret_icon.add_child(turret_shade)
 	turret_status=label("",14,ThemeTokens.STAR_GOLD);turret_status.size_flags_vertical=Control.SIZE_SHRINK_CENTER
 	turret_next=label("",13,Color("a1ada8"));turret_next.size_flags_vertical=Control.SIZE_SHRINK_CENTER
 	turret_next_icon=TextureRect.new();turret_next_icon.custom_minimum_size=Vector2(22,22);turret_next_icon.expand_mode=TextureRect.EXPAND_IGNORE_SIZE;turret_next_icon.stretch_mode=TextureRect.STRETCH_KEEP_ASPECT_CENTERED;turret_next_icon.size_flags_vertical=Control.SIZE_SHRINK_CENTER;turret_next_icon.modulate=Color(1,1,1,.7);turret_next_icon.mouse_filter=Control.MOUSE_FILTER_IGNORE
 	for part in [turret_status,turret_icon,turret_next,turret_next_icon]: turret_hints.add_child(part)
-	slam_status=label("",14,ThemeTokens.STAR_GOLD);slam_status.position=LOADOUT.position+Vector2(400,56);root.add_child(slam_status)
-	dash_status=label("",14,ThemeTokens.STAR_GOLD);dash_status.position=LOADOUT.position+Vector2(400,34);root.add_child(dash_status)
-	trick_status=label("",14,ThemeTokens.STAR_GOLD);trick_status.position=LOADOUT.position+Vector2(400,12);root.add_child(trick_status)
-	rope_status=label("",14,ThemeTokens.STAR_GOLD);rope_status.position=LOADOUT.position+Vector2(400,-10);root.add_child(rope_status)
+	slam_status=label("",14,ThemeTokens.STAR_GOLD);slam_status.position=Vector2(HINT_X,HINT_Y+66);root.add_child(slam_status)
+	dash_status=label("",14,ThemeTokens.STAR_GOLD);dash_status.position=Vector2(HINT_X,HINT_Y+44);root.add_child(dash_status)
+	trick_status=label("",14,ThemeTokens.STAR_GOLD);trick_status.position=Vector2(HINT_X,HINT_Y+22);root.add_child(trick_status)
+	rope_status=label("",14,ThemeTokens.STAR_GOLD);rope_status.position=Vector2(HINT_X,HINT_Y);root.add_child(rope_status)
+	# Without plates behind them, the vitals and loadout texts get a dark outline.
+	for text in [health_text,shield_text,armor_text,coins,slam_status,dash_status,trick_status,rope_status,root.find_child("EdgeLevel",true,false),root.find_child("EdgeXP",true,false)]:
+		if text is Label: text.add_theme_color_override("font_outline_color",Color(0,0,0,.85));text.add_theme_constant_override("outline_size",5)
 	# The combo meter on the right edge, under the map and timer.
 	combo=ComboMeter.new();combo.position=Vector2(1660,470);root.add_child(combo)
 	# The co-op rescue code, centred above the interaction prompt.
@@ -614,7 +632,7 @@ func update(delta: float):
 		rescue_text.text=("BEING REVIVED" if game.update.downed else "REVIVING FRIEND")+"  ·  CODE %d / %d" % [roundi(progress/3.0*RescueCode.LENGTH),RescueCode.LENGTH]
 	coins.text = "%d gold  ·  chest %d" % [game.gold,game.rules.chest_price(game.paid_chests,game.stats.discount)]
 	box_counter.visible=false
-	weapons.refresh()
+	weapons.refresh();card_bar.refresh();card_bar.visible=weapons.visible or game.mode=="playing"
 	slam_status.visible=not modal.visible and game.mode=="playing"
 	slam_status.text="[%s] %s" % [ControlBindings.display(game.career.data.settings,"slam","controller" if game.input_kind=="xbox" else "keyboard"),"SLAM" if game.slam_cooldown<=0 else "%.1fs" % game.slam_cooldown]
 	slam_status.add_theme_color_override("font_color",READY_GREEN if game.slam_cooldown<=0 else ThemeTokens.STAR_GOLD)
@@ -1196,6 +1214,7 @@ func update_block_drop_overlay():
 	elif not wanted and wait_room.get_parent()==root: root.remove_child(wait_room)
 
 func icon_key(item: Dictionary) -> String:
+	if item.kind=="card": return str(item.stat)
 	return str(item.weapon_id) if item.kind=="evolution" else item.id
 
 func offer_card(item: Dictionary, index: int, select: Callable) -> Button:
@@ -1220,7 +1239,7 @@ func offer_card(item: Dictionary, index: int, select: Callable) -> Button:
 	column.offset_left=10 if compact else 21;column.offset_right=-10 if compact else -21;column.offset_top=12 if compact else 18;column.offset_bottom=-12 if compact else -18
 	column.mouse_filter=Control.MOUSE_FILTER_IGNORE;column.add_theme_constant_override("separation",5 if compact else 8)
 	# Rarity bar with glow
-	var rarity=label(("WEAPON EVOLUTION" if item.kind=="evolution" else ("EVOLUTION KEY · " if item.has("catalyst_for") else "")+RunRules.RARITIES[item.tier].to_upper())+"   ·   #"+str(index+1),12,accent.darkened(.4))
+	var rarity=label(("WEAPON EVOLUTION" if item.kind=="evolution" else ("EVOLUTION KEY · " if item.has("catalyst_for") else "")+("CARD · " if item.kind=="card" else "")+RunRules.RARITIES[item.tier].to_upper())+"   ·   #"+str(index+1),12,accent.darkened(.4))
 	rarity.add_theme_color_override("font_outline_color",accent);rarity.add_theme_color_override("font_outline_color",accent)
 	rarity.add_theme_font_size_override("font_size",12)
 	rarity.add_theme_color_override("font_color",accent.lightened(.3))
@@ -1249,7 +1268,7 @@ func offer_card(item: Dictionary, index: int, select: Callable) -> Button:
 		var owned=game.equipped.filter(func(w):return w.id==item.id)
 		if not owned.is_empty():
 			note="Equipped: Rank %d → %d" % [owned[0].rank,owned[0].rank+1]
-		elif game.equipped.size()>=3:
+		elif game.equipped.size()>=RunRules.WEAPON_CAP:
 			note="New weapon — full slot required"
 		else:
 			note="New weapon — fills empty slot"
@@ -1263,6 +1282,10 @@ func offer_card(item: Dictionary, index: int, select: Callable) -> Button:
 		var fit=UpgradeFit.describe(game,item);note=fit.text;useful=fit.useful
 		var unlocks=game.equipped.filter(func(w):return w.id==item.get("catalyst_for",""))
 		if not unlocks.is_empty(): note="EVOLUTION KEY · lets %s evolve into %s" % [unlocks[0].name,WeaponEvolution.evolved_name(unlocks[0])];useful=true
+		elif item.kind=="card":
+			var held=int(game.cards.get(str(item.stat),0))
+			note=("Card Lv %d → %d" % [held,held+1]) if held>0 else ("New card · slot %d/%d" % [game.cards.size()+1,Loadout.CARD_SLOTS])
+			useful=true
 	var footer=label(note,12 if compact else 15,Color("8ee4b3") if useful else Color("973426"))
 	footer.name="LoadoutBenefit";footer.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;footer.custom_minimum_size.y=48 if compact else 68
 	footer.max_lines_visible=4;footer.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS

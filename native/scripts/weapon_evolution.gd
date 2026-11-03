@@ -80,7 +80,14 @@ static func card(weapon: Dictionary) -> Dictionary:
 # A card of the catalyst stat, rolled like any other, marked with what it evolves.
 static func catalyst_card(g,weapon: Dictionary,kind: String) -> Dictionary:
 	var key=str(form(str(weapon.id)).catalyst)
-	var pool: Array=g.rules.mechanic_pools.get(kind,{}).get(key,[])
+	# Big update MB: a catalyst that is a card stat comes as that card, if it
+	# is held or a card slot is free.
+	if Loadout.CARDS.has(key):
+		if g.rules.banished.has(key) or (not g.cards.has(key) and Loadout.cards_full(g.cards)): return {}
+		var card=Loadout.card_offer(key,g.rules.rarity(float(g.stats.luck)),int(g.cards.get(key,0)))
+		card.catalyst_for=str(weapon.id)
+		return card
+	var pool: Array=g.rules.mechanic_pools.get("item" if kind=="skill" else kind,{}).get(key,[])
 	if pool.is_empty() or g.rules.banished.has(key): return {}
 	var item: Dictionary=pool[g.rules.rng.randi_range(0,pool.size()-1)].duplicate(true)
 	item.tier=g.rules.rarity(float(g.stats.luck));item.strength=[1.0,2.0,3.5,5.5][item.tier]

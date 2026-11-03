@@ -31,7 +31,7 @@ static func run(game: Node3D) -> Dictionary:
 	checks.evolution_every_weapon=game.rules.data.weapons.all(func(w):return not WeaponEvolution.form(w.id).is_empty())
 	game.hud.weapons.refresh()
 	var ready_tag=game.hud.weapons.find_children("EvolveTag","Label",true,false)
-	checks.evolution_ready_hint=not ready_tag.is_empty() and ready_tag[0].text=="EVOLVE READY"
+	checks.evolution_ready_hint=not ready_tag.is_empty() and ready_tag[0].text=="✦"
 	# A real chest purchase: the reveal leads to an offer whose first card evolves the gun.
 	game.make_chest(game.player.position+Vector3(2,0,0),false);var chest=game.chests[-1];chest.mimic=false;chest.free=true
 	game.buy_chest(chest)
@@ -54,7 +54,7 @@ static func run(game: Node3D) -> Dictionary:
 	checks.evolution_held_halo=not game.avatar.held.is_empty() and game.avatar.held[0].evolved
 	game.hud.weapons.refresh()
 	var evolved_tag=game.hud.weapons.find_children("EvolveTag","Label",true,false)
-	checks.evolution_hud_slot=not evolved_tag.is_empty() and evolved_tag[0].text=="EVOLVED"
+	checks.evolution_hud_slot=not evolved_tag.is_empty() and evolved_tag[0].text=="★"
 	checks.evolution_once=WeaponEvolution.inject(game,game.rules.offers("item",0,false,game.stats,game.equipped),"chest").all(func(i):return i.kind!="evolution")
 	# Its shots: gilded and piercing two more enemies than the plain gun's.
 	game.hud.close();game.mode="playing"

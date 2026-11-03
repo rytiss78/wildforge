@@ -87,7 +87,7 @@ static func run(g):
 	g.sound.tick(.1,false,false);checks.music_paused=g.sound.drums.stream_paused
 	g.events.eclipse=true;g.sound.tick(.1,true,false)
 	checks.eclipse_mix=g.sound.eclipse_music.playing and g.sound.eclipse_music.stream.resource_path.ends_with("eclipse_game_mix.wav")
-	checks.eclipse_ducked=g.sound.drums.volume_db==-80 and is_equal_approx(g.sound.eclipse_music.volume_db,linear_to_db(maxf(.0001,float(g.career.data.settings.music)))-8)
+	checks.eclipse_ducked=g.sound.drums.volume_db==-80 and is_equal_approx(g.sound.eclipse_music.volume_db,linear_to_db(maxf(.0001,float(g.career.data.settings.music)))-8-RunSound.MUSIC_TRIM)
 	var song=g.sound.eclipse_music.stream;checks.eclipse_loop=absf(float(song.loop_end)/song.mix_rate-song.get_length())<.001
 	g.events.eclipse=false;g.sound.tick(.1,true,false)
 	checks.music_resumes=not g.sound.eclipse_music.playing and g.sound.drums.playing

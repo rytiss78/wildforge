@@ -29,7 +29,7 @@ static func run(game: Node3D):
 		map_colors[color.to_html()]=true
 	checks.minimap_biome_palette=map_colors.size()==RealmWorld.BIOME_COUNT
 	checks.minimap_interactions=minimap.interactables.any(func(i):return i.kind=="merchant") and minimap.interactables.any(func(i):return i.kind=="supply") and not minimap.interactables.any(func(i):return i.kind=="landmark")
-	checks.rare_boxes=game.rules.chest_price(0)==30 and RunRules.WEAPON_CAP==3
+	checks.rare_boxes=game.rules.chest_price(0)==30 and RunRules.WEAPON_CAP==4
 	checks.achievements=game.career.achievements.size()==93 and game.career.achievements.map(func(a):return a.id).size()==93
 	game.clear_entities();game.spawn_formation()
 	var formation=game.enemies.filter(func(enemy):return int(enemy.get("formation_id",-1))>0)
@@ -130,7 +130,7 @@ static func run(game: Node3D):
 		var banned_mutation=str(game.offers[mutation_slot].id).trim_prefix("mut:")
 		# The replaced panel is freed at the end of the frame; press the newest one.
 		game.update.focused_offer=mutation_slot;banish_button.back().pressed.emit()
-		checks.banish_keeps_mutations=game.offers.filter(func(i):return i.kind=="mutation").size()==3
+		checks.banish_keeps_mutations=game.offers.filter(func(i):return i.kind=="mutation").size()==1
 		checks.banish_mutation_gone=game.rules.banished.has("mut:"+banned_mutation) and not game.offers.any(func(i):return i.id=="mut:"+banned_mutation)
 		for i in range(40): checks.banish_mutation_gone=checks.banish_mutation_gone and MutationBook.roll(game,[]).get("id","")!="mut:"+banned_mutation
 	game.rules.banished=banishes;game.hud.close();game.mode="playing"
@@ -209,6 +209,30 @@ static func run(game: Node3D):
 	var slot_sounds=["slot-spin","slot-stop-0","slot-stop-1","slot-stop-2","slot-stop-3","slot-tension","slot-jackpot"].all(func(n):return ResourceLoader.exists("res://assets/audio/effects/"+n+".wav"))
 	checks.slot_reels=slot_order and slot_land and float(slot_show.decels[2])>float(slot_show.decels[0])*2.0 and float(slot_show.decels[4])>float(slot_show.decels[0]) and slot_sounds and float(slot_show.stops[4])<=3.0
 	slot_show.free()
+	# Big update MB: four weapon slots and four card slots; items uncapped.
+	# Full weapon slots: no other weapon is offered. Full card slots: only
+	# levels of the held cards. Chests hold items only (no card stats, no
+	# weapon upgrades). A taken card counts a level.
+	var hand=game.rules.data.weapons.filter(func(w):return not w.get("turret",false)).slice(0,4).map(func(w):var copy=w.duplicate(true);copy.rank=1;return copy)
+	var held={"damage":2,"maxHp":1,"speed":1,"crit":1}
+	var mb_weapons=true;var mb_cards=true;var mb_fresh_card=false;var mb_fresh_weapon=false
+	for k in range(40):
+		for offer in game.rules.level_offers(0.3,game.stats,hand,held):
+			if offer.kind=="weapon" and not hand.any(func(w):return w.id==offer.id): mb_weapons=false
+			if offer.kind=="card" and not held.has(offer.stat): mb_cards=false
+		for offer in game.rules.level_offers(0.3,game.stats,hand.slice(0,2),{"damage":1}):
+			if offer.kind=="card" and offer.stat!="damage": mb_fresh_card=true
+			if offer.kind=="weapon" and not hand.slice(0,2).any(func(w):return w.id==offer.id): mb_fresh_weapon=true
+	var mb_chest=true
+	for k in range(40):
+		for offer in game.rules.offers("item",0.3,false,game.stats,hand):
+			if offer.kind!="weapon" and (offer.get("slot","item")!="item" or Loadout.CARDS.has(str(offer.effects[0].key))): mb_chest=false
+	var sorted_all=game.rules.data.loot.all(func(i):return i.slot in ["card","item","weapon_up"] and (i.slot!="card" or Loadout.CARDS.has(str(i.effects[0].key))))
+	var card_before=game.cards.duplicate();var mb_hp=game.stats.maxHp
+	game.mode="offer";game.offers=[Loadout.card_offer("maxHp",0,int(game.cards.get("maxHp",0)))];game.offer_source="level";game.choose_offer(0)
+	var counted=int(game.cards.get("maxHp",0))==int(card_before.get("maxHp",0))+1 and game.stats.maxHp>mb_hp
+	game.cards=card_before
+	checks.mb_slots=RunRules.WEAPON_CAP==4 and Loadout.CARD_SLOTS==4 and mb_weapons and mb_cards and mb_fresh_card and mb_fresh_weapon and mb_chest and sorted_all and counted
 	# XP orb pickups tick up a scale while they keep coming (November 2).
 	game.sound.xp_streak=0;game.sound.xp_last=-10.0;game.sound.xp_last_tick=-10.0
 	for k in range(10): game.sound.xp_tick()
