@@ -59,7 +59,7 @@ static func glide(g,enemy: Dictionary,body: CharacterBody3D,delta: float) -> boo
 	if g.world.realm==RealmWorld.ARENA: return false
 	var flying=enemy.get("flying",false)
 	var at=body.position;var ground=g.world.height_at(at.x,at.z)
-	if not flying and at.y>ground+.12: return false  # airborne: falls with physics
+	if not flying and at.y>ground+.12 and not enemy.get("climbing",false): return false  # airborne: falls with physics
 	var step=Vector3(body.velocity.x,0,body.velocity.z)*delta
 	var next=at+step
 	if Vector2(next.x,next.z).length()>g.world.shore_radius(next)-RealmWorld.RIM_START-4.0: return false
@@ -69,7 +69,16 @@ static func glide(g,enemy: Dictionary,body: CharacterBody3D,delta: float) -> boo
 	if not open(g,enemy,body,delta): slid+=1;return false
 	var next_ground=g.world.height_at(next.x,next.z)
 	var run=Vector2(next.x-at.x,next.z-at.z).length()
-	if run>.0001 and (next_ground-ground)/run>MAX_SLOPE: return false
+	# Too steep to walk: monsters walk straight up the wall (user, November 3:
+	# "in Megabonk monsters can walk straight up the wall"). They rise in place
+	# at about their walking pace until their feet clear the top, then step on.
+	if run>.0001 and (next_ground-ground)/run>MAX_SLOPE and not flying:
+		if next_ground-at.y>.05:
+			enemy.climbing=true
+			body.position=Vector3(at.x,minf(next_ground,at.y+maxf(2.5,Vector2(body.velocity.x,body.velocity.z).length()*1.2)*delta),at.z);body.velocity.y=0
+			glided+=1
+			return true
+	enemy.climbing=false
 	if flying: next.y=maxf(next_ground,at.y+body.velocity.y*delta)
 	else: next.y=next_ground;body.velocity.y=0
 	body.position=next

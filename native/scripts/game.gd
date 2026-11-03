@@ -3155,7 +3155,9 @@ func run_smoke():
 	clear_entities();mode="playing";spawn_clock=999;xp=0;storm_clock=999;nova_clock=999
 	stats.dodge=0;stats.armor=0;stats.regen=0;stats.auraDamage=0;stats.shield=0;stats.fallGuard=0;shield_hp=0;invulnerable=0;hp=1000;stats.maxHp=1000
 	buffs.clear();stats.fallThreshold=0;stats.jumpShield=0;stats.landingHeal=0
-	player.position=Vector3(0,12,0);player.velocity=Vector3.ZERO;player.reset_physics_interpolation();peak_height=12;landing_ready=true;slamming=false
+	# A 12 m drop onto whatever this map has underfoot.
+	var drop_top=world.height_at(0,0)+12
+	player.position=Vector3(0,drop_top,0);player.velocity=Vector3.ZERO;player.reset_physics_interpolation();peak_height=drop_top;landing_ready=true;slamming=false
 	var before_fall=health_damage
 	await get_tree().create_timer(1.4).timeout
 	checks.real_fall_damage=health_damage-before_fall>19 and health_damage-before_fall<21 and player.is_on_floor()

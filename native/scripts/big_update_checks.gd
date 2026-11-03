@@ -296,9 +296,9 @@ static func run(game: Node3D):
 		var p=Vector2(randf_range(-200,200),randf_range(-200,200));var kind=Labyrinth.cell_kind(lab,p.x,p.y)
 		floors[kind]=true;if kind==9: walls_seen=true
 	for k in range(400):
-		var i=randi()%int(lab.n);var j=randi()%int(lab.n)
-		var edge_x=float(lab.origin)+(i+1)*Labyrinth.CELL;var z=float(lab.origin)+(j+randf())*Labyrinth.CELL
-		if absf(Labyrinth.lift(lab,edge_x-.001,z)-Labyrinth.lift(lab,edge_x+.001,z))>.05: seams+=1
+		var corridor_lab=Labyrinth.plan(game.seed_value,4);var i=randi()%int(corridor_lab.n);var j=randi()%int(corridor_lab.n)
+		var edge_x=float(corridor_lab.origin)+(i+1)*Labyrinth.CELL;var z=float(corridor_lab.origin)+(j+randf())*Labyrinth.CELL
+		if absf(Labyrinth.lift(corridor_lab,edge_x-.001,z)-Labyrinth.lift(corridor_lab,edge_x+.001,z))>.05: seams+=1
 	# (A few steps where walls meet at a corner are fine: the mesh stays whole.)
 	checks.mb_labyrinth=floors.has(1) and floors.has(2) and floors.has(3) and walls_seen and Labyrinth.plan(game.seed_value,0).is_empty() and not Labyrinth.active(0)
 	checks.mb_labyrinth_seams=seams<40

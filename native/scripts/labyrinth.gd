@@ -29,8 +29,8 @@ class_name Labyrinth
 # map with it, just make it flat"):
 #   corridors  Junkyard Planet: one flat floor, a maze of tall scrap walls
 #   terraces   Moon Craters, Starfall Space: the Megabonk-style hill of floors
-const MAPS=[2,4,6]
-const STYLES={2:"terraces",4:"corridors",6:"terraces"}
+const MAPS=[2,3,4,6]
+const STYLES={2:"terraces",3:"terraces",4:"corridors",6:"terraces"}
 const CORRIDOR_WALL=5.0
 const CELL=28.0
 const FLOOR=5.0
@@ -55,6 +55,9 @@ static func plan(seed_value: int,realm: int) -> Dictionary:
 	if not active(realm): return {}
 	var key=str(seed_value)+":"+str(realm)
 	if cache.has(key): return cache[key]
+	# Megabonk-style terraced stages are their own generator (Terraces).
+	if STYLES[realm]=="terraces":
+		cache[key]=Terraces.plan(seed_value,realm);return cache[key]
 	var rng=RandomNumberGenerator.new();rng.seed=seed_value*7+realm*101+3
 	# Terraces fill the whole island like a Megabonk stage (tiles to the coast);
 	# the flat corridor maze keeps to the middle ring.
@@ -147,11 +150,14 @@ static func open(lab: Dictionary,i: int,j: int,di: int,dj: int) -> bool:
 	return j-1>=0 and lab.south[(j-1)*n+i]==1
 
 # Extra terrain height at a point.
-static func lift(lab: Dictionary,x: float,z: float) -> float: return probe(lab,x,z).x
+static func lift(lab: Dictionary,x: float,z: float) -> float:
+	if lab.has("terraces"): return Terraces.lift(lab,x,z)
+	return probe(lab,x,z).x
 
 # x: extra height; y: 1 inside a wall band.
 static func probe(lab: Dictionary,x: float,z: float) -> Vector2:
 	if lab.is_empty(): return Vector2.ZERO
+	if lab.has("terraces"): return Terraces.probe(lab,x,z)
 	var gx=(x-float(lab.origin))/CELL;var gz=(z-float(lab.origin))/CELL
 	var i=int(floor(gx));var j=int(floor(gz))
 	var n: int=lab.n
@@ -178,6 +184,7 @@ static func probe(lab: Dictionary,x: float,z: float) -> Vector2:
 
 # For the minimap: 0 open ground, 1-5 floors, 9 cliff wall.
 static func cell_kind(lab: Dictionary,x: float,z: float) -> int:
+	if lab.has("terraces"): return Terraces.cell_kind(lab,x,z)
 	var at=probe(lab,x,z)
 	var gx=(x-float(lab.origin))/CELL;var gz=(z-float(lab.origin))/CELL
 	var base=floor_of(lab,int(floor(gx)),int(floor(gz)))
@@ -190,6 +197,7 @@ static func cell_kind(lab: Dictionary,x: float,z: float) -> int:
 static func build_walls(world):
 	var lab: Dictionary=world.labyrinth
 	if lab.is_empty(): return
+	if lab.has("terraces"): Terraces.build(world);return
 	var n: int=lab.n;var origin: float=lab.origin
 	var segments=[]
 	for j in range(-1,n):
@@ -209,7 +217,7 @@ static func build_walls(world):
 					var axis=Vector2(0,1) if d.x==1 else Vector2(1,0)
 					for side in [-1,1]: segments.append({"mid":mid+axis*side*(CELL*.5-JAMB*.5+2.25),"along_x":d.x==0,"top":top,"low":low,"length":JAMB+4.5})
 	if segments.is_empty(): return
-	var root=StaticBody3D.new();root.name="LabyrinthWalls";root.collision_layer=1;world.add_child(root)
+	var root=StaticBody3D.new();root.name="LabyrinthWalls";root.collision_layer=1;root.set_meta("terrain",true);world.add_child(root)
 	# Walls wear the map's own ground (the terrain shader paints by world
 	# position and this map's biome), so they read as part of the island, with a
 	# slightly darker edge where the top meets the side (user, November 3: the
@@ -242,6 +250,7 @@ const FLAT_Y=1.0
 const FLAT_EASE=18.0
 static func flatness(lab: Dictionary,x: float,z: float) -> float:
 	if lab.is_empty(): return 0.0
+	if lab.has("terraces"): return Terraces.flatness(lab,x,z)
 	var gx=(x-float(lab.origin))/CELL;var gz=(z-float(lab.origin))/CELL
 	var i=int(floor(gx));var j=int(floor(gz))
 	if is_maze(lab,i,j): return 1.0
