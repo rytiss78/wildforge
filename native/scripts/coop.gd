@@ -1114,7 +1114,9 @@ func apply_world(message: Dictionary):
 		last_snapshot_seq=seq
 	# Refresh shared progression even when no level-up message is in flight.
 	game.level=int(message.get("level",game.level))
+	var xp_before=game.xp
 	game.xp=int(message.get("xp",game.xp))
+	if game.xp>xp_before and game.mode=="playing": game.sound.xp_tick()
 	game.xp_target=int(message.get("xp_target",game.xp_target))
 	game.update.run_xp=int(message.get("run_xp",game.update.run_xp))
 	# A full snapshot carries everything; a split one (snapshot_packets) carries

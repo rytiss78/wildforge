@@ -498,6 +498,25 @@ static func make_achievement_chime() -> AudioStreamWAV:
 # Each plays on its own short-lived player so quick reel stops never cut each
 # other off; the spin is one looping player.
 var slot_spinner: AudioStreamPlayer
+# XP orb pickups (user, November 2): a tiny credit blip that climbs a scale
+# while orbs keep coming, like a slot machine counting up a win; every tenth
+# pickup in a streak adds a sparkle. A pause of XP_STREAK_GAP starts it over.
+const XP_SCALE=[1.0,1.125,1.25,1.5,1.667,2.0,2.25,2.5,3.0,3.333]
+const XP_STREAK_GAP=.7
+const XP_TICK_GAP=.045
+var xp_streak=0
+var xp_last=-10.0
+var xp_last_tick=-10.0
+func xp_tick():
+	var now=Time.get_ticks_msec()/1000.0
+	if now-xp_last>XP_STREAK_GAP: xp_streak=0
+	xp_last=now;xp_streak+=1
+	if xp_streak%10==0: slot("xp-chime",1.0,-9.0)
+	if now-xp_last_tick<XP_TICK_GAP: return
+	xp_last_tick=now
+	var step=mini(xp_streak-1,XP_SCALE.size()-1)
+	slot("xp-tick",XP_SCALE[step]*(.94 if step==0 else 1.0),-12.0)
+
 func slot(id: String,pitch: float=1.0,db: float=0.0):
 	if float(settings.get("sfx",0))<=0: return
 	var key="slot_"+id

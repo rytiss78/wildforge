@@ -209,6 +209,10 @@ static func run(game: Node3D):
 	var slot_sounds=["slot-spin","slot-stop-0","slot-stop-1","slot-stop-2","slot-stop-3","slot-tension","slot-jackpot"].all(func(n):return ResourceLoader.exists("res://assets/audio/effects/"+n+".wav"))
 	checks.slot_reels=slot_order and slot_land and float(slot_show.decels[2])>float(slot_show.decels[0])*2.0 and float(slot_show.decels[4])>float(slot_show.decels[0]) and slot_sounds and float(slot_show.stops[4])<=3.0
 	slot_show.free()
+	# XP orb pickups tick up a scale while they keep coming (November 2).
+	game.sound.xp_streak=0;game.sound.xp_last=-10.0;game.sound.xp_last_tick=-10.0
+	for k in range(10): game.sound.xp_tick()
+	checks.xp_ticks=game.sound.xp_streak==10 and ResourceLoader.exists("res://assets/audio/effects/xp-tick.wav") and ResourceLoader.exists("res://assets/audio/effects/xp-chime.wav")
 	game.stats.dodge=combo_dodge;game.hp=combo_hp;game.invulnerable=5.0
 	# Rescue code (October 29): beside a downed friend the code appears; half of it
 	# shows half progress, a wrong arrow starts over, a hit resets it, and the full

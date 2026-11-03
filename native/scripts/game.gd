@@ -2055,6 +2055,7 @@ func update_pickups(delta: float):
 				var gain=stat("xpGain") if target.id==coop.local_id else float(coop.members[target.id].get("stats",{}).get("xpGain",1))
 				var gained=roundi(pickup.value*gain)
 				update.run_xp+=gained;xp+=gained
+				if target.id==coop.local_id: sound.xp_tick()
 				if xp>=xp_target: level_up()
 			pickup.node.queue_free();pickup.age=-1
 	pickups=pickups.filter(func(pickup):return pickup.age>=0)
