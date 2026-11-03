@@ -68,6 +68,7 @@ Megabonk-style structure with this game's own content: Megabonk's own items, boo
 - **Vitals:** health on top, one even row of shield, armor and evasion chips below.
 - **Labyrinths:** Cloudwilds, Moon Craters and Starfall Space are Megabonk-style terraced stages (`Terraces`): 32 m flat plateau tiles on four floors 8 m apart over the whole island, straight earth cliffs with a grass lip between floors, and whole tiles tilted into ramps (a spanning-tree height walk biased to a high ring, as in Megabonk's generator). Junkyard Planet keeps our own flat corridor maze (`Labyrinth`). Monsters walk straight up cliffs and walls, as in Megabonk; heroes take the ramps (or jump/rope).
 - **Look and sound (November 3):** cards are drawn as cards and items as objects (`ItemArt`); no map name plates (the narrator names the biome); own music per map (`make-map-music.py`, a little quieter); softer gun; Clutch holds a detailed AK-47 (`AkModel`); Digby's dig is a fall through the burning hollow inside the island.
+- **Clutch (November 3):** fully automatic AK-47 (10 rounds/s, 30-round magazine, 2.4 s reload with its own sound; same damage over a full cycle as before), no tracer beams, look speed 0.6, keys 1–4 for the four weapon slots, plate-free HUD that keeps cards, gold, buffs and level visible, gun damage numbers from his weapon list.
 
 ## Next
 

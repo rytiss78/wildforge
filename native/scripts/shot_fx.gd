@@ -97,13 +97,13 @@ static func puff(g: Node3D,kind: String,point: Vector3,velocity: Vector3):
 			var root=CombatInk.star(g,point+Vector3.UP*.55,.4,Color("ffd25a"),6.0,.16,1.0,"trail")
 			if root!=null: root.shards(Color("ffe08a"),2,1.8)
 
-static func muzzle(g: Node3D,origin: Vector3,aim: Vector3,kind: String):
+static func muzzle(g: Node3D,origin: Vector3,aim: Vector3,kind: String,scale: float=1.0):
 	var look=style(kind)
 	if look.impact=="pop" or kind.contains("bomb"): return
 	var size=1.6 if kind in ["rail","rocket"] or kind.contains("rocket") else 1.1 if look.width>.25 else .85
-	var root=CombatInk.star(g,origin+aim*.25,size,look.color,5.0 if look.width>.25 else 4.0,.12)
+	var root=CombatInk.star(g,origin+aim*.25*scale,size*scale,look.color,5.0 if look.width>.25 else 4.0,.12)
 	if root!=null:
-		root.shards(look.color,3,3.0)
+		if scale>=1.0: root.shards(look.color,3,3.0)
 		for part in root.parts: part.velocity=(aim*2.5+part.velocity*.4)
 
 static func impact(g: Node3D,point: Vector3,kind: String,critical: bool,direction: Vector3=Vector3.ZERO,evolved: bool=false):

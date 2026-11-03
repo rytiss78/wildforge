@@ -21,6 +21,7 @@ var hero_layer=Control.new()
 var shorts
 var wait_room: HBoxContainer
 var clutch_hidden=[]
+var clutch_plates=[]  # what Clutch's own screen replaces: vitals, weapon tiles, key hints
 # A new offer ignores confirm presses for a moment: Space and A spammed in Block
 # Drop used to pick whichever card had focus.
 var offer_guard=0.0
@@ -354,6 +355,7 @@ func setup(owner_game):
 	dash_status=label("",14,ThemeTokens.STAR_GOLD);dash_status.position=Vector2(HINT_X,HINT_Y+44);root.add_child(dash_status)
 	trick_status=label("",14,ThemeTokens.STAR_GOLD);trick_status.position=Vector2(HINT_X,HINT_Y+22);root.add_child(trick_status)
 	rope_status=label("",14,ThemeTokens.STAR_GOLD);rope_status.position=Vector2(HINT_X,HINT_Y);root.add_child(rope_status)
+	clutch_plates=[health_panel,weapons,trick_status,dash_status,slam_status,rope_status]
 	# Without plates behind them, the vitals and loadout texts get a dark outline.
 	for text in [health_text,shield_text,armor_text,dodge_text,coins,slam_status,dash_status,trick_status,rope_status,root.find_child("EdgeLevel",true,false),root.find_child("EdgeXP",true,false)]:
 		if text is Label: text.add_theme_color_override("font_outline_color",Color(0,0,0,.85));text.add_theme_constant_override("outline_size",5)
@@ -767,6 +769,8 @@ func update(delta: float):
 			label.position=Vector2(clampf(screen_size.x*dn.screen_x-label_size.x*.5,32,screen_size.x-label_size.x-32),band_bottom-label_size.y-rise)
 			# A weapon's own hits rise from its slot icon; all other damage keeps the band above.
 			var slot=weapons.slot_rect(str(dn.get("weapon_id",""))) if not str(dn.get("weapon_id","")).is_empty() else Rect2()
+			# Clutch's numbers rise from his own weapon rows (his tiles are hidden).
+			if ClutchPlay.first_person(game) and slot.size!=Vector2.ZERO: slot=clutch_hud.slot_rect(str(dn.weapon_id))
 			if slot.size!=Vector2.ZERO:
 				var top=damage_overlay.get_global_transform().affine_inverse()*Vector2(slot.get_center().x,slot.position.y)
 				var spread=float(int(dn.get("lane",0))%3-1)*30.0
@@ -789,13 +793,13 @@ func update(delta: float):
 	if not HeroRules.armed(game.hero): weapons.visible=false;turret_hints.visible=false
 	if not HeroRules.can_slam(game.hero): slam_status.visible=false
 	if not HeroRules.can_dash(game.hero): dash_status.visible=false
-	# Clutch has his own vitals and weapon readout: hide the usual plates.
-	# Only the plates themselves: the Block Drop wait room can sit in that corner
-	# too (it vanished for good after a Clutch run), and what was hidden comes
-	# back when he is down or the run is over.
+	# Clutch has his own vitals, weapon readout and key hints: hide only the
+	# plates his screen replaces. Cards, gold, buffs, level and XP stay (they
+	# were hidden with the whole corner after the four card slots came), and
+	# what was hidden comes back when he is down or the run is over.
 	if ClutchPlay.first_person(game):
-		for widget in root.get_children():
-			if widget is Control and widget.visible and widget!=clutch_hud and widget!=_ach_note_panel and widget!=wait_room and (VITALS.grow(40).has_point(widget.position) or LOADOUT.grow(60).has_point(widget.position)):
+		for widget in clutch_plates:
+			if is_instance_valid(widget) and widget.visible:
 				widget.visible=false
 				if not clutch_hidden.has(widget): clutch_hidden.append(widget)
 	elif not clutch_hidden.is_empty():

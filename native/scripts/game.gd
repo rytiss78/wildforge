@@ -2207,7 +2207,7 @@ func update_combat(delta: float):
 			weapon.node.get_meta("model").rank=weapon.rank;weapon.node.get_meta("model").tick(delta)
 		# Clutch aims by hand: only the active weapon, only while the trigger is held.
 		if not weapon.turret and ClutchPlay.is_clutch(self):
-			if weapon.clock<=0 and ClutchPlay.trigger(self,weapon): weapon.clock=1.0/(weapon.rate*stat("rate"))
+			if weapon.clock<=0 and ClutchPlay.trigger(self,weapon): weapon.clock=ClutchPlay.interval(self,weapon)
 			continue
 		if weapon.clock<=0:
 			if weapon.turret and TurretPulse.pulses(str(weapon.id)): TurretPulse.fire(self,weapon)

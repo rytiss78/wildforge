@@ -17,7 +17,7 @@ const EYE=1.55
 const FOV=74.0          # vertical; about a 106° horizontal view at 16:9
 const HEADSHOT=2.0      # damage on the glass orb (the weak spot)
 const ORB_GRACE=1.25    # the orb counts a little bigger than drawn
-const LOOK_SCALE=.7     # first-person look speed, of the third-person setting
+const LOOK_SCALE=.6     # first-person look speed, of the third-person setting (user: .7 still too fast)
 const LOCK_DAMAGE=5.0
 const STEALTH=4.0
 const LOCK_TIME=4.0
@@ -27,6 +27,14 @@ const LOCK_FIRE=.08     # radians off the head before it pulls the trigger
 const STEALTH_COOLDOWN=6.0
 const SNEAK_SPEED=.45
 const FRIENDLY=.5       # share of the damage his shots deal to other heroes
+# The AK-47 is fully automatic (user, November 3): 600 rounds a minute, 30 to a
+# magazine, then a reload. Each round carries a share of the old one-a-second
+# shot sized so that its damage over a whole magazine-and-reload cycle stays
+# what it was (rate upgrades still raise it).
+const AK_RATE=10.0
+const MAG=30
+const RELOAD=2.4
+const AK_SHARE=(MAG/AK_RATE+RELOAD)/(MAG/AK_RATE)/AK_RATE
 
 static var active_slot=0
 static var lock_until=-1.0
@@ -37,6 +45,8 @@ static var lock_target={}
 static var hit_flash=0.0
 static var head_flash=0.0
 static var headshot_kills=0
+static var ammo=MAG
+static var reload_left=0.0
 
 static func is_clutch(g) -> bool: return str(g.hero.get("id",""))=="clutch"
 static func first_person(g) -> bool: return is_clutch(g) and g.mode in ["playing","level_reveal"] and g.run_active and not g.update.downed
@@ -44,10 +54,17 @@ static func first_person(g) -> bool: return is_clutch(g) and g.mode in ["playing
 static func reset():
 	if is_instance_valid(view): view.queue_free()
 	view=null;view_id="";lock_target={}
-	active_slot=0;lock_until=-1.0;stealth_left=STEALTH;stealth_cooldown=0.0;sneaking=false;hit_flash=0.0;head_flash=0.0;headshot_kills=0
+	active_slot=0;lock_until=-1.0;ammo=MAG;reload_left=0.0;stealth_left=STEALTH;stealth_cooldown=0.0;sneaking=false;hit_flash=0.0;head_flash=0.0;headshot_kills=0
 
 # The hand weapons he can switch between (turrets are not held).
 static func held(g) -> Array: return g.equipped.filter(func(w):return not w.get("turret",false))
+
+static func is_ak(weapon: Dictionary) -> bool: return str(weapon.get("id",""))=="gun"
+static func reloading() -> bool: return reload_left>0
+
+# Seconds between his shots with this weapon (game.gd's weapon clock).
+static func interval(g,weapon: Dictionary) -> float:
+	return 1.0/AK_RATE if is_ak(weapon) else 1.0/(float(weapon.rate)*g.stat("rate"))
 
 static func active_weapon(g) -> Dictionary:
 	var hands=held(g)
@@ -67,6 +84,9 @@ static func place_camera(g,delta: float):
 # Late each physics frame: face the view, hide his own body, Shift and keys.
 static func late(g,delta: float):
 	hit_flash=maxf(0,hit_flash-delta);head_flash=maxf(0,head_flash-delta)
+	if reload_left>0:
+		reload_left-=delta
+		if reload_left<=0: reload_left=0.0;ammo=MAG
 	if not is_clutch(g): return
 	if not g.update.downed: g.avatar.rotation.y=g.yaw
 	# In first person his own body, hat and floating hand weapons would sit in
@@ -79,7 +99,7 @@ static func late(g,delta: float):
 	# Downed: watching a friend; the number keys are cheers, not weapons.
 	if g.update.downed: sneaking=false;return
 	if fps: aimbot(g,delta)
-	for i in range(3):
+	for i in range(RunRules.WEAPON_CAP):
 		if Input.is_physical_key_pressed(KEY_1+i) and i<held(g).size() and active_slot!=i:
 			active_slot=i;g.sound.effect("switch");show_active(g)
 	# Shift: sneak. Quiet and slow; enemies lose him while the stealth lasts.
@@ -117,7 +137,9 @@ static func view_model(g,fps: bool,delta: float):
 	if is_instance_valid(view):
 		kick=maxf(0,kick-delta*6.0)
 		var bob=sin(g.elapsed*9.0)*.012*clampf(Vector2(g.player.velocity.x,g.player.velocity.z).length()/6.0,0,1)
-		view.position=rest+Vector3(0,bob,kick*.06);view.rotation=Vector3(kick*.12,.03 if view_id=="gun" else .06,0)
+		# Reloading: the rifle dips and rolls toward him, then comes back up.
+		var dip=sin(PI*clampf(1.0-reload_left/RELOAD,0,1)) if reload_left>0 and view_id=="gun" else 0.0
+		view.position=rest+Vector3(0,bob-dip*.09,kick*.06);view.rotation=Vector3(kick*.12-dip*.55,.03 if view_id=="gun" else .06,dip*.5)
 
 static func speed_scale(g) -> float: return SNEAK_SPEED if is_clutch(g) and sneaking else 1.0
 
@@ -180,6 +202,7 @@ static func on_target(g) -> bool:
 # Fire the active weapon if the trigger is held (or the aimbot is on a head).
 static func trigger(g,weapon: Dictionary) -> bool:
 	if weapon!=active_weapon(g) or not first_person(g): return false
+	if is_ak(weapon) and reloading(): return false
 	if locked(g):
 		if not on_target(g): return false
 		shoot(g,weapon);return true
@@ -198,15 +221,21 @@ static func shoot(g,weapon: Dictionary):
 	var pellets=(3 if kind=="shotgun" else 1)+int(mods.get("extraShots",0))+mini(4,int(g.stats.multishot))
 	var base=g.stat("damage")*weapon.damage*float(weapon.get("power",1.0))*float(g.stats.get(kind+"Power",1.0))
 	if locked: base*=LOCK_DAMAGE
+	if is_ak(weapon): base*=float(weapon.rate)*g.stat("rate")*AK_SHARE
 	g.sound.effect(SkillBook.sound(kind),origin)
 	var muzzle=g.player.position+Vector3.UP*(EYE-.25)+(-g.camera.global_basis.z)*.6+g.camera.global_basis.x*.25
-	ShotFx.muzzle(g,muzzle,aim,kind)
+	# The flash is small in first person: it sits a hand's length from the lens.
+	ShotFx.muzzle(g,muzzle,aim,kind,.2)
 	g.hit_shake=maxf(g.hit_shake,.03);kick=1.0
 	for i in range(pellets):
 		var dir=aim.rotated(Vector3.UP,(i-(pellets-1)*.5)*float(mods.get("spread",.05)))
 		var hit=cast(g,origin,dir,reach,locked)
 		var end: Vector3=hit.get("point",origin+dir*reach)
-		g.beam(muzzle,end,PowerIcon.color_for(kind))
+		# The AK leaves no tracer line (user: they looked like lasers), only a
+		# puff where the round lands; other weapons keep their beams.
+		if is_ak(weapon):
+			if not hit.has("enemy"): CombatInk.star(g,end,.3,Color("d8c9a6"),4.0,.1)
+		else: g.beam(muzzle,end,PowerIcon.color_for(kind))
 		# Explosive barrels are solid (layer 1), so the ray stops on them: light
 		# the one it struck (any barrel along the line up to the hit point).
 		if not g.barrels.is_empty(): ExplosiveBarrels.shot(g,origin,end+dir*.3)
@@ -222,6 +251,9 @@ static func shoot(g,weapon: Dictionary):
 				if hit.enemy.dead: headshot_kills+=1
 		elif hit.has("hero"):
 			friendly_hit(g,int(hit.hero),base*FRIENDLY)
+	if is_ak(weapon):
+		ammo-=1
+		if ammo<=0: ammo=0;reload_left=RELOAD;g.sound.effect("ak-reload",g.player.position+Vector3.UP*EYE)
 
 # The glass orbs of an enemy (most have one; the Grand Noggin's eyes are two),
 # as world centres and radii. Found once per enemy and kept on it.

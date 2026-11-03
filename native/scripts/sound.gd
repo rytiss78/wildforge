@@ -73,7 +73,7 @@ func setup(options: Dictionary):
 	settings = options
 	# enemy-*: the enemies' own low, growling attack sounds (scripts/make-enemy-audio.py),
 	# never used for a hero, so a player can tell by ear who is attacking.
-	for id in ["slam","dash","hit","shield-hit","deploy","switch","jump","land","freeze","heal","blast","nova","enemy-shot","enemy-impact","enemy-bite","headshot","car-crash","slime","pop"]:
+	for id in ["slam","dash","hit","shield-hit","deploy","switch","jump","land","freeze","heal","blast","nova","enemy-shot","enemy-impact","enemy-bite","headshot","car-crash","slime","pop","ak-reload"]:
 		effect_samples[id]=load("res://assets/audio/effects/"+id+".wav")
 	for id in WEAPON_SFX:
 		weapon_samples[id]=load("res://assets/audio/weapons/"+id+".wav")

@@ -314,6 +314,40 @@ static func run(game: Node3D) -> Dictionary:
 	game.update.downed=true;game.avatar.visible=true;ClutchPlay.late(game,1.0/60.0);game.hud.update(0)
 	checks.clutch_downed=had_view and ClutchPlay.view==null and game.avatar.visible and game.hud.clutch_hidden.is_empty() and game.hud.wait_room.visible
 	game.update.downed=false
+	# Four weapon slots (big update MB): keys 1-4 pick his held weapons; his
+	# screen hides only the plates it replaces (cards, gold and level stay); his
+	# gun damage rises from his own weapon rows.
+	for id in ["shotgun","rail","rocket"]:
+		for item in game.rules.data.weapons:
+			if item.id==id: game.equip_weapon(item)
+	var picked=[]
+	for k in range(RunRules.WEAPON_CAP):
+		var key=InputEventKey.new();key.physical_keycode=KEY_1+k;key.keycode=KEY_1+k;key.pressed=true;Input.parse_input_event(key);Input.flush_buffered_events()
+		ClutchPlay.late(game,1.0/60.0);picked.append(ClutchPlay.active_slot)
+		key=InputEventKey.new();key.physical_keycode=KEY_1+k;key.keycode=KEY_1+k;key.pressed=false;Input.parse_input_event(key);Input.flush_buffered_events()
+	checks.clutch_four_slots=ClutchPlay.held(game).size()==RunRules.WEAPON_CAP and picked==range(RunRules.WEAPON_CAP)
+	ClutchPlay.active_slot=0;game.hud.update(0)
+	checks.clutch_hud_keeps=ClutchPlay.first_person(game) and game.hud.card_bar.visible and not game.hud.weapons.visible and game.hud.clutch_hidden.has(game.hud.weapons) and game.hud.root.get_children().any(func(w):return w.name=="EdgeLevel" and w.visible)
+	game.damage_numbers.clear();game.record_damage_number(-5,30,"hit",game.player.position,"gun");game.hud.update(0)
+	var row=game.hud.clutch_hud.slot_rect("gun");var number=game.hud.damage_labels[0].get_global_rect() if not game.hud.damage_labels.is_empty() else Rect2()
+	checks.clutch_numbers=row.size!=Vector2.ZERO and absf(number.get_center().x-row.get_center().x)<row.size.x*.5+40 and number.end.y<=row.position.y+1
+	game.damage_numbers.clear()
+	# The AK-47 is automatic (10 rounds a second), 30 to a magazine, then a
+	# 2.4 s reload with its own sound; over a full cycle it deals what the old
+	# one-a-second rifle did. No tracer beams.
+	ClutchPlay.ammo=ClutchPlay.MAG;ClutchPlay.reload_left=0.0;ClutchPlay.active_slot=0
+	var ak=ClutchPlay.active_weapon(game);game.set_meta("test_trigger",true)
+	var rounds=0
+	for i in range(ClutchPlay.MAG+5):
+		if ClutchPlay.trigger(game,ak): rounds+=1
+	var empty=not ClutchPlay.trigger(game,ak) and ClutchPlay.reloading()
+	for i in range(int(ClutchPlay.RELOAD*60)+2): ClutchPlay.late(game,1.0/60.0)
+	var refilled=ClutchPlay.ammo==ClutchPlay.MAG and not ClutchPlay.reloading() and ClutchPlay.trigger(game,ak)
+	game.remove_meta("test_trigger")
+	var cycle=ClutchPlay.MAG/ClutchPlay.AK_RATE+ClutchPlay.RELOAD
+	var same_dps=is_equal_approx(ClutchPlay.MAG*ClutchPlay.AK_SHARE/cycle,1.0)
+	checks.clutch_ak=is_equal_approx(ClutchPlay.interval(game,ak),.1) and rounds==ClutchPlay.MAG and empty and refilled and same_dps and game.sound.effect_samples.has("ak-reload") and is_equal_approx(ClutchPlay.LOOK_SCALE,.6)
+	ClutchPlay.ammo=ClutchPlay.MAG;ClutchPlay.reload_left=0.0
 	ClutchPlay.reset()
 	game.clear_entities()
 	game.select_hero(saved_hero)

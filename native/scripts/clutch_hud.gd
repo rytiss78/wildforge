@@ -2,15 +2,21 @@ extends Control
 class_name ClutchHud
 
 # Clutch's own screen (first person): a gapped crosshair with hit markers,
-# health and armour in big digits bottom left, the weapon slots with their
-# number keys bottom right, and the Lock-On / Sneak readouts. Kills count on the
-# game's usual combo meter (right edge). Our own tactical-shooter style; drawn, no assets.
+# health with armour, shield and evasion in big digits bottom left, the weapon
+# slots with their number keys bottom right, and the Rope / Lock-On / Sneak
+# readouts. Kills count on the game's usual combo meter (right edge). Our own
+# tactical-shooter style; drawn, no assets. No dark plates (user, November 3:
+# minimal HUD): every line carries its own outline.
 
 var game: Node3D
 const GREEN=Color("6dff7a")
 const WHITE=Color("f2f2ea")
-const DIM=Color(.95,.95,.9,.45)
-const BACK=Color(0,0,0,.42)
+const DIM=Color(.95,.95,.9,.55)
+const INK=Color(0,0,0,.85)
+const ROW=40.0
+const ROW_W=330.0
+const MARGIN=40.0
+const BOTTOM=76.0  # clear of the XP meter and the key hint along the bottom edge
 
 func _ready():
 	mouse_filter=Control.MOUSE_FILTER_IGNORE
@@ -20,8 +26,25 @@ func _process(_delta: float):
 	visible=is_instance_valid(game) and ClutchPlay.first_person(game) and not game.hud.modal.visible
 	if visible: queue_redraw()
 
+func view_size() -> Vector2: return size if size.x>0 else get_viewport_rect().size
+
+# Screen rectangle of a held weapon's row; his gun damage rises from it, as
+# other heroes' numbers rise from their weapon tiles.
+func slot_rect(weapon_id: String) -> Rect2:
+	var hands=ClutchPlay.held(game);var view=view_size()
+	for i in range(hands.size()):
+		if str(hands[i].id)!=weapon_id: continue
+		var y=view.y-BOTTOM-(hands.size()-1-i)*ROW
+		var local=Rect2(Vector2(view.x-MARGIN-ROW_W,y-30),Vector2(ROW_W,36))
+		return get_global_transform()*local
+	return Rect2()
+
+func text(font: Font,at: Vector2,value: String,font_size: int,color: Color,align:=HORIZONTAL_ALIGNMENT_LEFT,width:=-1.0):
+	draw_string_outline(font,at,value,align,width,font_size,maxi(4,font_size/5),INK)
+	draw_string(font,at,value,align,width,font_size,color)
+
 func _draw():
-	var view=size if size.x>0 else get_viewport_rect().size
+	var view=view_size()
 	var font=ThemeDB.fallback_font
 	var c=view*.5
 	# Crosshair: four short bars with a gap; a hit marker on hits.
@@ -34,26 +57,34 @@ func _draw():
 			draw_line(c+d*7,c+d*15,Color(mark,clampf(ClutchPlay.hit_flash*6,0,1)),2.5)
 	if game.elapsed<ClutchPlay.lock_until:
 		draw_arc(c,30,0,TAU,40,Color(1,.3,.25,.8),2.0)
-	# Health and armour, bottom left.
-	var base=Vector2(40,view.y-46)
-	draw_rect(Rect2(base-Vector2(14,44),Vector2(360,58)),BACK)
-	draw_string(font,base,"✚",HORIZONTAL_ALIGNMENT_LEFT,-1,34,WHITE)
-	draw_string(font,base+Vector2(40,0),str(ceili(game.hp)),HORIZONTAL_ALIGNMENT_LEFT,-1,40,WHITE if game.hp>game.stats.maxHp*.25 else Color(1,.35,.3))
+	# Health, then armour, shield and evasion, bottom left.
+	var base=Vector2(MARGIN,view.y-BOTTOM)
+	text(font,base,"✚",34,WHITE)
+	text(font,base+Vector2(40,0),str(ceili(game.hp)),40,WHITE if game.hp>game.stats.maxHp*.25 else Color(1,.35,.3))
+	draw_rect(Rect2(base+Vector2(40,6),Vector2(110,4)),Color(0,0,0,.5))
 	draw_rect(Rect2(base+Vector2(40,6),Vector2(110*clampf(game.hp/maxf(1,game.stats.maxHp),0,1),4)),WHITE)
-	draw_string(font,base+Vector2(180,0),"⛨",HORIZONTAL_ALIGNMENT_LEFT,-1,32,WHITE)
-	draw_string(font,base+Vector2(216,0),str(ceili(game.shield_hp+float(game.stats.armor))),HORIZONTAL_ALIGNMENT_LEFT,-1,40,WHITE)
+	var x=180.0
+	for part in [["⛨",str(roundi(game.stat("armor")))],["◈",str(ceili(game.shield_hp))],["≋","%d%%" % roundi(game.stat("dodge")*100)]]:
+		text(font,base+Vector2(x,0),part[0],28,WHITE);text(font,base+Vector2(x+30,0),part[1],30,WHITE)
+		x+=30.0+font.get_string_size(part[1],HORIZONTAL_ALIGNMENT_LEFT,-1,30).x+22.0
 	# Weapon slots, bottom right; the active one bright.
-	var hands=ClutchPlay.held(game);var right=view.x-40
+	var hands=ClutchPlay.held(game);var right=view.x-MARGIN
 	for i in range(hands.size()):
-		var y=view.y-40-(hands.size()-1-i)*40
+		var y=view.y-BOTTOM-(hands.size()-1-i)*ROW
 		var on=i==ClutchPlay.active_slot
-		var text="%s   %d" % ["AK-47" if hands[i].id=="gun" else str(hands[i].name).to_upper(),i+1]
-		draw_rect(Rect2(Vector2(right-330,y-30),Vector2(330,36)),Color(0,0,0,.55) if on else BACK)
-		draw_string(font,Vector2(right-322,y),text,HORIZONTAL_ALIGNMENT_RIGHT,310,24 if on else 20,WHITE if on else DIM)
-	# Lock-On (V) and Sneak (Shift).
+		var label="%s   %d" % [str(hands[i].name).to_upper(),i+1]
+		if ClutchPlay.is_ak(hands[i]): label="AK-47   %s   %d" % ["RELOAD" if ClutchPlay.reloading() else "%d/%d" % [ClutchPlay.ammo,ClutchPlay.MAG],i+1]
+		text(font,Vector2(right-ROW_W,y),label,24 if on else 20,WHITE if on else DIM,HORIZONTAL_ALIGNMENT_RIGHT,ROW_W)
+		if on: draw_rect(Rect2(Vector2(right+8,y-22),Vector2(4,24)),GREEN)
+	# Rope (C), Lock-On (V) and Sneak (Shift).
 	var device="controller" if game.input_kind=="xbox" else "keyboard"
-	var lock="[%s] LOCK-ON  %s" % [ControlBindings.display(game.career.data.settings,"trick",device),"READY" if game.trick_cooldown<=0 else "%.0fs" % game.trick_cooldown]
-	draw_string(font,base+Vector2(-4,-64),lock,HORIZONTAL_ALIGNMENT_LEFT,-1,18,GREEN if game.trick_cooldown<=0 else DIM)
-	var sneak="[%s] SNEAK" % ControlBindings.display(game.career.data.settings,"dash",device)
-	draw_string(font,base+Vector2(-4,-88),sneak,HORIZONTAL_ALIGNMENT_LEFT,-1,18,GREEN if ClutchPlay.sneaking else (DIM if ClutchPlay.stealth_cooldown>0 else WHITE))
-	draw_rect(Rect2(base+Vector2(110,-100),Vector2(100*ClutchPlay.stealth_left/ClutchPlay.STEALTH,5)),GREEN if ClutchPlay.stealth_cooldown<=0 else DIM)
+	var settings=game.career.data.settings
+	var lock="[%s] LOCK-ON  %s" % [ControlBindings.display(settings,"trick",device),"READY" if game.trick_cooldown<=0 else "%.0fs" % game.trick_cooldown]
+	text(font,base+Vector2(-4,-58),lock,18,GREEN if game.trick_cooldown<=0 else DIM)
+	var sneak="[%s] SNEAK" % ControlBindings.display(settings,"dash",device)
+	text(font,base+Vector2(-4,-82),sneak,18,GREEN if ClutchPlay.sneaking else (DIM if ClutchPlay.stealth_cooldown>0 else WHITE))
+	var bar_at=base+Vector2(font.get_string_size(sneak,HORIZONTAL_ALIGNMENT_LEFT,-1,18).x+10,-90)
+	draw_rect(Rect2(bar_at,Vector2(100,5)),Color(0,0,0,.5))
+	draw_rect(Rect2(bar_at,Vector2(100*ClutchPlay.stealth_left/ClutchPlay.STEALTH,5)),GREEN if ClutchPlay.stealth_cooldown<=0 else DIM)
+	var rope="[%s] %s" % [ControlBindings.display(settings,"carry",device),"TOSS" if Lasso.mine>=0 else "ROPE" if Lasso.cooldown<=0 else "ROPE  %.1fs" % Lasso.cooldown]
+	text(font,base+Vector2(-4,-106),rope,18,WHITE if Lasso.cooldown<=0 else DIM)
