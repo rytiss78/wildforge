@@ -33,7 +33,7 @@ func _draw():
 		if i<stats.size():
 			look.bg_color=Color(.1,.12,.16,.85);look.border_color=ThemeTokens.STAR_GOLD
 			draw_style_box(look,rect)
-			StatGlyphs.draw_medallion(self,str(stats[i]),rect.position+Vector2(TILE.x*.5,24),19)
+			ItemArt.draw_card(self,str(stats[i]),rect.position+Vector2(TILE.x*.5,26),20)
 			draw_string_outline(font,Vector2(rect.position.x,rect.end.y-5),str(int(game.cards[stats[i]])),HORIZONTAL_ALIGNMENT_CENTER,TILE.x,15,4,Color(0,0,0,.85))
 			draw_string(font,Vector2(rect.position.x,rect.end.y-5),str(int(game.cards[stats[i]])),HORIZONTAL_ALIGNMENT_CENTER,TILE.x,15,Color("fff0c9"))
 		else:

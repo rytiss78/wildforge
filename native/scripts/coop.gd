@@ -891,7 +891,9 @@ func receive(sender: int,message):
 			if not accepted: send_to(sender,{"type":"chest_rejected","realm":game.realm})
 
 		elif kind=="hunt_start" and int(message.get("realm",-1))==game.realm and not frozen() and float(members[sender].get("hp",0))>0:
-			game.Hunt.activate(game,vector(members[sender].get("position",[])))
+			var started=game.Hunt.activate(game,vector(members[sender].get("position",[])))
+			if game.network_test_role!="" and not started: print("HUNT_REJECT mode=%s realm_time=%.1f state=%s dist=%.1f" % [game.mode,game.realm_time,game.Hunt.state(game),vector(members[sender].get("position",[])).distance_to(game.Hunt.shrine(game).position)])
+		elif kind=="hunt_start" and game.network_test_role!="": print("HUNT_IGNORED realm=%s/%s frozen=%s hp=%s" % [message.get("realm",-1),game.realm,frozen(),members[sender].get("hp",0)])
 		elif kind=="travel" and game.mode=="playing" and not frozen():
 			if vector(members[sender].get("position",[])).distance_to(game.gate_position)<5:
 				game.Journey.activate(game)

@@ -289,6 +289,24 @@ static func run(game: Node3D):
 	var flight=HellFlight.start(game,true,Underside.DIG);var flight_ok=is_instance_valid(flight) and flight.get_parent()==game.hud.root
 	flight.queue_free()
 	checks.mb_hell_flight=flight_ok and Underside.DIG>=1.5 and ["hell-flight","soul-wail-0","soul-wail-1","soul-wail-2"].all(func(n):return ResourceLoader.exists("res://assets/audio/effects/"+n+".wav"))
+	# Labyrinth maps (user, November 3): three floors, walls, ways in, and a
+	# seamless height across every cell edge; the first map stays open.
+	var lab=Labyrinth.plan(game.seed_value,2);var floors={};var walls_seen=false;var seams=0
+	for k in range(3000):
+		var p=Vector2(randf_range(-200,200),randf_range(-200,200));var kind=Labyrinth.cell_kind(lab,p.x,p.y)
+		floors[kind]=true;if kind==9: walls_seen=true
+	for k in range(400):
+		var i=randi()%int(lab.n);var j=randi()%int(lab.n)
+		var edge_x=float(lab.origin)+(i+1)*Labyrinth.CELL;var z=float(lab.origin)+(j+randf())*Labyrinth.CELL
+		if absf(Labyrinth.lift(lab,edge_x-.001,z)-Labyrinth.lift(lab,edge_x+.001,z))>.05: seams+=1
+	# (A few steps where walls meet at a corner are fine: the mesh stays whole.)
+	checks.mb_labyrinth=floors.has(1) and floors.has(2) and floors.has(3) and walls_seen and Labyrinth.plan(game.seed_value,0).is_empty() and not Labyrinth.active(0)
+	checks.mb_labyrinth_seams=seams<40
+	# Junkyard Planet keeps the flat corridor maze: one floor, tall walls.
+	var flat_lab=Labyrinth.plan(game.seed_value,4);var flat_kinds={}
+	for k in range(3000):
+		var p=Vector2(randf_range(-200,200),randf_range(-200,200));flat_kinds[Labyrinth.cell_kind(flat_lab,p.x,p.y)]=true
+	checks.mb_labyrinth_flat=flat_lab.corridors and flat_kinds.has(9) and flat_kinds.has(1) and not flat_kinds.has(2)
 	# XP orb pickups tick up a scale while they keep coming (November 2).
 	game.sound.xp_streak=0;game.sound.xp_last=-10.0;game.sound.xp_last_tick=-10.0
 	for k in range(10): game.sound.xp_tick()

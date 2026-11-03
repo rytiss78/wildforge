@@ -47,7 +47,7 @@ func _draw():
 	for i in range(hands.size()):
 		var y=view.y-40-(hands.size()-1-i)*40
 		var on=i==ClutchPlay.active_slot
-		var text="%s   %d" % [str(hands[i].name).to_upper(),i+1]
+		var text="%s   %d" % ["AK-47" if hands[i].id=="gun" else str(hands[i].name).to_upper(),i+1]
 		draw_rect(Rect2(Vector2(right-330,y-30),Vector2(330,36)),Color(0,0,0,.55) if on else BACK)
 		draw_string(font,Vector2(right-322,y),text,HORIZONTAL_ALIGNMENT_RIGHT,310,24 if on else 20,WHITE if on else DIM)
 	# Lock-On (V) and Sneak (Shift).

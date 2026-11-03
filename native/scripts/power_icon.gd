@@ -6,6 +6,9 @@ var color = Color("65cbea")
 var tier = 0
 var weapon_icon = false
 var drawn_stat = false
+# How a stat key is drawn (ItemArt): "item" an object, "card" a playing card,
+# "medallion" the plain octagon (the small vitals chips).
+var style = "item"
 
 func _ready():
 	mouse_filter=Control.MOUSE_FILTER_IGNORE
@@ -24,7 +27,11 @@ func _ready():
 # Mutation medallion: the ring and fill name the strain (element), the large
 # glyph names the trigger, so a card reads at a glance without its text.
 func _draw():
-	if drawn_stat: StatGlyphs.draw_medallion(self,str(key),size*.5,minf(size.x,size.y)*.46);return
+	if drawn_stat:
+		var r=minf(size.x,size.y)*.46
+		if style=="card": ItemArt.draw_card(self,str(key),size*.5,r)
+		elif style=="medallion" or not ItemArt.draw_item(self,str(key),size*.5,r): StatGlyphs.draw_medallion(self,str(key),size*.5,r)
+		return
 	if not str(key).begins_with("mut:"): return
 	draw_mutation(self,str(key),size*.5,minf(size.x,size.y)*.46)
 

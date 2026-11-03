@@ -188,7 +188,8 @@ static func symbol_texture(item: Dictionary) -> Texture2D:
 
 static func draw_item(canvas: CanvasItem,item: Dictionary,texture: Texture2D,at: Vector2,radius: float,alpha: float=1.0):
 	if texture!=null: canvas.draw_texture_rect(texture,Rect2(at-Vector2(radius,radius)*1.08,Vector2(radius,radius)*2.16),false,Color(1,1,1,alpha))
-	elif item.kind!="mutation": StatGlyphs.draw_medallion(canvas,str(item.stat) if item.kind=="card" else str(item.id),at,radius)
+	elif item.kind=="card": ItemArt.draw_card(canvas,str(item.stat),at,radius)
+	elif item.kind!="mutation" and not ItemArt.draw_item(canvas,str(item.id),at,radius): StatGlyphs.draw_medallion(canvas,str(item.id),at,radius)
 	else: PowerIcon.draw_mutation(canvas,str(item.id),at,radius)
 
 # The chest opening in the world: a light beam of the best prize's colour rises

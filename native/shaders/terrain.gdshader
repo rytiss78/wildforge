@@ -12,6 +12,8 @@ uniform float phase=0.0;
 // One biome per map (big update MB): the whole island is this biome; -1 keeps
 // the old seven slices with the forest in the middle.
 uniform float map_biome=-1.0;
+// Labyrinth walls share the ground, a shade darker so they read (Labyrinth).
+uniform float shade=1.0;
 // Per-island coastline terms (RealmWorld.GRADE): 4-lobe, 6-lobe, radius shift.
 uniform vec3 shape=vec3(0.0);
 // Later islands look harsher: corruption darkens and tints the ground and opens
@@ -79,5 +81,5 @@ void fragment(){
   glow=vein_color*vein*(.6+corruption*.7)*(.8+.2*sin(TIME*1.3+p.x*.05));
  }
  if(red_moon) paint=vec3(.16,.045,.027)*(0.7+texture(t2,uv).r*.5);
- ALBEDO=mix(paint,paint*1.06+vec3(.012,.008,.002),path*.4);ROUGHNESS=1.0;SPECULAR=0.0;EMISSION=red_moon?vec3(0.0):glow;
+ ALBEDO=mix(paint,paint*1.06+vec3(.012,.008,.002),path*.4)*shade;ROUGHNESS=1.0;SPECULAR=0.0;EMISSION=red_moon?vec3(0.0):glow;
 }

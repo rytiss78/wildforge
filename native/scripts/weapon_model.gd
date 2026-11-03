@@ -26,6 +26,11 @@ func setup(weapon_id: String):
 	id=weapon_id
 	add_child(base)
 	base.add_child(rank_parts)
+	# Clutch's AK-47 (AkModel): a detailed rifle in place of the cartoon pistol.
+	if id=="ak47":
+		muzzle.free();muzzle=AkModel.build(base)
+		flash=ToonArt.ball(muzzle,Color("ffd27a"),Vector3.ZERO,Vector3(.16,.16,.26));flash.visible=false
+		return
 	if SkillBook.build_model(self): return
 	var definition=ContentExpansion.weapon(id)
 	if definition.has("archetype") and not ResourceLoader.exists("res://assets/style3d/weapon_"+id+".glb"):

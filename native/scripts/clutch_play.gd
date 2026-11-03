@@ -96,6 +96,8 @@ static func late(g,delta: float):
 static var view: Node3D
 static var view_id=""
 static var kick=0.0
+# Where the weapon rests in view; the long rifle sits closer and more central.
+static var rest=Vector3(.2,-.2,-.42)
 static func view_model(g,fps: bool,delta: float):
 	var weapon=active_weapon(g);var want=str(weapon.get("id","")) if fps else ""
 	if want!=view_id:
@@ -103,17 +105,19 @@ static func view_model(g,fps: bool,delta: float):
 		view=null;view_id=want
 		if want!="":
 			view=Node3D.new();view.name="ClutchView";g.camera.add_child(view)
-			var model=WeaponModel.new();model.setup(want);view.add_child(model)
+			# His gun is an AK-47 (user, November 3).
+			var model=WeaponModel.new();model.setup("ak47" if want=="gun" else want);view.add_child(model)
 			# Every weapon is shown about the same size in the hands.
 			var size=ClutchHands.bounds(view,model).size
-			model.scale=Vector3.ONE*clampf(.34/maxf(.01,maxf(size.z,maxf(size.x,size.y))),.15,1.2)
+			model.scale=Vector3.ONE*clampf((.58 if want=="gun" else .34)/maxf(.01,maxf(size.z,maxf(size.x,size.y))),.15,1.2)
 			for mesh in model.find_children("*","GeometryInstance3D",true,false): mesh.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-			view.position=Vector3(.2,-.2,-.42);view.rotation=Vector3.ZERO
+			rest=Vector3(.12,-.15,-.3) if want=="gun" else Vector3(.2,-.2,-.42)
+			view.position=rest;view.rotation=Vector3.ZERO
 			ClutchHands.build(view,model)
 	if is_instance_valid(view):
 		kick=maxf(0,kick-delta*6.0)
 		var bob=sin(g.elapsed*9.0)*.012*clampf(Vector2(g.player.velocity.x,g.player.velocity.z).length()/6.0,0,1)
-		view.position=Vector3(.2,-.2+bob,-.42+kick*.06);view.rotation=Vector3(kick*.12,.06,0)
+		view.position=rest+Vector3(0,bob,kick*.06);view.rotation=Vector3(kick*.12,.03 if view_id=="gun" else .06,0)
 
 static func speed_scale(g) -> float: return SNEAK_SPEED if is_clutch(g) and sneaking else 1.0
 

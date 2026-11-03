@@ -639,6 +639,7 @@ func make_chests():
 		if placed.any(func(q):return q.distance_to(p)<spacing): continue
 		if world.climb_mesas.any(func(mesa):return Vector2(p.x,p.z).distance_to(mesa.center)<mesa.radius+8.0): continue
 		if world.landmarks.any(func(site):return Vector2(site.x-p.x,site.z-p.z).length()<14): continue
+		if not world.labyrinth.is_empty() and Labyrinth.cell_kind(world.labyrinth,p.x,p.z)==9: continue
 		placed.append(p)
 		p.y=world.height_at(p.x,p.z)
 		make_chest(p,false)
@@ -3487,6 +3488,7 @@ func run_coop_test():
 	var down_sent2=false;var rescued2=false;var pause_done2=false;var down_done=false
 	var realm_cycle_done=false;var realm_cycle_done2=false;var final_test_done=false;var final_reset=false;var saw_final=false;var saw_final_eclipse=false
 	var saw_remote_flowers=false;var saw_own_numbers=false;var saw_boss_identity=false;var saw_remote_vitals=false
+	var hunt_retry=0.0;var down_retry=0.0
 	var hunt_sent=false;var hunt_seen=false;var hunt_reward=false;var guardian_sent=false;var guardian_seen=false
 	while Time.get_ticks_msec()-started<(360000 if network_test_role=="host" else 360000):
 		var seconds=(Time.get_ticks_msec()-started)/1000.0
@@ -3512,8 +3514,9 @@ func run_coop_test():
 		hunt_reward=hunt_reward or (Hunt.shrine(self)!=null and Hunt.shrine(self).has_meta("reward_spawned"))
 		guardian_seen=guardian_seen or events.get("guardian_defeated",false)
 		if seconds>11: xp_target=1000000
-		if network_test_role=="client" and seconds>12 and not hunt_sent and realm==1:
-			hunt_sent=true;player.position=Hunt.shrine(self).position;Hunt.interact(self)
+		# Retried each second until the hunt starts (frame timing varies with the map).
+		if network_test_role=="client" and seconds>12 and seconds<24 and realm==1 and Hunt.state(self)=="idle" and seconds>=hunt_retry:
+			hunt_sent=true;hunt_retry=seconds+1.0;player.position=Hunt.shrine(self).position;Hunt.interact(self)
 		if network_test_role=="host" and seconds>13.5 and Hunt.state(self)=="active":
 			for target in enemies.filter(func(e):return e.net_id in events.hunt_ids and not e.dead): kill_enemy(target,"diagnostic")
 		if network_test_role=="host" and seconds>15 and not guardian_sent:
@@ -3555,9 +3558,10 @@ func run_coop_test():
 				down_sent=true;player.position=Vector3(2,.1,0);invulnerable=1000
 				# First hit: one-hit protection caps at 85% maxHP; second hit will be lethal after .55s invuln
 				coop.send_to(coop.members.keys()[0],{"type":"damage","amount":100000,"position":[2,.1,0],"sound":"hit"})
-			if seconds>2.6 and not down_done and not coop.members.is_empty():
-				# Second hit: invulnerability expired; client is at ~15% HP, so this is lethal
-				down_done=true;player.position=Vector3(2,.1,0)
+			if seconds>2.6 and seconds<6.0 and not coop.members.is_empty() and not update.downed_ids.has(coop.members.keys()[0]) and seconds>=down_retry:
+				# Follow-up hits every 0.7 s until the client is down (each lands
+				# once its 0.55 s invulnerability is over, whatever the frame timing).
+				down_done=true;down_retry=seconds+.7;player.position=Vector3(2,.1,0)
 				coop.send_to(coop.members.keys()[0],{"type":"damage","amount":100000,"position":[2,.1,0],"sound":"hit"})
 			if seconds>2.6 and seconds<6.7 and down_sent: Input.action_press("interact")
 			else: Input.action_release("interact")

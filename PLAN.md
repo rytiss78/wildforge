@@ -66,6 +66,8 @@ Megabonk-style structure with this game's own content: Megabonk's own items, boo
 - [x] 5 · **Heroes:** each hero's perk grows a step every level (`HeroGrowth`), the body tuning stays.
 - [ ] 6 · **Playtest MB:** pacing of six-minute maps and 38 chests, mesa heights, item rarity odds, Dare and the relics' strength; co-op with the new maps (protocol 22).
 - **Vitals:** health on top, one even row of shield, armor and evasion chips below.
+- **Labyrinths:** two kinds (`Labyrinth`). Moon Craters and Starfall Space are Megabonk-style terraced stages over the whole island, built the way Megabonk's own generator works (read from the class and field names in its game files: tile grid, random spanning-tree maze, height walk with a Gaussian centre bias, ramps on tree edges, cliffs where heights differ, flat tiles). Junkyard Planet keeps our own corridor maze on flat ground. Walls wear the map's ground, a shade darker; the minimap shows them.
+- **Look and sound (November 3):** cards are drawn as cards and items as objects (`ItemArt`); no map name plates (the narrator names the biome); own music per map (`make-map-music.py`, a little quieter); softer gun; Clutch holds a detailed AK-47 (`AkModel`); Digby's dig is a fall through the burning hollow inside the island.
 
 ## Next
 

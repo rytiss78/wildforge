@@ -61,6 +61,8 @@ var building_sites=[]
 var harvest_sites: Array[Vector3]=[]
 # Big update MB: climbing mesas (ClimbMap.plan) and their launch pads.
 var climb_mesas=[]
+# Multi-floor labyrinth of this map, if it has one (Labyrinth).
+var labyrinth={}
 var climb_pads=[]
 var chunks={}
 var pending=[]
@@ -213,9 +215,11 @@ func compute_height_at(x: float,z: float) -> float:
 	var terrace=floorf(original/5.0)*5.0+smoothstep(.62,1.0,fposmod(original,5.0)/5.0)*5.0
 	var route=1.0-smoothstep(4.0,12.0,crossing_distance(p))
 	var inland=lerpf(terrace,original*.85,route)*smoothstep(0.0,28.0,Vector2(x,z).length())
+	# Flat ground under a labyrinth (Labyrinth.flatness).
+	if not labyrinth.is_empty(): inland=lerpf(inland,Labyrinth.FLAT_Y,Labyrinth.flatness(labyrinth,x,z))
 	var edge=Vector2(x,z).length();var coast=shore_radius(p)
 	var shore=2.0-maxf(0.0,edge-(coast-6.0))/3.0
-	if edge<=coast: return lerpf(inland,shore,smoothstep(coast-32.0,coast-4.0,edge))+ClimbMap.lift(climb_mesas,x,z)
+	if edge<=coast: return lerpf(inland,shore,smoothstep(coast-32.0,coast-4.0,edge))+ClimbMap.lift(climb_mesas,x,z)+Labyrinth.lift(labyrinth,x,z)
 	# Past the coast the island ends in a rounded rocky rim (October 31: no sea; the
 	# hero walks over it onto the underside, Underside).
 	var over=clampf((edge-coast)/Underside.RIM,0.0,1.0)
@@ -258,6 +262,7 @@ func build(index: int,world_seed: int):
 	height_vertices.clear()
 	realm=index;seed_value=world_seed;rng.seed=world_seed+index*763
 	noise.seed=world_seed%2147483647;noise.frequency=.014;noise.fractal_octaves=3;noise.fractal_gain=.4
+	labyrinth=Labyrinth.plan(seed_value,realm)
 	climb_mesas=ClimbMap.plan(self)
 	for child in get_children():
 		remove_child(child);child.queue_free()
@@ -265,6 +270,7 @@ func build(index: int,world_seed: int):
 	clouds.clear();border_steam.clear();border_patches.clear();low_mist.clear()
 	make_environment();make_material();make_boundaries();make_landmarks()
 	ClimbMap.build_props(self)
+	Labyrinth.build_walls(self)
 	# Natural landmarks and organic scenery replace decorative architecture.
 	# Frame-budgeted chunk building: schedule 49 chunks, process ~6 per frame
 	build_in_progress=true

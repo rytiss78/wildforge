@@ -20,7 +20,8 @@ const PILLAR_RADIUS=1.5
 const PAD_RADIUS=1.6
 
 static func plan(world) -> Array:
-	if world.realm>=RealmWorld.ARENA: return []
+	# Labyrinth maps climb their own terraces instead.
+	if world.realm>=RealmWorld.ARENA or Labyrinth.active(world.realm): return []
 	var rng=RandomNumberGenerator.new();rng.seed=int(world.seed_value)*13+int(world.realm)*977+5
 	var mesas=[];var tries=0
 	while mesas.size()<MESAS and tries<400:

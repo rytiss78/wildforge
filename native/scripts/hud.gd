@@ -1224,7 +1224,7 @@ func update_block_drop_overlay():
 # One defence chip: a small stat medallion and its value.
 func vital_chip(row: HBoxContainer,stat: String,tip: String) -> Label:
 	var chip=HBoxContainer.new();chip.add_theme_constant_override("separation",3);chip.tooltip_text=tip;chip.mouse_filter=Control.MOUSE_FILTER_PASS;row.add_child(chip)
-	var icon=PowerIcon.new();icon.key=stat;icon.custom_minimum_size=Vector2(20,20);icon.size_flags_vertical=Control.SIZE_SHRINK_CENTER;chip.add_child(icon)
+	var icon=PowerIcon.new();icon.key=stat;icon.style="medallion";icon.custom_minimum_size=Vector2(20,20);icon.size_flags_vertical=Control.SIZE_SHRINK_CENTER;chip.add_child(icon)
 	var value=label("",15);value.name=stat.capitalize()+"Value";chip.add_child(value)
 	return value
 
@@ -1267,6 +1267,7 @@ func offer_card(item: Dictionary, index: int, select: Callable) -> Button:
 	icon_bg.add_theme_stylebox_override("normal",radius)
 	column.add_child(icon_bg)
 	var icon=PowerIcon.new();icon.key=icon_key(item);icon.weapon_icon=item.kind in ["weapon","evolution"]
+	if item.kind=="card": icon.style="card"
 	icon_bg.add_child(icon)
 	icon.set_anchors_and_offsets_preset(Control.PRESET_FULL_RECT)
 	icon.offset_left=10;icon.offset_top=10;icon.offset_right=-10;icon.offset_bottom=-10
@@ -1770,7 +1771,7 @@ func update_skill_strip():
 	# Mutations first: they define how this run plays.
 	for kind in ["mutation","skill"]:
 		for item in game.owned:
-			if item.kind==kind:
+			if item.kind==kind or (kind=="skill" and item.get("relic",false)):
 				if not skills.has(item.id): skills[item.id]={"item":item,"count":0}
 				skills[item.id].count+=1
 	var signature=str(skills.keys())+str(skills.values().map(func(v):return v.count))

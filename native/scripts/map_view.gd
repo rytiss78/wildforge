@@ -20,12 +20,18 @@ func configure(seed_value: int,realm: int):
 	map_extent=85.0 if realm==RealmWorld.ARENA else 400.0
 	var image=Image.create(256,256,false,Image.FORMAT_RGBA8)
 	var phase=float(seed_value%23)*.03+realm*.4
+	var lab=Labyrinth.plan(seed_value,realm)
 	for y in range(256):
 		for x in range(256):
 			var p=Vector2((x+.5)/256.0*map_extent*2-map_extent,(y+.5)/256.0*map_extent*2-map_extent)
 			var biome=RealmWorld.biome_of(realm)
 			var coast=RealmWorld.coast_radius(atan2(p.y,p.x),seed_value,realm)
 			var color=Color.TRANSPARENT if p.length()>=coast else Color("806f53") if p.length()>coast-14 else [Color("294b42"),Color("37443f"),Color("3b465d"),Color("657179"),Color("63403c"),Color("443653"),Color("5a4a2e")][biome]
+			# Labyrinth maps: higher floors lighter, walls dark.
+			if not lab.is_empty() and color.a>0 and p.length()<coast-14:
+				var kind=Labyrinth.cell_kind(lab,p.x,p.y)
+				if kind==9: color=color.darkened(.6)
+				elif kind>1: color=color.lightened(.11*(kind-1))
 			image.set_pixel(x,y,color)
 	terrain=ImageTexture.create_from_image(image)
 
