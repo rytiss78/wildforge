@@ -75,8 +75,8 @@ add("HURT_PAY","Paid For Pain","Earn coins from taking damage.","event_HURT_PAY"
 add("BOSS_GIFT","Thank You, Boss","Open a boss reward chest.","event_BOSS_GIFT",1,'total','Challenges');
 add("LEGENDARY","Disco In A Box","Reveal legendary treasure.","event_LEGENDARY",1,'total','Challenges');
 add("MIXED_BAG","Shopping Without A List","Own upgrades from six families in one run.","event_MIXED_BAG",1,'total','Challenges');
-add("TRIPLE_WEAPON","Full Hands","Equip three different weapons.","event_TRIPLE_WEAPON",1,'total','Challenges');
-add("REPLACE","New Favourite","Upgrade each of your three weapons in the same run.","event_REPLACE",1,'total','Challenges');
+add("TRIPLE_WEAPON","Full Hands","Fill all four weapon slots in one run.","event_TRIPLE_WEAPON",1,'total','Challenges');
+add("REPLACE","New Favourite","Upgrade each of your four weapons in the same run.","event_REPLACE",1,'total','Challenges');
 add("RANK_UP","Old Reliable","Upgrade the same weapon.","event_RANK_UP",1,'total','Challenges');
 add("GARDEN","Groundskeeper","Plant a flower by moving.","event_GARDEN",1,'total','Challenges');
 add("BLOOM_CHAIN","Spring Reaction","Make three neighbouring flowers bloom together.","event_BLOOM_CHAIN",1,'total','Challenges');
@@ -110,11 +110,29 @@ add("WELCOME_BACK","Back In The Forge","Reconnect to an active co-op run.","coop
 add("BUILD_SCOUT","Know Your Team","Inspect every teammate’s current build in co-op.","party_builds_viewed",1,'total','Co-op');
 add("AFTER_ACTION","Study The Run","Open 10 completed run reports.","run_reports_viewed",10,'total','Adventure');
 add("STYLE_COLLECTION","Earned, Not Bought","Unlock three achievement cosmetics.","achievement_cosmetics",3,'total','Collection');
-if(catalog.length!==109)throw new Error(`Expected 109 achievements, got ${catalog.length}`);
+// Big update MB (November 3): the run ends on the Red Moon. The hardest of
+// these gift a big mustache (native/scripts/mustache_book.gd).
+add("NOGGIN","Noggin Knocker","Defeat the Grand Noggin on the Red Moon.","wins",1,'total','Adventure');
+add("NOGGIN_ONE","One And Only","Defeat the Grand Noggin with a single weapon equipped.","event_NOGGIN_ONE",1,'total','Adventure');
+add("NOGGIN_DARE","Daredevil","Defeat the Grand Noggin with the Dare card at level 5 or higher.","event_NOGGIN_DARE",1,'total','Adventure');
+add("SPOTLESS","Spotless","Clear a map and step through its portal without losing any health there.","event_SPOTLESS",1,'total','Challenges');
+add("ECLIPSE","Lights Out, Still Standing","Survive five minutes of the Endless Eclipse.","event_ECLIPSE",1,'total','Adventure');
+add("ROSTER","Full Cast","Defeat the Grand Noggin with ten different heroes.","heroes_won",10,'best','Adventure');
+add("RED_MOON","Moonrise","Reach the Red Moon.","event_RED_MOON",1,'total','Adventure');
+add("EVOLVE","Glow Up","Evolve a weapon.","event_EVOLVE",1,'total','Mastery');
+add("LEGEND_HOARD","Dragon's Pocket","Own three legendary items in one run.","event_LEGEND_HOARD",1,'total','Challenges');
+add("CROWD","Crowd Control","Defeat 2,500 monsters in one run.","event_CROWD",1,'total','Challenges');
+add("COOP_NOGGIN","Better Together","Defeat the Grand Noggin in co-op.","event_COOP_NOGGIN",1,'total','Co-op');
+if(catalog.length!==120)throw new Error(`Expected 120 achievements, got ${catalog.length}`);
 // Retired October 25 (user request): no achievement just for picking a hero, opening
 // a menu or doing one ordinary thing once. Their IDs stay listed here, unused.
-export const RETIRED=Object.freeze(['PLAY_WRENCH','PLAY_DUCK','PLAY_BROCCOLI','PLAY_GRANDMA','PLAY_GOBLIN','PLAY_LOAF','PLAY_FLORIST','LOCKED_GATE','AIRTIME','SALE','INTEREST','WALK_PAY','HURT_PAY','RANK_UP','GARDEN','BUBBLE','FEEDBACK','ROADMAP','MIX_TURRET','WELCOME_BACK','BUILD_SCOUT','AFTER_ACTION'].map(id=>`WF_${id}`));
+export const RETIRED=Object.freeze(['PLAY_WRENCH','PLAY_DUCK','PLAY_BROCCOLI','PLAY_GRANDMA','PLAY_GOBLIN','PLAY_LOAF','PLAY_FLORIST','LOCKED_GATE','AIRTIME','SALE','INTEREST','WALK_PAY','HURT_PAY','RANK_UP','GARDEN','BUBBLE','FEEDBACK','ROADMAP','MIX_TURRET','WELCOME_BACK','BUILD_SCOUT','AFTER_ACTION',
+  // Retired November 3 (user: no achievements for walking somewhere or just
+  // playing a hero; others broke with the big update MB): heroes no longer in
+  // the game, chests no longer raised, ruins and edge walks, the Florist's
+  // automatic flower effects, and "no gun" (most heroes never carry one).
+  'WIN_BROCCOLI','WIN_LOAF','HIGH_CHEST','RUINS','LONG_WALK','FULL_EXPLORER','GARDEN_MOVE','POLLEN','ROOTS','FLOWER_HEAL','BLOOM_CHAIN','FLOWER_BOSS','NO_GUN'].map(id=>`WF_${id}`));
 export const ACHIEVEMENTS=Object.freeze(catalog.filter(a=>!RETIRED.includes(a.id)).map(Object.freeze));
-if(ACHIEVEMENTS.length!==87)throw new Error(`Expected 87 achievements, got ${ACHIEVEMENTS.length}`);
+if(ACHIEVEMENTS.length!==85)throw new Error(`Expected 85 achievements, got ${ACHIEVEMENTS.length}`);
 export function achievementProgress(a,p){return Math.min(a.target,Math.max(0,Number(p[a.scope]?.[a.key])||0));}
 export function availableAchievements(p){return ACHIEVEMENTS.filter(a=>!p.unlocked[a.id]&&achievementProgress(a,p)>=a.target);}

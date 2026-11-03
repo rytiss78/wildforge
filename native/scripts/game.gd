@@ -117,6 +117,7 @@ var flowers = []
 var flower_serial=0
 var garden_patches = {}
 var visited_ruins = {}
+var realm_damage_start=0.0  # health lost before this map (Spotless)
 var last_plant = Vector3(9999,0,9999)
 var offers = []
 var offer_source = ""
@@ -225,8 +226,8 @@ func _ready():
 	career = ProfileScript.new(rules.data,smoke)
 	if network_test_role!="": career.file="user://coop-test-"+network_test_role+".json"
 	career.on_unlock = func(achievement):
-		var hats=HatBook.unlocked_by(str(achievement.get("id","")))
-		hud.show_achievement_notification(achievement.name,achievement.description+("  ·  NEW HAT: "+hats[0].name if not hats.is_empty() else ""))
+		var gifts=MustacheBook.unlocked_by(str(achievement.get("id","")))
+		hud.show_achievement_notification(achievement.name,achievement.description+("  ·  NEW MUSTACHE: "+gifts[0].name if not gifts.is_empty() else ""))
 	stats = rules.data.stats.duplicate(true)
 	hero = rules.data.heroes[1]
 	add_child(world)
@@ -442,14 +443,14 @@ func select_hero(item: Dictionary):
 			child.position.y=height*.5
 	avatar.rotation.y=PI
 	player.add_child(avatar)
-	wear_hat()
+	wear_mustache()
 	HeroPlay.lay_down(self)
 	if is_instance_valid(pet): pet.facing=avatar
 
-# The chosen achievement hat on the local hero (HatBook), if still owned.
-func wear_hat():
-	var id=str(career.data.settings.get("hat",""))
-	HatBook.wear(avatar,id if HatBook.owned(career.data.unlocked,id) else "")
+# The chosen achievement mustache on the local hero (MustacheBook), if owned.
+func wear_mustache():
+	var id=str(career.data.settings.get("mustache",""))
+	MustacheBook.wear(avatar,id if MustacheBook.owned(career.data.unlocked,id) else "")
 
 func clear_entities():
 	coop.clear_flower_visuals();flower_serial=0
@@ -562,6 +563,10 @@ func enter_realm(index: int,broadcast_transition: bool=true):
 	pending_chest=false
 	if network_test_role!="": network_test_realms.append(index)
 	clear_entities()
+	# Spotless: this map's portal taken without any health lost on it.
+	if run_active and index==realm+1 and events.get("guardian_defeated",false) and is_equal_approx(health_damage,realm_damage_start): achievement_event("SPOTLESS")
+	realm_damage_start=health_damage
+	if index==RealmWorld.ARENA: achievement_event("RED_MOON")
 	realm = index
 	realm_time = 0
 	garden_patches.clear()
@@ -697,7 +702,7 @@ func interaction_hint() -> String:
 		var price = 0 if chest.free else rules.chest_price(paid_chests,stats.discount)
 		return "E / X   ▣   %s" % ("FREE" if price == 0 else "● %d" % price) + ("   ✓" if gold >= price else "   ✕")
 	if realm<RealmWorld.ARENA and player.position.distance_to(gate_position) < 4:
-		return {"sealed":"PORTAL · %d / 2 wardens" % realm_bosses,"ready":"E / X · SUMMON FINAL GUARDIAN","fighting":"DEFEAT THE PORTAL GUARDIAN","cleared":"E / X · "+("NEXT WORLD" if realm<2 else "THE RED MOON")}[Journey.state(self)]
+		return {"sealed":"PORTAL · %d / 2 wardens" % realm_bosses,"ready":"E / X · SUMMON FINAL GUARDIAN","fighting":"DEFEAT THE PORTAL GUARDIAN","cleared":"E / X · "+("NEXT WORLD" if realm<RealmWorld.ARENA-1 else "THE RED MOON")}[Journey.state(self)]
 	return ""
 
 func interact():
@@ -979,6 +984,9 @@ func update_hero_vitals():
 func record_run(win: bool, abandoned: bool = false):
 	if run_recorded or not run_active: return
 	run_recorded = true
+	# The run ends on the Red Moon: felling the Grand Noggin wins it, even if
+	# the Endless Eclipse after it gets you (it never ended in a win before).
+	if events.get("final_defeated",false): win=true
 	if elapsed < 2 and abandoned: return
 	var recent=equipped.map(func(w):return str(w.id)).filter(func(id):return id!=str(hero.weapon))
 	for id in career.data.get("recentWeapons",[]):
@@ -1826,7 +1834,11 @@ func kill_enemy(enemy: Dictionary, cause: String):
 		if health_damage == enemy.startDamage: achievement_event("NO_HIT_BOSS")
 		if equipped.size()==1: achievement_event("ONE_WEAPON")
 		if equipped.size()==1 and equipped[0].id=="flowers": achievement_event("PURE_GARDEN")
-		if not equipped.any(func(w):return w.id in ["gun","shotgun","rail"]): achievement_event("NO_GUN")
+		# The Grand Noggin: the hardest achievements (each gifts a mustache).
+		if int(enemy.get("boss_id",-1))==8:
+			if equipped.size()==1: achievement_event("NOGGIN_ONE")
+			if int(cards.get("curse",0))>=5: achievement_event("NOGGIN_DARE")
+			if coop.active: achievement_event("COOP_NOGGIN")
 		run_bosses += 1
 		if not enemy.get("guardian",false): realm_bosses += 1
 		career.bump("bosses")
@@ -3076,7 +3088,8 @@ func run_smoke():
 	last_plant=player.position
 	update_garden(.1)
 	checks.garden=flowers.size()==3 and boss.hp<before_boss_hp and hp>before_hp and boss.slow>0 and boss.poison>0 and projectiles.is_empty()
-	checks.garden_goals=career.data.unlocked.has("WF_BLOOM_CHAIN") and career.data.unlocked.has("WF_FLOWER_BOSS")
+	# The Florist's automatic flower effects are no longer achievements (November 3).
+	checks.garden_goals=not career.achievements.any(func(a):return a.id in ["WF_BLOOM_CHAIN","WF_FLOWER_BOSS","WF_POLLEN","WF_ROOTS"])
 	if DisplayServer.get_name()!="headless":
 		await RenderingServer.frame_post_draw
 		boss.node.position=Vector3(4,0,-4)
@@ -3263,7 +3276,7 @@ func run_smoke():
 	var report=FileAccess.open("user://smoke-results.json",FileAccess.WRITE)
 	if report!=null: report.store_string(JSON.stringify(checks,"  "));report.close()
 	print("NATIVE_SMOKE "+JSON.stringify(checks))
-	var failure = not checks.main_menu or not checks.opaque_ui or not checks.illustrated_icons or not checks.selection_preview or not checks.weapon_cards_fit or not checks.item_cards_fit or not checks.camera_look or not checks.menu_blocks_look or not checks.weapon_rank or not checks.weapon_mechanics or not checks.mouse_camera or not checks.xbox_prompts or not checks.settings_fit or checks.initial_enemies<6 or checks.chests!=4*RealmWorld.BIOME_COUNT+world.climb_mesas.size() or checks.first_price!=30 or checks.achievements!=93 or not checks.paid_once or not checks.one_item or not checks.weapon_limit or not checks.disk_save or not checks.free_price or not checks.garden or not checks.garden_goals or not checks.realm_preserves or not checks.three_realms or not checks.standalone
+	var failure = not checks.main_menu or not checks.opaque_ui or not checks.illustrated_icons or not checks.selection_preview or not checks.weapon_cards_fit or not checks.item_cards_fit or not checks.camera_look or not checks.menu_blocks_look or not checks.weapon_rank or not checks.weapon_mechanics or not checks.mouse_camera or not checks.xbox_prompts or not checks.settings_fit or checks.initial_enemies<6 or checks.chests!=4*RealmWorld.BIOME_COUNT+world.climb_mesas.size() or checks.first_price!=30 or checks.achievements!=91 or not checks.paid_once or not checks.one_item or not checks.weapon_limit or not checks.disk_save or not checks.free_price or not checks.garden or not checks.garden_goals or not checks.realm_preserves or not checks.three_realms or not checks.standalone
 	for key in checks:
 		if checks[key] is bool and not checks[key]: failure=true
 	get_tree().quit(1 if failure else 0)
@@ -3273,15 +3286,14 @@ func achievement_event(id: String):
 		career.bump("event_"+id)
 
 func check_creative_goals():
-	if equipped.size()==3: achievement_event("TRIPLE_WEAPON")
-	if equipped.size()==3 and equipped.all(func(w):return w.rank>=2): achievement_event("REPLACE")
+	if equipped.size()==RunRules.WEAPON_CAP: achievement_event("TRIPLE_WEAPON")
+	if equipped.size()==RunRules.WEAPON_CAP and equipped.all(func(w):return w.rank>=2): achievement_event("REPLACE")
 	if equipped.any(func(w):return w.turret) and equipped.any(func(w):return not w.turret): achievement_event("MIX_TURRET")
 	if families.size()>=6: achievement_event("MIXED_BAG")
-	if Vector2(player.position.x,player.position.z).length()>150: achievement_event("LONG_WALK")
-	if hud.map_view.visited.size()>=30: achievement_event("FULL_EXPLORER")
-	for i in range(world.landmarks.size()):
-		if player.position.distance_to(world.landmarks[i])<12: visited_ruins[i]=true
-	if visited_ruins.size()==4: achievement_event("RUINS")
+	if kills>=2500: achievement_event("CROWD")
+	if owned.filter(func(o):return str(o.get("kind",""))=="item" and int(o.get("tier",0))==3).size()>=3: achievement_event("LEGEND_HOARD")
+	# Still standing five minutes after the Endless Eclipse began.
+	if events.get("final_defeated",false) and not events.get("final_ceremony",false) and hp>0 and realm_time-float(events.get("eclipse_started",realm_time))>=300.0: achievement_event("ECLIPSE")
 	for a in career.achievements:
 		if a.key.begins_with("combo_"):
 			var pair = a.key.trim_prefix("combo_").split("_")

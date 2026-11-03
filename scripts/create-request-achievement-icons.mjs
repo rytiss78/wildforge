@@ -7,7 +7,11 @@ await mkdir(root,{recursive:true});
 const badges=[
  ['wf_weapon_mastery',[246,214,124],0],['wf_formation_breaker',[255,186,114],1],['wf_biome_collector',[159,240,210],2],
  ['wf_party_pings',[255,233,143],3],['wf_ready_party',[182,214,255],4],['wf_welcome_back',[255,146,122],5],
- ['wf_build_scout',[183,235,255],6],['wf_after_action',[232,208,165],7],['wf_style_collection',[240,210,120],8]
+ ['wf_build_scout',[183,235,255],6],['wf_after_action',[232,208,165],7],['wf_style_collection',[240,210,120],8],
+ // November 3: the Red Moon achievements and their mustache rewards.
+ ['wf_noggin',[255,196,92],0],['wf_noggin_one',[255,150,110],4],['wf_noggin_dare',[255,110,90],1],['wf_spotless',[200,240,255],3],
+ ['wf_eclipse',[190,160,255],5],['wf_roster',[246,214,124],8],['wf_red_moon',[255,120,110],2],['wf_evolve',[159,240,210],6],
+ ['wf_legend_hoard',[255,214,107],0],['wf_crowd',[255,186,114],7],['wf_coop_noggin',[130,190,255],4]
 ];
 const pngChunk=(type,data)=>{const name=Buffer.from(type);const length=Buffer.alloc(4);length.writeUInt32BE(data.length);const checksum=Buffer.alloc(4);checksum.writeUInt32BE(crc32(Buffer.concat([name,data])));return Buffer.concat([length,name,data,checksum]);};
 function crc32(bytes){let crc=0xffffffff;for(const byte of bytes){crc^=byte;for(let bit=0;bit<8;bit++)crc=(crc>>>1)^((crc&1)?0xedb88320:0);}return (crc^0xffffffff)>>>0;}

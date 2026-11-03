@@ -56,7 +56,8 @@ func realm_started():
 	if game.realm==RealmWorld.ARENA: return
 	var rng=RandomNumberGenerator.new();rng.seed=game.seed_value+game.realm*839
 	var angle=rng.randf()*TAU
-	merchant_position=Vector3(cos(angle)*230,0,sin(angle)*230)
+	merchant_position=Vector3(cos(angle),0,sin(angle))
+	merchant_position*=minf(230.0,game.world.shore_radius(merchant_position*230.0)-RealmWorld.RIM_START-30.0)
 	merchant_position.y=game.world.height_at(merchant_position.x,merchant_position.z)
 	merchant=Node3D.new();merchant.position=merchant_position;add_child(merchant)
 	ToonArt.tube(merchant,Color("bd8269"),Vector3(0,.7,0),.55,.7,1.4)
@@ -72,7 +73,10 @@ func realm_started():
 		stock.append(item)
 	var weapon=game.rules.data.weapons[rng.randi_range(0,game.rules.data.weapons.size()-1)].duplicate(true)
 	weapon.kind="weapon";weapon.tier=1;weapon.strength=2.0;stock[0]=weapon
-	angle+=1.9;beacon_position=Vector3(cos(angle)*310,0,sin(angle)*310)
+	# Inside the playable ground: at 310 m it could sit past the edge of a
+	# smaller island, and "Signal Served" could not be earned there.
+	angle+=1.9;beacon_position=Vector3(cos(angle),0,sin(angle))
+	beacon_position*=minf(310.0,game.world.shore_radius(beacon_position*300.0)-RealmWorld.RIM_START-30.0)
 	beacon_position.y=game.world.height_at(beacon_position.x,beacon_position.z)
 	beacon=Node3D.new();beacon.position=beacon_position;add_child(beacon)
 	ToonArt.tube(beacon,Color("617886"),Vector3(0,1.2,0),.2,.5,2.4)

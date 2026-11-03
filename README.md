@@ -66,7 +66,7 @@ Survive solo or team up with up to three friends, over the internet with an invi
 
 ![Your wisp at your shoulder](docs/screenshots/build27/wisp.jpg)
 
-Pick your pet with your hero, and chase 93 achievements that unlock hats and cosmetics.
+Pick your pet with your hero, and chase 91 achievements; the hardest gift big mustaches.
 
 ![Hero and pet selection](docs/screenshots/build27/heroes.jpg)
 

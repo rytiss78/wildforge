@@ -18187,16 +18187,6 @@
       "hidden": false
     },
     {
-      "id": "WF_WIN_BROCCOLI",
-      "name": "Tank Potato Beats The Odds",
-      "description": "Win a run as Tank Potato.",
-      "key": "win_broccoli",
-      "target": 1,
-      "scope": "total",
-      "group": "Adventure",
-      "hidden": false
-    },
-    {
       "id": "WF_WIN_GRANDMA",
       "name": "Stone Granny Beats The Odds",
       "description": "Win a run as Stone Granny.",
@@ -18211,16 +18201,6 @@
       "name": "Tax Rat Beats The Odds",
       "description": "Win a run as Tax Rat.",
       "key": "win_goblin",
-      "target": 1,
-      "scope": "total",
-      "group": "Adventure",
-      "hidden": false
-    },
-    {
-      "id": "WF_WIN_LOAF",
-      "name": "Sir Loaf Beats The Odds",
-      "description": "Win a run as Sir Loaf.",
-      "key": "win_loaf",
       "target": 1,
       "scope": "total",
       "group": "Adventure",
@@ -18687,40 +18667,10 @@
       "hidden": false
     },
     {
-      "id": "WF_RUINS",
-      "name": "Tourist With Teeth",
-      "description": "Visit all four ruins in one world.",
-      "key": "event_RUINS",
-      "target": 1,
-      "scope": "total",
-      "group": "Challenges",
-      "hidden": false
-    },
-    {
-      "id": "WF_HIGH_CHEST",
-      "name": "Upstairs Loot",
-      "description": "Open treasure on a raised ruin.",
-      "key": "event_HIGH_CHEST",
-      "target": 1,
-      "scope": "total",
-      "group": "Challenges",
-      "hidden": false
-    },
-    {
       "id": "WF_THREE_REALMS",
       "name": "Change Of Scenery",
       "description": "Reach the third world.",
       "key": "event_THREE_REALMS",
-      "target": 1,
-      "scope": "total",
-      "group": "Challenges",
-      "hidden": false
-    },
-    {
-      "id": "WF_LONG_WALK",
-      "name": "Scenic Route",
-      "description": "Explore the outer edge of a world.",
-      "key": "event_LONG_WALK",
       "target": 1,
       "scope": "total",
       "group": "Challenges",
@@ -18779,7 +18729,7 @@
     {
       "id": "WF_TRIPLE_WEAPON",
       "name": "Full Hands",
-      "description": "Equip three different weapons.",
+      "description": "Fill all four weapon slots in one run.",
       "key": "event_TRIPLE_WEAPON",
       "target": 1,
       "scope": "total",
@@ -18789,68 +18739,8 @@
     {
       "id": "WF_REPLACE",
       "name": "New Favourite",
-      "description": "Upgrade each of your three weapons in the same run.",
+      "description": "Upgrade each of your four weapons in the same run.",
       "key": "event_REPLACE",
-      "target": 1,
-      "scope": "total",
-      "group": "Challenges",
-      "hidden": false
-    },
-    {
-      "id": "WF_BLOOM_CHAIN",
-      "name": "Spring Reaction",
-      "description": "Make three neighbouring flowers bloom together.",
-      "key": "event_BLOOM_CHAIN",
-      "target": 1,
-      "scope": "total",
-      "group": "Challenges",
-      "hidden": false
-    },
-    {
-      "id": "WF_FLOWER_HEAL",
-      "name": "Emergency Bouquet",
-      "description": "Heal yourself with a flower.",
-      "key": "event_FLOWER_HEAL",
-      "target": 1,
-      "scope": "total",
-      "group": "Challenges",
-      "hidden": false
-    },
-    {
-      "id": "WF_FLOWER_BOSS",
-      "name": "Push Up Daisies",
-      "description": "Damage a boss with a bloom.",
-      "key": "event_FLOWER_BOSS",
-      "target": 1,
-      "scope": "total",
-      "group": "Challenges",
-      "hidden": false
-    },
-    {
-      "id": "WF_POLLEN",
-      "name": "Hay Fever",
-      "description": "Poison an enemy with flower pollen.",
-      "key": "event_POLLEN",
-      "target": 1,
-      "scope": "total",
-      "group": "Challenges",
-      "hidden": false
-    },
-    {
-      "id": "WF_ROOTS",
-      "name": "Please Stay On The Grass",
-      "description": "Slow an enemy with flower roots.",
-      "key": "event_ROOTS",
-      "target": 1,
-      "scope": "total",
-      "group": "Challenges",
-      "hidden": false
-    },
-    {
-      "id": "WF_GARDEN_MOVE",
-      "name": "Garden Marathon",
-      "description": "Plant in five different patches in a world.",
-      "key": "event_GARDEN_MOVE",
       "target": 1,
       "scope": "total",
       "group": "Challenges",
@@ -18927,16 +18817,6 @@
       "hidden": false
     },
     {
-      "id": "WF_NO_GUN",
-      "name": "Alternative Medicine",
-      "description": "Defeat a boss without a gun equipped.",
-      "key": "event_NO_GUN",
-      "target": 1,
-      "scope": "total",
-      "group": "Challenges",
-      "hidden": false
-    },
-    {
       "id": "WF_ONE_WEAPON",
       "name": "Travelling Light",
       "description": "Defeat a boss with one weapon equipped.",
@@ -18951,16 +18831,6 @@
       "name": "Not A Scratch",
       "description": "Defeat a boss without losing health during that fight.",
       "key": "event_NO_HIT_BOSS",
-      "target": 1,
-      "scope": "total",
-      "group": "Challenges",
-      "hidden": false
-    },
-    {
-      "id": "WF_FULL_EXPLORER",
-      "name": "Cartographer In A Panic",
-      "description": "Reveal thirty map tiles in one world.",
-      "key": "event_FULL_EXPLORER",
       "target": 1,
       "scope": "total",
       "group": "Challenges",
@@ -19034,6 +18904,116 @@
       "target": 3,
       "scope": "total",
       "group": "Collection",
+      "hidden": false
+    },
+    {
+      "id": "WF_NOGGIN",
+      "name": "Noggin Knocker",
+      "description": "Defeat the Grand Noggin on the Red Moon.",
+      "key": "wins",
+      "target": 1,
+      "scope": "total",
+      "group": "Adventure",
+      "hidden": false
+    },
+    {
+      "id": "WF_NOGGIN_ONE",
+      "name": "One And Only",
+      "description": "Defeat the Grand Noggin with a single weapon equipped.",
+      "key": "event_NOGGIN_ONE",
+      "target": 1,
+      "scope": "total",
+      "group": "Adventure",
+      "hidden": false
+    },
+    {
+      "id": "WF_NOGGIN_DARE",
+      "name": "Daredevil",
+      "description": "Defeat the Grand Noggin with the Dare card at level 5 or higher.",
+      "key": "event_NOGGIN_DARE",
+      "target": 1,
+      "scope": "total",
+      "group": "Adventure",
+      "hidden": false
+    },
+    {
+      "id": "WF_SPOTLESS",
+      "name": "Spotless",
+      "description": "Clear a map and step through its portal without losing any health there.",
+      "key": "event_SPOTLESS",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_ECLIPSE",
+      "name": "Lights Out, Still Standing",
+      "description": "Survive five minutes of the Endless Eclipse.",
+      "key": "event_ECLIPSE",
+      "target": 1,
+      "scope": "total",
+      "group": "Adventure",
+      "hidden": false
+    },
+    {
+      "id": "WF_ROSTER",
+      "name": "Full Cast",
+      "description": "Defeat the Grand Noggin with ten different heroes.",
+      "key": "heroes_won",
+      "target": 10,
+      "scope": "best",
+      "group": "Adventure",
+      "hidden": false
+    },
+    {
+      "id": "WF_RED_MOON",
+      "name": "Moonrise",
+      "description": "Reach the Red Moon.",
+      "key": "event_RED_MOON",
+      "target": 1,
+      "scope": "total",
+      "group": "Adventure",
+      "hidden": false
+    },
+    {
+      "id": "WF_EVOLVE",
+      "name": "Glow Up",
+      "description": "Evolve a weapon.",
+      "key": "event_EVOLVE",
+      "target": 1,
+      "scope": "total",
+      "group": "Mastery",
+      "hidden": false
+    },
+    {
+      "id": "WF_LEGEND_HOARD",
+      "name": "Dragon's Pocket",
+      "description": "Own three legendary items in one run.",
+      "key": "event_LEGEND_HOARD",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_CROWD",
+      "name": "Crowd Control",
+      "description": "Defeat 2,500 monsters in one run.",
+      "key": "event_CROWD",
+      "target": 1,
+      "scope": "total",
+      "group": "Challenges",
+      "hidden": false
+    },
+    {
+      "id": "WF_COOP_NOGGIN",
+      "name": "Better Together",
+      "description": "Defeat the Grand Noggin in co-op.",
+      "key": "event_COOP_NOGGIN",
+      "target": 1,
+      "scope": "total",
+      "group": "Co-op",
       "hidden": false
     },
     {

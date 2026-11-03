@@ -914,7 +914,7 @@ func fill_hero_panel(focus_hero: bool=false):
 	columns.add_child(portrait)
 	var preview_stats=game.rules.data.stats.duplicate(true);game.rules.apply_effects(preview_stats,game.hero.effects)
 	portrait.setup(game.hero.model,game.hero.weapon if HeroRules.armed(game.hero) else "",float(preview_stats.armor),float(preview_stats.shield))
-	HatBook.wear(portrait.preview_actor,str(game.career.data.settings.get("hat","")) if HatBook.owned(game.career.data.unlocked,str(game.career.data.settings.get("hat",""))) else "")
+	MustacheBook.wear(portrait.preview_actor,str(game.career.data.settings.get("mustache","")) if MustacheBook.owned(game.career.data.unlocked,str(game.career.data.settings.get("mustache",""))) else "")
 	var bio=VBoxContainer.new()
 	bio.custom_minimum_size.x=413
 	bio.size_flags_horizontal=Control.SIZE_EXPAND_FILL
@@ -942,7 +942,7 @@ func fill_hero_panel(focus_hero: bool=false):
 	icon.tooltip_text=WeaponDetails.describe(game.hero.weapon)
 	if not str(game.hero.weapon).is_empty() and HeroRules.armed(game.hero): bio.add_child(starter)
 	else: starter.queue_free()
-	bio.add_child(hat_row())
+	bio.add_child(mustache_row())
 	if focus_hero and is_instance_valid(selected_hero):
 		selected_hero.grab_focus()
 		reveal_selection.call_deferred(hero_scroll,selected_hero)
@@ -955,30 +955,30 @@ func hero_facts(item: Dictionary,preview_stats: Dictionary) -> String:
 	var health="♥ %d" % roundi(float(preview_stats.maxHp)) if not HeroRules.no_health(item) else "◯ %d shield" % roundi(float(preview_stats.shield))
 	return "%s  ·  speed %d%%  ·  %s" % [health,roundi(move*100),"jump %d%%" % roundi(jump*100) if HeroRules.can_jump(item) else HeroRules.mover(item)]
 
-# Hats on the hero screen (user, November 2: "how do I put on the hats?"): cycle
-# with the arrows; the preview wears it. Locked hats list how to earn them.
-func hat_row() -> HBoxContainer:
-	var row=HBoxContainer.new();row.name="HatRow";row.add_theme_constant_override("separation",8)
+# Mustaches on the hero screen (they replaced the hats, November 3): cycle with
+# the arrows; the preview wears it. Locked ones list the achievement in the tooltip.
+func mustache_row() -> HBoxContainer:
+	var row=HBoxContainer.new();row.name="MustacheRow";row.add_theme_constant_override("separation",8)
 	var owned=[""]
-	for hat in HatBook.HATS:
-		if HatBook.owned(game.career.data.unlocked,hat.id): owned.append(hat.id)
-	var current=str(game.career.data.settings.get("hat",""))
+	for item in MustacheBook.MUSTACHES:
+		if MustacheBook.owned(game.career.data.unlocked,item.id): owned.append(item.id)
+	var current=str(game.career.data.settings.get("mustache",""))
 	if not owned.has(current): current=""
 	var index=owned.find(current)
 	var cycle=func(step: int):
 		var next=owned[(index+step+owned.size())%owned.size()]
-		game.career.data.settings.hat=next;game.career.dirty=true;game.career.save();game.wear_hat()
-		HatBook.wear(portrait.preview_actor,next)
-		var holder=row.get_parent();var at=row.get_index();row.queue_free();var fresh=hat_row();holder.add_child(fresh);holder.move_child(fresh,at)
+		game.career.data.settings.mustache=next;game.career.dirty=true;game.career.save();game.wear_mustache()
+		MustacheBook.wear(portrait.preview_actor,next)
+		var holder=row.get_parent();var at=row.get_index();row.queue_free();var fresh=mustache_row();holder.add_child(fresh);holder.move_child(fresh,at)
 		fresh.get_node("Next" if step>0 else "Back").grab_focus()
-	row.add_child(label("HAT",13,ThemeTokens.STAR_GOLD))
+	row.add_child(label("MUSTACHE",13,ThemeTokens.STAR_GOLD))
 	var back=button("◀",func():cycle.call(-1));back.name="Back";back.custom_minimum_size=Vector2(44,36);row.add_child(back)
-	var hat_name=label(HatBook.entry(current).get("name","No hat") if current!="" else "No hat",16);hat_name.custom_minimum_size.x=140;hat_name.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;row.add_child(hat_name)
+	var shown=label(MustacheBook.entry(current).get("name","Clean shaven") if current!="" else "Clean shaven",16);shown.custom_minimum_size.x=160;shown.horizontal_alignment=HORIZONTAL_ALIGNMENT_CENTER;row.add_child(shown)
 	var next=button("▶",func():cycle.call(1));next.name="Next";next.custom_minimum_size=Vector2(44,36);row.add_child(next)
 	back.disabled=owned.size()<2;next.disabled=owned.size()<2
-	var locked=HatBook.HATS.filter(func(h):return not HatBook.owned(game.career.data.unlocked,h.id))
-	row.add_child(label("%d / %d" % [owned.size()-1,HatBook.HATS.size()],13,Color("b4c9bc")))
-	row.tooltip_text="Hats come from achievements:\n"+"\n".join(locked.map(func(h):return "%s · %s" % [h.name,h.how]))
+	var locked=MustacheBook.MUSTACHES.filter(func(h):return not MustacheBook.owned(game.career.data.unlocked,h.id))
+	row.add_child(label("%d / %d" % [owned.size()-1,MustacheBook.MUSTACHES.size()],13,Color("b4c9bc")))
+	row.tooltip_text="Mustaches come from the hardest achievements:\n"+"\n".join(locked.map(func(h):return "%s · %s" % [h.name,h.how]))
 	for child in row.get_children(): if child is Control: child.tooltip_text=row.tooltip_text
 	return row
 
@@ -1616,16 +1616,16 @@ func settings_menu():
 	settings_toggle(controls,"Vibration",bool(game.career.data.settings.rumble),func(value): game.career.data.settings.rumble=value;game.career.dirty=true;game.vibrate(.4,.3,.25) if value else null)
 	settings_row(controls,"Keys & buttons",button("Remap",bindings_menu))
 	var look=settings_section(right,"LOOK")
-	# Achievement rewards: a hat and a nameplate style, owned ones only.
-	var hat_picker=OptionButton.new();hat_picker.add_item("None");hat_picker.set_item_metadata(0,"")
-	for hat in HatBook.HATS:
-		if not HatBook.owned(game.career.data.unlocked,hat.id): continue
-		hat_picker.add_item(hat.name);hat_picker.set_item_metadata(hat_picker.item_count-1,hat.id)
-		if hat.id==str(game.career.data.settings.get("hat","")): hat_picker.select(hat_picker.item_count-1)
-	hat_picker.disabled=hat_picker.item_count==1
-	hat_picker.tooltip_text="\n".join(HatBook.HATS.filter(func(h):return not HatBook.owned(game.career.data.unlocked,h.id)).map(func(h):return "%s · %s" % [h.name,h.how]))
-	hat_picker.item_selected.connect(func(index):game.career.data.settings.hat=str(hat_picker.get_item_metadata(index));game.career.dirty=true;game.career.save();game.wear_hat())
-	settings_row(look,"Hat",hat_picker)
+	# Achievement rewards: a mustache and a nameplate style, owned ones only.
+	var mustache_picker=OptionButton.new();mustache_picker.add_item("None");mustache_picker.set_item_metadata(0,"")
+	for item in MustacheBook.MUSTACHES:
+		if not MustacheBook.owned(game.career.data.unlocked,item.id): continue
+		mustache_picker.add_item(item.name);mustache_picker.set_item_metadata(mustache_picker.item_count-1,item.id)
+		if item.id==str(game.career.data.settings.get("mustache","")): mustache_picker.select(mustache_picker.item_count-1)
+	mustache_picker.disabled=mustache_picker.item_count==1
+	mustache_picker.tooltip_text="\n".join(MustacheBook.MUSTACHES.filter(func(h):return not MustacheBook.owned(game.career.data.unlocked,h.id)).map(func(h):return "%s · %s" % [h.name,h.how]))
+	mustache_picker.item_selected.connect(func(index):game.career.data.settings.mustache=str(mustache_picker.get_item_metadata(index));game.career.dirty=true;game.career.save();game.wear_mustache())
+	settings_row(look,"Mustache",mustache_picker)
 	var cosmetics={"mastery_crown":"Mastery Crown","formation_gold":"Formation Gold","biome_prism":"Biome Prism","ping_star":"Ping Star","party_banner":"Party Banner","comeback_flame":"Comeback Flame","scout_visor":"Scout Visor","recap_medal":"Recap Medal"}
 	var picker=OptionButton.new();achievement_cosmetic_picker=picker;picker.add_item("Default");picker.set_item_metadata(0,"")
 	for id in cosmetics:

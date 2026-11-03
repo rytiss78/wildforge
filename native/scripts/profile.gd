@@ -106,6 +106,8 @@ func score(run: Dictionary):
 	if run.win:
 		bump("wins")
 		bump("win_" + run.hero)
+		# Full Cast: how many different heroes have felled the Grand Noggin.
+		best("heroes_won",float(data.total.keys().filter(func(k):return str(k).begins_with("win_") and float(data.total[k])>0).size()))
 		if run.healthDamage == 0: bump("noHitWins")
 		if run.seconds < 300: bump("fastWins")
 	dirty = true

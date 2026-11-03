@@ -1,6 +1,6 @@
 {
   "schemaVersion": 1,
-  "count": 93,
+  "count": 91,
   "achievements": [
     {
       "apiName": "WF_WIN_WRENCH",
@@ -29,19 +29,6 @@
       }
     },
     {
-      "apiName": "WF_WIN_BROCCOLI",
-      "displayName": "Tank Potato Beats The Odds",
-      "description": "Win a run as Tank Potato.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_win_broccoli-unlocked.png",
-      "iconLocked": "achievement-icons/wf_win_broccoli-locked.png",
-      "condition": {
-        "key": "win_broccoli",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
       "apiName": "WF_WIN_GRANDMA",
       "displayName": "Stone Granny Beats The Odds",
       "description": "Win a run as Stone Granny.",
@@ -63,19 +50,6 @@
       "iconLocked": "achievement-icons/wf_win_goblin-locked.png",
       "condition": {
         "key": "win_goblin",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
-      "apiName": "WF_WIN_LOAF",
-      "displayName": "Sir Loaf Beats The Odds",
-      "description": "Win a run as Sir Loaf.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_win_loaf-unlocked.png",
-      "iconLocked": "achievement-icons/wf_win_loaf-locked.png",
-      "condition": {
-        "key": "win_loaf",
         "target": 1,
         "scope": "total"
       }
@@ -679,32 +653,6 @@
       }
     },
     {
-      "apiName": "WF_RUINS",
-      "displayName": "Tourist With Teeth",
-      "description": "Visit all four ruins in one world.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_ruins-unlocked.png",
-      "iconLocked": "achievement-icons/wf_ruins-locked.png",
-      "condition": {
-        "key": "event_RUINS",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
-      "apiName": "WF_HIGH_CHEST",
-      "displayName": "Upstairs Loot",
-      "description": "Open treasure on a raised ruin.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_high_chest-unlocked.png",
-      "iconLocked": "achievement-icons/wf_high_chest-locked.png",
-      "condition": {
-        "key": "event_HIGH_CHEST",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
       "apiName": "WF_THREE_REALMS",
       "displayName": "Change Of Scenery",
       "description": "Reach the third world.",
@@ -713,19 +661,6 @@
       "iconLocked": "achievement-icons/wf_three_realms-locked.png",
       "condition": {
         "key": "event_THREE_REALMS",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
-      "apiName": "WF_LONG_WALK",
-      "displayName": "Scenic Route",
-      "description": "Explore the outer edge of a world.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_long_walk-unlocked.png",
-      "iconLocked": "achievement-icons/wf_long_walk-locked.png",
-      "condition": {
-        "key": "event_LONG_WALK",
         "target": 1,
         "scope": "total"
       }
@@ -798,7 +733,7 @@
     {
       "apiName": "WF_TRIPLE_WEAPON",
       "displayName": "Full Hands",
-      "description": "Equip three different weapons.",
+      "description": "Fill all four weapon slots in one run.",
       "hidden": false,
       "iconUnlocked": "achievement-icons/wf_triple_weapon-unlocked.png",
       "iconLocked": "achievement-icons/wf_triple_weapon-locked.png",
@@ -811,90 +746,12 @@
     {
       "apiName": "WF_REPLACE",
       "displayName": "New Favourite",
-      "description": "Upgrade each of your three weapons in the same run.",
+      "description": "Upgrade each of your four weapons in the same run.",
       "hidden": false,
       "iconUnlocked": "achievement-icons/wf_replace-unlocked.png",
       "iconLocked": "achievement-icons/wf_replace-locked.png",
       "condition": {
         "key": "event_REPLACE",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
-      "apiName": "WF_BLOOM_CHAIN",
-      "displayName": "Spring Reaction",
-      "description": "Make three neighbouring flowers bloom together.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_bloom_chain-unlocked.png",
-      "iconLocked": "achievement-icons/wf_bloom_chain-locked.png",
-      "condition": {
-        "key": "event_BLOOM_CHAIN",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
-      "apiName": "WF_FLOWER_HEAL",
-      "displayName": "Emergency Bouquet",
-      "description": "Heal yourself with a flower.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_flower_heal-unlocked.png",
-      "iconLocked": "achievement-icons/wf_flower_heal-locked.png",
-      "condition": {
-        "key": "event_FLOWER_HEAL",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
-      "apiName": "WF_FLOWER_BOSS",
-      "displayName": "Push Up Daisies",
-      "description": "Damage a boss with a bloom.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_flower_boss-unlocked.png",
-      "iconLocked": "achievement-icons/wf_flower_boss-locked.png",
-      "condition": {
-        "key": "event_FLOWER_BOSS",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
-      "apiName": "WF_POLLEN",
-      "displayName": "Hay Fever",
-      "description": "Poison an enemy with flower pollen.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_pollen-unlocked.png",
-      "iconLocked": "achievement-icons/wf_pollen-locked.png",
-      "condition": {
-        "key": "event_POLLEN",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
-      "apiName": "WF_ROOTS",
-      "displayName": "Please Stay On The Grass",
-      "description": "Slow an enemy with flower roots.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_roots-unlocked.png",
-      "iconLocked": "achievement-icons/wf_roots-locked.png",
-      "condition": {
-        "key": "event_ROOTS",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
-      "apiName": "WF_GARDEN_MOVE",
-      "displayName": "Garden Marathon",
-      "description": "Plant in five different patches in a world.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_garden_move-unlocked.png",
-      "iconLocked": "achievement-icons/wf_garden_move-locked.png",
-      "condition": {
-        "key": "event_GARDEN_MOVE",
         "target": 1,
         "scope": "total"
       }
@@ -991,19 +848,6 @@
       }
     },
     {
-      "apiName": "WF_NO_GUN",
-      "displayName": "Alternative Medicine",
-      "description": "Defeat a boss without a gun equipped.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_no_gun-unlocked.png",
-      "iconLocked": "achievement-icons/wf_no_gun-locked.png",
-      "condition": {
-        "key": "event_NO_GUN",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
       "apiName": "WF_ONE_WEAPON",
       "displayName": "Travelling Light",
       "description": "Defeat a boss with one weapon equipped.",
@@ -1025,19 +869,6 @@
       "iconLocked": "achievement-icons/wf_no_hit_boss-locked.png",
       "condition": {
         "key": "event_NO_HIT_BOSS",
-        "target": 1,
-        "scope": "total"
-      }
-    },
-    {
-      "apiName": "WF_FULL_EXPLORER",
-      "displayName": "Cartographer In A Panic",
-      "description": "Reveal thirty map tiles in one world.",
-      "hidden": false,
-      "iconUnlocked": "achievement-icons/wf_full_explorer-unlocked.png",
-      "iconLocked": "achievement-icons/wf_full_explorer-locked.png",
-      "condition": {
-        "key": "event_FULL_EXPLORER",
         "target": 1,
         "scope": "total"
       }
@@ -1130,6 +961,149 @@
       "condition": {
         "key": "achievement_cosmetics",
         "target": 3,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_NOGGIN",
+      "displayName": "Noggin Knocker",
+      "description": "Defeat the Grand Noggin on the Red Moon.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_noggin-unlocked.png",
+      "iconLocked": "achievement-icons/wf_noggin-locked.png",
+      "condition": {
+        "key": "wins",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_NOGGIN_ONE",
+      "displayName": "One And Only",
+      "description": "Defeat the Grand Noggin with a single weapon equipped.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_noggin_one-unlocked.png",
+      "iconLocked": "achievement-icons/wf_noggin_one-locked.png",
+      "condition": {
+        "key": "event_NOGGIN_ONE",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_NOGGIN_DARE",
+      "displayName": "Daredevil",
+      "description": "Defeat the Grand Noggin with the Dare card at level 5 or higher.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_noggin_dare-unlocked.png",
+      "iconLocked": "achievement-icons/wf_noggin_dare-locked.png",
+      "condition": {
+        "key": "event_NOGGIN_DARE",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_SPOTLESS",
+      "displayName": "Spotless",
+      "description": "Clear a map and step through its portal without losing any health there.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_spotless-unlocked.png",
+      "iconLocked": "achievement-icons/wf_spotless-locked.png",
+      "condition": {
+        "key": "event_SPOTLESS",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_ECLIPSE",
+      "displayName": "Lights Out, Still Standing",
+      "description": "Survive five minutes of the Endless Eclipse.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_eclipse-unlocked.png",
+      "iconLocked": "achievement-icons/wf_eclipse-locked.png",
+      "condition": {
+        "key": "event_ECLIPSE",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_ROSTER",
+      "displayName": "Full Cast",
+      "description": "Defeat the Grand Noggin with ten different heroes.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_roster-unlocked.png",
+      "iconLocked": "achievement-icons/wf_roster-locked.png",
+      "condition": {
+        "key": "heroes_won",
+        "target": 10,
+        "scope": "best"
+      }
+    },
+    {
+      "apiName": "WF_RED_MOON",
+      "displayName": "Moonrise",
+      "description": "Reach the Red Moon.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_red_moon-unlocked.png",
+      "iconLocked": "achievement-icons/wf_red_moon-locked.png",
+      "condition": {
+        "key": "event_RED_MOON",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_EVOLVE",
+      "displayName": "Glow Up",
+      "description": "Evolve a weapon.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_evolve-unlocked.png",
+      "iconLocked": "achievement-icons/wf_evolve-locked.png",
+      "condition": {
+        "key": "event_EVOLVE",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_LEGEND_HOARD",
+      "displayName": "Dragon's Pocket",
+      "description": "Own three legendary items in one run.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_legend_hoard-unlocked.png",
+      "iconLocked": "achievement-icons/wf_legend_hoard-locked.png",
+      "condition": {
+        "key": "event_LEGEND_HOARD",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_CROWD",
+      "displayName": "Crowd Control",
+      "description": "Defeat 2,500 monsters in one run.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_crowd-unlocked.png",
+      "iconLocked": "achievement-icons/wf_crowd-locked.png",
+      "condition": {
+        "key": "event_CROWD",
+        "target": 1,
+        "scope": "total"
+      }
+    },
+    {
+      "apiName": "WF_COOP_NOGGIN",
+      "displayName": "Better Together",
+      "description": "Defeat the Grand Noggin in co-op.",
+      "hidden": false,
+      "iconUnlocked": "achievement-icons/wf_coop_noggin-unlocked.png",
+      "iconLocked": "achievement-icons/wf_coop_noggin-locked.png",
+      "condition": {
+        "key": "event_COOP_NOGGIN",
+        "target": 1,
         "scope": "total"
       }
     },

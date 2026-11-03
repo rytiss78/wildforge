@@ -30,7 +30,9 @@ static func run(game: Node3D):
 	checks.minimap_biome_palette=map_colors.size()>=1 and game.world.biome_at(Vector3(120,0,40))==RealmWorld.biome_of(game.realm)
 	checks.minimap_interactions=minimap.interactables.any(func(i):return i.kind=="merchant") and minimap.interactables.any(func(i):return i.kind=="supply") and not minimap.interactables.any(func(i):return i.kind=="landmark")
 	checks.rare_boxes=game.rules.chest_price(0)==30 and RunRules.WEAPON_CAP==4
-	checks.achievements=game.career.achievements.size()==93 and game.career.achievements.map(func(a):return a.id).size()==93
+	var unique_ids={}
+	for a in game.career.achievements: unique_ids[a.id]=true
+	checks.achievements=game.career.achievements.size()==91 and unique_ids.size()==91
 	game.clear_entities();game.spawn_formation()
 	var formation=game.enemies.filter(func(enemy):return int(enemy.get("formation_id",-1))>0)
 	checks.enemy_formation=formation.size()==3 and formation.map(func(enemy):return enemy.formation_id).all(func(id):return id==formation[0].formation_id) and formation[0].get("formation_name","") in ["WEDGE","LINE","RING"]
@@ -419,17 +421,30 @@ static func run(game: Node3D):
 	var again=game.roll_menu_hero(true)
 	checks.random_menu_hero=rolled and first!=menu_hero.id and not again and game.hero.id==first
 	game.select_hero(menu_hero)
-	# Hats (October 29): every hat builds; an owned hat sits on top of the hero's
-	# head; a locked one is not worn.
-	var hats_build=HatBook.HATS.all(func(h):var hat_node=HatBook.build(h.id);var ok=hat_node.find_children("*","MeshInstance3D",true,false).size()>0;hat_node.free();return ok)
-	var had=game.career.data.unlocked.has("WF_TRIPLE_WEAPON");var old_hat=game.career.data.settings.get("hat","")
-	game.career.data.settings.hat="party";game.career.data.unlocked.erase("WF_TRIPLE_WEAPON");game.wear_hat()
-	var locked_off=game.avatar.find_child("Hat",true,false)==null
-	game.career.data.unlocked["WF_TRIPLE_WEAPON"]=true;game.wear_hat()
-	var worn: Node3D=game.avatar.find_child("Hat",true,false)
-	checks.hats=hats_build and locked_off and worn!=null and worn.global_position.y>game.player.global_position.y+float(game.hero.get("height",1.65))*.55
-	if not had: game.career.data.unlocked.erase("WF_TRIPLE_WEAPON")
-	game.career.data.settings.hat=old_hat;game.wear_hat()
+	# Mustaches (November 3, replacing the hats): every one builds, each comes
+	# from an achievement that exists; an owned one sits on the hero's face
+	# (upper half of the body, in front); a locked one is not worn.
+	var ids=game.career.achievements.map(func(a):return a.id)
+	var builds=MustacheBook.MUSTACHES.all(func(h):var node=MustacheBook.build(h.id);var ok=node.find_children("*","MeshInstance3D",true,false).size()>0;node.free();return ok and h.achievements.all(func(a):return ids.has(a)))
+	var had=game.career.data.unlocked.has("WF_NOGGIN");var old_choice=game.career.data.settings.get("mustache","")
+	game.career.data.settings.mustache="handlebar";game.career.data.unlocked.erase("WF_NOGGIN");game.wear_mustache()
+	var locked_off=game.avatar.find_child("Mustache",true,false)==null
+	game.career.data.unlocked["WF_NOGGIN"]=true;game.wear_mustache()
+	var worn: Node3D=game.avatar.find_child("Mustache",true,false)
+	checks.hats=builds and locked_off and worn!=null and worn.global_position.y>game.player.global_position.y+float(game.hero.get("height",1.65))*.4
+	if not had: game.career.data.unlocked.erase("WF_NOGGIN")
+	game.career.data.settings.mustache=old_choice;game.wear_mustache()
+	# Achievements after the big update MB (November 3): beating the Grand
+	# Noggin now wins a run (it never did), Full Cast counts different heroes,
+	# the walking / hero-only ones are gone, weapon goals use four slots, and
+	# the supply beacon stands on playable ground.
+	var trial=preload("res://scripts/profile.gd").new(game.rules.data,true);trial.file="user://achievement-trial.json"
+	trial.data.total.clear();trial.data.best.clear();trial.data.unlocked.clear();trial.data.scores.clear();trial.data.lastRun={}
+	for i in range(10): trial.score({"id":"t%d" % i,"hero":"hero%d" % i,"kills":0,"seconds":600,"level":1,"bosses":1,"chests":0,"win":true,"healthDamage":5})
+	var retired=["WF_LONG_WALK","WF_FULL_EXPLORER","WF_RUINS","WF_HIGH_CHEST","WF_NO_GUN","WF_WIN_BROCCOLI","WF_WIN_LOAF","WF_GARDEN_MOVE","WF_POLLEN","WF_ROOTS","WF_FLOWER_HEAL"]
+	var four=game.career.achievements.filter(func(a):return a.id in ["WF_TRIPLE_WEAPON","WF_REPLACE"]).all(func(a):return str(a.description).contains("four"))
+	var beacon_ok=Vector2(game.update.beacon_position.x,game.update.beacon_position.z).length()<game.world.shore_radius(game.update.beacon_position)-RealmWorld.RIM_START
+	checks.achievements_mb=trial.data.unlocked.has("WF_NOGGIN") and trial.data.unlocked.has("WF_ROSTER") and float(trial.data.best.get("heroes_won",0))==10 and not game.career.achievements.any(func(a):return retired.has(a.id)) and four and beacon_ok and MustacheBook.unlocked_by("WF_NOGGIN").size()==1
 	# Hero tricks (October 29): every hero has one, and each does something you can
 	# see through the real use(): hurts or stuns a nearby enemy, heals, boosts or
 	# moves the hero, or raises the shield.
