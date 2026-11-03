@@ -60,10 +60,12 @@ Done in this order: quick screen and data fixes first, then hero rework, then ne
 Megabonk-style structure with this game's own content: Megabonk's own items, books, weapons and heroes are not copied, only the kind of structure (slot limits, stat cards, chest items, climbing maps).
 
 - [x] 1 · **Loadout:** 4 weapon slots (no other weapon appears once full, only ranks and upgrades for those), 4 card slots (24 stat cards of our own, e.g. Might, Haste, Vigor, Stride, levelled by level-ups; once 4 are held only their levels appear), items with no limit from chests. All 747 old cards are kept and sorted (`Loadout.slot_of`): core stats → card levels, single-weapon upgrades → weapon upgrades offered while carrying that weapon, everything conditional / on-hit / on-kill / hero-mechanic / economy → chest items. One mutation per level-up. Minimal HUD: card and weapon tiles centred at the bottom (gun damage numbers rise from the weapon tiles), no dark plates behind vitals, loadout or timer.
-- [ ] 2 · **One biome per map:** seven maps (one per biome, that biome's creatures only) played in a row, then the Red Moon.
-- [ ] 3 · **Climbing maps:** height, ledges and jumps, chests spread over high places to reach in time; the underside stays.
-- [ ] 4 · **More content of our own** filling the same roles (more cards, chest items and weapons where the sort leaves gaps).
-- [ ] 5 · **Heroes:** compare with how Megabonk heroes work (starting weapon plus a passive that grows with level) and give ours level-scaling passives where it fits.
+- [x] 2 · **One biome per map:** seven six-minute maps in a row (Clover Woods, Puffcap Marsh, Moon Craters, Cloudwilds, Junkyard Planet, Candy Hell, Starfall Space; that biome's ground, plants and creatures only), then the Red Moon. Difficulty climbs over the seven (`RealmWorld.tier`). Each map has its own sky after Destiny 2's worlds (`SkyLook`: a pale pearl, a banded giant, the blue home world, aurora, a black sun, a ringed giant); the corrupted veins are gone.
+- [x] 3 · **Climbing maps:** ten mesas per map (`ClimbMap`) reached by a ramp, a spiral of stone pillars or a launch pad, a chest on top of each; 28 more chests at random spots each run, shown on the map only once someone in the party has been near (`chest_seen`). The underside stays; Digby's dig now flies over hell (`HellFlight`, wailing souls and fire).
+- [x] 4 · **More content of our own:** Dare (more monsters, more XP and gold) and Wild Card (two random stats a level) cards; chest items have one fixed rarity (plain stats common, effects rare, strong effects epic, game changers legendary, no weak copies of the best), plus 15 new items where Megabonk had ideas we lacked (`Relics`: overcrits, BONK, kill stacks, reflect shell, overheal cushion, wisps, fireworks, slow time...).
+- [x] 5 · **Heroes:** each hero's perk grows a step every level (`HeroGrowth`), the body tuning stays.
+- [ ] 6 · **Playtest MB:** pacing of six-minute maps and 38 chests, mesa heights, item rarity odds, Dare and the relics' strength; co-op with the new maps (protocol 22).
+- **Vitals:** health on top, one even row of shield, armor and evasion chips below.
 
 ## Next
 

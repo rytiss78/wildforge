@@ -609,34 +609,50 @@ func enter_realm(index: int,broadcast_transition: bool=true):
 	if realm<RealmWorld.ARENA:
 		for i in range(9+int(tier)): spawn_enemy(11.0+randf()*5.0)
 	else: preload("res://scripts/final_arena.gd").setup(self)
-	hud.tell("THE RED MOON" if realm==RealmWorld.ARENA else "%d / %d  ·  %s" % [realm+1,RealmWorld.MAPS,RealmWorld.map_name(realm)],4)
-	if realm>0 and realm<RealmWorld.ARENA:
-		# Later maps announce themselves and how much harder they are.
-		var tougher=roundi((realm_difficulty/(1.08)-1.0)*100)
-		Journey.announce(self,RealmWorld.map_name(realm).to_upper(),"☠ +%d%%" % tougher)
+	# No name plates for the maps (user, November 3): the narrator says the
+	# biome's name on arrival (update_exploration) and the clock shows MAP n / 7.
+	if realm==RealmWorld.ARENA: hud.tell("THE RED MOON",4)
 	PortalFx.arrive(self)
 	if realm > 0: sound.say("realm",0)
 	if broadcast_transition: coop.realm_changed()
 	if broadcast_transition and realm==RealmWorld.ARENA and coop.active and coop.hosting: preload("res://scripts/final_arena.gd").broadcast_intro(self)
 
+const CHEST_COUNT=28
+const CHEST_SPACING=34.0
+# A chest shows on the map once anyone in the party has come this close.
+const CHEST_SIGHT=26.0
+
 func make_chests():
-	# Four stratified radial bands in each biome, with independent deterministic jitter.
-	var rng=RandomNumberGenerator.new();rng.seed=seed_value+realm*1777
-	for biome in range(RealmWorld.BIOME_COUNT):
-		for band in range(4):
-			var angle=(biome+.2+rng.randf()*.6)*RealmWorld.BIOME_ARC-float(seed_value%23)*.03-realm*.4
-			var radius=[75,145,210,280][band]+rng.randf_range(0,15)
-			if band==3: radius=RealmWorld.coast_radius(angle,seed_value,realm)-26-rng.randf_range(0,8)
-			if biome==0 and band==0: radius=38+rng.randf_range(0,7)
-			var p=Vector3(cos(angle)*radius,0,sin(angle)*radius)
-			# Not on a mesa's side: those chests sit on top (below).
-			for mesa in world.climb_mesas:
-				var off=Vector2(p.x,p.z)-mesa.center
-				if off.length()<mesa.radius+8.0: off=off.normalized()*(mesa.radius+8.0);p=Vector3(mesa.center.x+off.x,0,mesa.center.y+off.y)
-			p.y=world.height_at(p.x,p.z)
-			make_chest(p,false)
+	# Anywhere on the island, different every run (user, November 3: chests
+	# spawned too predictably): random spots spread at least SPACING apart, off
+	# the mesa sides and landmarks, one close to the start. The seed is the
+	# run's, so every co-op player gets the same chests.
+	var rng=RandomNumberGenerator.new();rng.seed=seed_value*31+realm*1777
+	var placed=[];var tries=0
+	while placed.size()<CHEST_COUNT and tries<6000:
+		tries+=1
+		var angle=rng.randf()*TAU;var coast=RealmWorld.coast_radius(angle,seed_value,realm)
+		var radius=rng.randf_range(36,46) if placed.is_empty() else sqrt(rng.randf())*(coast-24)
+		if radius<30: continue
+		var p=Vector3(cos(angle)*radius,0,sin(angle)*radius)
+		var spacing=CHEST_SPACING if tries<4000 else CHEST_SPACING*.6
+		if placed.any(func(q):return q.distance_to(p)<spacing): continue
+		if world.climb_mesas.any(func(mesa):return Vector2(p.x,p.z).distance_to(mesa.center)<mesa.radius+8.0): continue
+		if world.landmarks.any(func(site):return Vector2(site.x-p.x,site.z-p.z).length()<14): continue
+		placed.append(p)
+		p.y=world.height_at(p.x,p.z)
+		make_chest(p,false)
 	# One chest on top of every mesa (big update MB): climb, jump or launch to it.
 	for top in ClimbMap.tops(world): make_chest(top,false)
+
+# Seen by this player or any co-op partner (their positions are synced), so
+# one player finding a chest marks it on everyone's map.
+func chest_seen(p: Vector3) -> bool:
+	if player.position.distance_to(p)<CHEST_SIGHT: return true
+	if coop.active:
+		for member in coop.members.values():
+			if member.has("position") and int(member.get("realm",realm))==realm and CoopSession.vector(member.position).distance_to(p)<CHEST_SIGHT: return true
+	return false
 
 # event: a warden, guardian or hunt reward (EventLoot: beacon, better cards).
 func make_chest(p: Vector3, elite: bool, event: bool=false):
@@ -2489,7 +2505,7 @@ func update_combat(delta: float):
 			pot.node.queue_free()
 			pot.dead=true
 	for chest in chests:
-		if player.position.distance_to(chest.node.position)<26: chest.discovered=true
+		if not chest.discovered: chest.discovered=chest_seen(chest.node.position)
 		if chest.has("beacon"): EventLoot.tick(chest,delta)
 	enemies = enemies.filter(func(enemy):return not enemy.dead)
 	for shot in projectiles:
@@ -3209,12 +3225,12 @@ func run_smoke():
 	underside.clear(self);var dig_at=Vector3(12,0,6);dig_at.y=world.height_at(dig_at.x,dig_at.z)+.1
 	world.ensure_ground(dig_at);player.position=dig_at;player.velocity=Vector3.ZERO
 	underside.dig(self,40.0,6.0)
-	for i in range(90):
+	for i in range(150):
 		if underside.tick(self,1.0/60.0) and underside.state=="under": break
 	checks.mole_dig_down=underside.state=="under" and underside.flipped() and Vector2(player.position.x-dig_at.x,player.position.z-dig_at.z).length()<.01 and player.position.y<world.height_at(dig_at.x,dig_at.z)-8
 	spawn_enemy(0);var dug_enemy=enemies[-1];plain_enemy(dug_enemy);dug_enemy.node.position=dig_at+Vector3(1.5,0,0);var dug_hp=float(dug_enemy.hp)
 	underside.dig(self,40.0,6.0)
-	for i in range(90):
+	for i in range(150):
 		if underside.tick(self,1.0/60.0) and underside.state=="top": break
 	checks.mole_dig_up=underside.state=="top" and not underside.flipped() and absf(player.position.y-world.height_at(dig_at.x,dig_at.z))<1.0 and underside.digs==2 and (dug_enemy.dead or float(dug_enemy.hp)<dug_hp)
 	checks.mole_hero=HeroTricks.TRICKS.has("mole") and rules.data.heroes.any(func(h):return h.id=="mole" and CartoonHeroes.has("hero_"+h.model))
@@ -3231,7 +3247,7 @@ func run_smoke():
 	checks.music_theme_continuity=sound.atmosphere.stream==theme_before
 	sound.tick(.01,false,false)
 	checks.music_pause=sound.atmosphere.stream_paused and sound.rhythm.stream_paused
-	realm=(old_realm+1)%3;sound.tick(.01,true,true)
+	realm=(old_realm+1)%RealmWorld.MAPS;sound.tick(.01,true,true)
 	checks.music_realm_and_boss=sound.theme_realm==realm and sound.atmosphere.stream!=theme_before and not sound.atmosphere.stream_paused and sound.boss
 	realm=old_realm
 	checks.merge(preload("res://scripts/repair_checks.gd").run(self))

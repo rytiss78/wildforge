@@ -35,7 +35,9 @@ const ARENA=7
 const MAP_BIOMES=[0,1,2,3,6,4,5]
 const MAP_SECONDS=360.0
 # Which harsher island look (GRADE) each map uses; the arena keeps its own.
-const MAP_GRADES=[0,0,1,1,1,2,2]
+# (Corrupted veins and harsher tints are gone from the maps, user November 3:
+# "remove lines on map that appear in later maps"; each map has its own sky.)
+const MAP_GRADES=[0,0,0,0,0,0,0]
 static func biome_of(map: int) -> int: return 2 if map>=ARENA else MAP_BIOMES[clampi(map,0,MAPS-1)]
 static func grade_of(map: int) -> int: return 3 if map>=ARENA else MAP_GRADES[clampi(map,0,MAPS-1)]
 # Difficulty stage: 0 on the first map rising to 2 on the seventh, 3 in the arena
@@ -123,7 +125,8 @@ func weather_tick(delta: float,p: Vector3):
 	if active_biome!=biome:
 		active_biome=biome
 		for cloud in clouds: cloud.visible=biome in [1,3]
-		stars.visible=biome in [2,5];moon.visible=biome==2
+		stars.visible=biome in [2,5];moon.visible=biome==2 and not SkyLook.has(realm)
+		SkyLook.apply(sky_paint,realm,biome)
 		weather.emitting=biome in [0,1,3,4,5,6]
 		weather.amount=240 if biome==1 else 80 if biome in [3,4,5,6] else 38
 		var material: ParticleProcessMaterial=weather.process_material
@@ -142,7 +145,7 @@ func weather_tick(delta: float,p: Vector3):
 		# Keep the immediate combat/loot area clear; wisps stay out in scenery.
 		var site=p+Vector3(-14 if i==0 else 14,0,-12)
 		mist.position=Vector3(site.x,height_at(site.x,site.z)+.18,site.z)
-	sky_top=sky_top.lerp(Color("21192f") if eclipse else SKY_TOP[biome],1-exp(-delta*.6));sky_horizon=sky_horizon.lerp(Color("77556c") if eclipse else SKY_HORIZON[biome],1-exp(-delta*.6))
+	sky_top=sky_top.lerp(Color("21192f") if eclipse else SkyLook.top(realm,biome),1-exp(-delta*.6));sky_horizon=sky_horizon.lerp(Color("77556c") if eclipse else SkyLook.horizon(realm,biome),1-exp(-delta*.6))
 	var grade: Dictionary=GRADE[grade_of(realm)]
 	if grade.mix>0 and not eclipse: sky_top=sky_top.lerp(grade.top,grade.mix*(1-exp(-delta*.6))*4.0);sky_horizon=sky_horizon.lerp(grade.horizon,grade.mix*(1-exp(-delta*.6))*4.0)
 	# The sky itself is drawn brighter than its fog colour (user request, October 25:
@@ -284,6 +287,7 @@ func make_material():
 	var shader=load("res://shaders/terrain.gdshader")
 	terrain_material=ShaderMaterial.new();terrain_material.shader=shader;terrain_material.set_shader_parameter("phase",float(seed_value%23)*.03+realm*.4)
 	terrain_material.set_shader_parameter("red_moon",realm==RealmWorld.ARENA)
+	terrain_material.set_shader_parameter("map_biome",float(biome_of(realm)) if realm<ARENA else -1.0)
 	var grade: Dictionary=GRADE[grade_of(realm)]
 	terrain_material.set_shader_parameter("shape",grade.shape);terrain_material.set_shader_parameter("corruption",grade.corruption)
 	if grade.has("vein"): terrain_material.set_shader_parameter("vein_color",grade.vein);terrain_material.set_shader_parameter("blight_tint",grade.tint)

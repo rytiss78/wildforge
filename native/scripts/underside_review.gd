@@ -101,7 +101,7 @@ static func run(g):
 	g.trick_cooldown=0.0;checks.mole_trick=HeroTricks.use(g)
 	for i in range(24): await g.get_tree().process_frame
 	checks.mole_mid=await shot(g,"mole-dig")
-	for i in range(90):
+	for i in range(150):
 		await g.get_tree().physics_frame
 		if g.underside.state=="under": break
 	for i in range(30): await g.get_tree().process_frame
@@ -110,7 +110,7 @@ static func run(g):
 	for i in range(3):
 		g.spawn_enemy(6);var e=g.enemies[-1];var at=Vector3(g.player.position.x+(i-1)*2.0,0,g.player.position.z+2.5);at.y=g.world.height_at(at.x,at.z)+.2;e.node.position=at
 	g.trick_cooldown=0.0;checks.mole_trick_up=HeroTricks.use(g)
-	for i in range(90):
+	for i in range(150):
 		await g.get_tree().physics_frame
 		if g.underside.state=="top": break
 	for i in range(4): await g.get_tree().process_frame

@@ -29,7 +29,9 @@ const RIM=4.0  # the rim's width, curving from the shore down to the lip
 const FLIP=.7
 const INSET=2.0  # how far inside the rim the hero lands, top or bottom
 const TRIGGER=.5  # how close to the rim a move starts the flip
-const DIG=.9  # seconds to tunnel through the island
+# Seconds to tunnel through the island; a flight over hell covers the view
+# meanwhile (HellFlight, user November 3) instead of the rock's inside.
+const DIG=1.6
 
 var state="top"  # top, down (flipping under), under, up (flipping back), dig_down, dig_up
 var clock=0.0
@@ -198,6 +200,7 @@ func dig(game: Node3D,damage: float,radius: float):
 	game.slamming=false;game.landing_ready=false;game.air_jumps=0
 	dirt(game,p,1.0 if going_down else -1.0)
 	game.sound.effect("slam",p);game.hit_shake=maxf(game.hit_shake,.3)
+	if game.hud and game.hud.root: HellFlight.start(game,going_down,DIG)
 	light(game,true)
 
 func finish_dig(game: Node3D):

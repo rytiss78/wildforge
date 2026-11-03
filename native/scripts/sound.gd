@@ -57,6 +57,8 @@ var effect_samples={}
 # all enemy sounds together share a small budget: one every ENEMY_GAP, at most
 # ENEMY_MAX at once, a few dB under the hero's own sounds.
 const MIN_GAP=.05
+# Per-sound volume trims (user, November 3: the "gun" is a bit too punchy).
+const SFX_TRIM={"gun":-3.5}
 const MUSIC_TRIM=5.0  # dB off every music layer (user, November 2: too loud)
 const GAPS={"coin":.06,"melee_hit":.08,"hit":.08,"shell_bump":.25,"wing_bump":.25,"stone_bump":.25,"wet_bump":.25,"buzz_bump":.25,"roar_bump":.25,"shield-hit":.2}
 const ENEMY_GAP=.16
@@ -100,6 +102,11 @@ func setup(options: Dictionary):
 	for i in range(2):
 		var channel=AudioStreamPlayer3D.new();channel.unit_size=5;channel.max_distance=40;channel.max_db=0;add_child(channel);creature_pool.append(channel)
 	noggin_voice.unit_size=12;noggin_voice.max_distance=140;noggin_voice.max_db=0;add_child(noggin_voice)
+
+# This map's own music stems ("" in the Red Moon arena: the main set).
+func map_music() -> String:
+	var realm=int(get_parent().realm) if get_parent()!=null and "realm" in get_parent() else 0
+	return "map%d_" % realm if realm<RealmWorld.ARENA else ""
 
 func stream(name: String) -> AudioStream:
 	if not cache.has(name): cache[name] = load("res://assets/music/" + name + ".wav")
@@ -146,9 +153,13 @@ func play_phrase():
 	var volume = 0.0 if eclipse_active else float(settings.music)
 	for player in [drums,rhythm,lead,synth]: player.volume_db = linear_to_db(maxf(.0001, volume))-MUSIC_TRIM
 	drums.stream = stream(MUSIC+("boss_drums" if boss else "drums"))
-	rhythm.stream = stream(MUSIC+"bass_"+str(riff))
-	lead.stream = stream(MUSIC+"bell_"+str(riff))
-	synth.stream = stream(MUSIC+"air_0")
+	# Each biome map has its own key, lead, bass and pad (make-map-music.py,
+	# user November 3); the Red Moon keeps the main set. A little quieter.
+	var own=map_music()
+	rhythm.stream = stream(own+"bass_"+str(riff) if own!="" else MUSIC+"bass_"+str(riff))
+	lead.stream = stream(own+"lead_"+str(riff) if own!="" else MUSIC+"bell_"+str(riff))
+	synth.stream = stream(own+"air" if own!="" else MUSIC+"air_0")
+	if own!="": rhythm.volume_db-=2;lead.volume_db-=2
 	drums.volume_db-=7 if genre=="cyber" else 3
 	rhythm.volume_db-=5
 	lead.volume_db-=12 if genre=="cyber" else 7
@@ -254,10 +265,10 @@ func tick(delta: float, playing: bool, has_boss: bool):
 	if playing and not voice.playing and not pending_biome.is_empty():
 		var id=pending_biome;pending_biome="";say(id,0)
 	for player in [drums,rhythm,lead,synth,boss_melody,atmosphere]: player.stream_paused = not playing
-	var realm_index=clampi(RealmWorld.grade_of(get_parent().realm),0,2)
+	var realm_index=int(get_parent().realm)
 	if active and theme_realm!=realm_index:
 		theme_realm=realm_index
-		var theme=stream(MUSIC+"air_"+str(realm_index)).duplicate() as AudioStreamWAV
+		var theme=stream(map_music()+"air" if map_music()!="" else MUSIC+"air_2").duplicate() as AudioStreamWAV
 		theme.loop_mode=AudioStreamWAV.LOOP_FORWARD;theme.loop_begin=0;theme.loop_end=roundi(theme.get_length()*theme.mix_rate)
 		atmosphere.stream=theme;atmosphere.play();atmosphere.stream_paused=not playing
 	atmosphere.volume_db=-80 if eclipse_active or boss or hunt_active else linear_to_db(maxf(.0001,float(settings.music)))-(24 if boss else 18)-MUSIC_TRIM
@@ -423,7 +434,7 @@ func effect(id: String,position: Vector3=Vector3.ZERO,offset_db: float=0.0) -> A
 		cache[key]=audio
 	var channel=sfx_pool[sfx_index%sfx_pool.size()];sfx_index+=1
 	channel.global_position=get_parent().player.position if position==Vector3.ZERO else position
-	channel.stream=cache[key];channel.pitch_scale=rng.randf_range(.95,1.04) if weapon_samples.has(id) else 1.0;channel.volume_db=linear_to_db(float(settings.sfx))+offset_db;channel.play()
+	channel.stream=cache[key];channel.pitch_scale=rng.randf_range(.95,1.04) if weapon_samples.has(id) else 1.0;channel.volume_db=linear_to_db(float(settings.sfx))+offset_db+float(SFX_TRIM.get(id,0.0));channel.play()
 	return channel
 
 # One creature voice line at a position. A free channel is used; an urgent line (a

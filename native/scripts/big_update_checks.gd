@@ -272,6 +272,23 @@ static func run(game: Node3D):
 	var bonked=bonk_target.is_empty() or is_equal_approx(Relics.hit(game,bonk_target[0],10.0,false),200.0)
 	game.stats=bonk_stats
 	checks.mb_item_rarity=fixed and relic_seen and commons>legends and bonked and game.rules.describe({"key":"relicBonk","amount":.02}).contains("BONK")
+	# November 3 list: random chests that show on the map only once someone in
+	# the party has seen them; each map its own sky and ground; no veins;
+	# evasion on the vitals; Mole's dig flies over hell.
+	var far_spot=game.player.position+Vector3(game.CHEST_SIGHT+20,0,0)
+	game.make_chest(far_spot,false);var far_chest=game.chests[-1];far_chest.discovered=false
+	game.hud.update(0)
+	checks.mb_chest_discovery=not game.chest_seen(far_spot) and not game.hud.map_view.known_chests.has(far_spot)
+	game.player.position=far_spot+Vector3(3,0,0)
+	far_chest.discovered=game.chest_seen(far_spot);game.hud.update(0)
+	checks.mb_chest_found=far_chest.discovered and game.hud.map_view.known_chests.has(far_spot)
+	far_chest.node.queue_free();game.chests.erase(far_chest);game.player.position=far_spot-Vector3(game.CHEST_SIGHT+20,0,0)
+	var sky_ok=game.world.sky_paint.get_shader_parameter("base_bodies")==0.0 and RealmWorld.MAP_GRADES.all(func(g):return g==0)
+	checks.mb_map_looks=sky_ok and SkyLook.LOOKS.size()==RealmWorld.BIOME_COUNT and float(game.world.terrain_material.get_shader_parameter("map_biome"))==float(RealmWorld.biome_of(game.realm))
+	checks.mb_vitals_evasion=game.hud.dodge_text!=null and game.hud.dodge_text.text.ends_with("%")
+	var flight=HellFlight.start(game,true,Underside.DIG);var flight_ok=is_instance_valid(flight) and flight.get_parent()==game.hud.root
+	flight.queue_free()
+	checks.mb_hell_flight=flight_ok and Underside.DIG>=1.5 and ["hell-flight","soul-wail-0","soul-wail-1","soul-wail-2"].all(func(n):return ResourceLoader.exists("res://assets/audio/effects/"+n+".wav"))
 	# XP orb pickups tick up a scale while they keep coming (November 2).
 	game.sound.xp_streak=0;game.sound.xp_last=-10.0;game.sound.xp_last_tick=-10.0
 	for k in range(10): game.sound.xp_tick()

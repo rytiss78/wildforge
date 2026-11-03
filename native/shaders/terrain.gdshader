@@ -9,6 +9,9 @@ uniform sampler2D t4:source_color,filter_linear_mipmap,repeat_enable;
 uniform sampler2D t5:source_color,filter_linear_mipmap,repeat_enable;
 uniform sampler2D t6:source_color,filter_linear_mipmap,repeat_enable;
 uniform float phase=0.0;
+// One biome per map (big update MB): the whole island is this biome; -1 keeps
+// the old seven slices with the forest in the middle.
+uniform float map_biome=-1.0;
 // Per-island coastline terms (RealmWorld.GRADE): 4-lobe, 6-lobe, radius shift.
 uniform vec3 shape=vec3(0.0);
 // Later islands look harsher: corruption darkens and tints the ground and opens
@@ -51,11 +54,12 @@ void fragment(){
  // Seven slices (RealmWorld.BIOME_COUNT): TAU/7 = 0.8975979.
  float angle=mod(atan(p.z,p.x)+phase+6.2831853,6.2831853)/0.8975979;
  float index=min(floor(angle),6.0);float fraction=fract(angle);
+ if(map_biome>=0.0){index=map_biome;fraction=.5;}
  float width=clamp(12.0/max(length(p.xz),1.0),.004,.20);
  vec3 paint=biome_paint(index,uv);
  if(fraction<width){paint=mix(biome_paint(mod(index+6.0,7.0),uv),paint,smoothstep(-width,width,fraction));}
  else if(fraction>1.0-width){paint=mix(paint,biome_paint(mod(index+1.0,7.0),uv),smoothstep(1.0-width,1.0+width,fraction));}
- if(length(p.xz)<69.0) paint=mix(biome_paint(0.0,uv),paint,smoothstep(61.0,69.0,length(p.xz)));
+ if(map_biome<0.0 && length(p.xz)<69.0) paint=mix(biome_paint(0.0,uv),paint,smoothstep(61.0,69.0,length(p.xz)));
  float path=1.0-smoothstep(2.2,3.5,abs(p.x+sin(p.z*.035)*9.0));
  float a=atan(p.z,p.x);
  float coast=344.0+24.0*sin(3.0*(a+phase))+14.0*sin(5.0*(a-phase))+8.0*cos(7.0*(a+phase*.5))+shape.x*sin(4.0*(a-phase*1.3))+shape.y*sin(6.0*(a+phase))+shape.z;

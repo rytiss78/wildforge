@@ -85,6 +85,8 @@ var health_text: Label
 var health_orb: Control
 var shield_text: Label
 var armor_text: Label
+# Evasion (dodge chance) next to shield and armor (user, November 3).
+var dodge_text: Label
 var portrait: HeroPortrait
 var hints_until=25.0
 var player_locator: Control
@@ -268,9 +270,15 @@ func setup(owner_game):
 	var health_row=HBoxContainer.new();health_panel.add_child(health_row)
 	health_orb=preload("res://scripts/hud_vessel.gd").new();health_orb.custom_minimum_size=Vector2(60,60);health_row.add_child(health_orb)
 	var health_column=VBoxContainer.new();health_column.add_theme_constant_override("separation",0);health_column.size_flags_horizontal=Control.SIZE_EXPAND_FILL;health_row.add_child(health_column)
-	health_text=label("",18);health_column.add_child(health_text)
-	shield_text=label("",13,Color("70c9df"));health_column.add_child(shield_text)
-	armor_text=label("",12,ink);health_column.add_child(armor_text)
+	# Health on top; below it one even row of defence chips, each a stat
+	# medallion and a number in the same size and colour (user, November 3:
+	# "the lines are all different"; add an evasion counter).
+	health_column.alignment=BoxContainer.ALIGNMENT_CENTER
+	health_text=label("",19);health_column.add_child(health_text)
+	var chips=HBoxContainer.new();chips.name="DefenceChips";chips.add_theme_constant_override("separation",10);health_column.add_child(chips)
+	shield_text=vital_chip(chips,"shield","Shield")
+	armor_text=vital_chip(chips,"armor","Armor: takes off part of every hit")
+	dodge_text=vital_chip(chips,"dodge","Evasion: chance to avoid a hit")
 	journey_overlay=preload("res://scripts/journey_hud.gd").new();journey_overlay.game=game;journey_overlay.mouse_filter=Control.MOUSE_FILTER_IGNORE;root.add_child(journey_overlay)
 	# Larger, frameless rotating minimap; the hero remains centered.
 	map_view.position=Vector2(1592,26)
@@ -347,7 +355,7 @@ func setup(owner_game):
 	trick_status=label("",14,ThemeTokens.STAR_GOLD);trick_status.position=Vector2(HINT_X,HINT_Y+22);root.add_child(trick_status)
 	rope_status=label("",14,ThemeTokens.STAR_GOLD);rope_status.position=Vector2(HINT_X,HINT_Y);root.add_child(rope_status)
 	# Without plates behind them, the vitals and loadout texts get a dark outline.
-	for text in [health_text,shield_text,armor_text,coins,slam_status,dash_status,trick_status,rope_status,root.find_child("EdgeLevel",true,false),root.find_child("EdgeXP",true,false)]:
+	for text in [health_text,shield_text,armor_text,dodge_text,coins,slam_status,dash_status,trick_status,rope_status,root.find_child("EdgeLevel",true,false),root.find_child("EdgeXP",true,false)]:
 		if text is Label: text.add_theme_color_override("font_outline_color",Color(0,0,0,.85));text.add_theme_constant_override("outline_size",5)
 	# The combo meter on the right edge, under the map and timer.
 	combo=ComboMeter.new();combo.position=Vector2(1660,470);root.add_child(combo)
@@ -601,12 +609,11 @@ func update(delta: float):
 	# No health (Admiral Bubbles): the vitals show only his bubble.
 	if HeroRules.no_health(game.hero): health_text.text="◯  %d / %d" % [ceili(game.shield_hp),roundi(game.stats.shield)];health_orb.fill=0.0
 	health_orb.shield_fill=clampf(game.shield_hp/maxf(1,game.stats.shield),0,1);health_orb.queue_redraw()
-	shield_text.text="SHIELD  %d / %d" % [ceili(game.shield_hp),ceili(game.stats.shield)]
-	shield_text.visible=true
-	# Armor with its buffs, and how much damage it takes off.
+	shield_text.text="%d / %d" % [ceili(game.shield_hp),ceili(game.stats.shield)]
+	# Armor with its buffs; evasion as a percent chance.
 	var armor=game.stat("armor")
-	armor_text.text="ARMOR  %d" % roundi(armor)
-	armor_text.visible=true
+	armor_text.text="%d" % roundi(armor)
+	dodge_text.text="%d%%" % roundi(game.stat("dodge")*100)
 	clock.seconds = game.realm_time if game.realm==RealmWorld.ARENA else maxf(0,RealmWorld.MAP_SECONDS-game.realm_time)
 	clock.realm = game.realm
 	clock.bosses = game.realm_bosses
@@ -707,7 +714,7 @@ func update(delta: float):
 	map_view.visited[cell] = game.current_biome
 	map_view.known_chests.clear()
 	for chest in game.chests:
-		if not chest.opened and not chest.get("destroyed",false): map_view.known_chests.append(chest.node.position)
+		if chest.discovered and not chest.opened and not chest.get("destroyed",false): map_view.known_chests.append(chest.node.position)
 	map_view.queue_redraw()
 	toast.visible=not modal.visible and toast_time>0
 	if toast_time > 0:
@@ -1213,6 +1220,13 @@ func update_block_drop_overlay():
 		wait_room.position=Vector2((view.x*.68-wait_room.size.x)/2,175)
 		show_party_panel(game.party_seen)
 	elif not wanted and wait_room.get_parent()==root: root.remove_child(wait_room)
+
+# One defence chip: a small stat medallion and its value.
+func vital_chip(row: HBoxContainer,stat: String,tip: String) -> Label:
+	var chip=HBoxContainer.new();chip.add_theme_constant_override("separation",3);chip.tooltip_text=tip;chip.mouse_filter=Control.MOUSE_FILTER_PASS;row.add_child(chip)
+	var icon=PowerIcon.new();icon.key=stat;icon.custom_minimum_size=Vector2(20,20);icon.size_flags_vertical=Control.SIZE_SHRINK_CENTER;chip.add_child(icon)
+	var value=label("",15);value.name=stat.capitalize()+"Value";chip.add_child(value)
+	return value
 
 func icon_key(item: Dictionary) -> String:
 	if item.kind=="card": return str(item.stat)
