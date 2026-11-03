@@ -24,7 +24,7 @@ static func ring(root: Node3D,color: Color,p: Vector3,radius: float):
 	return ToonArt.part(root,mesh,color,p)
 
 static func build(world: Node3D,biome: int,p: Vector3):
-	var root=Node3D.new();root.name="Landmark_"+str(biome);root.position=p;world.add_child(root)
+	var root=Node3D.new();root.name="Landmark_"+str(world.landmarks.size()-1);root.set_meta("biome",biome);root.position=p;world.add_child(root)
 	root.set_meta("natural_landmark",true)
 	# Leave the original interaction/reward clearing open and at terrain height.
 	# Three asymmetric growths form a grove rather than a house or a platform.

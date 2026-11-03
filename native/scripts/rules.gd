@@ -11,11 +11,36 @@ var loot_pools={}
 var loot_by_id={}
 var mechanic_pools={}
 var banished=[]
+# Chest items by their fixed rarity (big update MB, user November 3): like
+# Megabonk, an item has ONE rarity. Plain stat boosts are common, effects are
+# rare, strong effects epic, game changers legendary; a chest rolls the
+# rarity first and then an item of exactly that rarity, so the best items
+# never show up as weak common copies. tier -> mechanic -> items.
+var item_tiers={0:{},1:{},2:{},3:{}}
+const ITEM_RARE=["poison","burn","freeze","stun","chain","splash","pierce","ricochet","bossDamage","walkGold","hurtGold","chestBonus","jumpShield",
+	"dashBlast","jumpBlast","slamFire","slamPoison","slamHeal","slamPower","potionChance","potionPower","flowerPower","flowerRoots","auraDamage",
+	"burrow","pools","enemyPull","enemyPush","coinHeal","chestHeal","salvage","interest","discount","airDamage","blind","slow"]
+const ITEM_EPIC=["explosion","berserk","ghost","nova","storm","execute","airJumps","flowerSeeds","riftDash","magnetPulse","drones"]
+const ITEM_LEGENDARY=["revive"]
+# How much stronger than its catalog amount an item of each rarity is.
+const ITEM_STRENGTH=[1.5,2.0,2.5,3.0]
+const WHOLE_KEYS=["airJumps","flowerSeeds","revive","multishot","pierce","chain","ricochet","discBounces","boomerangPierce","meteorCount"]
+
+static func item_tier(item: Dictionary,augments: Dictionary) -> int:
+	if item.has("rarity"): return int(item.rarity)
+	var key=str(item.effects[0].key)
+	if augments.has(key): return 0
+	if key in ITEM_LEGENDARY: return 3
+	if key in ITEM_EPIC: return 2
+	if key in ITEM_RARE: return 1
+	return 0
 # Prickle Rick carries no weapon: weapon cards leave his pool (HeroPlay.start).
 var no_weapons=false
 
 func _init():
 	data = JSON.parse_string(FileAccess.get_file_as_string("res://data/catalog.json"))
+	# Stats only cards and chest items of the big update MB use.
+	data.stats.merge({"curse":0.0,"chaos":0.0});data.stats.merge(Relics.defaults())
 	# Big update MB: every loot entry is now a card level, a weapon upgrade or a
 	# chest item (Loadout.slot_of). Cards are rolled from Loadout.CARDS, so the
 	# pools hold items ("item") and weapon upgrades ("weapon_up").
@@ -31,7 +56,17 @@ func _init():
 		if not mechanic_pools.has(item.slot): mechanic_pools[item.slot]={}
 		if not mechanic_pools[item.slot].has(mechanic): mechanic_pools[item.slot][mechanic]=[]
 		mechanic_pools[item.slot][mechanic].append(item)
+		if item.slot=="item": add_item_tier(item,mechanic)
+	# Items with no counterpart before (Relics): each in one rarity only.
+	for relic in Relics.entries():
+		loot_by_id[relic.id]=relic;add_item_tier(relic,str(relic.effects[0].key))
 	rng.randomize()
+
+func add_item_tier(item: Dictionary,mechanic: String):
+	item.rarity=item_tier(item,data.augments)
+	var pool: Dictionary=item_tiers[int(item.rarity)]
+	if not pool.has(mechanic): pool[mechanic]=[]
+	pool[mechanic].append(item)
 
 func chest_price(paid: int, discount: float = 0.0) -> int:
 	return maxi(1, int(ceil(data.chestPrices[mini(paid, 79)] * (1.0 - clampf(discount, 0.0, 0.6)))))
@@ -69,6 +104,18 @@ func roll(kind: String, luck: float = 0.0, minimum: int = 0) -> Dictionary:
 	# Pick a gameplay mechanic first, then a card. Large families cannot suppress unique powers.
 	# Equal mechanic odds keep adding themed cards from diluting basic upgrades.
 	if kind=="skill": kind="item"
+	if kind=="item":
+		# Fixed rarity: roll the rarity, then an item that only exists in it.
+		while tier>0 and item_tiers[tier].is_empty(): tier-=1
+		var kinds=item_tiers[tier].keys();var group: Array=item_tiers[tier][kinds[rng.randi_range(0,kinds.size()-1)]]
+		var item: Dictionary=group[rng.randi_range(0,group.size()-1)].duplicate(true)
+		if not item.get("relic",false):
+			item.effects=[item.effects[0].duplicate()]
+			var effect=item.effects[0]
+			if effect.key in WHOLE_KEYS: effect.amount=maxi(1,roundi(effect.amount))
+			else: effect.amount*=ITEM_STRENGTH[tier]
+		item.tier=tier;item.strength=ITEM_STRENGTH[tier];item.name=item.title
+		return item
 	var mechanics=mechanic_pools[kind].keys()
 	var mechanic=mechanics[rng.randi_range(0,mechanics.size()-1)]
 	var pool: Array=mechanic_pools[kind][mechanic]
@@ -114,7 +161,8 @@ func offers(kind: String, luck: float, elite: bool = false, current_stats: Dicti
 			var candidate=current_stats.duplicate(true)
 			apply_effects(candidate,item.effects)
 			var effect=item.effects[0];var key=effect.key
-			if is_equal_approx(candidate[key],current_stats[key]):
+			if not current_stats.has(key): pass
+			elif is_equal_approx(candidate[key],current_stats[key]):
 				if attempts<800: continue
 				item=roll("weapon",luck,1 if elite else 0)
 
@@ -228,6 +276,8 @@ func describe(effect: Dictionary) -> String:
 		var bonus=data.augments[effect.key];var amount=float(effect.amount)
 		var percent=bonus.mode=="multiply" or bonus.stat in ["crit","dodge","lifesteal"]
 		return "+%s%s %s %s" % [snappedf(amount*100 if percent else amount,.01),"%" if percent else "",bonus.label,bonus.when]
+	if effect.key=="curse": return "More monsters +%d%%" % roundi(float(effect.amount)*100)
+	if str(effect.key).begins_with("relic"): return Relics.describe(str(effect.key),float(effect.amount))
 	var phrases = {"enemyPull":"Attraction pulse strength (8 m, every 3.5 s)","riftDash":"Dash through a portal: pop out further ahead with a blast at both ends","enemyPush":"Repulsion pulse strength (8 m, every 4.5 s)","banana":"Chance to slip enemies","flowerPower":"Bigger flower blooms", "flowerRoots":"Roots slow enemies", "flowerPollen":"Poison pollen", "flowerHeal":"Blooms heal you", "flowerSeeds":"Plant extra flowers","damage":"Hit harder", "rate":"Attack faster", "speed":"Move faster", "maxHp":"More health", "armor":"Take less damage", "regen":"Health grows back", "lifesteal":"Hits heal you", "poison":"Poison on hit", "burn":"Fire on hit", "thorns":"Hurt enemies that touch you", "freeze":"Freeze enemies", "blind":"Blind enemies", "ghost":"Dash through danger", "burrow":"Dash underground, then explode", "shield":"A shield that grows back", "goldGain":"More coins from enemies", "discount":"Cheaper chests", "keyPower":"Chance to open chests free", "walkGold":"Walking makes coins", "hurtGold":"Being hit gives coins", "interest":"Saved coins grow each minute", "coinRadius":"Pull coins from farther away", "potGold":"More coins from harvestables", "drones":"Flying helpers attack", "orbitDamage":"Orbiting blades", "auraDamage":"Hurt nearby enemies", "storm":"Call lightning", "nova":"Send out a blast", "pools":"Leave poison pools", "boomerang":"Shots come back", "ricochet":"Shots bounce", "multishot":"More shots", "crit":"More critical hits", "critPower":"Bigger critical hits", "pierce":"Shots go through enemies", "chain":"Lightning jumps", "splash":"Hits explode", "explosion":"Kills explode", "dashBlast":"Dash makes a blast", "dashCooldown":"Dash more often", "revive":"Another life", "luck":"Better treasure", "chestBonus":"Better treasure", "salvage":"Kills heal you", "turretCount":"Stronger turret", "turretDamage":"Stronger turret", "turretRate":"Faster turret", "turretRange":"Turret reaches farther", "turretLife":"Turret stays longer", "repair":"Heal near your turret", "berserk":"Hit harder at low health", "xpGain":"Learn faster", "pickup":"Pull XP closer", "range":"Reach farther", "projectileSpeed":"Faster shots", "size":"Bigger shots", "knockback":"Push enemies back", "slow":"Slow enemies", "execute":"Finish weak enemies", "bossDamage":"Hurt bosses more", "stun":"Stun enemies", "magnetPulse":"Pull in XP"}
 	var name=phrases.get(effect.key, data.labels.get(effect.key,"More power"))
 	var extra={"discBounces":"Disc bounces","boomerangPierce":"Blade piercing","harpoonPull":"Hook pull","gravitySize":"Gravity radius","hornStun":"Horn stun","bubbleTime":"Bubble time","meteorCount":"Extra meteors","bombSize":"Bomb radius","airDamage":"Damage while airborne","landingHeal":"Heal on landing","slamHeal":"Heal on slam","airControl":"Air movement","fallThreshold":"Safe fall height","potionDuration":"Potion time","potionPower":"Potion strength","potionChance":"Potion drop chance","jumpShield":"Shield on jump","jumpBlast":"Jump blast damage","slamFire":"Fire on slam","slamPoison":"Poison on slam","coinHeal":"Heal per coin pickup","chestHeal":"Heal on opening a chest"}

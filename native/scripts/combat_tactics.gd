@@ -47,7 +47,7 @@ static func ranged_attack(g,enemy: Dictionary,target: Vector3):
 	g.sound.enemy_effect("enemy-shot",enemy.node.position)
 	var forward=(target-enemy.node.position).normalized();forward.y=0
 	var side=forward.cross(Vector3.UP).normalized()
-	var damage=(24+g.realm*7)*enemy.damage*g.realm_difficulty*g.ENEMY_DAMAGE_SCALE
+	var damage=(24+g.tier*7)*enemy.damage*g.realm_difficulty*g.ENEMY_DAMAGE_SCALE
 	var style=["roots","toxic","meteor","storm","lava","void","meteor"][enemy.biome]
 	# One shooter, one mark on the ground (user request, October 25: three marks per
 	# shot filled the ground at the start of an island).

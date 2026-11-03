@@ -14,7 +14,8 @@ static func run(game):
 		var item=game.rules.roll("skill",0,1 if i%2==0 else 0)
 		if item.effects[0].key=="airJumps":
 			jumps+=1
-			if item.tier>0: rare_jump=item.effects[0].amount>=2
+			# Air jumps are an epic-only item now (fixed rarity), always whole jumps.
+			rare_jump=item.tier==2 and item.effects[0].amount>=1 and item.effects[0].amount==roundf(item.effects[0].amount)
 	checks.jump_available=jumps>=40;checks.rare_jump_scales=rare_jump
 	var reachable=[]
 	for kind in game.rules.mechanic_pools:

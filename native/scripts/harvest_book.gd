@@ -25,11 +25,14 @@ static func tick(game,delta: float):
 		game.harvest_buffs[id]-=delta
 		if game.harvest_buffs[id]<=0: game.harvest_buffs.erase(id)
 
+const PER_MAP=24
+
 static func spawn(game):
-	for biome in range(RealmWorld.BIOME_COUNT):
+	# One biome per map (big update MB): this map's own harvestables, PER_MAP of them.
+	for biome in [game.world.biome_at(Vector3(100,0,0))]:
 		var placed=0
-		for attempt in range(1200):
-			if placed>=8: break
+		for attempt in range(3000):
+			if placed>=PER_MAP: break
 			var angle=game.rules.rng.randf()*TAU
 			var radius=game.rules.rng.randf_range(12 if biome==0 else 76,RealmWorld.SPAWN_EXTENT-35)
 			var p=Vector3(cos(angle)*radius,0,sin(angle)*radius)

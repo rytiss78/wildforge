@@ -62,7 +62,7 @@ static func mesh(kind: int=0) -> ArrayMesh:
 static func build(world,root: Node3D,cell: Vector2i,rng: RandomNumberGenerator):
 	# Small per-chunk batches cull independently. No colliders, alpha or grass shadows.
 	var groups={}
-	if world.realm==3: return
+	if world.realm==RealmWorld.ARENA: return
 	var portal=world.portal_site()
 	for i in range(1100):
 		var p=Vector3(cell.x*world.CHUNK+rng.randf()*world.CHUNK,0,cell.y*world.CHUNK+rng.randf()*world.CHUNK)

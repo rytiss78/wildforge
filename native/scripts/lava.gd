@@ -19,7 +19,7 @@ static func at(g,p: Vector3) -> bool:
 
 static func ignite(g,enemy: Dictionary):
 	if enemy.dead or enemy.get("flying",false): return
-	var heat=(2.0+g.realm) if enemy.boss else (8.0+g.realm*3.0)
+	var heat=(2.0+g.tier) if enemy.boss else (8.0+g.tier*3.0)
 	g.set_damage_status(enemy,"fire",heat,g.coop.local_id);enemy.status_time=maxf(float(enemy.status_time),MONSTER_BURN)
 
 # Monsters wading through the rivers (pools ignite them in BiomeMechanics).

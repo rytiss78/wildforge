@@ -86,7 +86,7 @@ static func run(game: Node3D) -> Dictionary:
 	BiomeMechanics.spawn(game,{"type":"biome_event","realm":game.realm+1,"biome":1,"pos":[0,0],"dir":[1,0]})
 	checks.biome_other_realm=game.biome_zones.size()==count
 	game.clear_entities();checks.biome_cleared=game.biome_zones.is_empty()
-	var realm=game.realm;game.realm=3;checks.biome_not_red_moon=not BiomeMechanics.active(game);game.realm=realm
+	var realm=game.realm;game.realm=RealmWorld.ARENA;checks.biome_not_red_moon=not BiomeMechanics.active(game);game.realm=realm
 	# Fight zoom: a big crowd eases the camera out; it comes back once the crowd is gone.
 	setup(game);var base_distance=game.camera_distance
 	for i in range(40): dummy(game,Vector3.FORWARD.rotated(Vector3.UP,i*.7)*(3.0+i*.25))

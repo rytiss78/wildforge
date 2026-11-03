@@ -18,7 +18,7 @@ func _draw():
 		for enemy in game.enemies:
 			if not enemy.dead and enemy.net_id in game.events.get("hunt_ids",[]): pointer(enemy.node.position,"HUNT",Color("e5a1ff"))
 	# PlayerLocator owns the single camera-projected boss marker.
-	if game.realm==3: return
+	if game.realm==RealmWorld.ARENA: return
 	pointer(game.gate_position,"PORTAL",Color("ffd767"))
 
 func pointer(target: Vector3,title: String,color: Color):

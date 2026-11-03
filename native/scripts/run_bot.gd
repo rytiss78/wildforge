@@ -100,7 +100,7 @@ static func run(g):
 # Where to go: the portal when it wants the hero, else a close safe pickup or an
 # affordable chest; Vector3.INF means "just survive".
 static func objective(g) -> Vector3:
-	if g.realm<3:
+	if g.realm<RealmWorld.ARENA:
 		var state=g.Journey.state(g)
 		if state in ["ready","cleared"]: return g.gate_position
 	var best=Vector3.INF;var best_d=16.0

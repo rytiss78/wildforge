@@ -254,7 +254,7 @@ func tick(delta: float, playing: bool, has_boss: bool):
 	if playing and not voice.playing and not pending_biome.is_empty():
 		var id=pending_biome;pending_biome="";say(id,0)
 	for player in [drums,rhythm,lead,synth,boss_melody,atmosphere]: player.stream_paused = not playing
-	var realm_index=clampi(get_parent().realm,0,2)
+	var realm_index=clampi(RealmWorld.grade_of(get_parent().realm),0,2)
 	if active and theme_realm!=realm_index:
 		theme_realm=realm_index
 		var theme=stream(MUSIC+"air_"+str(realm_index)).duplicate() as AudioStreamWAV

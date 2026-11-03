@@ -1,9 +1,10 @@
 extends RefCounted
 
 static func run(game) -> Dictionary:
-	game.start_run(611);game.set_physics_process(false);game.spawn_clock=99999
+	# Candy Hell's map (biome 4) for the pepper harvestables.
+	game.start_run(611);game.enter_realm(RealmWorld.MAP_BIOMES.find(4));game.set_physics_process(false);game.spawn_clock=99999
 	var checks={}
-	checks.harvest_biome=game.harvestables.size()==8*RealmWorld.BIOME_COUNT and game.harvestables.all(func(h):return game.world.biome_at(h.node.position)==h.biome)
+	checks.harvest_biome=game.harvestables.size()==HarvestBook.PER_MAP and game.harvestables.all(func(h):return game.world.biome_at(h.node.position)==h.biome)
 	checks.harvest_descriptions=HarvestBook.TYPES.all(func(t):return not t.description.is_empty() and not t.effect.is_empty())
 	var damage=game.stat("damage");var permanent=game.stats.damage
 	var pepper=game.harvestables.filter(func(h):return h.biome==4)[0]
@@ -18,8 +19,10 @@ static func run(game) -> Dictionary:
 	checks.harvest_pause=game.harvest_buffs[4]==20
 	game.mode="playing";HarvestBook.tick(game,21)
 	checks.harvest_expiry=not game.harvest_buffs.has(4) and is_equal_approx(game.stat("damage"),damage)
+	game.enter_realm(RealmWorld.MAP_BIOMES.find(0));game.set_physics_process(false);game.spawn_clock=99999
 	var herb=game.harvestables.filter(func(h):return h.biome==0)[0];game.hp=game.stats.maxHp-20;game.pick_harvestable(herb)
 	checks.harvest_heal=game.hp==game.stats.maxHp-8 and game.hud.hero_numbers.any(func(d):return d.kind=="heal")
+	game.enter_realm(RealmWorld.MAP_BIOMES.find(2));game.set_physics_process(false);game.spawn_clock=99999
 	var crystal=game.harvestables.filter(func(h):return h.biome==2)[0];var shield=game.stats.shield;game.pick_harvestable(crystal)
 	checks.harvest_shield=game.stats.shield==shield+2 and game.shield_hp>=2
 	game.harvest_buffs[3]=20;game.harvest_buffs[5]=20

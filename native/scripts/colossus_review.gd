@@ -25,7 +25,7 @@ static func run(g):
 	var checks={}
 	g.start_run(407);g.invulnerable=1e9
 	await wait(g,.3)
-	g.enter_realm(3)
+	g.enter_realm(RealmWorld.ARENA)
 	await wait(g,5.0)
 	var bosses=g.enemies.filter(func(e):return e.get("boss_id",-1)==8 and not e.dead)
 	checks.spawned=bosses.size()==1

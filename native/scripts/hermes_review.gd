@@ -87,7 +87,7 @@ static func run(g):
 	g.events.eclipse=false;g._process(.1);g.set_process(false)
 	checks.weather_resumes=g.world.weather.emitting==(g.world.biome_at(g.player.position) in [0,1,3,4,5])
 	g.sound.tick(.02,true,false);checks.normal_music_resumes=g.sound.lead.playing and not g.sound.boss_melody.playing
-	g.enter_realm(3);g.set_physics_process(false);g.set_process(false);g.update.tick(.1)
+	g.enter_realm(RealmWorld.ARENA);g.set_physics_process(false);g.set_process(false);g.update.tick(.1)
 	checks.final_cleanup=not is_instance_valid(g.update.magnet_node)
 	checks.final_health=is_equal_approx(g.enemies[0].maxHp,(preload("res://scripts/final_arena.gd").TARGET_SECONDS*preload("res://scripts/final_arena.gd").REFERENCE_DPS*preload("res://scripts/final_arena.gd").HEALTH_MULTIPLIER)) and g.enemies[0].height==BossBook.entry(8).height and is_equal_approx(g.enemies[0].speed,BossBook.entry(8).speed)
 	print("HERMES_REVIEW "+JSON.stringify(checks));g.get_tree().quit(0 if checks.values().all(func(v):return v) else 1)

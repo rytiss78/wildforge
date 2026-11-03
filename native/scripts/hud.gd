@@ -607,9 +607,10 @@ func update(delta: float):
 	var armor=game.stat("armor")
 	armor_text.text="ARMOR  %d" % roundi(armor)
 	armor_text.visible=true
-	clock.seconds = game.realm_time if game.realm==3 else maxf(0,600.0-game.realm_time)
+	clock.seconds = game.realm_time if game.realm==RealmWorld.ARENA else maxf(0,RealmWorld.MAP_SECONDS-game.realm_time)
 	clock.realm = game.realm
 	clock.bosses = game.realm_bosses
+	clock.chests = game.chests.filter(func(c):return c.opened).size();clock.chest_total = game.chests.size()
 	clock.queue_redraw()
 	xp.max_value = game.xp_target
 	xp.value = game.xp
@@ -911,7 +912,7 @@ func fill_hero_panel(focus_hero: bool=false):
 	bio.add_child(label(game.hero.name,29))
 	# Facts, not filler (user, November 2): health, speed and jump in numbers.
 	var facts=label(hero_facts(game.hero,preview_stats),16,Color("d6e2d4"));facts.name="HeroFacts";bio.add_child(facts)
-	var perk=label(game.hero.perk,19,ThemeTokens.EARTH_TERRACOTTA);bio.add_child(perk)
+	var perk=label(game.hero.perk+"  ↑",19,ThemeTokens.EARTH_TERRACOTTA);perk.tooltip_text="Grows stronger with every level";bio.add_child(perk)
 	var perk_description=label(str(game.hero.description).split(" Height ")[0],15);perk_description.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;bio.add_child(perk_description)
 	# The V trick: its key, name, what it does and its cooldown.
 	var t=HeroTricks.TRICKS.get(str(game.hero.id),{})
@@ -1260,6 +1261,8 @@ func offer_card(item: Dictionary, index: int, select: Callable) -> Button:
 	column.add_child(title)
 	var effect_desc=""
 	if item.kind!="weapon" and item.has("effects") and item.effects.size()>0: effect_desc=game.rules.describe(item.effects[0])
+	# Dare and Wild Card (big update MB) list everything a level does.
+	if item.kind=="card" and str(item.stat) in ["curse","chaos"]: effect_desc=" · ".join(item.effects.slice(1 if item.stat=="chaos" else 0).map(func(e):return game.rules.describe(e)))
 	var text=WeaponDetails.describe(item.id) if item.kind=="weapon" else str(item.text) if item.kind=="evolution" else effect_desc
 	var description=label(text,11 if compact else 14);description.autowrap_mode=TextServer.AUTOWRAP_WORD_SMART;description.max_lines_visible=4;description.text_overrun_behavior=TextServer.OVERRUN_TRIM_ELLIPSIS;card.tooltip_text=text;description.size_flags_vertical=Control.SIZE_EXPAND_FILL
 	column.add_child(description)

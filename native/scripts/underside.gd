@@ -79,7 +79,7 @@ func reset(game: Node3D):
 # true when this frame's movement was handled here (flipping or underneath).
 func tick(game: Node3D,delta: float) -> bool:
 	if realm!=game.world.realm: realm=game.world.realm;reset(game)
-	if game.world.realm==3: return false
+	if game.world.realm==RealmWorld.ARENA: return false
 	var p: Vector3=game.player.position;var flat=Vector2(p.x,p.z)
 	var coast=game.world.shore_radius(p)
 	match state:
@@ -179,7 +179,7 @@ func slam_land(game: Node3D,at: Vector3):
 	game.heal(game.stats.slamHeal)
 
 func can_dig(game: Node3D) -> bool:
-	return game.world.realm!=3 and state in ["top","under"] and (state=="under" or game.player.is_on_floor())
+	return game.world.realm!=RealmWorld.ARENA and state in ["top","under"] and (state=="under" or game.player.is_on_floor())
 
 # Start tunnelling from where the hero stands to the same spot on the other side.
 func dig(game: Node3D,damage: float,radius: float):

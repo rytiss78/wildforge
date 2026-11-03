@@ -184,7 +184,7 @@ static func run(g,host: bool):
 		checks.drop2_state=away_restored.size()==1 and away_restored[0].get("mode","") in ["playing","offer"]
 		checks.drop2_client=await wait_for(g,func():return g.coop.test_messages.has("drop2_done"),15) and g.coop.test_messages.drop2_done.values().all(func(v):return v)
 		trace.append({"phase":"rejoin","drop1":g.coop.test_messages.get("drop1_done",{}),"drop2":g.coop.test_messages.get("drop2_done",{})})
-		g.enter_realm(3)
+		g.enter_realm(RealmWorld.ARENA)
 		checks.baron_intro_peer=await wait_for(g,func():return g.coop.test_messages.has("baron_intro_seen"))
 		var final_bosses=g.enemies.filter(func(e):return e.get("boss_id",-1)==8)
 		if not final_bosses.is_empty():
@@ -307,7 +307,7 @@ static func run(g,host: bool):
 		trace.append({"phase":"rejoin_client","snapshots":g.coop.snapshots_received-rejoin_start,"last_seq":g.coop.last_snapshot_seq,"realm":g.realm,"run_active":g.run_active,"since_snapshot":Time.get_ticks_msec()/1000.0-g.coop.last_snapshot})
 		checks.drop2=drop2.values().all(func(v):return v)
 		send(g,"drop2_done",drop2)
-		checks.final_realm=await wait_for(g,func():return g.realm==3 and g.enemies.any(func(e):return e.get("boss_id",-1)==8))
+		checks.final_realm=await wait_for(g,func():return g.realm==RealmWorld.ARENA and g.enemies.any(func(e):return e.get("boss_id",-1)==8))
 		var bosses=g.enemies.filter(func(e):return e.get("boss_id",-1)==8)
 		# The final boss (ColossusRig; The Grand Noggin since October 26) replaced the Baron.
 		checks.baron_model=not bosses.is_empty() and bosses[0].node.get_meta("rig") is ColossusRig

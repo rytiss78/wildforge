@@ -35,7 +35,7 @@ const STATS={
 	"goldGain":["fortune","coin"],"walkGold":["fortune","coin"],"hurtGold":["fortune","coin"],"potGold":["fortune","coin"],
 	"interest":["fortune","coin"],"discount":["fortune","tag"],"keyPower":["fortune","key"],"coinRadius":["fortune","magnet"],
 	"chestBonus":["fortune","chest"],"luck":["fortune","clover"],"banana":["fortune","banana"],
-	"xpGain":["arcane","xp"],"pickup":["arcane","magnet"],"potionDuration":["arcane","potion"],"potionPower":["arcane","potion"],
+	"curse":["shadow","skull"],"relicClose":["offense","fist"],"relicPickle":["offense","drop"],"relicStew":["recovery","heart"],"relicTwin":["arcane","xp"],"relicReceipt":["fortune","tag"],"relicTrophy":["offense","crown"],"relicBelt":["defense","ring"],"relicShell":["defense","shield"],"relicHeels":["mobility","dash"],"relicRockets":["fire","burst"],"relicOvercrit":["offense","star"],"relicBonk":["offense","slam"],"relicPillow":["recovery","bubble"],"relicWisps":["arcane","ghost"],"relicHourglass":["arcane","clock"],"chaos":["arcane","star"],"xpGain":["arcane","xp"],"pickup":["arcane","magnet"],"potionDuration":["arcane","potion"],"potionPower":["arcane","potion"],
 	"potionChance":["arcane","potion"],"auraDamage":["arcane","ring"],"nova":["arcane","ring"],"enemyPull":["arcane","pull"],"riftDash":["arcane","pull"],
 	"enemyPush":["arcane","push"],"orbitDamage":["arcane","ring"],"drones":["engineering","turret"],
 	"turretDamage":["engineering","turret"],"turretRate":["engineering","turret"],"turretRange":["engineering","turret"],

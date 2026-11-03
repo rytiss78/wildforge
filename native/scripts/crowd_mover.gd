@@ -56,7 +56,7 @@ static func keep_off(p: Vector3,hero: Vector3,reach: float,height: float) -> Vec
 # Moves the body itself and returns true, or returns false to let physics move it.
 static func glide(g,enemy: Dictionary,body: CharacterBody3D,delta: float) -> bool:
 	if enemy.boss or enemy.get("surface_attached",false) or enemy.get("bubble",0)>0 or enemy.get("structure",false): return false
-	if g.world.realm==3: return false
+	if g.world.realm==RealmWorld.ARENA: return false
 	var flying=enemy.get("flying",false)
 	var at=body.position;var ground=g.world.height_at(at.x,at.z)
 	if not flying and at.y>ground+.12: return false  # airborne: falls with physics

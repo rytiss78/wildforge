@@ -20,7 +20,7 @@ const ENEMY_DAMAGE=55.0
 
 static func setup(g):
 	clear(g)
-	if g.realm>=3: return
+	if g.realm>=RealmWorld.ARENA: return
 	var rng=RandomNumberGenerator.new();rng.seed=g.seed_value+g.realm*2903
 	var id=0
 	for spot in range(SPOTS):

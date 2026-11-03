@@ -29,7 +29,7 @@ const RED_MOON={"sun":Color("ffe0ad"),"sun_energy":1.2,"sun_pitch":-42.0,"ambien
 
 # Eases the world toward the biome's look; `rate` 1.0 snaps (used on arrival).
 static func apply(world,biome: int,grade: Dictionary,rate: float):
-	var look: Dictionary=RED_MOON if world.realm==3 else LOOK[clampi(biome,0,LOOK.size()-1)]
+	var look: Dictionary=RED_MOON if world.realm==RealmWorld.ARENA else LOOK[clampi(biome,0,LOOK.size()-1)]
 	var sun_color: Color=look.sun;var sun_energy=float(look.sun_energy);var ambient: Color=look.ambient;var ambient_energy=float(look.ambient_energy)
 	if grade.has("sun"): sun_color=sun_color.lerp(grade.sun,.6);sun_energy=lerpf(sun_energy,float(grade.sun_energy),.6)
 	if grade.has("ambient"): ambient=ambient.lerp(grade.ambient,.6);ambient_energy=lerpf(ambient_energy,float(grade.ambient_energy),.6)

@@ -6,7 +6,9 @@ static func run(g: Node3D):
 	g.set_process(false);g.set_physics_process(false);g.clear_entities();g.hud.modal.visible=false
 	var checks={"camera":g.camera_distance==12 and g.camera.fov==70 and is_equal_approx(g.pitch,.3),"biomes":true,"streaming":true,"captures":true}
 	checks.natural_landmarks=range(RealmWorld.BIOME_COUNT).all(func(i):return g.world.get_node("Landmark_"+str(i)).get_meta("natural_landmark",false))
+	# One biome per map (big update MB): each biome is seen on its own map.
 	for biome in range(RealmWorld.BIOME_COUNT):
+		g.enter_realm(RealmWorld.MAP_BIOMES.find(biome),false);g.clear_entities();g.spawn_clock=99999;g.hud.modal.visible=false
 		var p=g.world.landmarks[biome]+Vector3(0,0,14);p.y=g.world.height_at(p.x,p.z)+.1
 		g.player.position=p;g.player.velocity=Vector3.ZERO;g.yaw=0;g.world.stream(p)
 		for i in range(240):

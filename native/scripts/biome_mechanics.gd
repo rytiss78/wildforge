@@ -47,7 +47,7 @@ static func hurts_hero(biome: int) -> bool:
 	return biome in [1,4,5,6]
 
 static func active(g) -> bool:
-	return g.run_active and g.realm<3 and g.mode=="playing"
+	return g.run_active and g.realm<RealmWorld.ARENA and g.mode=="playing"
 
 static func clear(g):
 	for zone in g.biome_zones:
@@ -190,7 +190,7 @@ static func tick(g,delta: float):
 				zone.pos+=zone.dir*delta*1.0;zone.node.position=zone.pos
 				if inside(zone,hero): g.player_poison=maxf(g.player_poison,1.0)
 				if authority:
-					for enemy in near(g,zone): g.set_damage_status(enemy,"poison",5.0+g.realm*2.0,g.coop.local_id);enemy.status_time=maxf(float(enemy.status_time),2.0)
+					for enemy in near(g,zone): g.set_damage_status(enemy,"poison",5.0+g.tier*2.0,g.coop.local_id);enemy.status_time=maxf(float(enemy.status_time),2.0)
 			"ice":
 				if authority:
 					for enemy in near(g,zone):
@@ -216,7 +216,7 @@ static func tick(g,delta: float):
 					CombatInk.star(g,zone.pos+Vector3.UP*1.2,zone.radius*1.4,KINDS[5].color,10.0,.45);CombatInk.wave(g,zone.pos,zone.radius,KINDS[5].color)
 					g.sound.effect("blast",zone.pos)
 					if authority: g.damage_area(zone.pos,zone.radius*.8,g.stat("damage")*2.5,"explosion")
-					if Vector2(hero.x-zone.pos.x,hero.z-zone.pos.z).length()<1.8: g.take_damage(12.0+g.realm*4.0,zone.pos,"blast")
+					if Vector2(hero.x-zone.pos.x,hero.z-zone.pos.z).length()<1.8: g.take_damage(12.0+g.tier*4.0,zone.pos,"blast")
 	for zone in g.biome_zones:
 		if zone.life<=0:
 			if is_instance_valid(zone.get("node")): zone.node.queue_free()
@@ -248,7 +248,7 @@ static func crusher_tick(g,zone: Dictionary,authority: bool):
 	# ordinary monsters are flattened outright; the hero and bosses are hurt and
 	# shoved out past the plate's edge, never left inside or on top of it.
 	if under(zone,g.player.position):
-		g.take_damage(18.0+g.realm*6.0+g.stats.maxHp*.12,zone.pos,"blast")
+		g.take_damage(18.0+g.tier*6.0+g.stats.maxHp*.12,zone.pos,"blast")
 		var out=shove(g,zone,g.player.position,float(g.hero.get("radius",.42))+.4)
 		g.player.position=out;g.player.velocity.y=maxf(g.player.velocity.y,4.0)
 		g.knock_velocity=((out-zone.pos)*Vector3(1,0,1)).normalized()*11.0;g.player.reset_physics_interpolation()

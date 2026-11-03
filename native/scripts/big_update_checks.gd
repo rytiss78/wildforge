@@ -27,7 +27,7 @@ static func run(game: Node3D):
 		var color=minimap.terrain.get_image().get_pixel(int(pixel.x),int(pixel.y))
 		checks.minimap_no_fog=checks.minimap_no_fog and color.a==1 and color.get_luminance()>.025
 		map_colors[color.to_html()]=true
-	checks.minimap_biome_palette=map_colors.size()==RealmWorld.BIOME_COUNT
+	checks.minimap_biome_palette=map_colors.size()>=1 and game.world.biome_at(Vector3(120,0,40))==RealmWorld.biome_of(game.realm)
 	checks.minimap_interactions=minimap.interactables.any(func(i):return i.kind=="merchant") and minimap.interactables.any(func(i):return i.kind=="supply") and not minimap.interactables.any(func(i):return i.kind=="landmark")
 	checks.rare_boxes=game.rules.chest_price(0)==30 and RunRules.WEAPON_CAP==4
 	checks.achievements=game.career.achievements.size()==93 and game.career.achievements.map(func(a):return a.id).size()==93
@@ -233,6 +233,45 @@ static func run(game: Node3D):
 	var counted=int(game.cards.get("maxHp",0))==int(card_before.get("maxHp",0))+1 and game.stats.maxHp>mb_hp
 	game.cards=card_before
 	checks.mb_slots=RunRules.WEAPON_CAP==4 and Loadout.CARD_SLOTS==4 and mb_weapons and mb_cards and mb_fresh_card and mb_fresh_weapon and mb_chest and sorted_all and counted
+	# Big update MB parts 2-5: seven one-biome maps then the arena; climbing
+	# mesas with a chest on each; Dare and Wild Card; hero perks grow per level.
+	var map_biomes={}
+	for m in range(RealmWorld.MAPS): map_biomes[RealmWorld.biome_of(m)]=true
+	checks.mb_maps=map_biomes.size()==RealmWorld.BIOME_COUNT and RealmWorld.ARENA==RealmWorld.MAPS and RealmWorld.tier(0)==0.0 and RealmWorld.tier(RealmWorld.ARENA)==3.0
+	var mesa_tops=ClimbMap.tops(game.world)
+	var saved_chests=game.chests;game.chests=[];game.make_chests()
+	var high=mesa_tops.all(func(top):return game.chests.any(func(c):return c.node.position.distance_to(top)<1.0))
+	for c in game.chests: c.node.queue_free()
+	game.chests=saved_chests
+	var steep=game.world.climb_mesas.all(func(m):return game.world.height_at(m.center.x,m.center.y)-game.world.height_at(m.center.x+m.dir.y*(m.radius+6),m.center.y-m.dir.x*(m.radius+6))>3.0)
+	checks.mb_climb=game.world.climb_mesas.size()>=6 and game.world.climb_pads.size()>=1 and ["ramp","steps","pad"].all(func(k):return game.world.climb_mesas.any(func(m):return m.kind==k))
+	checks.mb_climb_chests=high
+	checks.mb_climb_steep=steep
+	var dare=Loadout.card_offer("curse",0,0);var wild=Loadout.card_offer("chaos",1,0)
+	checks.mb_new_cards=dare.effects.size()==3 and wild.effects.size()==3 and wild.effects[1].key!=wild.effects[2].key and game.stats.has("curse") and game.stats.has("chaos")
+	var grow_hero=game.hero;var grow_stats=game.stats.duplicate(true);var grow_level=game.level;var grow_mark=game.hero_growth
+	game.hero=game.rules.data.heroes.filter(func(h):return h.id=="wrench")[0];game.stats=game.rules.data.stats.duplicate(true);game.rules.apply_effects(game.stats,game.hero.effects)
+	var turret_start=game.stats.turretDamage;var speed_start=game.stats.speed
+	game.level=11;game.hero_growth=1;HeroGrowth.sync(game)
+	var florist=HeroGrowth.step(game.rules.data.heroes.filter(func(h):return h.id=="florist")[0],8)
+	checks.mb_hero_growth=game.hero_growth==11 and game.stats.turretDamage>turret_start*1.2 and is_equal_approx(game.stats.speed,speed_start) and florist.any(func(e):return e.key=="flowerSeeds" and e.amount==1)
+	game.hero=grow_hero;game.stats=grow_stats;game.level=grow_level;game.hero_growth=grow_mark
+	# Chest items have one fixed rarity (user, November 3): an item id always
+	# rolls the same rarity, and the new items (Relics) only at theirs.
+	var seen_tier={};var fixed=true;var relic_seen=false
+	for k in range(1500):
+		var rolled=game.rules.roll("item",0.3)
+		if seen_tier.has(rolled.id) and seen_tier[rolled.id]!=rolled.tier: fixed=false
+		seen_tier[rolled.id]=rolled.tier
+		if rolled.get("relic",false):
+			relic_seen=true
+			if rolled.tier!=int(Relics.ITEMS.filter(func(r):return r.id==rolled.id)[0].rarity): fixed=false
+	var commons=seen_tier.keys().filter(func(id):return seen_tier[id]==0).size();var legends=seen_tier.keys().filter(func(id):return seen_tier[id]==3).size()
+	var bonk_stats=game.stats.duplicate(true);game.stats.relicBonk=1.0
+	var bonk_target=game.enemies.filter(func(e):return not e.dead)
+	var bonked=bonk_target.is_empty() or is_equal_approx(Relics.hit(game,bonk_target[0],10.0,false),200.0)
+	game.stats=bonk_stats
+	checks.mb_item_rarity=fixed and relic_seen and commons>legends and bonked and game.rules.describe({"key":"relicBonk","amount":.02}).contains("BONK")
 	# XP orb pickups tick up a scale while they keep coming (November 2).
 	game.sound.xp_streak=0;game.sound.xp_last=-10.0;game.sound.xp_last_tick=-10.0
 	for k in range(10): game.sound.xp_tick()

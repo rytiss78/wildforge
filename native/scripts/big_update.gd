@@ -53,7 +53,7 @@ func realm_started():
 	magnet_turrets=[];magnet_active=false;magnet_spent=false;magnet_hold=0.0
 	banish_charges=5;pending_purchase=-1;downed=false;downed_ids.clear();rescue_progress.clear()
 	beacon_state="idle";beacon_seconds=0;beacon_absent=0;mimic.clear();pings.clear()
-	if game.realm==3: return
+	if game.realm==RealmWorld.ARENA: return
 	var rng=RandomNumberGenerator.new();rng.seed=game.seed_value+game.realm*839
 	var angle=rng.randf()*TAU
 	merchant_position=Vector3(cos(angle)*230,0,sin(angle)*230)
@@ -210,7 +210,7 @@ func merchant_menu():
 	for control in box.get_children():
 		if control is Button and not control.disabled: control.grab_focus();break
 
-func merchant_price(i: int) -> int: return roundi((35+game.realm*15+i*10)*(1.0-minf(.6,float(game.stats.get("discount",0.0)))))
+func merchant_price(i: int) -> int: return roundi((35+game.tier*15+i*10)*(1.0-minf(.6,float(game.stats.get("discount",0.0)))))
 
 func merchant_item(i: int,weapons: Array) -> Dictionary:
 	var item=stock[i].duplicate(true)
@@ -251,7 +251,7 @@ func grant(item: Dictionary):
 
 func activate_beacon():
 	if beacon_state!="idle": return
-	beacon_state="defending";beacon_seconds=0;beacon_absent=0;beacon_budget=180+game.realm*60
+	beacon_state="defending";beacon_seconds=0;beacon_absent=0;beacon_budget=180+game.tier*60
 	game.hud.tell("DEFEND!",2);quip("discovery")
 
 func award_beacon():

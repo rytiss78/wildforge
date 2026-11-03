@@ -56,11 +56,11 @@ static func run(g):
 	for i in range(120):g._process(.016)
 	g.hud.update(0);checks.field=await capture(g,"field")
 	# Use the third-world portal's real interaction entry point.
-	g.enter_realm(2);g.events.guardian_defeated=true;g.Journey.activate(g)
-	checks.portal=g.realm==3 and g.enemies.size()==1 and not g.gate.visible
+	g.enter_realm(RealmWorld.ARENA-1);g.events.guardian_defeated=true;g.Journey.activate(g)
+	checks.portal=g.realm==RealmWorld.ARENA and g.enemies.size()==1 and not g.gate.visible
 	var arena_spawn=g.player.position;g.player.position=g.gate_position
 	checks.hidden_portal_no_hint=not g.interaction_hint().contains("PORTAL")
-	g.interact();checks.hidden_portal_no_travel=g.realm==3
+	g.interact();checks.hidden_portal_no_travel=g.realm==RealmWorld.ARENA
 	g.player.position=arena_spawn
 	var boss=g.enemies[0]
 	checks.final_identity=boss.boss_id==8 and boss.height==BossBook.entry(8).height and is_equal_approx(boss.speed,BossBook.entry(8).speed*g.BOSS_SPEED_SCALE) and is_equal_approx(boss.maxHp,(preload("res://scripts/final_arena.gd").TARGET_SECONDS*preload("res://scripts/final_arena.gd").REFERENCE_DPS*preload("res://scripts/final_arena.gd").HEALTH_MULTIPLIER))
@@ -157,7 +157,7 @@ static func run(g):
 	g.realm_time=660;g.Journey.tick(g)
 	checks.endless=g.events.eclipse and g.events.eclipse_stage>=20 and g.events.wave_budget>0
 	g.spawn_enemy(15);checks.new_corruption=g.enemies[-1].get("corruption",0)==g.events.eclipse_stage
-	g.Journey.activate(g);checks.no_exit=g.realm==3 and g.mode=="playing"
+	g.Journey.activate(g);checks.no_exit=g.realm==RealmWorld.ARENA and g.mode=="playing"
 	for i in range(90):g._process(.016)
 	g.hud.update(0);checks.eclipse=await capture(g,"eclipse")
 	print("RED_MOON_REVIEW "+JSON.stringify({"checks":checks,"attack_counts":counts,"authored_size":CoopSession.array(maximum-minimum),"reference_seconds":(preload("res://scripts/final_arena.gd").TARGET_SECONDS*preload("res://scripts/final_arena.gd").REFERENCE_DPS*preload("res://scripts/final_arena.gd").HEALTH_MULTIPLIER)/1200.0,"timing_note":"Solo Colossus HP = 300 s x 300 dps x HEALTH_MULTIPLIER (37.5 since October 24, 7.5 before that, 6 since Phase D; 4 was the requested fourfold). Representative builds still need playtesting."}))

@@ -27,6 +27,21 @@ const GRADE=[
 # Seven biomes: six slices of the island plus Junkyard Planet (biome 6, user
 # request October 27: a new biome), a rust-and-scrap slice under a smog sky.
 const BIOME_COUNT=7
+# Big update MB (user, November 2): one biome per map. Seven maps, one per
+# biome (that biome's creatures only), played in a row in this order (by
+# toughness), then the Red Moon arena (realm ARENA).
+const MAPS=7
+const ARENA=7
+const MAP_BIOMES=[0,1,2,3,6,4,5]
+const MAP_SECONDS=360.0
+# Which harsher island look (GRADE) each map uses; the arena keeps its own.
+const MAP_GRADES=[0,0,1,1,1,2,2]
+static func biome_of(map: int) -> int: return 2 if map>=ARENA else MAP_BIOMES[clampi(map,0,MAPS-1)]
+static func grade_of(map: int) -> int: return 3 if map>=ARENA else MAP_GRADES[clampi(map,0,MAPS-1)]
+# Difficulty stage: 0 on the first map rising to 2 on the seventh, 3 in the arena
+# (what the three-island run used as its realm number in balance formulas).
+static func tier(map: int) -> float: return 3.0 if map>=ARENA else 2.0*float(clampi(map,0,MAPS-1))/float(MAPS-1)
+static func map_name(map: int) -> String: return "The Red Moon" if map>=ARENA else BIOMES[biome_of(map)]
 const BIOME_ARC=TAU/BIOME_COUNT
 # Toughness and reward tier per biome (enemy health, damage, gold). Biomes 0-5
 # keep their index; Junkyard Planet sits mid-pack instead of becoming the hardest.
@@ -42,6 +57,9 @@ var rng=RandomNumberGenerator.new()
 var landmarks=[]
 var building_sites=[]
 var harvest_sites: Array[Vector3]=[]
+# Big update MB: climbing mesas (ClimbMap.plan) and their launch pads.
+var climb_mesas=[]
+var climb_pads=[]
 var chunks={}
 var pending=[]
 var terrain_material: ShaderMaterial
@@ -85,9 +103,9 @@ static func scaled(color: Color,lift: Vector2) -> Color:
 	return Color(minf(1,color.r*factor),minf(1,color.g*factor),minf(1,color.b*factor),color.a)
 
 static func coast_radius(angle: float,world_seed: int,world_realm: int) -> float:
-	if world_realm==3: return 72.0
+	if world_realm==RealmWorld.ARENA: return 72.0
 	var phase=float(world_seed%23)*.03+world_realm*.4
-	var shape: Vector3=GRADE[world_realm].shape
+	var shape: Vector3=GRADE[grade_of(world_realm)].shape
 	return 344+24*sin(3*(angle+phase))+14*sin(5*(angle-phase))+8*cos(7*(angle+phase*.5))+shape.x*sin(4*(angle-phase*1.3))+shape.y*sin(6*(angle+phase))+shape.z
 
 func shore_radius(p: Vector3) -> float:
@@ -125,7 +143,7 @@ func weather_tick(delta: float,p: Vector3):
 		var site=p+Vector3(-14 if i==0 else 14,0,-12)
 		mist.position=Vector3(site.x,height_at(site.x,site.z)+.18,site.z)
 	sky_top=sky_top.lerp(Color("21192f") if eclipse else SKY_TOP[biome],1-exp(-delta*.6));sky_horizon=sky_horizon.lerp(Color("77556c") if eclipse else SKY_HORIZON[biome],1-exp(-delta*.6))
-	var grade: Dictionary=GRADE[realm]
+	var grade: Dictionary=GRADE[grade_of(realm)]
 	if grade.mix>0 and not eclipse: sky_top=sky_top.lerp(grade.top,grade.mix*(1-exp(-delta*.6))*4.0);sky_horizon=sky_horizon.lerp(grade.horizon,grade.mix*(1-exp(-delta*.6))*4.0)
 	# The sky itself is drawn brighter than its fog colour (user request, October 25:
 	# the sunlit ground outshone a near-black sky). The fog keeps the darker horizon,
@@ -149,9 +167,7 @@ func weather_tick(delta: float,p: Vector3):
 		border_steam[index].position=point;border_patches[index].position=point
 
 func biome_at(p: Vector3) -> int:
-	if realm==3: return 2
-	if Vector2(p.x,p.z).length()<65: return 0
-	return mini(BIOME_COUNT-1,int(floor(fposmod(atan2(p.z,p.x)+float(seed_value%23)*.03+realm*.4,TAU)/BIOME_ARC)))
+	return biome_of(realm)
 
 func crossing_distance(p: Vector3) -> float:
 	var radius=Vector2(p.x,p.z).length()
@@ -175,29 +191,28 @@ func raw_height_at(x: float,z: float) -> float:
 	return value
 
 func compute_height_at(x: float,z: float) -> float:
-	if realm==3:
+	if realm==RealmWorld.ARENA:
 		var distance=Vector2(x,z).length()
 		return 1.3+sin(x*.06)*cos(z*.06)*.4-maxf(0,distance-64)*.45
 	var p=Vector3(x,0,z)
 	var biome=biome_at(p)
-	var angle=fposmod(atan2(z,x)+float(seed_value%23)*.03+realm*.4,TAU)/BIOME_ARC
 	# Reduced terrain amplitudes to keep slopes navigable for enemies.
 	var amplitudes=[6.0,4.0,6.0,8.0,6.0,6.0,5.0]
-	var index=mini(BIOME_COUNT-1,int(floor(angle)))
-	var amplitude=lerpf(amplitudes[index],amplitudes[(index+1)%BIOME_COUNT],smoothstep(0.0,1.0,fposmod(angle,1.0)))
+	var index=biome
+	var amplitude=amplitudes[index]
 	# Smooth amplitudes near angular boundaries; no invisible height discontinuities.
 	var base=noise.get_noise_2d(x,z)*6+sin(x*.012)*cos(z*.012)*3
 	var mountain=maxf(0,noise.get_noise_2d(x+790,z-530))*12
 	var blend=smoothstep(65.0,120.0,Vector2(x,z).length())
 	var terrain=[sin(x*.06)*cos(z*.06)*1.5,-absf(sin(x*.025)*sin(z*.035))*3,-pow(maxf(0,noise.get_noise_2d(x*2,z*2)),2)*6,sin(x*.025)*cos(z*.025)*7,absf(sin(x*.032)+cos(z*.041))*4,sin(x*.018)*cos(z*.022)*9,maxf(0.0,sin(x*.05+cos(z*.03))*cos(z*.045))*5.0-1.0]
-	var relief=lerpf(terrain[index],terrain[(index+1)%BIOME_COUNT],smoothstep(0.0,1.0,fposmod(angle,1.0)))
+	var relief=terrain[index]
 	var original=base+mountain*blend*(amplitude/28.0)+relief*blend
 	var terrace=floorf(original/5.0)*5.0+smoothstep(.62,1.0,fposmod(original,5.0)/5.0)*5.0
 	var route=1.0-smoothstep(4.0,12.0,crossing_distance(p))
 	var inland=lerpf(terrace,original*.85,route)*smoothstep(0.0,28.0,Vector2(x,z).length())
 	var edge=Vector2(x,z).length();var coast=shore_radius(p)
 	var shore=2.0-maxf(0.0,edge-(coast-6.0))/3.0
-	if edge<=coast: return lerpf(inland,shore,smoothstep(coast-32.0,coast-4.0,edge))
+	if edge<=coast: return lerpf(inland,shore,smoothstep(coast-32.0,coast-4.0,edge))+ClimbMap.lift(climb_mesas,x,z)
 	# Past the coast the island ends in a rounded rocky rim (October 31: no sea; the
 	# hero walks over it onto the underside, Underside).
 	var over=clampf((edge-coast)/Underside.RIM,0.0,1.0)
@@ -213,7 +228,7 @@ func under_height(x: float,z: float) -> float:
 	return lip-depth
 
 func portal_site() -> Vector3:
-	if realm==3: return Vector3(0,1.5,48)
+	if realm==RealmWorld.ARENA: return Vector3(0,1.5,48)
 	var p=landmarks[(realm+1)%landmarks.size()]+Vector3(18,0,16)
 	p.y=height_at(p.x,p.z)+.2
 	return p
@@ -240,11 +255,13 @@ func build(index: int,world_seed: int):
 	height_vertices.clear()
 	realm=index;seed_value=world_seed;rng.seed=world_seed+index*763
 	noise.seed=world_seed%2147483647;noise.frequency=.014;noise.fractal_octaves=3;noise.fractal_gain=.4
+	climb_mesas=ClimbMap.plan(self)
 	for child in get_children():
 		remove_child(child);child.queue_free()
 	chunks.clear();pending.clear();landmarks.clear();building_sites.clear();harvest_sites.clear();last_cell=Vector2i(999,999);stream_signature=""
 	clouds.clear();border_steam.clear();border_patches.clear();low_mist.clear()
 	make_environment();make_material();make_boundaries();make_landmarks()
+	ClimbMap.build_props(self)
 	# Natural landmarks and organic scenery replace decorative architecture.
 	# Frame-budgeted chunk building: schedule 49 chunks, process ~6 per frame
 	build_in_progress=true
@@ -266,13 +283,13 @@ func make_material():
 	lava_material.cull_mode=BaseMaterial3D.CULL_DISABLED
 	var shader=load("res://shaders/terrain.gdshader")
 	terrain_material=ShaderMaterial.new();terrain_material.shader=shader;terrain_material.set_shader_parameter("phase",float(seed_value%23)*.03+realm*.4)
-	terrain_material.set_shader_parameter("red_moon",realm==3)
-	var grade: Dictionary=GRADE[realm]
+	terrain_material.set_shader_parameter("red_moon",realm==RealmWorld.ARENA)
+	var grade: Dictionary=GRADE[grade_of(realm)]
 	terrain_material.set_shader_parameter("shape",grade.shape);terrain_material.set_shader_parameter("corruption",grade.corruption)
 	if grade.has("vein"): terrain_material.set_shader_parameter("vein_color",grade.vein);terrain_material.set_shader_parameter("blight_tint",grade.tint)
 	for i in range(BIOME_COUNT): terrain_material.set_shader_parameter("t"+str(i),load("res://assets/illustrated/forge-basalt-moss.png" if i==0 else "res://assets/illustrated/terrain-moss-v2.png" if i==1 else "res://assets/illustrated/terrain-stone-v2.png"))
 	scenery_material=PaintedBatch.material()
-	if GRADE[realm].has("scenery"): scenery_material.set_shader_parameter("tint",GRADE[realm].scenery)
+	if GRADE[grade_of(realm)].has("scenery"): scenery_material.set_shader_parameter("tint",GRADE[grade_of(realm)].scenery)
 	scenery_material.set_shader_parameter("fade_near",true)
 	scenery_material.next_pass.set_shader_parameter("fade_near",true)
 
@@ -289,13 +306,13 @@ func make_chunk(cell: Vector2i):
 			var centre=Vector3(ox+step*.5,0,oz+step*.5)
 			# Quads wholly past RIM_START are left to the smooth rim ring (make_rim).
 			var beyond=Vector2(centre.x,centre.z).length()-step*.71-(shore_radius(centre)-RIM_START)
-			if realm!=3 and beyond>0.0: continue
+			if realm!=RealmWorld.ARENA and beyond>0.0: continue
 			top_faces+=2
 			for v in [Vector2(ox,oz),Vector2(ox+step,oz),Vector2(ox,oz+step),Vector2(ox+step,oz),Vector2(ox+step,oz+step),Vector2(ox,oz+step)]:
 				var color=Color.WHITE;color.a=float(biome_at(Vector3(v.x,0,v.y)))/float(BIOME_COUNT-1)
 				surface.set_color(color);surface.set_uv(v*.12)
 				surface.add_vertex(Vector3(v.x-root.position.x,raw_height_at(v.x,v.y),v.y-root.position.z))
-			if realm==3: continue
+			if realm==RealmWorld.ARENA: continue
 			# The belly, wound the other way so it faces down.
 			belly_faces+=2
 			for v in [Vector2(ox,oz),Vector2(ox,oz+step),Vector2(ox+step,oz),Vector2(ox+step,oz),Vector2(ox,oz+step),Vector2(ox+step,oz+step)]:
@@ -314,7 +331,7 @@ func make_chunk(cell: Vector2i):
 	for i in range(26):
 		var p=Vector3(cell.x*CHUNK+local_rng.randf()*CHUNK,0,cell.y*CHUNK+local_rng.randf()*CHUNK)
 		if Vector2(p.x,p.z).length()>shore_radius(p)-25: continue
-		if realm==3 and Vector2(p.x,p.z).length()<38: continue
+		if realm==RealmWorld.ARENA and Vector2(p.x,p.z).length()<38: continue
 		var portal=portal_site()
 		if Vector2(p.x-portal.x,p.z-portal.z).length()<14: continue
 		if Vector2(p.x-60,p.z+35).length()<7: continue
@@ -359,7 +376,7 @@ func lava_center(radius: float,lane: int) -> Vector3:
 	return Vector3(cos(angle)*radius,0,sin(angle)*radius)
 
 func lava_at(p: Vector3) -> bool:
-	if realm==3 or biome_at(p)!=4: return false
+	if realm==RealmWorld.ARENA or biome_at(p)!=4: return false
 	var radius=Vector2(p.x,p.z).length()
 	if radius<95 or radius>310: return false
 	for lane in [-1,0,1]:
@@ -368,7 +385,7 @@ func lava_at(p: Vector3) -> bool:
 	return false
 
 func make_lava_chunk(root: Node3D,cell: Vector2i):
-	if realm==3: return
+	if realm==RealmWorld.ARENA: return
 	var surface=SurfaceTool.new();surface.begin(Mesh.PRIMITIVE_TRIANGLES)
 	var faces=0
 	for lane in [-1,0,1]:
@@ -489,7 +506,7 @@ func make_boundaries():
 	under_material=ShaderMaterial.new();under_material.shader=load("res://shaders/island_underside.gdshader")
 	under_material.set_shader_parameter("phase",float(seed_value%23)*.03+realm*.4)
 	for i in range(BIOME_COUNT): under_material.set_shader_parameter("glow"+str(i),NatureScenery.GLOW[i])
-	if realm!=3: make_rim()
+	if realm!=RealmWorld.ARENA: make_rim()
 	for side in [-1,1]:
 		for axis in [0,2]:
 			var mesh=BoxMesh.new();mesh.size=Vector3(16,100,EXTENT*2+24) if axis==0 else Vector3(EXTENT*2+24,100,16)
@@ -512,7 +529,7 @@ func make_environment():
 	var particles=ParticleProcessMaterial.new();particles.emission_shape=ParticleProcessMaterial.EMISSION_SHAPE_BOX;particles.emission_box_extents=Vector3(14,4,14);particles.direction=Vector3.DOWN;particles.spread=35;weather.process_material=particles
 	make_low_mist()
 	var sun=DirectionalLight3D.new();sun.rotation_degrees=Vector3(-42,-35,0);sun.light_energy=1.2;sun.light_color=Color("ffe0ad");sun.shadow_enabled=true;sun.directional_shadow_max_distance=38;add_child(sun);sun_light=sun
-	var grade: Dictionary=GRADE[realm]
+	var grade: Dictionary=GRADE[grade_of(realm)]
 	if grade.has("sun"): sun.light_color=grade.sun;sun.light_energy=float(grade.sun_energy);sun.rotation_degrees.x=-30.0 if realm==1 else -24.0
 	if grade.has("air"): make_island_air(grade)
 	for i in range(16):
@@ -553,14 +570,14 @@ func make_island_air(grade: Dictionary):
 		island_air.set_meta("embers",embers)
 
 func make_landmarks():
-	if realm==3:
+	if realm==RealmWorld.ARENA:
 		landmarks.append(Vector3.ZERO);return
-	for biome in range(BIOME_COUNT):
-		var angle=(biome+.5)*BIOME_ARC-float(seed_value%23)*.03-realm*.4
+	for slot in range(BIOME_COUNT):
+		var angle=(slot+.5)*BIOME_ARC-float(seed_value%23)*.03-realm*.4
 		var p=Vector3(cos(angle)*175,0,sin(angle)*175)
 		p.y=height_at(p.x,p.z)
 		landmarks.append(p)
-		preload("res://scripts/biome_landmarks.gd").build(self,biome,p)
+		preload("res://scripts/biome_landmarks.gd").build(self,biome_of(realm),p)
 
 func make_low_mist():
 	var puff=SphereMesh.new();puff.radius=.6;puff.height=.10;puff.radial_segments=12;puff.rings=4

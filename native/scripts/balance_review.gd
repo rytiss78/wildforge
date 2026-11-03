@@ -4,7 +4,7 @@ extends RefCounted
 # Each tier spends 12/24/36 common offensive cards, plus weapon ranks 1/3/6.
 static func run(g):
 	AudioServer.set_bus_volume_db(0,-80)
-	g.start_run(1616);g.enter_realm(3);g.set_process(false);g.set_physics_process(false)
+	g.start_run(1616);g.enter_realm(RealmWorld.ARENA);g.set_process(false);g.set_physics_process(false)
 	g.invulnerable=100000;g.spawn_clock=100000;g.xp_target=100000
 	var boss=g.enemies[0];var rows=[];var checks={}
 	for build in ["weapons","turrets","status","slam","flowers"]:

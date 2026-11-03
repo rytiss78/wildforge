@@ -269,7 +269,7 @@ func duty():
 			if work<=0: work=1.2;CombatInk.wave(game,leader.position+Vector3.UP*.1,reach,Color("bfeaff"))
 
 func bite():
-	var damage=BITE[stage]*(1.0+float(game.realm)*.6)
+	var damage=BITE[stage]*(1.0+float(game.tier)*.6)
 	game.hurt_enemy(target,damage,"melee")
 	game.burst(position,Color("ff8ac6"),6)
 	work=BITE_EVERY[stage];target={};state="follow"

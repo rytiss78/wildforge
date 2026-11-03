@@ -28,7 +28,7 @@ static func run(g: Node3D):
 			# The arrival card, shown as a player sees it on landing.
 			g.Journey.announce(g,"ISLAND 2 · "+RealmWorld.NAMES[1].to_upper(),RealmWorld.GRADE[1].title+" · enemies +%d%% health and damage" % roundi((g.realm_difficulty/1.08-1.0)*100))
 			g.hud.update(0);cells.append(await frame(g))
-		checks["corruption_"+str(realm)]=is_equal_approx(float(g.world.terrain_material.get_shader_parameter("corruption")),float(RealmWorld.GRADE[realm].corruption))
+		checks["corruption_"+str(realm)]=is_equal_approx(float(g.world.terrain_material.get_shader_parameter("corruption")),float(RealmWorld.GRADE[RealmWorld.grade_of(realm)].corruption))
 		for biome in [0,2,4]:
 			var p=g.world.landmarks[biome]+Vector3(0,0,14);p.y=g.world.height_at(p.x,p.z)+.1
 			g.player.position=p;g.player.velocity=Vector3.ZERO;g.yaw=0;g.world.stream(p)

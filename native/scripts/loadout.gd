@@ -54,7 +54,16 @@ const CARDS={
 	"luck":{"name":"Clover","amount":.14,"mode":"add","family":"Fortune"},
 	"goldGain":{"name":"Coin Sense","amount":.3,"mode":"multiply","family":"Economy"},
 	"turretDamage":{"name":"Workshop","amount":.2,"mode":"multiply","family":"Engineering"},
+	# Two cards that bend the run rather than a stat (big update MB, part 4):
+	# Dare calls more monsters for more experience and gold; Wild Card grows two
+	# different stats every level, picked at random when it is offered.
+	"curse":{"name":"Dare","amount":.15,"mode":"add","family":"Fortune"},
+	"chaos":{"name":"Wild Card","amount":1,"mode":"add","family":"Arcane"},
 }
+# Dare's reward per level, next to its +15% more monsters.
+const DARE_REWARD=.1
+# What Wild Card can grow (the plain stat cards, without the odd ones).
+const WILD=["damage","rate","crit","critPower","size","range","projectileSpeed","maxHp","armor","dodge","regen","shield","lifesteal","thorns","speed","pickup","xpGain","luck","goldGain"]
 
 # Where an old loot entry goes now: "card", "weapon_up" or "item".
 static func slot_of(item: Dictionary,augments: Dictionary) -> String:
@@ -72,8 +81,14 @@ static func card_offer(stat: String,tier: int,level: int) -> Dictionary:
 	var card=CARDS[stat];var strength=[1.0,2.0,3.5,5.5][tier]
 	var amount=float(card.amount)*strength
 	if stat=="multishot": amount=1.0 if tier<3 else 2.0
+	var effects=[{"key":stat,"amount":amount,"mode":card.mode}]
+	if stat=="curse": effects.append_array([{"key":"xpGain","amount":DARE_REWARD*strength,"mode":"multiply"},{"key":"goldGain","amount":DARE_REWARD*strength,"mode":"multiply"}])
+	if stat=="chaos":
+		var first=WILD[randi()%WILD.size()];var second=WILD[(WILD.find(first)+1+randi()%(WILD.size()-1))%WILD.size()]
+		effects=[{"key":"chaos","amount":1,"mode":"add"}]
+		for key in [first,second]: effects.append({"key":key,"amount":float(CARDS[key].amount)*strength*.75,"mode":CARDS[key].mode})
 	return {"id":"card-"+stat,"kind":"card","stat":stat,"name":card.name,"title":card.name,"family":card.family,
-		"tier":tier,"strength":strength,"level":level+1,"effects":[{"key":stat,"amount":amount,"mode":card.mode}]}
+		"tier":tier,"strength":strength,"level":level+1,"effects":effects}
 
 # Hand weapons and turrets share the four weapon slots.
 static func weapons_full(equipped: Array) -> bool: return equipped.size()>=WEAPON_SLOTS

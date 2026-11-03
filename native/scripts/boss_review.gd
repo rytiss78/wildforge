@@ -100,7 +100,7 @@ static func run(g):
 		checks.portal_defeat=g.Journey.state(g)=="cleared" and g.realm_bosses==warden_count
 	# The final Baron is outside the eight-boss shuffle roster; exercise him explicitly.
 	g.coop.active=false
-	g.enter_realm(3)
+	g.enter_realm(RealmWorld.ARENA)
 	var barons=g.enemies.filter(func(e):return e.get("boss_id",-1)==8)
 	checks.baron_spawn=barons.size()==1
 	if not barons.is_empty():

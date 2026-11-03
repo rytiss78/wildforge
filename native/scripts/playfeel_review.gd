@@ -101,7 +101,7 @@ static func run(g):
 	g.equipped.clear()
 	for biome in range(6):
 		var root=g.world.get_node("Landmark_"+str(biome))
-		checks["grove_biome_"+str(biome)]=g.world.biome_at(root.position)==biome
+		checks["grove_biome_"+str(biome)]=g.world.biome_at(root.position)==int(root.get_meta("biome",-1))
 		g.player.position=root.to_global(Vector3(0,0,-62));g.player.position.y=g.world.height_at(g.player.position.x,g.player.position.z)
 		g.yaw=root.rotation.y+PI;g.pitch=.15;g.player.velocity=Vector3.ZERO;g.player.reset_physics_interpolation()
 		for i in range(100):g._process(.016);await g.get_tree().process_frame

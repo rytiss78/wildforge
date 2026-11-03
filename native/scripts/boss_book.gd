@@ -69,7 +69,7 @@ static func attack(g,enemy: Dictionary):
 		ColossusFight.attack(g,enemy);return
 	enemy.node.get_meta("rig").attack=1.4
 	for mark in pattern(id,enemy.node.position,g.coop.target(enemy.node.position).position,enemy.phase):
-		var damage=roundi((22+g.realm*8)*g.realm_difficulty*mark.damage_scale)
+		var damage=roundi((22+g.tier*8)*g.realm_difficulty*mark.damage_scale)
 		g.warn_at(mark.position,mark.radius,mark.delay,damage,mark.style)
 		if g.coop.active: g.coop.broadcast({"type":"hazard","realm":g.realm,"position":CoopSession.array(mark.position),"radius":mark.radius,"delay":mark.delay,"damage":damage,"style":mark.style})
 	enemy.recovery=g.realm_time+1.5;enemy.attack=boss.cooldown*(.82 if enemy.phase==2 else 1.0)

@@ -3,7 +3,7 @@ extends RefCounted
 static func state(g) -> String:
 	if g.events.get("guardian_defeated",false): return "cleared"
 	if g.events.get("guardian_summoned",false): return "fighting"
-	return "ready" if g.realm_bosses>=2 or g.realm_time>=600 else "sealed"
+	return "ready" if g.realm_bosses>=2 or g.realm_time>=RealmWorld.MAP_SECONDS else "sealed"
 
 static func announce(g,title: String,subtitle: String):
 	g.events.announcement=title;g.events.announcement_detail=subtitle;g.events.announcement_until=g.elapsed+5
@@ -19,12 +19,11 @@ static func boss_arrived(g,enemy):
 	g.explosion_fx(enemy.node.position,8);g.burst(enemy.node.position+Vector3.UP*3,Color("f4cb80"),18)
 
 static func activate(g):
-	if g.realm==3: return
+	if g.realm==RealmWorld.ARENA: return
 	if state(g)=="sealed": g.achievement_event("LOCKED_GATE");g.hud.tell("Defeat two wardens or survive until the Eclipse.",4);return
 	if state(g)=="fighting": g.hud.tell("Defeat the portal guardian before travelling.",4);return
 	if state(g)=="cleared":
-		if g.realm==2: g.enter_realm(3)
-		else: g.enter_realm(g.realm+1)
+		g.enter_realm(g.realm+1)
 		return
 	var before=g.enemies.size();g.spawn_enemy(15,true,g.gate_position,true)
 	if g.enemies.size()==before: g.hud.tell("The portal is obstructed. Move into open ground and try again.");return
@@ -33,15 +32,15 @@ static func activate(g):
 	g.gate.get_meta("marker").text="GUARDIAN AWAKENED"
 
 static func tick(g):
-	if g.realm==3:
+	if g.realm==RealmWorld.ARENA:
 		preload("res://scripts/final_arena.gd").tick(g);return
 	if g.coop.active and not g.coop.hosting: return
-	if g.realm_time>=600 and not g.events.get("eclipse",false):
+	if g.realm_time>=RealmWorld.MAP_SECONDS and not g.events.get("eclipse",false):
 		g.events.eclipse=true;g.events.eclipse_stage=0
 		announce(g,"THE ECLIPSE","The portal awakens. Enemies grow stronger every 30 seconds.")
 		g.sound.effect("blast",g.player.position);g.gate.get_meta("marker").text="SUMMON GUARDIAN"
 	if g.events.get("eclipse",false):
-		var stage=1+int((g.realm_time-600)/30)
+		var stage=1+int((g.realm_time-RealmWorld.MAP_SECONDS)/30)
 		if stage>int(g.events.get("eclipse_stage",0)):
 			g.events.eclipse_stage=stage
 			for enemy in g.enemies: EclipseCorruption.apply(enemy,stage)
@@ -51,15 +50,15 @@ static func tick(g):
 		g.events.guardian_attack=g.realm_time+8
 		for i in range(6):
 			var p=g.player.position+Vector3.RIGHT.rotated(Vector3.UP,i*TAU/7+g.realm_time)*6
-			var dmg=roundi((22+g.realm*8)*g.realm_difficulty)
+			var dmg=roundi((22+g.tier*8)*g.realm_difficulty)
 			g.warn_at(p,2.2,1.8,dmg,"void")
 			if g.coop.active: g.coop.broadcast({"type":"hazard","realm":g.realm,"position":g.coop.array(p),"radius":2.2,"delay":1.8,"damage":dmg,"style":"void"})
 
 static func defeated(g,enemy):
-	if g.realm==3 and enemy.get("boss_id",-1)==8:
+	if g.realm==RealmWorld.ARENA and enemy.get("boss_id",-1)==8:
 		preload("res://scripts/final_arena.gd").defeated(g);return
 	if enemy.get("guardian",false):
 		g.events.guardian_defeated=true;g.gate.get_meta("marker").text="ENTER PORTAL"
-		announce(g,"ISLAND LIBERATED","Return to the portal · "+("The red moon awaits" if g.realm==2 else "Your build continues into the next world"))
+		announce(g,"ISLAND LIBERATED","Return to the portal · "+("The red moon awaits" if g.realm==RealmWorld.ARENA-1 else "Next: "+RealmWorld.map_name(g.realm+1)))
 	elif state(g)=="ready":
 		g.gate.get_meta("marker").text="SUMMON GUARDIAN";announce(g,"THE PORTAL AWAKENS","Follow the gold beacon and summon this island's guardian")

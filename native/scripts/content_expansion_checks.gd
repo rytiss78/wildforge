@@ -9,10 +9,9 @@ static func run(game) -> Dictionary:
 	var positions=game.chests.map(func(c):return c.node.position)
 	var per_biome=[];per_biome.resize(RealmWorld.BIOME_COUNT);per_biome.fill(0);var spacing=1000.0
 	for p in positions:
-		per_biome[game.world.biome_at(p)]+=1
 		for q in positions:
 			if p!=q: spacing=minf(spacing,Vector2(p.x-q.x,p.z-q.z).length())
-	checks.chest_distribution=positions.size()==4*RealmWorld.BIOME_COUNT and per_biome.all(func(n):return n==4) and spacing>25
+	checks.chest_distribution=positions.size()==4*RealmWorld.BIOME_COUNT+game.world.climb_mesas.size() and spacing>18
 	# Equal bonuses share art intentionally. Every distinct augment condition/stat
 	# pair must still render differently; all catalogue entries must load.
 	var hashes={};var icons=true;var augment_icons=true

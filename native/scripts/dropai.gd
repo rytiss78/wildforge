@@ -43,7 +43,7 @@ static func entry(id: String) -> Dictionary:
 
 # Talking to Dyleris for the first time on this island hides three dropai.
 static func reveal(g) -> bool:
-	if revealed or g.realm>=3: return false
+	if revealed or g.realm>=RealmWorld.ARENA: return false
 	revealed=true
 	var pool=ITEMS.filter(func(i):return not found.has(i.id))
 	var rng=RandomNumberGenerator.new();rng.seed=g.seed_value+g.realm*4099+g.coop.local_id

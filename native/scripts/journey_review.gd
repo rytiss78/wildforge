@@ -23,10 +23,10 @@ static func run(game):
 	game.camera.position=specimen.node.position+Vector3(4,3,7);game.camera.look_at(specimen.node.position+Vector3.UP*specimen.height*.55)
 	checks.corruption_before=await capture(game,"corruption-before")
 	var collider=specimen.node.get_child(0).shape;var original_height=collider.height
-	game.realm_time=600;game.update_events()
+	game.realm_time=RealmWorld.MAP_SECONDS;game.update_events()
 	checks.corruption_existing=specimen.get("corruption",0)==1 and rig.scale.y>base_scale.y
 	checks.corruption_new=game.enemies[-1].get("corruption",0)==1
-	game.realm_time=750;game.Journey.tick(game)
+	game.realm_time=RealmWorld.MAP_SECONDS+150;game.Journey.tick(game)
 	checks.corruption_scales=specimen.get("corruption",0)==6 and rig.scale.y>base_scale.y*1.1 and collider.height==original_height
 	var size=rig.scale;var children=rig.get_child_count();EclipseCorruption.apply(specimen,6)
 	checks.corruption_idempotent=rig.scale==size and rig.get_child_count()==children
@@ -37,9 +37,9 @@ static func run(game):
 	var remote=game.spawn_network_enemy(actor);EclipseCorruption.apply(remote,int(actor.get("corruption",0)))
 	checks.corruption_replication=remote.get("corruption",0)==specimen.get("corruption",0) and remote.node.get_meta("rig").scale.is_equal_approx(rig.scale)
 	remote.node.queue_free();game.enemies.erase(remote)
-	game.realm_time=600;game.events.eclipse_stage=0;game.Journey.tick(game)
+	game.realm_time=RealmWorld.MAP_SECONDS;game.events.eclipse_stage=0;game.Journey.tick(game)
 	checks.eclipse=game.events.get("eclipse",false) and game.Journey.state(game)=="ready" and game.events.eclipse_stage==1
-	game.realm_time=630;game.Journey.tick(game);checks.escalation=game.events.eclipse_stage==2
+	game.realm_time=RealmWorld.MAP_SECONDS+30;game.Journey.tick(game);checks.escalation=game.events.eclipse_stage==2
 	game.Journey.activate(game)
 	var guardians=game.enemies.filter(func(e):return e.get("guardian",false) and not e.dead)
 	checks.guardian=guardians.size()==1 and game.Journey.state(game)=="fighting"
@@ -52,5 +52,5 @@ static func run(game):
 	game.kill_enemy(guardian,"diagnostic");checks.guardian_unlocks=game.Journey.state(game)=="cleared"
 	game.Journey.activate(game);checks.travel=game.realm==1 and game.Journey.state(game)=="sealed"
 	# Since the Red Moon (Build 12) a cleared third map leads to the final arena, not the end screen.
-	game.enter_realm(2);game.events.guardian_defeated=true;game.Journey.activate(game);checks.final_portal=game.realm==3 and game.events.get("final_arena",false) and game.mode!="ended"
+	game.enter_realm(RealmWorld.ARENA-1);game.events.guardian_defeated=true;game.Journey.activate(game);checks.final_portal=game.realm==RealmWorld.ARENA and game.events.get("final_arena",false) and game.mode!="ended"
 	print("JOURNEY_REVIEW "+JSON.stringify(checks));game.get_tree().quit(0 if checks.values().all(func(v):return v) else 1)

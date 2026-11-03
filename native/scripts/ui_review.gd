@@ -251,7 +251,15 @@ static func run(game):
 	game.set_process(false)
 	var saved_camera=game.camera.transform;var saved_player=game.player.position
 	for biome in range(6):
-		var harvest=game.harvestables.filter(func(h):return h.biome==biome)[0]
+		# One biome per map (big update MB): only this map's harvestables exist.
+		var found=game.harvestables.filter(func(h):return h.biome==biome)
+		if found.is_empty():
+			# Show another biome's harvestable on this map just for the capture.
+			var spot=game.harvestables[0].node.position+Vector3(30+biome*14,0,0);spot.y=game.world.height_at(spot.x,spot.z)
+			var model=HarvestBook.make_model(biome);game.add_child(model);model.position=spot
+			PotionBook.tag(model,HarvestBook.TYPES[biome].effect,Color(HarvestBook.TYPES[biome].color),1.35)
+			found=[{"node":model,"type":HarvestBook.TYPES[biome],"biome":biome,"picked":false}];game.harvestables.append(found[0])
+		var harvest=found[0]
 		game.world.ensure_ground(harvest.node.position)
 		game.player.position=harvest.node.position+Vector3(1.4,.2,0);game.current_biome=biome
 		for chunk in range(25): game.world.stream(game.player.position)

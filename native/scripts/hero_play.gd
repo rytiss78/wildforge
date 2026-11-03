@@ -67,7 +67,7 @@ static func realm_started(g):
 	for flower in nectar:
 		if is_instance_valid(flower.node): flower.node.queue_free()
 	nectar.clear()
-	if id(g)=="bee" and g.realm<3: plant_nectar(g)
+	if id(g)=="bee" and g.realm<RealmWorld.ARENA: plant_nectar(g)
 	lay_down(g)
 
 # Called on each hero change too (the hero screen preview uses its own model).
@@ -213,7 +213,7 @@ static func sip(g,delta: float):
 		var at: Vector3=flower.node.position
 		if Vector2(at.x-p.x,at.z-p.z).length()<2.6:
 			flower.ready=g.elapsed+NECTAR_REGROW
-			g.spawn_pickup(p+Vector3.UP*.5,"xp",6+g.realm*4)
+			g.spawn_pickup(p+Vector3.UP*.5,"xp",6+g.tier*4)
 			g.burst(at+Vector3.UP*.8,Color("ffd23f"),6);g.sound.effect("heal",at)
 	# Florist flowers give a little too, each once in a while.
 	for flower in g.flowers:
@@ -303,7 +303,7 @@ static func update_roots(g,delta: float,force_under: bool=false):
 		if is_instance_valid(flower.get("node")): sources["l"+str(flower.node.get_instance_id())]=flower.node.position
 	for key in g.coop.flower_visuals:
 		if is_instance_valid(g.coop.flower_visuals[key]): sources["r"+str(key)]=g.coop.flower_visuals[key].position
-	if g.world.realm!=3:
+	if g.world.realm!=RealmWorld.ARENA:
 		var rng=RandomNumberGenerator.new();rng.seed=int(g.seed_value)*31+int(g.world.realm)
 		for i in range(WILD_ROOTS):
 			var a=rng.randf()*TAU;var edge=Vector3(cos(a),0,sin(a))

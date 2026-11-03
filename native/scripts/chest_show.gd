@@ -182,12 +182,13 @@ func _draw():
 # mutations draw a medallion instead (null here).
 static func symbol_texture(item: Dictionary) -> Texture2D:
 	if item.kind=="evolution": return IllustratedIcons.texture(str(item.weapon_id),true)
+	if item.kind=="card" or item.get("relic",false): return null
 	if item.kind=="mutation" or item.kind!="weapon" and not StatGlyphs.resolve(item.id).is_empty(): return null
 	return IllustratedIcons.texture(item.id,item.kind=="weapon")
 
 static func draw_item(canvas: CanvasItem,item: Dictionary,texture: Texture2D,at: Vector2,radius: float,alpha: float=1.0):
 	if texture!=null: canvas.draw_texture_rect(texture,Rect2(at-Vector2(radius,radius)*1.08,Vector2(radius,radius)*2.16),false,Color(1,1,1,alpha))
-	elif item.kind!="mutation": StatGlyphs.draw_medallion(canvas,str(item.id),at,radius)
+	elif item.kind!="mutation": StatGlyphs.draw_medallion(canvas,str(item.stat) if item.kind=="card" else str(item.id),at,radius)
 	else: PowerIcon.draw_mutation(canvas,str(item.id),at,radius)
 
 # The chest opening in the world: a light beam of the best prize's colour rises

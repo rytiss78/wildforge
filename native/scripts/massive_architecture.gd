@@ -17,6 +17,7 @@ static func build(world: RealmWorld):
 		var angle=(float(biome)+.5)*RealmWorld.BIOME_ARC-float(world.seed_value%23)*.03-world.realm*.4
 		var p=Vector3(cos(angle)*248,0,sin(angle)*248)
 		var root=Node3D.new();root.name="GreatHall_"+str(biome);world.add_child(root)
+		var style_biome=RealmWorld.biome_of(world.realm)
 		root.rotation.y=atan2(p.x,p.z)
 		# Foundations reach below all sampled terrain; the open courtyard keeps its natural floor.
 		var top=-1000.0;var bottom=1000.0
@@ -25,7 +26,7 @@ static func build(world: RealmWorld):
 				var q=p+Vector3(x,0,z).rotated(Vector3.UP,root.rotation.y)
 				var h=world.height_at(q.x,q.z);top=maxf(top,h);bottom=minf(bottom,h)
 		p.y=top;root.position=p;world.building_sites.append(root)
-		var stone=STONE[biome];var bronze=Color("a98252");var ink=Color("111c2c");var glow=GLOW[biome].darkened(.32)
+		var stone=STONE[style_biome];var bronze=Color("a98252");var ink=Color("111c2c");var glow=GLOW[style_biome].darkened(.32)
 		var depth=top-bottom+4;var wall_height=19+depth
 		for side in [-1,1]:
 			# Broad inhabited wings, with a 20m-wide open route between them.
@@ -50,7 +51,7 @@ static func build(world: RealmWorld):
 		box(root,bronze,Vector3(0,12.3,-6.4),Vector3(24,.22,.3),false)
 		for side in [-1,1]:
 			box(root,bronze,Vector3(side*10.7,6,16),Vector3(.3,12,.35),false)
-		match biome:
+		match style_biome:
 			0:
 				for side in [-1,1]:
 					var roof=PrismMesh.new();roof.size=Vector3(22,8,39)
