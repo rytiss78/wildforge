@@ -679,21 +679,23 @@
     },
     {
       "id": "flame",
-      "name": "Fire Gun",
+      "name": "Flamethrower",
       "family": "Fire",
       "damage": 0.65,
       "rate": 1.3,
-      "range": 18,
-      "turret": false
+      "range": 8,
+      "turret": false,
+      "description": "A short cone of fire that burns everything in front of you."
     },
     {
       "id": "poison",
-      "name": "Poison Gun",
+      "name": "Poison Flask",
       "family": "Poison",
       "damage": 0.7,
       "rate": 1,
-      "range": 22,
-      "turret": false
+      "range": 20,
+      "turret": false,
+      "description": "Throws flasks that shatter into lingering poison clouds."
     },
     {
       "id": "ice",
@@ -706,21 +708,23 @@
     },
     {
       "id": "rail",
-      "name": "Rail Gun",
+      "name": "Sniper Rail",
       "family": "Shots",
-      "damage": 2.4,
-      "rate": 0.5,
-      "range": 36,
-      "turret": false
+      "damage": 2.6,
+      "rate": 0.45,
+      "range": 40,
+      "turret": false,
+      "description": "An instant shot at the toughest enemy in range, through everything in line."
     },
     {
       "id": "lightning",
-      "name": "Lightning",
+      "name": "Storm Rod",
       "family": "Lightning",
       "damage": 1.1,
       "rate": 0.8,
-      "range": 26,
-      "turret": false
+      "range": 22,
+      "turret": false,
+      "description": "Bolts fall from the sky on random enemies around you and jump on."
     },
     {
       "id": "saw",
@@ -733,21 +737,23 @@
     },
     {
       "id": "rocket",
-      "name": "Rocket",
+      "name": "Homing Rockets",
       "family": "Boom",
-      "damage": 2,
+      "damage": 1.6,
       "rate": 0.55,
       "range": 30,
-      "turret": false
+      "turret": false,
+      "description": "Homing rockets chase their target, find a new one, and explode."
     },
     {
       "id": "ghost",
-      "name": "Ghost Ball",
+      "name": "Blink Ghost",
       "family": "Ghost",
-      "damage": 1.1,
-      "rate": 1,
-      "range": 26,
-      "turret": false
+      "damage": 0.9,
+      "rate": 0.8,
+      "range": 22,
+      "turret": false,
+      "description": "A ghost blinks from enemy to enemy, straight through walls."
     },
     {
       "id": "turret",
@@ -868,12 +874,13 @@
     },
     {
       "id": "bomb",
-      "name": "Rolling Bomb",
+      "name": "Mines",
       "family": "Boom",
       "damage": 2.2,
       "rate": 0.5,
       "range": 25,
-      "turret": false
+      "turret": false,
+      "description": "Drops mines behind you as you go; they arm, then blow up on contact."
     },
     {
       "id": "ninja-shuriken",
@@ -902,7 +909,7 @@
       "family": "Poison",
       "damage": 0.38,
       "rate": 0.9,
-      "range": 22,
+      "range": 20,
       "turret": false,
       "archetype": "poison",
       "modifiers": {
@@ -944,7 +951,7 @@
       "family": "Fire",
       "damage": 0.42,
       "rate": 1.3,
-      "range": 18,
+      "range": 8,
       "turret": false,
       "archetype": "flame",
       "modifiers": {
@@ -997,6 +1004,126 @@
       "range": 12,
       "turret": false,
       "description": "Sends a ring of fire sweeping outward that sets everything alight."
+    },
+    {
+      "id": "halo",
+      "name": "Hex Halo",
+      "family": "Magic",
+      "damage": 1,
+      "rate": 1,
+      "range": 6,
+      "turret": false,
+      "description": "A constant field of damage around you."
+    },
+    {
+      "id": "orbit-lids",
+      "name": "Pot Lids",
+      "family": "Thorns",
+      "damage": 1,
+      "rate": 1,
+      "range": 6,
+      "turret": false,
+      "description": "Pot lids spin around you and knock back whatever they hit."
+    },
+    {
+      "id": "fire-trail",
+      "name": "Hot Soles",
+      "family": "Fire",
+      "damage": 0.9,
+      "rate": 1,
+      "range": 6,
+      "turret": false,
+      "description": "Your footsteps burn: enemies walking your trail catch fire."
+    },
+    {
+      "id": "frost-trail",
+      "name": "Frost Boots",
+      "family": "Ice",
+      "damage": 0.7,
+      "rate": 1,
+      "range": 6,
+      "turret": false,
+      "description": "Icy footprints slow enemies, then freeze them solid."
+    },
+    {
+      "id": "dice",
+      "name": "Lucky Dice",
+      "family": "Magic",
+      "damage": 1.6,
+      "rate": 0.7,
+      "range": 22,
+      "turret": false,
+      "description": "Throws a die: damage times the roll. A six explodes."
+    },
+    {
+      "id": "blood-pump",
+      "name": "Blood Pump",
+      "family": "Magic",
+      "damage": 1.8,
+      "rate": 0.55,
+      "range": 6,
+      "turret": false,
+      "description": "Spends a little of your health on a big blast around you. Kills may raise max health."
+    },
+    {
+      "id": "whip",
+      "name": "Noodle Whip",
+      "family": "Thorns",
+      "damage": 1.3,
+      "rate": 0.8,
+      "range": 9,
+      "turret": false,
+      "description": "A long whip across a wide cone; the tip hits harder and pushes back."
+    },
+    {
+      "id": "snip-knife",
+      "name": "Snip Knife",
+      "family": "Thorns",
+      "damage": 0.7,
+      "rate": 2.2,
+      "range": 3.4,
+      "turret": false,
+      "description": "Very fast short slashes that finish off badly hurt enemies."
+    },
+    {
+      "id": "katana",
+      "name": "Quick Blade",
+      "family": "Thorns",
+      "damage": 1.4,
+      "rate": 1.2,
+      "range": 6,
+      "turret": false,
+      "description": "A long narrow slash with extra critical chance."
+    },
+    {
+      "id": "scythe",
+      "name": "Grim Hook",
+      "family": "Thorns",
+      "damage": 1.2,
+      "rate": 0.75,
+      "range": 4.6,
+      "turret": false,
+      "description": "A sweep almost all the way round you."
+    },
+    {
+      "id": "hero-blade",
+      "name": "Shining Blade",
+      "family": "Thorns",
+      "damage": 1.3,
+      "rate": 0.8,
+      "range": 4.2,
+      "turret": false,
+      "description": "A slash that also throws a flying wave of light."
+    },
+    {
+      "id": "grudge-blade",
+      "name": "Grudge Blade",
+      "family": "Thorns",
+      "damage": 1,
+      "rate": 0.9,
+      "range": 4,
+      "turret": false,
+      "description": "Slashes in front and behind; stronger with every kill this run."
     },
     {
       "id": "popcorn-repeater",
@@ -1083,8 +1210,9 @@
       "family": "Fire",
       "damage": 0.5850000000000001,
       "rate": 1.4300000000000002,
-      "range": 18,
+      "range": 8,
       "turret": false,
+      "description": "Adds poison damage on hit.",
       "archetype": "flame",
       "icon": "venom-candle",
       "art": {
@@ -1093,8 +1221,7 @@
       },
       "modifiers": {
         "payload": "poison"
-      },
-      "description": "Adds poison damage on hit."
+      }
     },
     {
       "id": "steam-iron",
@@ -1102,8 +1229,9 @@
       "family": "Fire",
       "damage": 0.7280000000000001,
       "rate": 1.1440000000000001,
-      "range": 18,
+      "range": 8,
       "turret": false,
+      "description": "Adds a slowing bubble on hit.",
       "archetype": "flame",
       "icon": "steam-iron",
       "art": {
@@ -1112,8 +1240,7 @@
       },
       "modifiers": {
         "payload": "bubble"
-      },
-      "description": "Adds a slowing bubble on hit."
+      }
     },
     {
       "id": "chilli-sprayer",
@@ -1121,8 +1248,9 @@
       "family": "Poison",
       "damage": 0.63,
       "rate": 1.1,
-      "range": 22,
+      "range": 20,
       "turret": false,
+      "description": "Adds burning damage on hit.",
       "archetype": "poison",
       "icon": "chilli-sprayer",
       "art": {
@@ -1131,8 +1259,7 @@
       },
       "modifiers": {
         "payload": "fire"
-      },
-      "description": "Adds burning damage on hit."
+      }
     },
     {
       "id": "wasp-injector",
@@ -1140,8 +1267,9 @@
       "family": "Poison",
       "damage": 0.784,
       "rate": 0.88,
-      "range": 22,
+      "range": 20,
       "turret": false,
+      "description": "Pierces 3 extra targets.",
       "archetype": "poison",
       "icon": "wasp-injector",
       "art": {
@@ -1150,8 +1278,7 @@
       },
       "modifiers": {
         "extraPierce": 3
-      },
-      "description": "Pierces 3 extra targets."
+      }
     },
     {
       "id": "snow-globe",
@@ -1196,10 +1323,11 @@
       "id": "ricochet-ruler",
       "name": "Ricochet Ruler",
       "family": "Shots",
-      "damage": 2.16,
-      "rate": 0.55,
-      "range": 36,
+      "damage": 2.3400000000000003,
+      "rate": 0.49500000000000005,
+      "range": 40,
       "turret": false,
+      "description": "Bounces to 3 extra targets.",
       "archetype": "rail",
       "icon": "ricochet-ruler",
       "art": {
@@ -1208,17 +1336,17 @@
       },
       "modifiers": {
         "extraBounce": 3
-      },
-      "description": "Bounces to 3 extra targets."
+      }
     },
     {
       "id": "knitting-needles",
       "name": "Knitting Needles",
       "family": "Shots",
-      "damage": 2.016,
-      "rate": 0.44,
-      "range": 36,
+      "damage": 2.184,
+      "rate": 0.396,
+      "range": 40,
       "turret": false,
+      "description": "Fires 1 extra projectiles per attack.",
       "archetype": "rail",
       "icon": "knitting-needles",
       "art": {
@@ -1228,8 +1356,7 @@
       "modifiers": {
         "extraShots": 1,
         "spread": 0.04
-      },
-      "description": "Fires 1 extra projectiles per attack."
+      }
     },
     {
       "id": "fork-lightning",
@@ -1237,8 +1364,9 @@
       "family": "Lightning",
       "damage": 0.9900000000000001,
       "rate": 0.8800000000000001,
-      "range": 26,
+      "range": 22,
       "turret": false,
+      "description": "Pierces 4 extra targets.",
       "archetype": "lightning",
       "icon": "fork-lightning",
       "art": {
@@ -1247,8 +1375,7 @@
       },
       "modifiers": {
         "extraPierce": 4
-      },
-      "description": "Pierces 4 extra targets."
+      }
     },
     {
       "id": "tesla-yo-yo",
@@ -1256,8 +1383,9 @@
       "family": "Lightning",
       "damage": 1.2320000000000002,
       "rate": 0.7040000000000001,
-      "range": 26,
+      "range": 22,
       "turret": false,
+      "description": "Projectiles return for another pass.",
       "archetype": "lightning",
       "icon": "tesla-yo-yo",
       "art": {
@@ -1266,8 +1394,7 @@
       },
       "modifiers": {
         "returning": true
-      },
-      "description": "Projectiles return for another pass."
+      }
     },
     {
       "id": "pizza-wheel",
@@ -1312,10 +1439,11 @@
       "id": "bottle-rockets",
       "name": "Bottle Rockets",
       "family": "Boom",
-      "damage": 1.35,
+      "damage": 1.08,
       "rate": 0.6050000000000001,
       "range": 30,
       "turret": false,
+      "description": "Fires 1 extra projectiles per attack.",
       "archetype": "rocket",
       "icon": "bottle-rockets",
       "art": {
@@ -1325,17 +1453,17 @@
       "modifiers": {
         "extraShots": 1,
         "spread": 0.18
-      },
-      "description": "Fires 1 extra projectiles per attack."
+      }
     },
     {
       "id": "cork-launcher",
       "name": "Cork Launcher",
       "family": "Boom",
-      "damage": 2.24,
+      "damage": 1.7920000000000003,
       "rate": 0.48400000000000004,
       "range": 30,
       "turret": false,
+      "description": "Bounces to 2 extra targets.",
       "archetype": "rocket",
       "icon": "cork-launcher",
       "art": {
@@ -1344,17 +1472,17 @@
       },
       "modifiers": {
         "extraBounce": 2
-      },
-      "description": "Bounces to 2 extra targets."
+      }
     },
     {
       "id": "ember-lantern",
       "name": "Ember Lantern",
       "family": "Ghost",
-      "damage": 0.9900000000000001,
-      "rate": 1.1,
-      "range": 26,
+      "damage": 0.81,
+      "rate": 0.8800000000000001,
+      "range": 22,
       "turret": false,
+      "description": "Adds burning damage on hit.",
       "archetype": "ghost",
       "icon": "ember-lantern",
       "art": {
@@ -1363,17 +1491,17 @@
       },
       "modifiers": {
         "payload": "fire"
-      },
-      "description": "Adds burning damage on hit."
+      }
     },
     {
       "id": "winter-lantern",
       "name": "Winter Lantern",
       "family": "Ghost",
-      "damage": 1.2320000000000002,
-      "rate": 0.88,
-      "range": 26,
+      "damage": 1.0080000000000002,
+      "rate": 0.7040000000000001,
+      "range": 22,
       "turret": false,
+      "description": "Adds a brief freeze on hit.",
       "archetype": "ghost",
       "icon": "winter-lantern",
       "art": {
@@ -1382,8 +1510,7 @@
       },
       "modifiers": {
         "payload": "ice"
-      },
-      "description": "Adds a brief freeze on hit."
+      }
     },
     {
       "id": "horseshoe-hook",
@@ -1662,6 +1789,7 @@
       "rate": 0.55,
       "range": 25,
       "turret": false,
+      "description": "Area radius is 1.6× larger. Bomb fuse: 1.8 seconds.",
       "archetype": "bomb",
       "icon": "pumpkin-fuse",
       "art": {
@@ -1671,8 +1799,7 @@
       "modifiers": {
         "fuse": 1.8,
         "areaScale": 1.6
-      },
-      "description": "Area radius is 1.6× larger. Bomb fuse: 1.8 seconds."
+      }
     },
     {
       "id": "marble-mine",
@@ -1682,6 +1809,7 @@
       "rate": 0.44,
       "range": 25,
       "turret": false,
+      "description": "Bomb fuse: 0.35 seconds.",
       "archetype": "bomb",
       "icon": "marble-mine",
       "art": {
@@ -1690,8 +1818,7 @@
       },
       "modifiers": {
         "fuse": 0.35
-      },
-      "description": "Bomb fuse: 0.35 seconds."
+      }
     },
     {
       "id": "staple-sentry",
@@ -5779,8 +5906,8 @@
     },
     {
       "id": "bomb-power-item",
-      "name": "Rolling Bomb Power",
-      "title": "Rolling Bomb Power",
+      "name": "Mines Power",
+      "title": "Mines Power",
       "family": "Arcane",
       "kind": "item",
       "effects": [
@@ -5793,8 +5920,8 @@
     },
     {
       "id": "bomb-power-skill",
-      "name": "Rolling Bomb Mastery",
-      "title": "Rolling Bomb Mastery",
+      "name": "Mines Mastery",
+      "title": "Mines Mastery",
       "family": "Arcane",
       "kind": "skill",
       "effects": [
@@ -14821,7 +14948,7 @@
     "hornPower": "Horn Power",
     "bubblePower": "Bubble Gun Power",
     "meteorPower": "Meteor Gun Power",
-    "bombPower": "Rolling Bomb Power",
+    "bombPower": "Mines Power",
     "tornadoPower": "Twister Totem Power",
     "blackholePower": "Void Orb Power",
     "thunderstormPower": "Storm Crown Power",

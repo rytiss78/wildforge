@@ -457,7 +457,7 @@ func clear_entities():
 	BiomeMechanics.clear(self);DeathFx.clear(self);fight_zoom=1.0;fight_zoom_target=1.0
 	damage_feedback_time=0;last_damage_taken=0
 	eclipse_run_velocity=Vector3.ZERO;pickup_merge_clock=0;enemy_step=0;crowd.clear();damage_numbers.clear()
-	melee_attacks.clear()
+	melee_attacks.clear();WeaponActs.clear()
 	if is_instance_valid(avatar): avatar.finish_melee()
 	for id in sound.weapon_loops: sound.weapon_loop(id,false,player.position)
 	for drop in consumables:
@@ -1358,9 +1358,15 @@ func update_melee(delta: float):
 			if enemy.dead: continue
 			var contact=melee_contact(enemy,swing.origin);var offset=contact-swing.origin
 			if offset.length()>swing.reach or (offset.length()>.6 and offset.normalized().dot(swing.aim)<float(swing.get("sweep_dot",.45))): continue
-			var critical=rules.rng.randf()<stat("crit")
+			var critical=rules.rng.randf()<stat("crit")+float(swing.get("crit",0.0))
 			if critical: career.bump("crits")
-			hit_enemy(enemy,{"kind":"saw","weapon_id":swing.get("weapon_id","saw"),"payload":swing.get("payload",""),"critical":critical,"damage":swing.damage*(stat("critPower") if critical else 1.0)},"melee");hits+=1
+			var tip=float(swing.get("tip",1.0)) if offset.length()>swing.reach*.6 else 1.0
+			hit_enemy(enemy,{"kind":"saw","weapon_id":swing.get("weapon_id","saw"),"payload":swing.get("payload",""),"critical":critical,"damage":swing.damage*tip*(stat("critPower") if critical else 1.0)},"melee");hits+=1
+			if enemy.dead or enemy.boss: continue
+			if swing.has("execute") and enemy.hp<enemy.maxHp*float(swing.execute): hurt_enemy(enemy,enemy.hp+1,"crit",str(swing.get("weapon_id","")))
+			elif swing.has("push"):
+				var away=enemy.node.position-swing.origin;away.y=0
+				enemy.node.move_and_collide(away.normalized()*float(swing.push))
 
 		if hits>0:
 			sound.effect("melee_hit",swing.target);vibrate(.12,.22,.08)
@@ -1448,6 +1454,7 @@ func fire(weapon: Dictionary, origin: Vector3):
 	var kind=ContentExpansion.kind(weapon.id)
 	var mods=weapon.get("modifiers",{})
 	if kind == "flowers": return
+	if WeaponActs.passive(weapon): return  # ticked by WeaponActs every frame
 	if kind=="saw":
 		if not avatar.melee.is_empty(): return
 		var reach=float(weapon.range)*stat("range")/18.0
@@ -1478,6 +1485,7 @@ func fire(weapon: Dictionary, origin: Vector3):
 	if weapon.turret: base_damage*=stat("turretDamage")*TURRET_POWER
 	if weapon.get("evolved",false) and (kind in SkillBook.KINDS or kind in ["horn","gravity","meteor"]): WeaponEvolution.flare(self,enemy_center(target))
 	if SkillBook.cast(self,weapon,kind,origin,target,base_damage): return
+	if WeaponActs.fire(self,weapon,kind,origin,target,base_damage,effective_range): return
 	if kind=="horn":
 		for enemy in enemies:
 			var offset=melee_contact(enemy,origin)-origin
@@ -1488,7 +1496,7 @@ func fire(weapon: Dictionary, origin: Vector3):
 	if kind=="gravity":
 		var radius_value=3.0*stats.gravitySize*float(mods.get("areaScale",1))
 		var well=preload("res://scripts/area_visual.gd").make(self,"gravity",radius_value,target.node.position+Vector3.UP*.12)
-		pools.append({"node":well,"life":3.0*float(mods.get("durationScale",1)),"mechanic":weapon.id,"radius":radius_value,"gravity":true,"damage":base_damage*.65});return
+		pools.append({"node":well,"life":3.0*float(mods.get("durationScale",1))*float(stats.get("duration",1.0)),"mechanic":weapon.id,"radius":radius_value,"gravity":true,"damage":base_damage*.65});return
 	if kind=="meteor":
 		for meteor_index in range(1+int(mods.get("extraMeteors",0))+mini(5,int(stats.meteorCount))):
 			var position_value=target.node.position+Vector3.RIGHT.rotated(Vector3.UP,meteor_index*2.4)*meteor_index*.8
@@ -1528,6 +1536,7 @@ func fire(weapon: Dictionary, origin: Vector3):
 
 func remote_weapon_effect(id: String,origin: Vector3,target: Vector3,duration: float=.44):
 	var source=id
+	if WeaponActs.remote(self,source,origin,target): return
 	id=ContentExpansion.kind(id)
 	if id in SkillBook.KINDS: SkillBook.cast_visual(self,id,origin,target,duration);return
 	if id=="saw":
@@ -1629,7 +1638,7 @@ func record_damage_number(enemy_id: int, damage: float, cause: String,position_v
 	# they touch; these merge into one running total per cause (at the spell's
 	# weapon slot) instead of one number per enemy, which also keeps big burning
 	# crowds cheap.
-	var merged=weapon_id in SkillBook.KINDS or cause in ["fire","poison"]
+	var merged=weapon_id in SkillBook.KINDS or WeaponActs.merged(weapon_id) or cause in ["fire","poison"]
 	for entry in damage_numbers:
 		if entry.life>.8 and not entry.get("leaving",false) and (entry.enemy_id==enemy_id or merged) and entry.cause==cause and entry.get("weapon_id","")==weapon_id:
 			entry.amount+=damage
@@ -2171,6 +2180,7 @@ func update_combat(delta: float):
 	EffectDetail.tick(self,delta)
 	var section_times={"movement":0.0,"visuals":0.0,"steering":0.0} if profile_crowd else {}
 	update_melee(delta)
+	WeaponActs.tick(self,delta)
 	spawn_clock -= delta
 	if spawn_clock <= 0 and (realm<RealmWorld.ARENA or events.get("eclipse",false) and not events.get("final_ceremony",false)):
 		var swarm = events.get("swarm_until",0.0)>realm_time or update.beacon_state=="defending"
@@ -2224,7 +2234,7 @@ func update_combat(delta: float):
 		if weapon.clock<=0:
 			if weapon.turret and TurretPulse.pulses(str(weapon.id)): TurretPulse.fire(self,weapon)
 			else: fire(weapon,origin)
-			weapon.clock = 1.0/(weapon.rate*(stat("turretRate")*TURRET_RATE*WrenchTune.rate(self,weapon) if weapon.turret else stat("rate")))
+			weapon.clock = 1.0/(weapon.rate*(stat("turretRate")*TURRET_RATE*WrenchTune.rate(self,weapon) if weapon.turret else stat("rate")))*(1.0 if weapon.turret else WeaponActs.pace(weapon))
 	for enemy in enemies:
 		if enemy.dead: continue
 		# Stagger large crowds; bosses and contact-range actors retain 30 Hz.
@@ -2477,7 +2487,8 @@ func update_combat(delta: float):
 		if ticking: pool.tick+=.25
 		for enemy in enemies:
 			if not enemy.dead and pool.node.position.distance_to(melee_contact(enemy,pool.node.position))<pool.get("radius",2.5):
-				if ticking: hurt_enemy(enemy,pool.damage*.25,"gravity" if pool.get("gravity",false) else "poison",str(pool.get("mechanic","gravity")) if pool.get("gravity",false) else "",pool.node.position)
+				if ticking: hurt_enemy(enemy,pool.damage*.25,"gravity" if pool.get("gravity",false) else "poison",str(pool.get("mechanic","gravity")) if pool.get("gravity",false) else str(pool.get("mechanic","")),pool.node.position)
+				if ticking and pool.get("toxic",false) and not enemy.dead: set_damage_status(enemy,"poison",9.0+float(stats.poison),coop.local_id);enemy.status_time=maxf(float(enemy.get("status_time",0)),3.0)
 				if pool.get("gravity",false) and not enemy.boss: enemy.node.move_and_collide((pool.node.position-enemy.node.position).normalized()*delta*3)
 	for hazard in hazards:
 		hazard.life-=delta

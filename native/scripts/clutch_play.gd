@@ -57,7 +57,8 @@ static func reset():
 	active_slot=0;lock_until=-1.0;ammo=MAG;reload_left=0.0;stealth_left=STEALTH;stealth_cooldown=0.0;sneaking=false;hit_flash=0.0;head_flash=0.0;headshot_kills=0
 
 # The hand weapons he can switch between (turrets are not held).
-static func held(g) -> Array: return g.equipped.filter(func(w):return not w.get("turret",false))
+# Weapons that work on their own (aura, orbiting lids, trails, mines) are not held.
+static func held(g) -> Array: return g.equipped.filter(func(w):return not w.get("turret",false) and not WeaponActs.passive(w))
 
 static func is_ak(weapon: Dictionary) -> bool: return str(weapon.get("id",""))=="gun"
 static func reloading() -> bool: return reload_left>0

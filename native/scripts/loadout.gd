@@ -54,6 +54,12 @@ const CARDS={
 	"luck":{"name":"Clover","amount":.14,"mode":"add","family":"Fortune"},
 	"goldGain":{"name":"Coin Sense","amount":.3,"mode":"multiply","family":"Economy"},
 	"turretDamage":{"name":"Workshop","amount":.2,"mode":"multiply","family":"Engineering"},
+	# Cards for what we lacked next to Megabonk's tomes (November 3): effects
+	# last longer, shots bounce on, more free chests, interest on saved gold.
+	"duration":{"name":"Long Wick","amount":.15,"mode":"multiply","family":"Arcane"},
+	"ricochet":{"name":"Bouncy","amount":1,"mode":"add","family":"Ballistics"},
+	"keyPower":{"name":"Gambler","amount":.05,"mode":"add","family":"Fortune"},
+	"interest":{"name":"Hoarder","amount":.01,"mode":"add","family":"Economy"},
 	# Two cards that bend the run rather than a stat (big update MB, part 4):
 	# Dare calls more monsters for more experience and gold; Wild Card grows two
 	# different stats every level, picked at random when it is offered.

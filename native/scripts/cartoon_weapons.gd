@@ -8,7 +8,8 @@ class_name CartoonWeapons
 # these models (render_weapon_icons.gd). Every other weapon builds on one of these.
 
 const INK=CartoonMesh.INK
-const ASSETS=["mint_pistol","weapon_shotgun","weapon_flame","weapon_poison","weapon_ice","weapon_rail","weapon_lightning","weapon_saw","weapon_rocket","weapon_ghost","weapon_flowers","weapon_turret","weapon_fire-turret","weapon_pulse-turret","weapon_heal-turret","weapon_lightning-turret","weapon_rocket-turret","weapon_boomerang","weapon_disc","weapon_harpoon","weapon_gravity","weapon_horn","weapon_bubble","weapon_meteor","weapon_bomb","weapon_ninja-shuriken","weapon_smoke-censer","weapon_bottle-barrage","weapon_supra-backfire","spell_tornado","spell_blackhole","spell_thunderstorm","spell_inferno"]
+const ASSETS=["mint_pistol","weapon_shotgun","weapon_flame","weapon_poison","weapon_ice","weapon_rail","weapon_lightning","weapon_saw","weapon_rocket","weapon_ghost","weapon_flowers","weapon_turret","weapon_fire-turret","weapon_pulse-turret","weapon_heal-turret","weapon_lightning-turret","weapon_rocket-turret","weapon_boomerang","weapon_disc","weapon_harpoon","weapon_gravity","weapon_horn","weapon_bubble","weapon_meteor","weapon_bomb","weapon_ninja-shuriken","weapon_smoke-censer","weapon_bottle-barrage","weapon_supra-backfire","spell_tornado","spell_blackhole","spell_thunderstorm","spell_inferno",
+	"weapon_halo","weapon_orbit-lids","weapon_fire-trail","weapon_frost-trail","weapon_dice","weapon_blood-pump","weapon_whip","weapon_snip-knife","weapon_katana","weapon_scythe","weapon_hero-blade","weapon_grudge-blade"]
 
 static func c(hex: String) -> Color: return Color(hex)
 
@@ -85,26 +86,73 @@ static func scene(asset: String) -> Node3D:
 	else:
 		match id:
 			"gun":
-				gadget(m,c("5affd0"),c("7dff6a"),-.5,.055);m.ball(Vector3(0,.08,-.53),Vector3.ONE*.09,c("7dff6a"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
+				# Compact pistol: blocky grip, short barrel, top sight, trigger guard
+				m.ball(Vector3(0,.05,-.05),Vector3(.16,.14,.28),c("5a6a70"))
+				m.rod(Vector3(0,-.08,.05),Vector3(0,-.2,.02),.05,c("3a4550"))
+				m.can(Vector3(0,.08,-.15),Vector3(0,.08,-.52),.045,c("4a5a60"))
+				m.ring(Vector3(0,.08,-.55),.055,.02,c("ffd23f"),Vector3(PI*.5,0,0))
+				m.ball(Vector3(0,.15,-.15),Vector3.ONE*.03,c("7dff6a"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
+				m.rod(Vector3(.06,-.05,.08),Vector3(.06,-.05,.15),.015,c("3a4550"))
+				m.ball(Vector3(0,.14,-.48),Vector3.ONE*.02,c("ff6a6a"))
 			"shotgun":
-				m.rod(Vector3(0,.0,.1),Vector3(0,-.12,.3),.06,c("a86a3a"));m.ball(Vector3(0,.07,-.05),Vector3(.24,.16,.32),hue)
-				for x in [-.045,.045]: m.can(Vector3(x,.09,-.15),Vector3(x,.09,-.5),.045,hue.darkened(.3))
-				m.spike(Vector3(0,.09,-.62),Vector3(0,.09,-.48),.11,c("ffd23f"))
+				# Pump-action shotgun: stock, receiver, pump grip, long barrel
+				m.can(Vector3(0,.08,.1),Vector3(0,.08,-.1),.055,c("6a4a2a"))
+				m.ball(Vector3(0,.1,-.15),Vector3(.18,.16,.22),c("7a5a3a"))
+				m.rod(Vector3(0,0,.05),Vector3(0,0,-.35),.035,c("5a3a1a"))
+				m.ball(Vector3(0,0,-.35),Vector3.ONE*.06,c("4a2a1a"))
+				m.can(Vector3(0,.12,-.2),Vector3(0,.12,-.62),.04,c("6a5a4a"))
+				m.ring(Vector3(0,.12,-.65),.05,.025,c("ffd23f"),Vector3(PI*.5,0,0))
+				m.rod(Vector3(0,.2,-.2),Vector3(0,.2,-.58),.02,c("5a5a5a"))
+				m.ball(Vector3(0,.22,-.58),Vector3.ONE*.025,c("7dff6a"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
 			"flame":
-				gadget(m,hue,c("ff8a2b"),-.48,.06);m.ball(Vector3(0,.28,.05),Vector3(.18,.24,.18),c("ff6a2a"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
-				m.spike(Vector3(0,.08,-.62),Vector3(0,.08,-.48),.1,c("3a3040"))
+				# Flamethrower: fuel tank on back, wide nozzle, gas canister
+				m.ball(Vector3(0,.25,.05),Vector3(.18,.24,.18),c("ff6a2a"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
+				m.ball(Vector3(0,.1,-.05),Vector3(.2,.18,.3),c("7a4a2a"))
+				m.rod(Vector3(0,-.05,.1),Vector3(0,-.18,.08),.05,c("3a4550"))
+				m.can(Vector3(0,.08,-.15),Vector3(0,.08,-.48),.06,c("5a4a3a"))
+				for x in [-.08,.08]: m.can(Vector3(x,.18,.02),Vector3(x,.28,.02),.04,c("6a3a1a"))
+				m.ring(Vector3(0,.08,-.52),.07,.03,c("ffd23f"),Vector3(PI*.5,0,0))
+				m.ball(Vector3(0,.08,-.56),Vector3(.1,.04,.1),c("ff8a2b"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
 			"poison":
-				gadget(m,hue,c("8fff5a"),-.5,.04);m.ball(Vector3(0,.3,.0),Vector3(.18,.22,.18),c("8fff5a"),CartoonMesh.BODY,0.0,Vector2(0,1),true);m.can(Vector3(0,.4,0),Vector3(0,.46,0),.05,c("a86a3a"))
-				m.spike(Vector3(0,.08,-.5),Vector3(0,.08,-.68),.02,c("dff6ff"))
+				# Flask launcher: bottle-shaped body, narrow neck, glass vial on top
+				m.ball(Vector3(0,.1,-.05),Vector3(.18,.2,.28),c("4a6a3a"))
+				m.ball(Vector3(0,.3,.0),Vector3(.18,.22,.18),c("8fff5a"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
+				m.can(Vector3(0,.08,-.15),Vector3(0,.08,-.5),.04,c("3a5a2a"))
+				m.ring(Vector3(0,.08,-.53),.05,.02,c("a8e878"),Vector3(PI*.5,0,0))
+				m.ball(Vector3(.08,.15,.05),Vector3(.05,.08,.05),c("9fe97a"))
+				m.rod(Vector3(0,-.06,.08),Vector3(0,-.18,.06),.045,c("3a4550"))
+				m.ball(Vector3(-.06,.22,.05),Vector3(.04,.06,.04),c("edf4b7"))
 			"ice":
-				gadget(m,hue,c("bff6ff"),-.45,.06)
-				for k in range(3): m.spike(Vector3((k-1)*.05,.08,-.45),Vector3((k-1)*.12,.1+k*.02,-.66),.05,c("bff6ff"))
+				# Ice gun: crystalline barrel, faceted frost head, cold glow
+				m.ball(Vector3(0,.1,-.05),Vector3(.18,.18,.3),c("4a7a9a"))
+				m.can(Vector3(0,.12,-.15),Vector3(0,.12,-.45),.06,c("3a5a7a"))
+				for k in range(3):
+					m.spike(Vector3((k-1)*.06,.12,-.45),Vector3((k-1)*.14,.16+sin(k)*.05,-.64),.04,c("bff6ff"))
+				m.ring(Vector3(0,.12,-.48),.07,.03,c("dff6ff"),Vector3(PI*.5,0,0))
+				m.ball(Vector3(0,.2,-.02),Vector3(.08,.08,.06),c("dff6ff"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
+				m.rod(Vector3(0,-.06,.06),Vector3(0,-.18,.04),.05,c("3a4550"))
+				m.ball(Vector3(0,.12,-.52),Vector3(.06,.03,.06),c("c8f6ff"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
 			"rail":
-				gadget(m,hue,c("7dfffb"),-.7,.045)
-				for k in range(3): m.ring(Vector3(0,.08,-.3-k*.13),.09,.05,c("7dfffb"),Vector3(PI*.5,0,0))
-				muzzle=Vector3(0,.08,-.74)
+				# Railgun: twin parallel rails, large body, scope, energy glow between rails
+				m.ball(Vector3(0,.1,-.05),Vector3(.2,.16,.32),c("4a5a6a"))
+				m.box(Vector3(-.1,.12,-.25),Vector3(.04,.06,.5),c("a5dcea"))
+				m.box(Vector3(.1,.12,-.25),Vector3(.04,.06,.5),c("a5dcea"))
+				m.ball(Vector3(0,.08,-.3),Vector3(.15,.08,.1),c("3a4550"))
+				m.can(Vector3(0,.24,-.1),Vector3(0,.24,-.25),.05,c("3a4550"))
+				m.ball(Vector3(0,.24,-.28),Vector3(.06,.06,.04),c("3a4550"))
+				m.ball(Vector3(0,.12,-.35),Vector3(.08,.04,.2),c("7dfffb"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
+				m.rod(Vector3(0,-.05,.1),Vector3(0,-.18,.08),.05,c("3a4550"))
+				m.ball(Vector3(0,.1,.15),Vector3(.12,.1,.06),c("4a5a6a"))
+				muzzle=Vector3(0,.12,-.74)
 			"lightning":
-				gadget(m,hue,c("c97aff"),-.4,.05);m.ball(Vector3(0,.08,-.48),Vector3.ONE*.14,c("e8c8ff"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
+				# Lightning gun: two prongs, antenna tip, coiled conductors
+				m.ball(Vector3(0,.1,-.05),Vector3(.18,.18,.3),c("5a5a7a"))
+				m.rod(Vector3(0,-.06,.06),Vector3(0,-.18,.04),.05,c("3a4550"))
+				for side in [-1,1]:
+					m.rod(Vector3(side*.13,.2,-.05),Vector3(side*.13,.38,-.05),.035,c("c97aff"))
+					m.ball(Vector3(side*.13,.45,-.05),Vector3(.12,.12,.12),c("a4eaff"))
+				for z in [-.2,-.3,-.4]: m.ring(Vector3(0,.08,z),.08,.03,c("b5d5f2"),Vector3(PI*.5,0,0))
+				m.ball(Vector3(0,.08,-.48),Vector3(.14,.14,.14),c("c97aff"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
 				for k in range(3): m.spike(Vector3(0,.12,-.48),Vector3(cos(k*2.1)*.12,.16+sin(k*2.1)*.1,-.55),.02,c("fff27d"))
 			"saw":
 				m.rod(Vector3(0,-.02,.1),Vector3(0,-.2,.16),.05,c("3a3040"));m.ball(Vector3(0,.07,0),Vector3(.18,.16,.26),hue)
@@ -119,8 +167,13 @@ static func scene(asset: String) -> Node3D:
 				m.eye(Vector3(.1,.22,-.1),.05)
 				muzzle=Vector3(0,.12,-.64)
 			"ghost":
-				gadget(m,hue,c("bfffee"),-.4,.07);m.ball(Vector3(0,.32,.0),Vector3(.24,.28,.22),c("dffff4"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
-				m.eye(Vector3(-.04,.34,-.1),.03);m.eye(Vector3(.05,.34,-.1),.035)
+				# Ghost: translucent floating orb with eyes, wispy tail
+				m.ball(Vector3(0,.2,-.02),Vector3(.28,.32,.28),c("dffff4"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
+				m.ball(Vector3(0,.08,-.05),Vector3(.2,.18,.28),c("bfffee"))
+				m.eye(Vector3(-.06,.24,-.12),.035);m.eye(Vector3(.06,.24,-.12),.04)
+				m.ball(Vector3(0,.38,0),Vector3(.06,.06,.06),c("b48cf2"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
+				m.rod(Vector3(0,-.05,.08),Vector3(0,-.18,.06),.05,c("3a4550"))
+				for k in range(3): m.ball(Vector3(0,.08+k*.02,-.4-k*.04),Vector3(.03,.03,.03),c("c49bff"),CartoonMesh.STALK,.1*k,Vector2(.15,1))
 			"flowers":
 				m.ball(Vector3(0,.1,0),Vector3(.3,.24,.3),c("ff7ad9"));m.rod(Vector3(0,.1,-.12),Vector3(0,.2,-.45),.035,c("ff7ad9"));m.ring(Vector3(0,.25,.12),.08,.03,c("ff7ad9"),Vector3(0,PI*.5,PI*.5))
 				for k in range(5): var a=k*TAU/5;m.ball(Vector3(cos(a)*.06,.32+sin(a)*.06,-.02),Vector3.ONE*.07,c("ffd23f"))
@@ -129,17 +182,33 @@ static func scene(asset: String) -> Node3D:
 				m.rod(Vector3(0,.08,0),Vector3(.22,.08,-.3),.05,hue);m.rod(Vector3(0,.08,0),Vector3(-.22,.08,-.3),.05,hue);m.ball(Vector3(0,.08,0),Vector3.ONE*.12,c("ff3b3b"))
 				muzzle=Vector3(0,.08,-.32)
 			"disc":
-				gadget(m,hue,c("7dfffb"),-.3,.06);m.ball(Vector3(0,.12,-.42),Vector3(.32,.05,.32),c("ff6bd5"));m.ring(Vector3(0,.12,-.42),.16,.03,c("ffffff"))
+				# Disc thrower: launcher with flat disc chamber, spring-loaded
+				m.ball(Vector3(0,.1,-.05),Vector3(.16,.16,.26),c("5a5a7a"))
+				m.can(Vector3(0,.12,-.15),Vector3(0,.12,-.3),.06,c("4a4a6a"))
+				m.ball(Vector3(0,.12,-.42),Vector3(.32,.05,.32),c("ff6bd5"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
+				m.ring(Vector3(0,.12,-.42),.16,.03,c("ffffff"))
+				m.rod(Vector3(0,-.05,.08),Vector3(0,-.18,.06),.05,c("3a4550"))
+				m.ball(Vector3(0,.2,-.02),Vector3(.08,.06,.06),c("b48cf2"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
 				muzzle=Vector3(0,.12,-.58)
 			"harpoon":
-				gadget(m,hue,c("7dfffb"),-.5,.04);m.spike(Vector3(0,.08,-.5),Vector3(0,.08,-.72),.06,c("d8e0ee"))
-				for x in [-.04,.04]: m.spike(Vector3(x,.08,-.56),Vector3(x*2.5,.08,-.5),.02,c("d8e0ee"))
-				m.ring(Vector3(0,.0,.04),.07,.04,c("c9a06a"),Vector3(0,0,PI*.5))
-				muzzle=Vector3(0,.08,-.74)
+				# Harpoon gun: heavy industrial launcher, visible spike, side handle
+				m.ball(Vector3(0,.1,-.08),Vector3(.2,.18,.28),c("5a5a6a"))
+				m.can(Vector3(0,.12,-.2),Vector3(0,.12,-.55),.055,c("4a4a5a"))
+				m.spike(Vector3(0,.12,-.55),Vector3(0,.12,-.85),.04,c("c0c8d0"))
+				m.ball(Vector3(0,.12,-.88),Vector3(.06,.06,.06),c("d0d8e0"))
+				for side in [-1,1]: m.ball(Vector3(side*.05,.1,-.82),Vector3(.04,.03,.04),c("c0c8d0"))
+				m.rod(Vector3(0,-.05,.05),Vector3(0,-.18,.03),.055,c("4a4a5a"))
+				m.ring(Vector3(0,.12,-.35),.07,.025,c("7dfffb"),Vector3(PI*.5,0,0))
+				m.rod(Vector3(.12,0,-.15),Vector3(.15,0,-.3),.02,c("5a5a6a"))
+				muzzle=Vector3(0,.12,-.88)
 			"gravity":
-				gadget(m,hue,c("c97aff"),-.25,.06)
-				m.ball(Vector3(0,.08,-.42),Vector3.ONE*.18,c("6b2bff"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
-				for k in range(3): var a=k*TAU/3;m.spike(Vector3(cos(a)*.06,.08+sin(a)*.06,-.26),Vector3(cos(a)*.14,.08+sin(a)*.14,-.42),.025,c("c0c0c8"))
+				# Gravity well: spherical core with orbiting rings, distortion waves
+				m.ball(Vector3(0,.1,-.05),Vector3(.2,.18,.3),c("4a4a6a"))
+				m.ball(Vector3(0,.08,-.42),Vector3(.18,.18,.18),c("6b2bff"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
+				for k in range(3):
+					var a=k*TAU/3;m.spike(Vector3(cos(a)*.06,.08+sin(a)*.06,-.26),Vector3(cos(a)*.14,.08+sin(a)*.14,-.42),.025,c("c0c0c8"))
+				m.rod(Vector3(0,-.05,.08),Vector3(0,-.18,.06),.05,c("3a4550"))
+				m.ring(Vector3(0,.08,-.15),.15,.03,c("b48cf2"),Vector3(0,0,PI*.3))
 				muzzle=Vector3(0,.08,-.52)
 			"horn":
 				m.rod(Vector3(0,-.02,.1),Vector3(0,-.18,.14),.045,c("3a3040"));m.can(Vector3(0,.08,.05),Vector3(0,.08,-.3),.05,c("ffd23f"))
@@ -150,8 +219,14 @@ static func scene(asset: String) -> Node3D:
 				m.ball(Vector3(0,.25,-.42),Vector3.ONE*.18,c("bff6ff"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
 				muzzle=Vector3(0,.25,-.5)
 			"meteor":
-				gadget(m,hue,c("ff8a2b"),-.3,.07);m.ball(Vector3(0,.1,-.45),Vector3.ONE*.24,c("8a6a5a"));m.spots(Vector3(0,.1,-.45),Vector3.ONE*.12,c("ff8a2b"),5,.06,77,true,false)
-				muzzle=Vector3(0,.1,-.6)
+				# Meteor caller: heavy launcher with crater plates, glowing core
+				m.ball(Vector3(0,.1,-.05),Vector3(.2,.2,.32),c("6a5a4a"))
+				m.ball(Vector3(0,.1,-.45),Vector3(.24,.24,.24),c("8a6a5a"))
+				m.spots(Vector3(0,.1,-.45),Vector3.ONE*.12,c("ff8a2b"),5,.06,77,true,false)
+				m.rod(Vector3(0,-.05,.08),Vector3(0,-.18,.06),.055,c("3a4550"))
+				m.ball(Vector3(0,.2,-.02),Vector3(.08,.06,.06),c("ff6a1c"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
+				m.ring(Vector3(0,.1,-.62),.18,.04,c("ffd23f"),Vector3(PI*.5,0,0))
+				muzzle=Vector3(0,.1,-.7)
 			"bomb":
 				m.ball(Vector3(0,.12,-.15),Vector3.ONE*.32,c("2a2340"));m.can(Vector3(0,.27,-.15),Vector3(0,.33,-.15),.05,c("8a94b0"))
 				m.rod(Vector3(0,.33,-.15),Vector3(.05,.42,-.2),.012,c("c9a06a"));m.ball(Vector3(.06,.44,-.21),Vector3.ONE*.06,c("ffd23f"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
@@ -176,5 +251,65 @@ static func scene(asset: String) -> Node3D:
 				m.spike(Vector3(0,.08,-.5),Vector3(0,.08,-.68),.07,c("ff8a2b"))
 				m.rod(Vector3(0,-.02,.05),Vector3(0,-.18,.1),.045,c("3a3040"))
 				muzzle=Vector3(0,.08,-.7)
+			# The twelve weapons that attack in their own ways (WeaponActs, November 3).
+			"halo":
+				m.rod(Vector3(0,-.15,.05),Vector3(0,.2,-.1),.035,c("6b4a8a"))
+				m.ring(Vector3(0,.36,-.16),.17,.04,c("b48cf2"),Vector3(.5,0,0));m.ring(Vector3(0,.36,-.16),.11,.025,c("e8d8ff"),Vector3(.5,0,0))
+				m.ball(Vector3(0,.36,-.16),Vector3.ONE*.1,c("d8b8ff"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
+				muzzle=Vector3(0,.36,-.2)
+			"orbit-lids":
+				m.rod(Vector3(0,-.15,.05),Vector3(0,.12,-.1),.04,c("3a3040"))
+				for k in range(2): m.ball(Vector3((k-.5)*.18,.2+k*.05,-.2-k*.08),Vector3(.3,.05,.3),c("c9d2dc"));m.ball(Vector3((k-.5)*.18,.24+k*.05,-.2-k*.08),Vector3(.08,.05,.08),c("3a3040"))
+				muzzle=Vector3(0,.25,-.3)
+			"fire-trail","frost-trail":
+				# A chunky boot with a glowing sole.
+				var tone=c("ff8a2b") if id=="fire-trail" else c("9fe9ff")
+				m.ball(Vector3(0,.12,0),Vector3(.24,.34,.26),c("a86a3a") if id=="fire-trail" else c("e8f4ff"))
+				m.ball(Vector3(0,-.04,-.14),Vector3(.26,.18,.44),c("a86a3a") if id=="fire-trail" else c("e8f4ff"))
+				m.ball(Vector3(0,-.14,-.14),Vector3(.28,.06,.46),tone,CartoonMesh.BODY,0.0,Vector2(0,1),true)
+				if id=="fire-trail":
+					for k in range(3): m.spike(Vector3((k-1)*.08,-.1,.02-k*.1),Vector3((k-1)*.1,.06,.12-k*.1),.04,c("ffd56b"))
+				else:
+					for k in range(3): m.spike(Vector3((k-1)*.09,-.14,-.14),Vector3((k-1)*.13,-.3,-.16),.03,c("dff6ff"))
+				muzzle=Vector3(0,-.14,-.36)
+			"dice":
+				m.box(Vector3(0,.12,-.15),Vector3.ONE*.3,c("fff6e6"),CartoonMesh.BODY,Vector3(.4,.5,.2))
+				for q in [Vector3(0,.12,-.31),Vector3(.1,.22,-.27),Vector3(-.1,.02,-.27)]: m.ball(q,Vector3.ONE*.05,c("e8384f"))
+				m.rod(Vector3(0,-.02,.05),Vector3(0,-.18,.1),.04,c("3a3040"))
+				muzzle=Vector3(0,.12,-.32)
+			"blood-pump":
+				m.rod(Vector3(0,-.15,.05),Vector3(0,.05,-.05),.04,c("3a3040"))
+				m.ball(Vector3(0,.18,-.12),Vector3(.28,.3,.26),c("b02a3a"));m.ball(Vector3(-.06,.26,-.22),Vector3.ONE*.08,c("ff8a9a"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
+				for k in range(2): m.can(Vector3((k-.5)*.12,.3,-.08),Vector3((k-.5)*.14,.42,-.04),.04,c("7a1a2a"))
+				m.ring(Vector3(0,.18,-.12),.15,.025,c("ffd23f"),Vector3(PI*.5,0,0))
+				muzzle=Vector3(0,.18,-.28)
+			"whip":
+				m.rod(Vector3(0,-.15,.08),Vector3(0,.05,-.05),.05,c("6b4a8a"))
+				var last=Vector3(0,.05,-.05)
+				for k in range(7):
+					var q=Vector3(sin(k*.9)*.09,.05+k*.03,-.12-k*.09);m.rod(last,q,.04-k*.004,c("c97aff"));last=q
+				m.ball(last,Vector3.ONE*.08,c("ff6bd5"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
+				muzzle=last
+			"snip-knife","katana","hero-blade","grudge-blade":
+				var blade={"snip-knife":c("d8e0ee"),"katana":c("e8f4ff"),"hero-blade":c("fff2b8"),"grudge-blade":c("6a2a3a")}[id]
+				var guard={"snip-knife":c("3a3040"),"katana":c("e8384f"),"hero-blade":c("ffd23f"),"grudge-blade":c("b04060")}[id]
+				var length={"snip-knife":.32,"katana":.7,"hero-blade":.6,"grudge-blade":.62}[id]
+				m.rod(Vector3(0,-.16,.08),Vector3(0,.02,-.02),.035,c("3a3040"))
+				m.box(Vector3(0,.04,-.04),Vector3(.2 if id!="katana" else .1,.05,.06),guard)
+				m.box(Vector3(0,.05,-.06-length*.5),Vector3(.035,.1 if id!="katana" else .06,length),blade,CartoonMesh.BODY)
+				m.spike(Vector3(0,.05,-.06-length),Vector3(0,.05,-.14-length),.045,blade)
+				if id=="hero-blade": m.ball(Vector3(0,.05,-.04),Vector3.ONE*.07,c("7dfffb"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
+				if id=="grudge-blade":
+					for k in range(3): m.spike(Vector3(0,.09,-.16-k*.16),Vector3(0,.18,-.2-k*.16),.025,c("b04060"))
+					m.ball(Vector3(0,.05,-.04),Vector3.ONE*.07,c("ff3b6b"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
+				muzzle=Vector3(0,.05,-.14-length)
+			"scythe":
+				m.rod(Vector3(0,-.25,.12),Vector3(0,.35,-.15),.035,c("6b4a3a"))
+				var tip=Vector3(0,.35,-.15)
+				for k in range(6):
+					var a=k*.28;var q=tip+Vector3(0,-sin(a)*.12,-cos(a)*.0)+Vector3(0,-.02*k,-.08*k)
+					m.box(q,Vector3(.03,.08-.008*k,.1),c("c8d4dc"))
+				m.ball(tip,Vector3.ONE*.06,c("9fe0c0"),CartoonMesh.BODY,0.0,Vector2(0,1),true)
+				muzzle=tip+Vector3(0,-.12,-.45)
 	s.muzzle(muzzle)
 	return s.finish()

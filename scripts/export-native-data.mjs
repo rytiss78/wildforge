@@ -21,7 +21,7 @@ add('gold-glove','Gold','goldGain',.3,'multiply');add('cheap-chest','Sale','disc
 
 const weapons=[
 
- ['flowers','Flowers','Garden',1,1,18],['gun','Gun','Shots',1,1,24],['shotgun','Shotgun','Shots',.6,.65,17],['flame','Fire Gun','Fire',.65,1.3,18],['poison','Poison Gun','Poison',.7,1,22],['ice','Ice Gun','Ice',.7,1,24],['rail','Rail Gun','Shots',2.4,.5,36],['lightning','Lightning','Lightning',1.1,.8,26],['saw','Saw','Thorns',1.6,1,8],['rocket','Rocket','Boom',2,.55,30],['ghost','Ghost Ball','Ghost',1.1,1,26],['turret','Turret','Engineering',1,1.5,25],['fire-turret','Fire Turret','Fire',.8,1.4,18],['pulse-turret','Thumper Turret','Engineering',.5,.4,6],['heal-turret','Mender Turret','Recovery',0,.55,7],['lightning-turret','Storm Turret','Electric',1.2,.9,26],['rocket-turret','Rocket Turret','Explosives',2.3,.5,30]
+ ['flowers','Flowers','Garden',1,1,18],['gun','Gun','Shots',1,1,24],['shotgun','Shotgun','Shots',.6,.65,17],['flame','Flamethrower','Fire',.65,1.3,8],['poison','Poison Flask','Poison',.7,1,20],['ice','Ice Gun','Ice',.7,1,24],['rail','Sniper Rail','Shots',2.6,.45,40],['lightning','Storm Rod','Lightning',1.1,.8,22],['saw','Saw','Thorns',1.6,1,8],['rocket','Homing Rockets','Boom',1.6,.55,30],['ghost','Blink Ghost','Ghost',.9,.8,22],['turret','Turret','Engineering',1,1.5,25],['fire-turret','Fire Turret','Fire',.8,1.4,18],['pulse-turret','Thumper Turret','Engineering',.5,.4,6],['heal-turret','Mender Turret','Recovery',0,.55,7],['lightning-turret','Storm Turret','Electric',1.2,.9,26],['rocket-turret','Rocket Turret','Explosives',2.3,.5,30]
 
 ].map(([id,name,family,damage,rate,range])=>({id,name,family,damage,rate,range,turret:id.includes('turret')}));
 
@@ -30,7 +30,7 @@ weapons.push(...[
  ['boomerang','Boomerang','Shots',1.1,.7,25],['disc','Disc','Shots',.8,.8,28],
  ['harpoon','Harpoon','Shots',1.8,.6,30],['gravity','Gravity Jar','Ghost',.7,.65,25],
  ['horn','Horn','Magic',1.1,.8,14],['bubble','Bubble Gun','Ice',.85,.8,24],
- ['meteor','Meteor Gun','Fire',2.5,.45,32],['bomb','Rolling Bomb','Boom',2.2,.5,25]
+ ['meteor','Meteor Gun','Fire',2.5,.45,32],['bomb','Mines','Boom',2.2,.5,25]
 ].map(([id,name,family,damage,rate,range])=>({id,name,family,damage,rate,range,turret:false})));
 const models={wrench:'pipe_wrench',duck:'rubber_duck_toy',broccoli:'sweet_potato',grandma:'marble_bust_01',goblin:'street_rat',loaf:'hamburger_buns'};
 
@@ -106,6 +106,33 @@ weapons.push(...[
  ['blackhole','Void Orb','Ghost',1,.4,26,'Opens a black hole that pulls a crowd together, then collapses in a blast.'],
  ['thunderstorm','Storm Crown','Lightning',1.2,.45,26,'Calls a volley of sky lightning down on every nearby enemy.'],
  ['inferno','Inferno Halo','Fire',1.6,.5,12,'Sends a ring of fire sweeping outward that sets everything alight.']
+].map(([id,name,family,damage,rate,range,description])=>({id,name,family,damage,rate,range,turret:false,description})));
+// Each weapon attacks in its own way (native/scripts/weapon_acts.gd; user,
+// November 3, after looking at Megabonk's weapons). What the reworked ones do:
+const actions={
+ flame:'A short cone of fire that burns everything in front of you.',
+ poison:'Throws flasks that shatter into lingering poison clouds.',
+ lightning:'Bolts fall from the sky on random enemies around you and jump on.',
+ rocket:'Homing rockets chase their target, find a new one, and explode.',
+ bomb:'Drops mines behind you as you go; they arm, then blow up on contact.',
+ ghost:'A ghost blinks from enemy to enemy, straight through walls.',
+ rail:'An instant shot at the toughest enemy in range, through everything in line.'
+};
+for(const w of weapons) if(actions[w.id]) w.description=actions[w.id];
+// Twelve weapons that attack in ways we had none of (same file).
+weapons.push(...[
+ ['halo','Hex Halo','Magic',1,1,6,'A constant field of damage around you.'],
+ ['orbit-lids','Pot Lids','Thorns',1,1,6,'Pot lids spin around you and knock back whatever they hit.'],
+ ['fire-trail','Hot Soles','Fire',.9,1,6,'Your footsteps burn: enemies walking your trail catch fire.'],
+ ['frost-trail','Frost Boots','Ice',.7,1,6,'Icy footprints slow enemies, then freeze them solid.'],
+ ['dice','Lucky Dice','Magic',1.6,.7,22,'Throws a die: damage times the roll. A six explodes.'],
+ ['blood-pump','Blood Pump','Magic',1.8,.55,6,'Spends a little of your health on a big blast around you. Kills may raise max health.'],
+ ['whip','Noodle Whip','Thorns',1.3,.8,9,'A long whip across a wide cone; the tip hits harder and pushes back.'],
+ ['snip-knife','Snip Knife','Thorns',.7,2.2,3.4,'Very fast short slashes that finish off badly hurt enemies.'],
+ ['katana','Quick Blade','Thorns',1.4,1.2,6,'A long narrow slash with extra critical chance.'],
+ ['scythe','Grim Hook','Thorns',1.2,.75,4.6,'A sweep almost all the way round you.'],
+ ['hero-blade','Shining Blade','Thorns',1.3,.8,4.2,'A slash that also throws a flying wave of light.'],
+ ['grudge-blade','Grudge Blade','Thorns',1,.9,4,'Slashes in front and behind; stronger with every kill this run.']
 ].map(([id,name,family,damage,rate,range,description])=>({id,name,family,damage,rate,range,turret:false,description})));
 // Physical profiles are shared by local collision, remote visuals and selection descriptions.
 const physiques={
