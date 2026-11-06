@@ -2,7 +2,7 @@
 
 Build 32 is a Windows alpha. `build-info.json` beside the executable records the exact source commit and artifact hashes. **Every player in a party needs Build 32**: co-op refuses any other download (network protocol `wildforge-shared-world-25`). The main menu shows the build ID (bottom right) to compare.
 
-**Install:** extract the whole ZIP into a folder and run `Wildforge.exe`. Keep `Wildforge.pck` and `godot_wry.dll` beside it. Archive `Wildforge-1.15.0-Windows.zip`, SHA-256 `ARCHIVE_SHA256`, source commit `SOURCE_COMMIT`.
+**Install:** extract the whole ZIP into a folder and run `Wildforge.exe`. Keep `Wildforge.pck` and `godot_wry.dll` beside it. Archive `Wildforge-1.15.0-Windows.zip`, SHA-256 `edfb9319e6930f1b1207f6f479cad3bcbeda1f0b12681a47efab112608222c82`, source commit `b9b3b70`.
 
 ## A new run structure
 
