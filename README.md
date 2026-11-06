@@ -4,19 +4,23 @@
 
 A cartoon survival roguelite where a duck, a white sports car and a pickle are perfectly reasonable heroes. Drop onto floating islands full of weird creatures, grab unpredictable upgrades and become outrageously overpowered before the monsters catch you. Solo or with up to three friends.
 
-**[Download Build 31 for Windows](https://github.com/rytiss78/wildforge/releases/tag/build-31)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
+**[Download Build 32 for Windows](https://github.com/rytiss78/wildforge/releases/tag/build-32)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
 
 ![A cartoon fight on the first island](docs/screenshots/build27/fight.jpg)
 
-## New in Build 31
+## New in Build 32
 
-- **The rope (C / L3):** lasso a monster, drag it and toss it; tug a friend along; drag a downed friend. Just for fun, no damage.
-- **Revive from underneath:** under the island, pull a downed friend's body down through the rock and rescue them where nothing can hit you.
-- **Glowing roots** hang under every island for everyone to see; Digby Mole eats them to heal.
-- **Slot-machine chests and card rolls:** the rarer the prize, the bigger the light, sound and show. Reroll is green, Banish red.
-- Co-op fixes: a friend's new hero shows in the next run, Block Drop and videos after a Clutch run, spectating as a downed Clutch.
+- **A new run:** four weapon slots, four stat cards you level up, and chest items with no limit. Each hero's perk grows every level.
+- **Seven maps in a row**, one biome each, then the Red Moon. Climb mesas for chests; three maps are terraced stages with cliffs and ramps.
+- **85 weapons that attack differently**, twelve of them new (Halo, Fire and Frost Trails, Dice, Whip, Katana, Scythe and more). Every weapon evolves.
+- **Clutch** carries an automatic AK-47 with magazine and reload.
+- **Achievements:** felling the Grand Noggin finally counts as a win; the six hardest give big mustaches.
 
-[Full Build 31 notes](native/docs/build31-release.md)
+[Full Build 32 notes](native/docs/build32-release.md)
+
+## Build 31
+
+- **The rope**, reviving from under the island, glowing roots, slot-machine chests and co-op fixes. [Notes](https://github.com/rytiss78/wildforge/releases/tag/build-31)
 
 ## Build 29
 
@@ -98,10 +102,10 @@ For Windows packaging, place the console editor at `tools/godot/Godot_v4.7.2-sta
 ```powershell
 node scripts/agent-workflow.mjs build
 node scripts/agent-workflow.mjs test-build
-./scripts/package-release.ps1 -BuildNumber 31 -BuildDirectory <staged build directory>
+./scripts/package-release.ps1 -BuildNumber 32 -BuildDirectory <staged build directory>
 ```
 
-Published downloads use sequential build numbers. The current release is `Wildforge 1.14.0 — Build 31`, tag `build-31`, archive `Wildforge-1.14.0-Windows.zip` (with `godot_wry.dll` and its license, needed beside the executable for the video panel). Each package includes `build-info.json` with the source commit and artifact hashes, and a SHA-256 checksum file.
+Published downloads use sequential build numbers. The current release is `Wildforge 1.15.0 — Build 32`, tag `build-32`, archive `Wildforge-1.15.0-Windows.zip` (with `godot_wry.dll` and its license, needed beside the executable for the video panel). Each package includes `build-info.json` with the source commit and artifact hashes, and a SHA-256 checksum file.
 
 **Controls:** WASD / left stick moves; mouse / right stick looks; Space / A jumps; Shift / RT dashes; V / LT hero trick; C / L3 rope; Ctrl / B slams; E / X interacts; B / Y opens your build; Escape / Menu pauses. Weapons attack automatically. Walk over an island's edge to go underneath.
 

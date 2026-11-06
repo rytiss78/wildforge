@@ -12,6 +12,6 @@ node scripts/agent-workflow.mjs smoke
 
 Run each command to completion and inspect its `result.json` and logs before proceeding. Then choose the feature-specific review from the workflow guide; do not run the full suite blindly for every edit.
 
-Current state, priorities and known gaps are in [PLAN.md](PLAN.md). The latest published release is Build 31 ([notes](native/docs/build31-release.md)). `Play-Wildforge.cmd` opens the most recent local build made by the workflow. Older plans, build notes and review reports are in git history and on the GitHub releases page.
+Current state, priorities and known gaps are in [PLAN.md](PLAN.md). The latest published release is Build 32 ([notes](native/docs/build32-release.md)). `Play-Wildforge.cmd` opens the most recent local build made by the workflow. Older plans, build notes and review reports are in git history and on the GitHub releases page.
 
 If your agent does not automatically load repository instructions, explicitly read `AGENTS.md` at the beginning of the session. This file is a navigation aid; the shared rules live in `AGENTS.md`.
