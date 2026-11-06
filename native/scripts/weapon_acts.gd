@@ -197,79 +197,85 @@ static func sniper(g,weapon: Dictionary,origin: Vector3,damage: float,reach: flo
 		if t<0: continue
 		if (origin+aim*t).distance_to(c)<float(enemy.get("radius",.6))+.5*sqrt(size(g)): strike(g,enemy,weapon,"rail",damage)
 
+# One flying shot with the rules every projectile has in game.fire: crit and
+# berserk, cards that bounce shots on (ricochet) or bring them back (boomerang),
+# the weapon's payload, pierce, bounce and shot size modifiers (themed variants
+# and evolved forms set these), the evolved gilding and the flying trail.
+static func shot(g,weapon: Dictionary,kind: String,node: Node3D,origin: Vector3,velocity: Vector3,damage: float,reach: float,radius: float,pierce_bonus: int=0) -> Dictionary:
+	var m=mods(weapon)
+	var critical=g.rules.rng.randf()<g.stat("crit")
+	if critical: g.career.bump("crits")
+	var rage=1+float(g.stats.berserk)*(1-g.hp/g.stats.maxHp)
+	var grow=minf(2.5,g.stat("size"))*float(m.get("shotScale",1))
+	for part in [node]+node.get_children():
+		if part is GeometryInstance3D: part.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	g.add_child(node);node.position=origin;node.scale*=grow
+	node.look_at(origin+velocity)
+	var entry={"node":node,"velocity":velocity,"damage":damage*rage*(g.stat("critPower") if critical else 1.0),"critical":critical,"life":reach/g.stat("projectileSpeed")+.25,"kind":kind,"weapon_id":str(weapon.id),"payload":m.get("payload",""),"area_scale":m.get("areaScale",1),"hit":[],"hit_radius":radius*grow,"pierce":int(g.stats.pierce)+int(m.get("extraPierce",0))+pierce_bonus,"bounce":int(g.stats.ricochet)+int(m.get("extraBounce",0)),"return":g.stats.boomerang>0 or m.get("returning",false),"return_clock":.55,"evolved":weapon.get("evolved",false)}
+	g.projectiles.append(entry)
+	ShotFx.launch(entry,kind,critical)
+	return entry
+
+# Shots per trigger pull: the weapon's own extra shots plus Multishot cards.
+static func volley(g,weapon: Dictionary,base_count: int,cap: int) -> int:
+	return base_count+int(mods(weapon).get("extraShots",0))+mini(cap,int(g.stats.multishot))
+
 static func bullet_stream(g,weapon: Dictionary,origin: Vector3,target: Dictionary,damage: float,reach: float):
-	# Gun: single piercing bullet that hits ALL enemies along its path
+	# Gun: fast brass bullets straight at the target, piercing with Pierce cards
 	var aim=(g.enemy_center(target)-origin).normalized()
-	var node=MeshInstance3D.new()
-	node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var n=volley(g,weapon,1,7);var fan=float(mods(weapon).get("spread",.12))
+	var paint=StandardMaterial3D.new()
+	paint.albedo_color=Color("e8c88a");paint.metallic=0.5;paint.roughness=0.4
 	var mesh=CylinderMesh.new()
 	mesh.top_radius=0.035;mesh.bottom_radius=0.035;mesh.height=0.18
 	mesh.radial_segments=6;mesh.rings=2
-	node.mesh=mesh
-	var mat=StandardMaterial3D.new()
-	mat.albedo_color=Color("e8c88a")
-	mat.metallic=0.5;mat.roughness=0.4
-	node.material_override=mat
-	node.position=origin
-	var pierce=int(g.stats.pierce)+int(mods(weapon).get("extraPierce",0))
-	g.projectiles.append({"node":node,"velocity":aim*g.stat("projectileSpeed"),"damage":damage,"critical":false,"life":reach/g.stat("projectileSpeed")+0.25,"kind":"gun","weapon_id":weapon.id,"payload":mods(weapon).get("payload",""),"area_scale":1.0,"hit":[],"hit_radius":0.08*minf(2.5,g.stat("size")),"pierce":pierce,"bounce":0,"return":false,"return_clock":0.55})
-	node.scale=Vector3.ONE*1.2*g.stat("size")
-	node.look_at(origin+aim)
+	for i in range(n):
+		var node=MeshInstance3D.new();node.mesh=mesh;node.material_override=paint
+		node.scale=Vector3.ONE*1.2
+		var dir=aim.rotated(Vector3.UP,(i-(n-1)*.5)*fan)
+		shot(g,weapon,"gun",node,origin,dir*g.stat("projectileSpeed"),damage,reach,.08)
+		node.rotate_object_local(Vector3.RIGHT,-PI/2)  # the cylinder lies along the flight line
 	ShotFx.muzzle(g,origin,aim,"gun")
 
 static func shotgun_shot(g,weapon: Dictionary,origin: Vector3,target: Dictionary,damage: float,reach: float):
-	# Shotgun: multiple pellets with spread, each hits one enemy
-	var aim=g.enemy_center(target)-origin;aim.y=0;aim=aim.normalized()
-	var count=3+mini(4,int(g.stats.multishot))+int(mods(weapon).get("extraShots",0))
-	var color=PowerIcon.color_for("gun")
-	for i in range(count):
-		var spread=(i-(count-1)*0.5)*0.18
-		var vel=aim.rotated(Vector3.UP,spread)*g.stat("projectileSpeed")
-		var node=MeshInstance3D.new()
-		node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
-		var mesh=SphereMesh.new()
-		mesh.radius=0.06
-		node.mesh=mesh
-		var mat=StandardMaterial3D.new()
-		mat.albedo_color=color
-		mat.metallic=0.3;mat.roughness=0.6
-		node.material_override=mat
-		node.position=origin
-		g.projectiles.append({"node":node,"velocity":vel,"damage":damage*0.6,"critical":false,"life":reach/g.stat("projectileSpeed")+0.25,"kind":"shotgun","weapon_id":weapon.id,"payload":"","area_scale":1.0,"hit":[],"hit_radius":0.12,"pierce":0,"bounce":0,"return":false,"return_clock":0.55})
+	# Shotgun: a fan of pellets, each a little weaker and stopped by the first
+	# enemy. Aimed at the target's centre, not level: a level spread from the
+	# raised muzzle sailed over short monsters.
+	var aim=(g.enemy_center(target)-origin).normalized()
+	var n=volley(g,weapon,3,4);var fan=float(mods(weapon).get("spread",.18))
+	var paint=StandardMaterial3D.new()
+	paint.albedo_color=PowerIcon.color_for("gun");paint.metallic=0.3;paint.roughness=0.6
+	var mesh=SphereMesh.new();mesh.radius=0.06;mesh.height=0.12
+	for i in range(n):
+		var node=MeshInstance3D.new();node.mesh=mesh;node.material_override=paint
 		node.scale=Vector3.ONE*0.9
-		node.look_at(origin+vel)
+		var dir=aim.rotated(Vector3.UP,(i-(n-1)*.5)*fan)
+		shot(g,weapon,"shotgun",node,origin,dir*g.stat("projectileSpeed"),damage*0.6,reach,.12)
 	ShotFx.muzzle(g,origin,aim,"shotgun")
 
 static func harpoon_shot(g,weapon: Dictionary,origin: Vector3,target: Dictionary,damage: float,reach: float):
-	# Harpoon: long fast piercing projectile
+	# Harpoon: a long, fast spear that runs through five more enemies
 	var aim=(g.enemy_center(target)-origin).normalized()
-	var node=MeshInstance3D.new()
-	node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var n=volley(g,weapon,1,7);var fan=float(mods(weapon).get("spread",.12))
 	var shaft=CylinderMesh.new()
 	shaft.top_radius=0.025;shaft.bottom_radius=0.025;shaft.height=0.5
 	shaft.radial_segments=6;shaft.rings=2
-	var shaft_node=MeshInstance3D.new()
-	shaft_node.mesh=shaft
+	var head=CylinderMesh.new()
+	head.top_radius=0.0;head.bottom_radius=0.06;head.height=0.15
 	var mat1=StandardMaterial3D.new()
-	mat1.albedo_color=Color("a0b0c0")
-	mat1.metallic=0.6;mat1.roughness=0.3
-	shaft_node.material_override=mat1
-	node.add_child(shaft_node)
-	var head=ConeMesh.new()
-	head.radius=0.06;head.height=0.15
-	var head_node=MeshInstance3D.new()
-	head_node.mesh=head
+	mat1.albedo_color=Color("a0b0c0");mat1.metallic=0.6;mat1.roughness=0.3
 	var mat2=StandardMaterial3D.new()
-	mat2.albedo_color=Color("c0c8d0")
-	mat2.metallic=0.7;mat2.roughness=0.2
-	head_node.material_override=mat2
-	head_node.position.y=0.32
-	node.add_child(head_node)
-	node.position=origin
-	var pierce=int(g.stats.pierce)+int(mods(weapon).get("extraPierce",0))+5
-	g.projectiles.append({"node":node,"velocity":aim*g.stat("projectileSpeed")*1.3,"damage":damage,"critical":false,"life":reach/g.stat("projectileSpeed")+0.25,"kind":"harpoon","weapon_id":weapon.id,"payload":"","area_scale":1.0,"hit":[],"hit_radius":0.15,"pierce":pierce,"bounce":0,"return":false,"return_clock":0.55})
-	node.scale=Vector3.ONE*2.5
-	node.look_at(origin+aim)
+	mat2.albedo_color=Color("c0c8d0");mat2.metallic=0.7;mat2.roughness=0.2
+	for i in range(n):
+		var node=Node3D.new()
+		# Shaft and head lie along -Z, the way look_at points the spear.
+		var shaft_node=MeshInstance3D.new();shaft_node.mesh=shaft;shaft_node.material_override=mat1
+		shaft_node.rotation.x=-PI/2;node.add_child(shaft_node)
+		var head_node=MeshInstance3D.new();head_node.mesh=head;head_node.material_override=mat2
+		head_node.rotation.x=-PI/2;head_node.position=Vector3(0,0,-0.32);node.add_child(head_node)
+		node.scale=Vector3.ONE*2.5
+		var dir=aim.rotated(Vector3.UP,(i-(n-1)*.5)*fan)
+		shot(g,weapon,"harpoon",node,origin,dir*g.stat("projectileSpeed")*1.3,damage,reach,.15,5)
 	ShotFx.muzzle(g,origin,aim,"harpoon")
 
 static func blood_pulse(g,weapon: Dictionary,damage: float):

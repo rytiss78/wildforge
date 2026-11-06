@@ -24,23 +24,33 @@ static func ring(g) -> Array:
 		var enemy=g.enemies[-1]
 		var p=g.player.position+Vector3.FORWARD.rotated(Vector3.UP,TAU*i/8.0)*(2.2+float(i%3)*1.6);p.y=g.world.height_at(p.x,p.z)
 		enemy.node.position=p;enemy.speed=0.0;enemy.attack=1e9;enemy.contact=1e9;enemy.damage=0.0;enemy.hp=1e7;enemy.maxHp=1e7;enemy.behavior="chase";enemy.home=p;enemy.boss=false
+		# One body size for every dummy. spawn_enemy picks a species by its own rolls
+		# (and spawn-spot retries), which differed from one measurement to the next:
+		# a weapon then met smaller or bigger dummies (another nearest target, more or
+		# fewer in a flame cone) and its rank 1/rank 5 comparison flipped at random.
+		enemy.radius=.7;enemy.height=1.7
 		dummies.append(enemy)
 	return dummies
 
-static func measure(g,weapon_id: String,rank: int) -> Dictionary:
+# extra: stat values set on top of the base stats (cards and chest items, see
+# weapon_combo_review.gd); seconds: how long the dummies stand.
+static func measure(g,weapon_id: String,rank: int,extra: Dictionary={},seconds: float=SECONDS) -> Dictionary:
 	var dummies=ring(g)
 	for weapon in g.equipped:
 		if is_instance_valid(weapon.get("node")): weapon.node.queue_free()
 	g.equipped.clear();g.skills.clear();g.damage_numbers.clear()
-	g.stats=g.rules.data.stats.duplicate(true);g.stats.maxHp=1e6;g.hp=1e6
+	g.stats=g.rules.data.stats.duplicate(true);g.stats.merge(extra,true);g.stats.maxHp=1e6;g.hp=1e6
 	var item=g.rules.data.weapons.filter(func(w):return w.id==weapon_id)[0].duplicate(true);item.kind="weapon";item.strength=1.0
 	for i in range(rank): g.equip_weapon(item)
 	# Flowers grow along the hero's path; the hero stands still here, so plant a bed
 	# under the dummies instead.
 	if weapon_id=="flowers":
 		for enemy in dummies: g.plant_flower(enemy.home,g.equipped[0])
+	# Trails are laid where the hero walks: standing still they only cover the
+	# ground under the hero, out of the dummies' reach. Walk a circle through the ring.
+	var walker=ContentExpansion.kind(weapon_id) in ["fire-trail","frost-trail"];var home: Vector3=g.player.position
 	var shown=0.0;var t=0.0
-	while t<SECONDS:
+	while t<seconds:
 		t+=1.0/60.0;g.elapsed+=1.0/60.0;g.realm_time=0.0
 		# Only the dummies: wardens spawn as game time passes, and bosses win
 		# targeting outright, which would pull long-range weapons off the ring.
@@ -49,12 +59,16 @@ static func measure(g,weapon_id: String,rank: int) -> Dictionary:
 		# Dummies stand still: knockback and gravity pulls would otherwise push them
 		# out of range for good, since they never walk back.
 		for enemy in dummies: enemy.node.position=enemy.home
+		if walker:
+			var w: Vector3=home+Vector3(cos(t*1.1),0,sin(t*1.1))*3.8
+			w.y=home.y-g.world.height_at(home.x,home.z)+g.world.height_at(w.x,w.z);g.player.position=w
 		g.update_combat(1.0/60.0)
 		for entry in g.damage_numbers:
 			if str(entry.get("weapon_id",""))==weapon_id: shown=maxf(shown,float(entry.amount))
+	g.player.position=home
 	var dealt=0.0
 	for enemy in dummies: dealt+=1e7-enemy.hp
-	return {"dealt":snappedf(dealt,.1),"shown":snappedf(shown,.1)}
+	return {"dealt":snappedf(dealt,.1),"shown":snappedf(shown,.1),"dummies":dummies.size()}
 
 static func measure_heal(g,rank: int) -> float:
 	for weapon in g.equipped:
@@ -81,6 +95,8 @@ static func run(g: Node3D):
 			rows[weapon.id]={"r1":{"healed":healed1},"r5":{"healed":healed5}}
 			if healed1<=0 or healed5<=healed1*1.1: flagged.append({"id":weapon.id,"reasons":["healing does not grow with rank"],"r1":healed1,"r5":healed5})
 			continue
+		# Let queued frees happen (see weapon_combo_review.gd).
+		await g.get_tree().process_frame
 		var low=measure(g,weapon.id,1);var high=measure(g,weapon.id,5)
 		# Area weapons vary run to run (where the well lands, how many dummies it
 		# catches): a weak result is measured again and both samples are summed.
@@ -107,7 +123,9 @@ static func run(g: Node3D):
 		g.start_run(run_seed);g.set_process(false);g.set_physics_process(false);g.mode="playing";g.level_choice_cooldown=0
 		g.xp=g.xp_target;g.level_up()
 		for item in g.offers:
-			if item.kind=="weapon": early[item.id]=int(early.get(item.id,0))+1;early_cards+=1
+			# New weapons only: a rank for the weapon the hero already carries is in
+			# most level-2 offers by design (one per carried weapon in the pool).
+			if item.kind=="weapon" and not g.equipped.any(func(w):return w.id==item.id): early[item.id]=int(early.get(item.id,0))+1;early_cards+=1
 	var early_top=early.keys().map(func(id):return [early[id],id]);early_top.sort();early_top.reverse()
 	# Weapons from recent runs never show in the first offer while others remain.
 	var recent=["marble-rain","pumpkin-fuse","button-barrage","teacup-singularity","shotgun","ninja-shuriken","bomb","flame"]

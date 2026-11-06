@@ -37,6 +37,19 @@ const FORMS={
 	"blackhole":{"name":"Singularity","adjective":"Ascended","catalyst":"size","catalyst_text":"Size","power":1.96,"mods":{},"text":"The vortex hits 40% harder"},
 	"thunderstorm":{"name":"Tempest Crown","adjective":"Ascended","catalyst":"size","catalyst_text":"Size","power":1.96,"mods":{},"text":"Sky lightning hits 40% harder"},
 	"inferno":{"name":"Sun Halo","adjective":"Ascended","catalyst":"size","catalyst_text":"Size","power":1.96,"mods":{},"text":"The fire ring hits 40% harder"},
+	# The twelve attack patterns of November 5 (weapon_acts.gd).
+	"halo":{"name":"Radiant Crown","adjective":"Radiant","catalyst":"size","catalyst_text":"Size","power":1.5,"mods":{},"text":"The field hits 50% harder"},
+	"orbit-lids":{"name":"Clanging Carousel","adjective":"Clanging","catalyst":"knockback","catalyst_text":"Knockback","power":1.3,"mods":{"extraShots":2},"text":"2 more lids"},
+	"fire-trail":{"name":"Ember Road","adjective":"Ember","catalyst":"burn","catalyst_text":"Fire","power":1.5,"mods":{},"text":"Footprints burn 50% hotter"},
+	"frost-trail":{"name":"Rime Road","adjective":"Rime","catalyst":"slow","catalyst_text":"Slow","power":1.5,"mods":{},"text":"Icy footprints hit 50% harder"},
+	"dice":{"name":"Loaded Dice","adjective":"Loaded","catalyst":"luck","catalyst_text":"Luck","power":1.3,"mods":{"extraShots":1},"text":"Throws 1 more die"},
+	"blood-pump":{"name":"Heart Engine","adjective":"Pounding","catalyst":"lifesteal","catalyst_text":"Lifesteal","power":1.5,"mods":{},"text":"Pulses hit 50% harder"},
+	"whip":{"name":"Thunder Noodle","adjective":"Crackling","catalyst":"range","catalyst_text":"Reach","power":1.45,"mods":{},"text":"Lashes hit 45% harder"},
+	"snip-knife":{"name":"Last Snip","adjective":"Keen","catalyst":"execute","catalyst_text":"Finish weak enemies","power":1.4,"mods":{},"text":"Slashes hit 40% harder"},
+	"katana":{"name":"Moonedge","adjective":"Moonlit","catalyst":"crit","catalyst_text":"Critical hit","power":1.45,"mods":{},"text":"Slashes hit 45% harder"},
+	"scythe":{"name":"Harvest Moon","adjective":"Harvest","catalyst":"poison","catalyst_text":"Poison","power":1.35,"mods":{"payload":"poison"},"text":"Sweeps poison what they cut"},
+	"hero-blade":{"name":"Dawnbringer","adjective":"Dawn","catalyst":"damage","catalyst_text":"Damage","power":1.45,"mods":{},"text":"Slashes and waves hit 45% harder"},
+	"grudge-blade":{"name":"Old Grudge","adjective":"Bitter","catalyst":"berserk","catalyst_text":"Berserk","power":1.45,"mods":{},"text":"Grudge slashes hit 45% harder"},
 }
 
 static func form(weapon_id: String) -> Dictionary:

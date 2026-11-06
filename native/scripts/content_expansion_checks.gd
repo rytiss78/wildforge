@@ -3,9 +3,12 @@ extends RefCounted
 static func run(game) -> Dictionary:
 	var checks={};var data=game.rules.data
 	# October 22: four spell weapons (skill_book.gd) and their eight Power/Mastery cards.
-	# 747 since the Rift Dash card (October 26).
-	checks.content_count=data.loot.size()==747 and data.weapons.size()==73 and data.augments.size()==400
-	checks.unique_ids=(data.loot+data.weapons).map(func(i):return i.id).size()==820
+	# 747 since the Rift Dash card (October 26); 85 weapons since the twelve new
+	# attack patterns (November 5).
+	checks.content_count=data.loot.size()==747 and data.weapons.size()==85 and data.augments.size()==400
+	var ids={}
+	for i in data.loot+data.weapons: ids[i.id]=true
+	checks.unique_ids=ids.size()==data.loot.size()+data.weapons.size()
 	var positions=game.chests.map(func(c):return c.node.position)
 	var per_biome=[];per_biome.resize(RealmWorld.BIOME_COUNT);per_biome.fill(0);var spacing=1000.0
 	for p in positions:
@@ -49,12 +52,15 @@ static func run(game) -> Dictionary:
 		var item=definition.duplicate(true);item.kind="weapon";item.strength=1;item.tier=0
 		game.equip_weapon(item)
 		game.spawn_enemy(4);var enemy=game.enemies[-1];enemy.node.position=game.player.position+Vector3(0,0,-4);enemy.hp=100000;enemy.maxHp=100000
-		var before=game.projectiles.size()+game.pools.size()+game.hazards.size()+game.melee_attacks.size();var health=enemy.hp
+		# WeaponActs keeps its own flying things (rockets, flasks, ghosts) in WeaponActs.live.
+		var before=game.projectiles.size()+game.pools.size()+game.hazards.size()+game.melee_attacks.size()+WeaponActs.live.size();var health=enemy.hp
 		game.fire(game.equipped[0],game.player.position+Vector3.UP)
-		if game.projectiles.size()+game.pools.size()+game.hazards.size()+game.melee_attacks.size()>before or enemy.hp<health: exercised+=1
+		# Passive kinds (mines) skip fire(): their own tick drops them.
+		if WeaponActs.passive(game.equipped[0]): WeaponActs.tick(game,.02)
+		if game.projectiles.size()+game.pools.size()+game.hazards.size()+game.melee_attacks.size()+WeaponActs.live.size()>before or enemy.hp<health: exercised+=1
 		game.clear_entities()
 		await game.get_tree().process_frame
-	checks.weapon_branches=exercised==44
+	checks.weapon_branches=exercised==variants.size()
 	game.equipped=originals;game.avatar.finish_melee();game.avatar.sync_equipment(game.equipped)
 	# Keep ranged encounter rings and telegraph shapes distinct by biome.
 	var tactics=preload("res://scripts/combat_tactics.gd")

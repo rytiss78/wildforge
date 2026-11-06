@@ -87,7 +87,7 @@ export function assertCommittedBuild(cwd) {
 }
 
 async function main(action) {
-  if (!['balance-review', 'mutation-balance', 'shared-review', 'shared-review-stress', 'coop-dropin', 'bot-playtest', 'island-review', 'block-drop-review', 'shorts-review', 'hero-numbers-review', 'colossus-review', 'cartoon-review', 'model-review', 'weapon-review', 'hermes-review', 'playfeel-review', 'red-moon-review', 'fresh-import', 'biome-review', 'release-review', 'roster-review', 'bake-roster', 'style-review', 'fx-review', 'intro-review', 'underside-review', 'crusher-review', 'boss-review', 'forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'crowd-spells', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
+  if (!['balance-review', 'mutation-balance', 'shared-review', 'shared-review-stress', 'coop-dropin', 'bot-playtest', 'island-review', 'block-drop-review', 'shorts-review', 'hero-numbers-review', 'colossus-review', 'cartoon-review', 'model-review', 'weapon-review', 'weapon-combos', 'hermes-review', 'playfeel-review', 'red-moon-review', 'fresh-import', 'biome-review', 'release-review', 'roster-review', 'bake-roster', 'style-review', 'fx-review', 'intro-review', 'underside-review', 'crusher-review', 'boss-review', 'forge-weapon-icon', 'forge-review', 'bake-forge', 'coop-feedback', 'eclipse-review', 'feedback-review', 'controls-review', 'crowd-surface', 'surface-review', 'crowd-eclipse', 'progression-review', 'field-review', 'crowd-review', 'crowd-spells', 'check', 'smoke', 'capture', 'capture-ui', 'combat-review', 'pace-review', 'soak', 'scenery-review', 'hunt-review', 'coop', 'journey-review', 'integration', 'build', 'weapon-icons', 'test-build', 'status'].includes(action)) {
     console.error('Usage: node scripts/agent-workflow.mjs check|smoke|capture|capture-ui|combat-review|pace-review|soak|integration|build|status'); return 2;
   }
   const git = (...args) => spawnSync('git', ['-C', root, ...args], {encoding:'utf8', windowsHide:true}).stdout?.trim() ?? '';
@@ -357,6 +357,12 @@ async function main(action) {
       const line=output.split(/\r?\n/).findLast(x=>x.startsWith('WEAPON_REVIEW '));
       if(!line) throw new Error('Missing weapon review');report.weapons=JSON.parse(line.slice(14));
       if(Object.values(report.weapons.checks).some(v=>v===false)) throw new Error('Weapon review flagged: '+JSON.stringify(report.weapons.flagged.map(f=>f.id+' ('+f.reasons.join(', ')+')')));
+    }
+    if (action === 'weapon-combos') {
+      const output=await step('weapon-combos',godot,['--headless','--path',join(root,'native'),'--','--weapon-combos'],900000);
+      const line=output.split(/\r?\n/).findLast(x=>x.startsWith('WEAPON_COMBOS '));
+      if(!line) throw new Error('Missing weapon combos');report.combos=JSON.parse(line.slice(14));
+      if(Object.values(report.combos.checks).some(v=>v===false)) throw new Error('Weapon combos flagged: '+JSON.stringify(report.combos.flagged.map(f=>f.id+' ('+f.reasons.join(', ')+')')));
     }
     if (action === 'model-review') {
       // Model pilot: Blender builds the pilot GLBs into this run's folder, then the

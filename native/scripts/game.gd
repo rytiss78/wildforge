@@ -321,6 +321,7 @@ func _ready():
 	elif OS.get_cmdline_user_args().has("--cartoon-review"): preload("res://scripts/cartoon_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--model-review"): preload("res://scripts/model_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--weapon-review"): preload("res://scripts/weapon_review.gd").run.call_deferred(self)
+	elif OS.get_cmdline_user_args().has("--weapon-combos"): preload("res://scripts/weapon_combo_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--balance-review"): preload("res://scripts/balance_review.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--mutation-balance"): preload("res://scripts/mutation_balance.gd").run.call_deferred(self)
 	elif OS.get_cmdline_user_args().has("--hermes-review"): preload("res://scripts/hermes_review.gd").run.call_deferred(self)
@@ -2488,7 +2489,9 @@ func update_combat(delta: float):
 		for enemy in enemies:
 			if not enemy.dead and pool.node.position.distance_to(melee_contact(enemy,pool.node.position))<pool.get("radius",2.5):
 				if ticking: hurt_enemy(enemy,pool.damage*.25,"gravity" if pool.get("gravity",false) else "poison",str(pool.get("mechanic","gravity")) if pool.get("gravity",false) else str(pool.get("mechanic","")),pool.node.position)
-				if ticking and pool.get("toxic",false) and not enemy.dead: set_damage_status(enemy,"poison",9.0+float(stats.poison),coop.local_id);enemy.status_time=maxf(float(enemy.get("status_time",0)),3.0)
+				# A poison weapon's cloud poisons in step with Damage cards, or most of its
+				# damage (the poison) ignored them (weapon-combos review).
+				if ticking and pool.get("toxic",false) and not enemy.dead: set_damage_status(enemy,"poison",(9.0+float(stats.poison))*stat("damage")/float(rules.data.stats.damage),coop.local_id);enemy.status_time=maxf(float(enemy.get("status_time",0)),3.0)
 				if pool.get("gravity",false) and not enemy.boss: enemy.node.move_and_collide((pool.node.position-enemy.node.position).normalized()*delta*3)
 	for hazard in hazards:
 		hazard.life-=delta

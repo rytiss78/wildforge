@@ -53,6 +53,8 @@ static func run(game: Node3D):
 			"gravity": weapon_results[id]=game.pools.any(func(p):return p.get("gravity",false))
 			"meteor": weapon_results[id]=game.hazards.any(func(h):return h.get("friendly",false))
 			"horn": weapon_results[id]=enemy.hp<100000
+			# Mines are dropped by the weapon's own tick (WeaponActs), not by fire().
+			"bomb": WeaponActs.tick(game,.02);weapon_results[id]=WeaponActs.live.any(func(i):return i.type=="mine")
 			_: weapon_results[id]=game.projectiles.any(func(s):return s.kind==id)
 		game.equipped.clear()
 	checks.weapon_mechanics=weapon_results.values().all(func(value):return value)
