@@ -29,12 +29,16 @@ const PER_MAP=24
 
 static func spawn(game):
 	# One biome per map (big update MB): this map's own harvestables, PER_MAP of them.
+	# Placed from the run's seed, as chests and barrels are: the shared rules.rng has
+	# been drawn from differently on each co-op machine by the time a map starts, so
+	# friends saw the plants (and the scenery that keeps clear of them) in different spots.
+	var rng=RandomNumberGenerator.new();rng.seed=game.seed_value*37+game.realm*4099+11
 	for biome in [game.world.biome_at(Vector3(100,0,0))]:
 		var placed=0
 		for attempt in range(3000):
 			if placed>=PER_MAP: break
-			var angle=game.rules.rng.randf()*TAU
-			var radius=game.rules.rng.randf_range(12 if biome==0 else 76,RealmWorld.SPAWN_EXTENT-35)
+			var angle=rng.randf()*TAU
+			var radius=rng.randf_range(12 if biome==0 else 76,RealmWorld.SPAWN_EXTENT-35)
 			var p=Vector3(cos(angle)*radius,0,sin(angle)*radius)
 			if game.world.biome_at(p)!=biome or radius>game.world.shore_radius(p)-24: continue
 			if game.harvestables.any(func(h):return h.node.position.distance_to(p)<7): continue

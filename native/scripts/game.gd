@@ -790,7 +790,7 @@ func buy_chest(chest: Dictionary,payer: int=-1):
 	# and each filters it to their own loadout, and hide the chest from every map.
 	if coop.active:
 		coop.broadcast({"type":"chest_open","offers":offers,"kind":"item","elite":bool(chest.elite),"event":offer_event,"realm":realm,"reward_id":party_reward_id})
-		coop.broadcast({"type":"chest_hide","realm":realm,"pos":[int(chest.node.position.x),int(chest.node.position.y),int(chest.node.position.z)]})
+		coop.broadcast({"type":"chest_hide","realm":realm,"pos":CoopSession.array(chest.node.position)})
 	reveal_duration = [2.6,2.9,3.3,3.8][reveal_tier]
 	sound.chest_open(reveal_tier,reveal_duration)
 	ChestShow.beam(self,chest.node.position,reveal_tier)
