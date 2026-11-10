@@ -43,6 +43,9 @@ const TRICKS={
 	"clutch":{"name":"Lock-On","kind":"aimlock","cooldown":20.0,"time":4.0,"word":"LOCKED!"},
 }
 
+# Tax Day drops at most this many coins, each worth more in a big crowd.
+const COIN_CAP=30
+
 static func trick(g) -> Dictionary: return TRICKS.get(str(g.hero.id),{})
 
 # One line for the hero screen: what the trick does, in numbers, and its cooldown.
@@ -85,6 +88,8 @@ static func use(g) -> bool:
 			g.trick_cooldown=float(t.cooldown);word(g,str(t.word))
 			g.underside.dig(g,t.damage*power(g),float(t.radius));shout(g)
 			return true
+		# Not on solid footing (mid-jump): nothing happens and no cooldown is spent.
+		if g.world.realm!=RealmWorld.ARENA: return false
 		# The Red Moon has no underside: burrow down and burst up where you stand.
 		g.trick_cooldown=float(t.cooldown);word(g,str(t.word))
 		g.damage_area(p,t.radius,t.damage*power(g),"burrow");g.burst(p+Vector3.UP*.4,Color("7a5a3a"),18)
@@ -140,9 +145,11 @@ static func use(g) -> bool:
 			g.player.velocity.y=19.0;g.trick_leap={"radius":t.radius,"damage":t.damage*power(g),"armed":.25}
 			g.sound.effect("jump",p)
 		"coins":
-			for enemy in g.enemies.duplicate():
-				if enemy.dead or enemy.node.position.distance_to(p)>t.radius: continue
-				for i in range(int(t.coins)): g.spawn_pickup(enemy.node.position+Vector3.UP*.8,"gold",maxf(1.0,2.0+g.realm))
+			# The same gold in at most COIN_CAP coins: a big crowd used to drop
+			# hundreds of pickups in one frame.
+			var taxed=g.enemies.filter(func(e):return not e.dead and e.node.position.distance_to(p)<=t.radius)
+			var owed=taxed.size()*int(t.coins);var dropped=mini(owed,COIN_CAP)
+			for i in range(dropped): g.spawn_pickup(taxed[i%taxed.size()].node.position+Vector3.UP*.8,"gold",maxf(1.0,2.0+g.realm)*owed/dropped)
 			g.damage_area(p,t.radius,t.damage*power(g),"hit")
 			g.sound.effect("coin",p);CombatInk.wave(g,p,t.radius,Color("edc361"))
 		"bubble":
@@ -164,6 +171,9 @@ static func forward(g) -> Vector3:
 # The hero's own trick shout (quip_<id>_trick.wav; Digby Mole's "Dig, dig, dig!"),
 # at most every 15 s so it does not get old.
 static var last_shout=-100.0
+# A new run restarts g.elapsed: forget the last run's shout time.
+static func reset():
+	last_shout=-100.0
 static func shout(g) -> bool:
 	if g.elapsed-last_shout<15.0: return false
 	if not ResourceLoader.exists("res://assets/voices/quip_%s_trick.wav" % str(g.hero.id)): return false
