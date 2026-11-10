@@ -13,16 +13,23 @@ const LOOK={
 	"blind":{"shape":3.0,"amount":8,"life":1.0,"rise":.4,"size":.45,"colors":[Color(.3,.22,.4,.7),Color(.25,.18,.35,.9),Color(.1,.08,.15,0)]},
 }
 static var paints={}
+# Shared between every enemy's particles: the quad, the scale curve and colour ramp
+# of each status, and one process material per status and body size. A spell that
+# sets a crowd alight used to build all of these again for each enemy.
+static var quad: QuadMesh
+static var scale_textures={}
+static var ramp_textures={}
+static var processes={}
 
 static func paint(id: String) -> ShaderMaterial:
 	if not paints.has(id):
 		var material=ShaderMaterial.new();material.shader=preload("res://shaders/status_mote.gdshader");material.set_shader_parameter("shape",LOOK[id].shape);paints[id]=material
 	return paints[id]
 
-static func make(g: Node3D,enemy: Dictionary,id: String) -> GPUParticles3D:
+static func process_for(id: String,radius: float,height: float) -> ParticleProcessMaterial:
+	var key=id+":"+str(radius)+":"+str(height)
+	if processes.has(key): return processes[key]
 	var look=LOOK[id]
-	var radius=clampf(float(enemy.get("radius",.7)),.4,3.0);var height=clampf(float(enemy.get("height",1.7)),.8,9.0)
-	var node=GPUParticles3D.new()
 	var process=ParticleProcessMaterial.new()
 	# Emit from the body's surface (an upright ellipsoid) so effects are not hidden inside it.
 	var shell_radius=maxf(radius,height*.45)
@@ -35,14 +42,26 @@ static func make(g: Node3D,enemy: Dictionary,id: String) -> GPUParticles3D:
 	process.gravity=Vector3.ZERO if id!="ice" else Vector3(0,-.4,0)
 	var size=clampf(radius*float(look.size),.3,2.8)
 	process.scale_min=size*.55;process.scale_max=size
-	var curve=Curve.new();curve.add_point(Vector2(0,.5));curve.add_point(Vector2(.3,1));curve.add_point(Vector2(1,.25 if id=="fire" else .8))
-	var scale_texture=CurveTexture.new();scale_texture.curve=curve;process.scale_curve=scale_texture
-	var ramp=Gradient.new();ramp.offsets=PackedFloat32Array([0,.35,1]);ramp.colors=PackedColorArray(look.colors)
-	var ramp_texture=GradientTexture1D.new();ramp_texture.gradient=ramp;process.color_ramp=ramp_texture
+	if not scale_textures.has(id):
+		var curve=Curve.new();curve.add_point(Vector2(0,.5));curve.add_point(Vector2(.3,1));curve.add_point(Vector2(1,.25 if id=="fire" else .8))
+		var scale_texture=CurveTexture.new();scale_texture.curve=curve;scale_textures[id]=scale_texture
+		var ramp=Gradient.new();ramp.offsets=PackedFloat32Array([0,.35,1]);ramp.colors=PackedColorArray(look.colors)
+		var ramp_texture=GradientTexture1D.new();ramp_texture.gradient=ramp;ramp_textures[id]=ramp_texture
+	process.scale_curve=scale_textures[id];process.color_ramp=ramp_textures[id]
 	if id=="blind": process.orbit_velocity_min=.6;process.orbit_velocity_max=.9
-	node.process_material=process
+	processes[key]=process
+	return process
+
+static func make(g: Node3D,enemy: Dictionary,id: String) -> GPUParticles3D:
+	var look=LOOK[id]
+	var radius=clampf(float(enemy.get("radius",.7)),.4,3.0);var height=clampf(float(enemy.get("height",1.7)),.8,9.0)
+	var node=GPUParticles3D.new()
+	# Body sizes vary a little enemy to enemy; the emitter shape follows them in steps
+	# so like-sized enemies share one process material.
+	node.process_material=process_for(id,snappedf(radius,.1),snappedf(height,.2))
 	node.amount=int(look.amount*clampf(radius/.7,1.0,2.5));node.lifetime=look.life;node.local_coords=false
-	node.draw_pass_1=QuadMesh.new();node.material_override=paint(id).duplicate()
+	if quad==null: quad=QuadMesh.new()
+	node.draw_pass_1=quad;node.material_override=paint(id).duplicate()
 	node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	node.position=Vector3(0,height*(.5 if id!="blind" else 1.12),0)
 	node.visibility_aabb=AABB(Vector3(-radius-2,-height,-radius-2),Vector3(radius*2+4,height*2+4,radius*2+4))
