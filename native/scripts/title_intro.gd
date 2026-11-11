@@ -111,13 +111,19 @@ func _process(delta: float):
 		if time>=at: capture(captures[at]);captures.erase(at)
 	if time>=LENGTH: finish()
 
+# Stinger level under the sound setting. The intro plays over a silent boot screen
+# at full stereo (no distance falloff), so it was still far too loud at -12 dB
+# (user, November 10); the cymbal-crash title sting sits a little lower again.
+const CUE_DB=-22.0
+const CUE_TRIM={"title":-3.0}
+
 # Plays one of the intro stingers at a calm level under the sound setting.
 func cue(id: String):
 	var sfx=float(game.sound.settings.sfx) if game.sound!=null else 1.0
 	if sfx<=0: return
 	var path="res://assets/audio/intro/"+id+".wav"
 	if not ResourceLoader.exists(path): return
-	var player=AudioStreamPlayer.new();player.stream=load(path);player.volume_db=linear_to_db(sfx)-12.0;add_child(player);player.play()
+	var player=AudioStreamPlayer.new();player.stream=load(path);player.volume_db=linear_to_db(sfx)+CUE_DB+float(CUE_TRIM.get(id,0.0));add_child(player);player.play()
 	player.finished.connect(player.queue_free);cues_played.append(id)
 
 func capture(name: String):

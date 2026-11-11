@@ -59,6 +59,11 @@ var open_after=false
 # Seconds left of cracked eyes after a successful performance (they flash, open).
 var crack_time=0.0
 var roar_player=AudioStreamPlayer3D.new()
+# The roar sample is mastered very hot (about -4 LUFS) and used to play at a fixed
+# -8 dB, ignoring the sound setting: the Red Moon entrance was deafening, about
+# 10 dB over anything else in the game (user, November 10). It now follows the
+# sound-effects slider and sits level with the loudest weapons and Noggin lines.
+const ROAR_DB=-16.0
 
 func setup(model_name: String):
 	identity=model_name;skin=Color(PAINTS[0].skin)
@@ -87,7 +92,7 @@ func setup(model_name: String):
 	for i in range(2):
 		var eye=MeshInstance3D.new();eye.name="GlassCore" if i==0 else "GlassCoreRight";eye.mesh=sphere;eye.position=EYES[i]
 		eye.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF;eye.material_override=orb_paint;head_node.add_child(eye);eyes.append(eye)
-	add_child(roar_player);roar_player.unit_size=40;roar_player.max_distance=220;roar_player.max_db=0;roar_player.volume_db=-8.0
+	add_child(roar_player);roar_player.unit_size=40;roar_player.max_distance=220;roar_player.max_db=0;roar_player.volume_db=ROAR_DB
 	var roar_sound=load("res://assets/audio/colossus/roar.wav")
 	if roar_sound!=null: roar_player.stream=roar_sound
 
@@ -175,7 +180,18 @@ func play(name: String,windup_seconds: float,active_seconds: float,recover_secon
 	if name=="roar": roar()
 
 func roar():
-	if roar_player.stream!=null: roar_player.play()
+	if roar_player.stream==null: return
+	var sfx=sfx_setting()
+	if sfx<=0: return
+	roar_player.volume_db=linear_to_db(sfx)+ROAR_DB;roar_player.play()
+
+# The player's sound-effects volume, from the game's RunSound (1.0 outside a game).
+func sfx_setting() -> float:
+	var node=get_parent()
+	while node!=null:
+		if "sound" in node and node.sound is RunSound: return float(node.sound.settings.get("sfx",1.0))
+		node=node.get_parent()
+	return 1.0
 
 # A successful performance cracks its eyes: they flash and stay wide open.
 func crack(seconds: float):
