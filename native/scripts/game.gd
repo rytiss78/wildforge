@@ -1183,7 +1183,7 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 	node.add_child(rig);node.set_meta("rig",rig)
 	node.position=p+Vector3.UP*.15
 	add_child(node)
-	if not boss: rig.bake_enemy()
+	if not boss: rig.bake_enemy();blob_shadow_only(rig)
 	# Elite glow ring
 	if elite:
 		var ring=TorusMesh.new();ring.inner_radius=.6;ring.outer_radius=.75
@@ -1427,6 +1427,12 @@ func blood_hit(enemy: Dictionary):
 	stain.position=position_value;stain.position.y=world.height_at(position_value.x,position_value.z)+.035;stain.rotation.y=randf()*TAU
 	effects.append({"node":stain,"life":1.1,"lifetime":1.1,"velocity":Vector3.ZERO,"stationary":true,"mark_paint":paint,"blood":true})
 
+# Ordinary creatures cast no sun shadow: the blob under each one (contact_shadows)
+# grounds it, and a crowd's deforming bodies were drawn again in every shadow cascade.
+# Bosses keep theirs.
+func blob_shadow_only(rig):
+	if rig is CartoonCreatureRig: rig.mesh_node.cast_shadow=GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+
 func spawn_network_enemy(actor: Dictionary) -> Dictionary:
 	var node=CharacterBody3D.new();node.collision_layer=4;node.collision_mask=1
 	var collision=CollisionShape3D.new();var capsule=CylinderShape3D.new();capsule.radius=1.05 if actor.boss else .53;capsule.height=3.4 if actor.boss else 1.7;collision.shape=capsule;collision.position.y=capsule.height*.5;node.add_child(collision)
@@ -1437,7 +1443,7 @@ func spawn_network_enemy(actor: Dictionary) -> Dictionary:
 	if enemy.magnet_guard: enemy.flying=false;enemy.behavior="turret"
 	enemy.guardian=bool(actor.get("guardian",false));enemy.title=str(actor.get("title","Guardian"));enemy.boss_id=clampi(int(actor.get("boss_id",0)),0,8)
 	if enemy.boss: enemy.model="boss_"+str(enemy.boss_id);enemy.name=BossBook.entry(enemy.boss_id).name
-	if not enemy.boss: rig.bake_enemy()
+	if not enemy.boss: rig.bake_enemy();blob_shadow_only(rig)
 	if enemy.boss:
 		boss_name=enemy.title
 		
@@ -1722,19 +1728,28 @@ func create_status_indicator(enemy: Dictionary, color: Color, name: String) -> N
 	return node
 
 func update_status_indicators(enemy: Dictionary):
+	var caught=int(enemy.get("status_caught",0));var bit=1
 	for effect in [["fire",enemy.status_time if enemy.fire>0 else 0,Color("ff6633")],["poison",enemy.status_time if enemy.poison>0 else 0,Color("44cc66")],["ice",enemy.freeze if enemy.freeze>.5 or is_instance_valid(enemy.get("indicator_ice")) else 0.0,Color("66bbdd")],["blind",enemy.blind,Color("554477")]]:
-		var id=effect[0]
+		var id=effect[0];var flag=bit;bit*=2
 		if effect[1]<=0:
+			kill_status_indicator(enemy,id);caught&=~flag
+			continue
+		# The flare marks the moment a status catches, once per status.
+		if (caught&flag)==0:
+			caught|=flag;StatusFx.caught(self,enemy,id)
+		var indicator=enemy.get("indicator_"+id)
+		# In a big statused crowd only the enemies nearest the camera carry particles
+		# (EffectDetail.STATUS_EMITTERS); the rest show the status by their tint.
+		if not EffectDetail.status_shown(self,enemy,is_instance_valid(indicator)):
 			kill_status_indicator(enemy,id)
 			continue
-		var indicator=enemy.get("indicator_"+id)
-		if not is_instance_valid(indicator):
-			indicator=create_status_indicator(enemy,effect[2],id);StatusFx.caught(self,enemy,id)
+		if not is_instance_valid(indicator): indicator=create_status_indicator(enemy,effect[2],id)
 		var remaining=clampf(float(effect[1])/4.0,.08,1.0)
 		indicator.scale=Vector3.ONE*lerpf(.6,1.0,remaining)
 		indicator.material_override.set_shader_parameter("strength",lerpf(.55,1.0,remaining))
 		var ratio=snappedf(EffectDetail.status_ratio,.1)
 		if not is_equal_approx(indicator.amount_ratio,ratio): indicator.amount_ratio=ratio
+	enemy.status_caught=caught
 
 func kill_status_indicator(enemy: Dictionary, name: String):
 	var key="indicator_"+name
