@@ -542,7 +542,7 @@ func start_run(shared_seed: int=-1):
 	first.strength = 1.0
 	first.tier = 0
 	equip_weapon(first)
-	HeroPlay.start(self);WrenchTune.reset();Dropai.reset();ClutchPlay.reset();CarryRescue.reset()
+	HeroPlay.start(self);WrenchTune.reset();Dropai.reset();ClutchPlay.reset();CarryRescue.reset();ClimbMap.reset();HeroTricks.reset();Spectate.last_cheer=-99.0
 	career.bump("runs")
 	career.bump("play_"+hero.id)
 	sound.start(seed_value)
