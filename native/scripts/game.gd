@@ -3532,6 +3532,7 @@ func run_coop_test():
 	var realm_cycle_done=false;var realm_cycle_done2=false;var final_test_done=false;var final_reset=false;var saw_final=false;var saw_final_eclipse=false
 	var saw_remote_flowers=false;var saw_own_numbers=false;var saw_boss_identity=false;var saw_remote_vitals=false
 	var hunt_retry=0.0;var down_retry=0.0
+	var hunt_active_since=-1.0
 	var hunt_sent=false;var hunt_seen=false;var hunt_reward=false;var guardian_sent=false;var guardian_seen=false
 	while Time.get_ticks_msec()-started<(360000 if network_test_role=="host" else 360000):
 		var seconds=(Time.get_ticks_msec()-started)/1000.0
@@ -3560,7 +3561,11 @@ func run_coop_test():
 		# Retried each second until the hunt starts (frame timing varies with the map).
 		if network_test_role=="client" and seconds>12 and seconds<24 and realm==1 and Hunt.state(self)=="idle" and seconds>=hunt_retry:
 			hunt_sent=true;hunt_retry=seconds+1.0;player.position=Hunt.shrine(self).position;Hunt.interact(self)
-		if network_test_role=="host" and seconds>13.5 and Hunt.state(self)=="active":
+		# The marked foes fall a second after the hunt began, not in the same tick: the
+		# guest has to see the hunt active in a snapshot first. A hunt the guest started
+		# after 13.5 s was over within one 0.1 s step, and the guest often never saw it.
+		if network_test_role=="host" and Hunt.state(self)=="active" and hunt_active_since<0: hunt_active_since=seconds
+		if network_test_role=="host" and seconds>13.5 and Hunt.state(self)=="active" and seconds-hunt_active_since>=1.0:
 			for target in enemies.filter(func(e):return e.net_id in events.hunt_ids and not e.dead): kill_enemy(target,"diagnostic")
 		if network_test_role=="host" and seconds>15 and not guardian_sent:
 			guardian_sent=true;realm_bosses=2;Journey.activate(self)
