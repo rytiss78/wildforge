@@ -504,7 +504,9 @@ func tick(delta: float):
 	if not active: return
 	if not queued_offers.is_empty() and game.mode=="playing" and game.run_active:
 		var next=queued_offers.pop_front()
-		if int(next[5])==game.realm: game.open_shared_offer(next[0],next[1],next[2],next[3],next[4],next[6])
+		# A reward still queued when the party took the portal opens on the next map
+		# (it was dropped, and that player lost the card).
+		game.open_shared_offer(next[0],next[1],next[2],next[3],next[4],next[6])
 	if transport=="lan" and peer!=null:
 		peer.poll()
 		if peer==null or not active: return
@@ -613,6 +615,8 @@ func send_stats(force: bool=false):
 	stats_sent.merge(changes,true)
 	send_to(owner_id,{"type":"stats","changes":changes})
 
+# "run" is the seed of the run this player is in (-1 in the menus): the host ends
+# its wait for a loading player only on a pose from the run it started.
 func pose() -> Dictionary:
 	var weapons=[]
 	for weapon in game.equipped:
@@ -620,7 +624,7 @@ func pose() -> Dictionary:
 		if weapon.turret and is_instance_valid(weapon.get("node")): state.placement=array(weapon.node.position)
 		weapons.append(state)
 	var build={"weapons":weapons,"skills":game.owned.filter(func(item):return item.kind in ["skill","mutation"]).map(func(item):return str(item.name).left(48))}
-	return {"type":"pose","flower_realm":game.realm,"flowers":flower_state(),"position":array(game.player.position),"yaw":game.avatar.rotation.y,"under":game.underside.flipped(),"sneak":ClutchPlay.hidden(game),"carry":CarryRescue.carrying,"lasso":Lasso.mine,"model":game.hero.model,"name":player_name(),"cosmetic":str(game.career.data.settings.get("cosmetic","")),"mode":"ended" if game.run_recorded else game.mode,"weapons":weapons,"build":build,"hp":game.hp,"shield_hp":game.shield_hp,"gold":game.gold,"rescue_hold":game.update.rescue_hold,"rescue_step":game.update.rescue_step,"pet":game.pet.label() if is_instance_valid(game.pet) else "","mustache":str(game.career.data.settings.get("mustache","")) if MustacheBook.owned(game.career.data.unlocked,str(game.career.data.settings.get("mustache",""))) else ""}
+	return {"type":"pose","run":game.seed_value if game.run_active else -1,"flower_realm":game.realm,"flowers":flower_state(),"position":array(game.player.position),"yaw":game.avatar.rotation.y,"under":game.underside.flipped(),"sneak":ClutchPlay.hidden(game),"carry":CarryRescue.carrying,"lasso":Lasso.mine,"model":game.hero.model,"name":player_name(),"cosmetic":str(game.career.data.settings.get("cosmetic","")),"mode":"ended" if game.run_recorded else game.mode,"weapons":weapons,"build":build,"hp":game.hp,"shield_hp":game.shield_hp,"gold":game.gold,"rescue_hold":game.update.rescue_hold,"rescue_step":game.update.rescue_step,"pet":game.pet.label() if is_instance_valid(game.pet) else "","mustache":str(game.career.data.settings.get("mustache","")) if MustacheBook.owned(game.career.data.unlocked,str(game.career.data.settings.get("mustache",""))) else ""}
 
 # Everything a client needs to construct a replica of a host enemy.
 func actor_descriptor(enemy: Dictionary) -> Dictionary:
@@ -802,7 +806,7 @@ func receive(sender: int,message):
 					game.party_seen[str(sender)]=game.party_seen[str(resume_id)];game.party_seen[str(sender)].player_id=sender;game.party_seen.erase(str(resume_id))
 				status="A player reconnected · %d / 4." % (members.size()+1)
 				# Everything one-off broadcasts changed while the member was away.
-				var opened=game.chests.filter(func(c):return c is Dictionary and c.get("opened",false) and is_instance_valid(c.get("node"))).map(func(c):return [int(c.node.position.x),int(c.node.position.y),int(c.node.position.z)])
+				var opened=game.chests.filter(func(c):return c is Dictionary and c.get("opened",false) and is_instance_valid(c.get("node"))).map(func(c):return array(c.node.position))
 				send_to(sender,{"type":"welcome","reconnected":true,"realm":game.realm,"opened_chests":opened})
 				# Level-ups and chests shared while the player was away; their game
 				# skips any it already opened.
@@ -813,7 +817,7 @@ func receive(sender: int,message):
 				# Drop-in: the joiner starts the same run and enters the host's realm;
 				# the world pauses ("loading") until they are in.
 				members[sender]={"mode":"loading","player_name":"Player","token":token,"last_seen":Time.get_ticks_msec()/1000.0,"drop_in":true}
-				var opened=game.chests.filter(func(c):return c is Dictionary and c.get("opened",false) and is_instance_valid(c.get("node"))).map(func(c):return [int(c.node.position.x),int(c.node.position.y),int(c.node.position.z)])
+				var opened=game.chests.filter(func(c):return c is Dictionary and c.get("opened",false) and is_instance_valid(c.get("node"))).map(func(c):return array(c.node.position))
 				send_to(sender,{"type":"welcome","reconnected":false,"drop_in":true,"seed":game.seed_value,"realm":game.realm,"opened_chests":opened})
 				status="A player is joining the run · %d / 4." % (members.size()+1);game.hud.tell("A friend is joining…",3)
 			else:
@@ -838,6 +842,12 @@ func receive(sender: int,message):
 			# A late pose from a connection that already dropped would rebuild that
 			# player's avatar; after they rejoin under a new id it stays as a ghost copy.
 			if members[sender].get("disconnected",false): return
+			# A pose sent from the lobby or an earlier run says "ended", which does not
+			# hold the party. Such poses are still arriving when the run starts (the
+			# host was busy building the world), and one of them ended the wait for a
+			# loading player at once: the host played on while the guest was loading.
+			# A build without "run" in its pose is taken at its word, as before.
+			if game.run_active and members[sender].get("mode","")=="loading" and int(message.get("run",game.seed_value))!=game.seed_value: return
 			var p=vector(message.get("position",[]))
 			if not p.is_finite() or maxf(absf(p.x),absf(p.z))>RealmWorld.EXTENT+10: return
 			for key in ["position","yaw","under","sneak","carry","lasso","model","name","cosmetic","mode","weapons","build","hp","shield_hp","stats","gold","rescue_hold","rescue_step","pet","mustache","flower_realm","flowers"]:
@@ -885,9 +895,9 @@ func receive(sender: int,message):
 			var accepted=false
 			if int(message.get("realm",-1))==game.realm and game.mode=="playing" and not frozen() and float(members[sender].get("hp",0))>0:
 				var requested=vector(message.get("position",[]));var p=vector(members[sender].get("position",[]))
-				for chest in game.chests:
-					if not chest.opened and chest.node.position.distance_to(requested)<.1 and p.distance_to(chest.node.position)<4:
-						game.buy_chest(chest,sender);accepted=chest.opened;break
+				var chest=chest_near(requested,true)
+				if not chest.is_empty() and p.distance_to(chest.node.position)<4:
+					game.buy_chest(chest,sender);accepted=chest.opened
 			if not accepted: send_to(sender,{"type":"chest_rejected","realm":game.realm})
 
 		elif kind=="hunt_start" and int(message.get("realm",-1))==game.realm and not frozen() and float(members[sender].get("hp",0))>0:
@@ -1010,7 +1020,14 @@ func receive(sender: int,message):
 		elif kind=="kill":
 			kills_received+=1
 			for enemy in game.enemies:
-				if enemy.net_id==int(message.id) and not enemy.dead: game.kill_enemy(enemy,str(message.cause));return
+				if enemy.net_id==int(message.id) and not enemy.dead:
+					# A warden leaves its reward chest where it fell. This replica trails the
+					# host's by a snapshot, so the chest stood up to a metre off: the host
+					# refused this player's request for it, and it stayed in view after
+					# someone else had opened it. The warden falls where the host saw it.
+					var fell=message.get("position",[])
+					if enemy.boss and fell is Array and fell.size()==3 and vector(fell).is_finite(): enemy.node.position=vector(fell)
+					game.kill_enemy(enemy,str(message.cause));return
 			if message.has("actor"): game.kill_enemy(game.spawn_network_enemy(message.actor),str(message.cause))
 		elif kind=="reward_options":
 			var state=message.get("state",{})
@@ -1021,14 +1038,18 @@ func receive(sender: int,message):
 		# moved to another island.
 		elif kind=="level_up" and (int(message.get("realm",-1))==game.realm or message.get("replay",false)):
 			var shared_level=int(message.get("level",game.level))
-			if shared_level<game.level or shared_level<=last_remote_reward_level: return
-			if shared_level>last_remote_reward_level:
-				last_remote_reward_level=shared_level
-				game.heal(game.stats.maxHp*.15)
-				game.shield_hp=game.stats.shield
-			game.level=shared_level
-			game.xp=int(message.get("xp",game.xp))
-			game.xp_target=int(message.get("xp_target",game.xp_target))
+			# Only a level already rewarded is skipped. World snapshots travel apart
+			# from this message and also carry the level: when a level-up arrived late
+			# (resends over the internet) after a snapshot of the next level, comparing
+			# with game.level threw its card away.
+			if shared_level<=last_remote_reward_level: return
+			last_remote_reward_level=shared_level
+			game.heal(game.stats.maxHp*.15)
+			game.shield_hp=game.stats.shield
+			if shared_level>=game.level:
+				game.level=shared_level
+				game.xp=int(message.get("xp",game.xp))
+				game.xp_target=int(message.get("xp_target",game.xp_target))
 			shared_offer(message.get("offers",[]),str(message.get("kind","skill")),bool(message.get("elite",false)),"level",str(message.get("reward_id","")))
 		elif kind=="chest_paid" and int(message.get("realm",-1))==game.realm:
 			game.pending_chest=false;var price=int(message.get("price",0));game.gold=maxi(0,game.gold-price)
@@ -1099,13 +1120,23 @@ func ensure_avatar(id: int,state: Dictionary):
 
 func apply_chest_hide(position):
 	if not position is Array or position.size()!=3: return
+	var chest=chest_near(vector(position),false)
+	if chest.is_empty(): return
+	chest.opened=true
+	chest.node.visible=false
+
+# The chest another machine means by a position: the nearest one within CHEST_MATCH
+# metres. Whole-metre and 10 cm comparisons failed whenever the two machines had
+# the chest a little apart. Chests stand much further from each other than this.
+const CHEST_MATCH=1.5
+func chest_near(at: Vector3,unopened_only: bool) -> Dictionary:
+	var nearest={};var best=CHEST_MATCH
 	for chest in game.chests:
 		if not chest is Dictionary or not is_instance_valid(chest.get("node")): continue
-		var p=chest.node.position
-		if int(p.x)==int(position[0]) and int(p.y)==int(position[1]) and int(p.z)==int(position[2]):
-			chest.opened=true
-			chest.node.visible=false
-			break
+		if unopened_only and chest.get("opened",false): continue
+		var distance=chest.node.position.distance_to(at)
+		if distance<best: best=distance;nearest=chest
+	return nearest
 
 func apply_world(message: Dictionary):
 	if not game.run_active or int(message.realm)!=game.realm: return

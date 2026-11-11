@@ -105,6 +105,11 @@ const FLIGHT=1.3
 static var carry=Vector3.ZERO
 static var carry_until=-1.0
 
+# A new run starts its clock (g.elapsed) at 0: a carry left over from a run that
+# ended mid-flight would otherwise push the hero until the old time came round.
+static func reset():
+	carry=Vector3.ZERO;carry_until=-1.0
+
 static func tick(g):
 	if carry_until>0:
 		if g.elapsed<carry_until and not (g.player.is_on_floor() and g.elapsed>carry_until-FLIGHT+.25): g.knock_velocity=carry

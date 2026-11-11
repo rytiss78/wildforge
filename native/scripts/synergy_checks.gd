@@ -11,6 +11,8 @@ static func dummies(game: Node3D):
 		game.spawn_enemy(6);var enemy=game.enemies[-1]
 		var p=game.player.position+Vector3.FORWARD.rotated(Vector3.UP,TAU*i/8.0)*(2.5+i%2*1.5);p.y=game.world.height_at(p.x,p.z)
 		enemy.node.position=p;enemy.speed=0.0;enemy.attack=1e9;enemy.contact=1e9;enemy.damage=0.0;enemy.hp=1e6;enemy.maxHp=1e6;enemy.boss=false;enemy.behavior="chase";enemy.home=p
+		# A flying species would rise out of the spell ring; dummies stand on the ground.
+		enemy.flying=false;enemy.node.floor_snap_length=1.2
 
 static func cast(game: Node3D,kind: String,mutations: Array,frames: int=150) -> Dictionary:
 	dummies(game)
@@ -36,12 +38,19 @@ static func cast(game: Node3D,kind: String,mutations: Array,frames: int=150) -> 
 static func run(game: Node3D) -> Dictionary:
 	var checks={}
 	game.hud.close();game.mode="playing";game.invulnerable=1e9
-	# Spell hits fire "on hit" mutations (20% chance, 0.3 s cooldown): up to twelve casts at eight enemies (chance-based).
+	# Spell hits fire "on hit" mutations (20% chance, 0.3 s cooldown): up to twelve
+	# casts at eight enemies. An inferno ring gets one "on hit" roll per 0.24 s tick
+	# and both rings of dummies fall in about one tick, so a cast is about one roll
+	# and twelve casts all missed about 7% of the time. The rolls use the run's own
+	# RNG; seed it for these casts so the result is the same every run, then put
+	# its state back for the checks that follow.
+	var rng_state=game.rules.rng.state;game.rules.rng.seed=407
 	var triggered=false
 	for attempt in range(12):
 		var result=cast(game,"inferno",["storm_hit"],70)
 		triggered=triggered or result.cooldowns.has("storm_hit")
 		if triggered: break
+	game.rules.rng.state=rng_state
 	checks.spell_hits_trigger_mutations=triggered
 	var plain=cast(game,"inferno",[])
 	var firestorm=cast(game,"inferno",["ember_dash"])

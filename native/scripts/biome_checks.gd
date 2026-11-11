@@ -7,6 +7,9 @@ static func dummy(game: Node3D,offset: Vector3) -> Dictionary:
 	var p=game.player.position+offset;p.y=game.world.height_at(p.x,p.z)
 	enemy.node.position=p;enemy.speed=0.0;enemy.attack=1e9;enemy.contact=1e9;enemy.damage=0.0;enemy.hp=1e6;enemy.maxHp=1e6;enemy.boss=false;enemy.behavior="chase";enemy.home=p
 	enemy.fire=0.0;enemy.poison=0.0;enemy.freeze=0.0;enemy.slow=0.0
+	# A dummy stands on the ground: about 1 in 40 spawns is a flying species, which
+	# rose to its 3.8 m cruise height over the lava pool and never burned.
+	enemy.flying=false;enemy.node.floor_snap_length=1.2
 	return enemy
 
 static func setup(game: Node3D):
@@ -52,7 +55,13 @@ static func run(game: Node3D) -> Dictionary:
 	game.player.velocity=Vector3(8,0,0);run_frames(game,30,true);var icy=Vector2(game.player.velocity.x,game.player.velocity.z).length()
 	checks.biome_ice=icy>dry+2.0 and float(skater.slow)>=.45
 	# Gust: shoves the hero and enemies along its direction.
-	setup(game);var blown=dummy(game,Vector3(0,0,3));var start=blown.node.position;var hero_start=game.player.position
+	setup(game);var blown=dummy(game,Vector3(0,0,3))
+	# As with the skater: until the physics flush the dummy's body still stands at
+	# its random spawn spot, which can be right in the hero's path (the hero then
+	# stops short of 2 m).
+	await game.get_tree().physics_frame
+	setup_hero(game)
+	var start=blown.node.position;var hero_start=game.player.position
 	var gust=event(game,3,game.player.position,Vector3.RIGHT);run_frames(game,int(gust.warn*60)+60,true)
 	checks.biome_gust=blown.node.position.x-start.x>2.0 and game.player.position.x-hero_start.x>2.0
 	# Lava vent: the pool spreads, burns enemies, and hurts a hero standing in it.

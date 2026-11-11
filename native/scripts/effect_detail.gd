@@ -13,6 +13,13 @@ static var flashes=1.0
 static var particles=1.0
 static var status_ratio=1.0
 static var clock=0.0
+# Status particle systems are capped as well as thinned: each one is its own GPU
+# particle pass and draw however few particles it emits. Past this many statused
+# enemies only the ones nearest the camera keep theirs; the rest show the status
+# by their tint alone.
+const STATUS_EMITTERS=24
+# Squared camera distance of the furthest enemy that keeps its particles (INF: all).
+static var status_reach=INF
 
 static func load_settings(settings: Dictionary):
 	shake=clampf(float(settings.get("shake",1.0)),0,1)
@@ -35,10 +42,20 @@ static func tick(g,delta: float):
 	clock-=delta
 	if clock>0: return
 	clock=.5
-	var burning=0
+	var view: Vector3=g.camera.global_position
+	var distances=PackedFloat32Array()
 	for enemy in g.enemies:
-		if not enemy.dead and (enemy.fire>0 or enemy.poison>0 or enemy.freeze>.5 or enemy.blind>0): burning+=1
-	status_ratio=clampf(24.0/maxf(1,burning),.2,1.0)*particles
+		if not enemy.dead and (enemy.fire>0 or enemy.poison>0 or enemy.freeze>.5 or enemy.blind>0): distances.append(view.distance_squared_to(enemy.node.position))
+	status_reach=INF
+	if distances.size()>STATUS_EMITTERS:
+		distances.sort();status_reach=distances[STATUS_EMITTERS-1]
+	status_ratio=clampf(float(STATUS_EMITTERS)/maxf(1,mini(distances.size(),STATUS_EMITTERS)),.2,1.0)*particles
+
+# Whether a statused enemy carries its particles. One already showing them keeps
+# them a little past the limit, so the edge of the crowd does not flicker as it shifts.
+static func status_shown(g,enemy: Dictionary,showing: bool) -> bool:
+	if status_reach==INF or enemy.boss: return true
+	return g.camera.global_position.distance_squared_to(enemy.node.position)<=status_reach*(1.3 if showing else 1.0)
 
 static func count(base: int) -> int:
 	return maxi(1,roundi(base*particles))

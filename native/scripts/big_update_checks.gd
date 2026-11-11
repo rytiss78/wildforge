@@ -293,21 +293,30 @@ static func run(game: Node3D):
 	checks.mb_hell_flight=flight_ok and Underside.DIG>=1.5 and ["hell-flight","soul-wail-0","soul-wail-1","soul-wail-2"].all(func(n):return ResourceLoader.exists("res://assets/audio/effects/"+n+".wav"))
 	# Labyrinth maps (user, November 3): three floors, walls, ways in, and a
 	# seamless height across every cell edge; the first map stays open.
-	var lab=Labyrinth.plan(game.seed_value,2);var floors={};var walls_seen=false;var seams=0
-	for k in range(3000):
-		var p=Vector2(randf_range(-200,200),randf_range(-200,200));var kind=Labyrinth.cell_kind(lab,p.x,p.y)
+	# The maps are sampled on fixed grids, not with the unseeded global randf, so
+	# every run checks the same points.
+	var lab=Labyrinth.plan(game.seed_value,2);var floors={};var walls_seen=false
+	for p in grid_points(55):
+		var kind=Labyrinth.cell_kind(lab,p.x,p.y)
 		floors[kind]=true;if kind==9: walls_seen=true
-	for k in range(400):
-		var corridor_lab=Labyrinth.plan(game.seed_value,4);var i=randi()%int(corridor_lab.n);var j=randi()%int(corridor_lab.n)
-		var edge_x=float(corridor_lab.origin)+(i+1)*Labyrinth.CELL;var z=float(corridor_lab.origin)+(j+randf())*Labyrinth.CELL
-		if absf(Labyrinth.lift(corridor_lab,edge_x-.001,z)-Labyrinth.lift(corridor_lab,edge_x+.001,z))>.05: seams+=1
-	# (A few steps where walls meet at a corner are fine: the mesh stays whole.)
+	# Every east cell edge of the corridor maze, one sample per metre along it. A
+	# step is allowed only where walls meet at a corner (within the wall band of
+	# either end; the mesh stays whole there), and those stay under 10% of samples
+	# as before (about 6.7% for this seed).
+	var corridor_lab=Labyrinth.plan(game.seed_value,4);var seams=0;var stray_seams=0;var seam_samples=0
+	for i in range(int(corridor_lab.n)):
+		for j in range(int(corridor_lab.n)):
+			var edge_x=float(corridor_lab.origin)+(i+1)*Labyrinth.CELL
+			for step in range(int(Labyrinth.CELL)):
+				var along=step+.5;var z=float(corridor_lab.origin)+j*Labyrinth.CELL+along;seam_samples+=1
+				if absf(Labyrinth.lift(corridor_lab,edge_x-.001,z)-Labyrinth.lift(corridor_lab,edge_x+.001,z))>.05:
+					seams+=1
+					if along>Labyrinth.WALL_BAND and along<Labyrinth.CELL-Labyrinth.WALL_BAND: stray_seams+=1
 	checks.mb_labyrinth=floors.has(1) and floors.has(2) and floors.has(3) and walls_seen and Labyrinth.plan(game.seed_value,0).is_empty() and not Labyrinth.active(0)
-	checks.mb_labyrinth_seams=seams<40
+	checks.mb_labyrinth_seams=stray_seams==0 and seams*10<seam_samples
 	# Junkyard Planet keeps the flat corridor maze: one floor, tall walls.
-	var flat_lab=Labyrinth.plan(game.seed_value,4);var flat_kinds={}
-	for k in range(3000):
-		var p=Vector2(randf_range(-200,200),randf_range(-200,200));flat_kinds[Labyrinth.cell_kind(flat_lab,p.x,p.y)]=true
+	var flat_lab=corridor_lab;var flat_kinds={}
+	for p in grid_points(55): flat_kinds[Labyrinth.cell_kind(flat_lab,p.x,p.y)]=true
 	checks.mb_labyrinth_flat=flat_lab.corridors and flat_kinds.has(9) and flat_kinds.has(1) and not flat_kinds.has(2)
 	# XP orb pickups tick up a scale while they keep coming (November 2).
 	game.sound.xp_streak=0;game.sound.xp_last=-10.0;game.sound.xp_last_tick=-10.0
@@ -627,12 +636,20 @@ static func run(game: Node3D):
 	checks.merge(preload("res://scripts/synergy_checks.gd").run(game))
 	checks.merge(await preload("res://scripts/biome_checks.gd").run(game))
 	checks.merge(preload("res://scripts/net_size_checks.gd").run(game))
+	checks.merge(preload("res://scripts/coop_sync_checks.gd").run(game))
 	checks.merge(await preload("res://scripts/hero_play_checks.gd").run(game))
 	var result={"checks":checks,"route_max_slope":worst_slope,"passed":checks.values().all(func(v):return bool(v))}
 	var file=FileAccess.open("user://big-update-results.json",FileAccess.WRITE);file.store_string(JSON.stringify(result,"  "));file.close()
 	game.set_process(false);game.sound.shutdown()
 	await game.get_tree().create_timer(.15).timeout
 	print("BIG_UPDATE_CHECK "+JSON.stringify(result));game.get_tree().quit(0 if result.passed else 1)
+
+# An even size x size grid over the 400 m map square, at cell centres.
+static func grid_points(size: int) -> Array:
+	var points=[]
+	for gx in range(size):
+		for gz in range(size): points.append(Vector2(-200+(gx+.5)*400.0/size,-200+(gz+.5)*400.0/size))
+	return points
 
 static func ping_button() -> InputEventJoypadButton:
 	var event=InputEventJoypadButton.new();event.button_index=JOY_BUTTON_RIGHT_STICK;return event
