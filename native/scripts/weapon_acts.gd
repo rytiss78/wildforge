@@ -95,7 +95,7 @@ static func strike(g,enemy: Dictionary,weapon: Dictionary,kind: String,damage: f
 	g.hit_enemy(enemy,{"kind":kind,"weapon_id":str(weapon.id),"critical":critical,"damage":damage*(g.stat("critPower") if critical else 1.0),"payload":mods(weapon).get("payload","")})
 
 static func in_range(g,origin: Vector3,reach: float) -> Array:
-	return g.enemies.filter(func(e):return not e.dead and is_instance_valid(e.node) and origin.distance_to(g.melee_contact(e,origin))<reach)
+	return g.enemies_near(origin,reach).filter(func(e):return not e.dead and is_instance_valid(e.node) and origin.distance_to(g.melee_contact(e,origin))<reach)
 
 static func spark(g,at: Vector3,velocity: Vector3,color: Color,life: float,scale: float=1.0):
 	if g.effects.size()>260: return
@@ -283,7 +283,7 @@ static func blood_pulse(g,weapon: Dictionary,damage: float):
 	if g.hp>g.stats.maxHp*.3: spent=g.hp*.04;g.hp-=spent
 	var radius=4.5*sqrt(size(g))
 	var power=damage*(.7+spent*.12)
-	var before=g.enemies.filter(func(e):return not e.dead and g.player.position.distance_to(g.melee_contact(e,g.player.position))<radius)
+	var before=g.enemies_near(g.player.position,radius).filter(func(e):return not e.dead and g.player.position.distance_to(g.melee_contact(e,g.player.position))<radius)
 	for enemy in before: strike(g,enemy,weapon,"blood-pump",power)
 	for enemy in before:
 		if enemy.dead and g.rules.rng.randf()<.05: g.stats.maxHp+=1;g.hp+=1

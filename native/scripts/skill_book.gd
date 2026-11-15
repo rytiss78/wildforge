@@ -66,7 +66,7 @@ static func start(g,kind: String,origin: Vector3,target: Vector3,scale: float,da
 		"thunderstorm":
 			var count=mini(18,3+int(rank/3)+2*(0 if visual_only else extra(g)))
 			var points=[]
-			var near=g.enemies.filter(func(e):return not e.dead and e.node.position.distance_to(origin)<26.0)
+			var near=g.enemies_near(origin,26.0).filter(func(e):return not e.dead and e.node.position.distance_to(origin)<26.0)
 			near.sort_custom(func(a,b):return a.node.position.distance_squared_to(target)<b.node.position.distance_squared_to(target))
 			for i in range(count):
 				if i<near.size() and not visual_only: points.append(near[i].node.position)
@@ -116,7 +116,7 @@ static func tick(g,delta: float):
 				var p: Vector3=spell.node.position+spell.velocity*delta;p.y=g.world.height_at(p.x,p.z);spell.node.position=p
 				spell.node.rotation.y+=delta*7.0
 				spell.node.get_child(0).material_override.set_shader_parameter("fade",clampf(minf(spell.age*4.0,spell.life*2.0),0,1))
-				for enemy in g.enemies.duplicate():
+				for enemy in g.enemies_near(p,spell.radius):
 					if enemy.dead: continue
 					var offset: Vector3=(p-enemy.node.position)*Vector3(1,0,1)
 					if offset.length()>spell.radius: continue
@@ -131,7 +131,7 @@ static func tick(g,delta: float):
 				var disk: Node3D=spell.node.get_child(0);disk.scale=Vector3.ONE*maxf(.05,grow);disk.rotation.y-=delta*3.0
 				spell.node.get_child(1).scale=Vector3.ONE*(.4+.6*grow)*(1.0+sin(spell.age*14.0)*.06)
 				var center: Vector3=spell.node.position
-				for enemy in g.enemies.duplicate():
+				for enemy in g.enemies_near(center,spell.radius*1.6):
 					if enemy.dead: continue
 					var offset: Vector3=(center-enemy.node.position)*Vector3(1,0,1)
 					if offset.length()>spell.radius*1.6: continue
@@ -144,7 +144,7 @@ static func tick(g,delta: float):
 					g.hit_shake=maxf(g.hit_shake,.25)
 					if not spell.visual_only:
 						var blast=spell.radius*1.2*SpellSynergy.collapse_scale(g)
-						for enemy in g.enemies.duplicate():
+						for enemy in g.enemies_near(center,blast):
 							if not enemy.dead and center.distance_to(g.melee_contact(enemy,center))<blast: strike(g,spell,enemy,spell.damage*.45,"explosion")
 						SpellSynergy.on_collapse(g,spell,center)
 			"thunderstorm":
@@ -155,7 +155,7 @@ static func tick(g,delta: float):
 					CombatInk.wave(g,point,spell.radius,COLORS.thunderstorm)
 					if spell.next%3==1: g.sound.effect("spell_strike",point)
 					if not spell.visual_only:
-						for enemy in g.enemies.duplicate():
+						for enemy in g.enemies_near(point,spell.radius):
 							if not enemy.dead and point.distance_to(g.melee_contact(enemy,point))<spell.radius: strike(g,spell,enemy,spell.damage*.6,"lightning")
 						SpellSynergy.on_strike(g,spell,point)
 				if spell.next>0: g.hit_shake=maxf(g.hit_shake,.06)
@@ -165,7 +165,7 @@ static func tick(g,delta: float):
 				for part in spell.node.get_children(): part.material_override.set_shader_parameter("fade",clampf(spell.life/.3,0,1))
 				if not spell.visual_only:
 					var center: Vector3=spell.node.position
-					for enemy in g.enemies.duplicate():
+					for enemy in g.enemies_near(center,front):
 						if enemy.dead or spell.burned.has(enemy.net_id): continue
 						if (enemy.node.position-center).length()<front+float(enemy.get("radius",.7)):
 							spell.burned[enemy.net_id]=true;strike(g,spell,enemy,spell.damage*.2,"fire")

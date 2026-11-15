@@ -167,6 +167,14 @@ var level_reveal = 0.0
 var player_poison = 0.0
 var player_fire = 0.0
 var crowd = {}
+# The crowd grid also answers "which enemies are near this point" (enemies_near),
+# so area damage, spells, shots and swings stop testing every enemy on the map.
+var crowd_list: Array=[]
+var crowd_slots: Dictionary={}
+var crowd_reach:=0.0
+var crowd_tall:=0.0
+var crowd_live:=false
+const CROWD_SLACK=3.0
 var player_chill=0.0
 var player_blind=0.0
 var status_tick=0.0
@@ -471,7 +479,7 @@ func clear_entities():
 	coop.clear_flower_visuals();flower_serial=0
 	BiomeMechanics.clear(self);DeathFx.clear(self);fight_zoom=1.0;fight_zoom_target=1.0
 	damage_feedback_time=0;last_damage_taken=0
-	eclipse_run_velocity=Vector3.ZERO;pickup_merge_clock=0;enemy_step=0;crowd.clear();damage_numbers.clear()
+	eclipse_run_velocity=Vector3.ZERO;pickup_merge_clock=0;enemy_step=0;crowd.clear();crowd_slots.clear();crowd_list.clear();crowd_live=false;damage_numbers.clear()
 	melee_attacks.clear();WeaponActs.clear()
 	if is_instance_valid(avatar): avatar.finish_melee()
 	for id in sound.weapon_loops: sound.weapon_loop(id,false,player.position)
@@ -1241,6 +1249,7 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 		Journey.boss_arrived(self,enemy)
 	if elite: EliteMods.assign(self,enemy)
 	enemies.append(enemy)
+	if crowd_live: crowd_add(enemy)
 
 # Much harder (user request, October 24): a quarter less XP per kill, enemies 10%
 # faster, one more enemy per wave and waves 15% closer together.
@@ -1335,6 +1344,43 @@ func steer_enemy(enemy: Dictionary,aim: Vector3,delta: float=1.0/30.0) -> Vector
 	enemy.avoid_scale=-.4
 	return -aim*.4
 
+# Files every living enemy under its 3 m cell. Built at the start of update_combat
+# and again once the tick's spawns are in, just before enemies move.
+func crowd_build():
+	crowd.clear();crowd_slots.clear();crowd_list.clear();crowd_reach=0.0;crowd_tall=0.0
+	for enemy in enemies:
+		if not enemy.dead: crowd_add(enemy)
+	crowd_live=true
+
+func crowd_add(enemy: Dictionary):
+	# A wall crawler's body leans sideways, so its reach on the map grows by its height.
+	var up: Vector3=enemy.node.basis.y
+	crowd_reach=maxf(crowd_reach,float(enemy.get("radius",.6))+Vector2(up.x,up.z).length()*float(enemy.get("height",1.7)))
+	crowd_tall=maxf(crowd_tall,float(enemy.get("height",1.7)))
+	var cell=Vector2i(floori(enemy.node.position.x/3),floori(enemy.node.position.z/3))
+	if not crowd.has(cell): crowd[cell]=[];crowd_slots[cell]=[]
+	crowd[cell].append(enemy);crowd_slots[cell].append(crowd_list.size());crowd_list.append(enemy)
+
+# Living enemies whose body may be within `radius` of `point`, in spawn order (the
+# order a loop over `enemies` gives). It can return more than that, never fewer:
+# callers keep their own exact test. CROWD_SLACK covers how far an enemy moves
+# within one tick. Outside update_combat the grid is stale, so every enemy comes back.
+func enemies_near(point: Vector3,radius: float) -> Array:
+	if not crowd_live: return enemies.filter(func(e):return not e.dead)
+	var reach=radius+crowd_reach+CROWD_SLACK
+	var low=Vector2i(floori((point.x-reach)/3),floori((point.z-reach)/3))
+	var high=Vector2i(floori((point.x+reach)/3),floori((point.z+reach)/3))
+	if (high.x-low.x+1)*(high.y-low.y+1)>=crowd.size(): return crowd_list.filter(func(e):return not e.dead)
+	var picked=PackedInt32Array()
+	for x in range(low.x,high.x+1):
+		for y in range(low.y,high.y+1):
+			for slot in crowd_slots.get(Vector2i(x,y),[]): picked.append(slot)
+	picked.sort()
+	var result=[]
+	for slot in picked:
+		if not crowd_list[slot].dead: result.append(crowd_list[slot])
+	return result
+
 func nearest_enemy(origin: Vector3, distance_value: float, excluded: Array = []) -> Dictionary:
 	var result = {}
 	var best_distance = distance_value*distance_value
@@ -1365,8 +1411,7 @@ func enemy_touching(enemy: Dictionary,target: Vector3) -> bool:
 
 func nearest_melee(origin: Vector3,reach: float) -> Dictionary:
 	var closest={};var distance_value=reach
-	for enemy in enemies:
-		if enemy.dead: continue
+	for enemy in enemies_near(origin,reach):
 		var distance_to_body=origin.distance_to(melee_contact(enemy,origin))
 		if distance_to_body<reach and (closest.is_empty() or enemy.boss and not closest.boss or enemy.boss==closest.boss and distance_to_body<distance_value) and target_visible(origin,melee_contact(enemy,origin)): closest=enemy;distance_value=distance_to_body
 	return closest
@@ -1378,7 +1423,7 @@ func update_melee(delta: float):
 		slash_fx(swing.origin,swing.target)
 		if swing.get("visual_only",false): continue
 		var hits=0
-		for enemy in enemies:
+		for enemy in enemies_near(swing.origin,swing.reach):
 			if enemy.dead: continue
 			var contact=melee_contact(enemy,swing.origin);var offset=contact-swing.origin
 			if offset.length()>swing.reach or (offset.length()>.6 and offset.normalized().dot(swing.aim)<float(swing.get("sweep_dot",.45))): continue
@@ -1474,6 +1519,7 @@ func spawn_network_enemy(actor: Dictionary) -> Dictionary:
 	if enemy.modifier.is_empty(): enemy.erase("modifier")
 	else: EliteMods.badge(self,enemy)
 	enemies.append(enemy)
+	if crowd_live: crowd_add(enemy)
 	# Apply eclipse corruption for newly spawned remote enemies
 	if events.get("eclipse",false):
 		var stage=maxi(1,int(events.get("eclipse_stage",1)))
@@ -1517,7 +1563,7 @@ func fire(weapon: Dictionary, origin: Vector3):
 	if SkillBook.cast(self,weapon,kind,origin,target,base_damage): return
 	if WeaponActs.fire(self,weapon,kind,origin,target,base_damage,effective_range): return
 	if kind=="horn":
-		for enemy in enemies:
+		for enemy in enemies_near(origin,effective_range):
 			var offset=melee_contact(enemy,origin)-origin
 			if not enemy.dead and offset.length()<effective_range and (offset.length()<.01 or offset.normalized().dot(aim)>float(mods.get("coneDot",.55))):
 				hurt_enemy(enemy,base_damage,"sonic",weapon.id);enemy.freeze=maxf(enemy.freeze,.35+stats.hornStun+float(mods.get("stunBonus",0)))
@@ -1909,7 +1955,7 @@ func kill_enemy(enemy: Dictionary, cause: String):
 
 func damage_area(origin: Vector3,radius: float,damage: float,cause: String,excluded: Dictionary = {},source: String=""):
 	if cause in ["explosion","slam","meteor","burrow","lightning","stomp"] and not barrels.is_empty(): ExplosiveBarrels.area(self,origin,radius)
-	for enemy in enemies.duplicate():
+	for enemy in enemies_near(origin,radius):
 		if enemy != excluded and not enemy.dead and origin.distance_to(melee_contact(enemy,origin)) < radius:
 			if cause=="slam": update_reaction(enemy,"slam",damage)
 			hurt_enemy(enemy,damage,cause,source)
@@ -2223,6 +2269,7 @@ func update_fight_zoom(delta: float):
 func update_combat(delta: float):
 	EffectDetail.tick(self,delta)
 	var section_times={"movement":0.0,"visuals":0.0,"steering":0.0} if profile_crowd else {}
+	crowd_build()
 	update_melee(delta)
 	WeaponActs.tick(self,delta)
 	spawn_clock -= delta
@@ -2241,12 +2288,7 @@ func update_combat(delta: float):
 		formation_clock-=delta
 		if formation_clock<=0:
 			spawn_formation();formation_clock=105.0
-	crowd.clear()
-	for enemy in enemies:
-		if enemy.dead: continue
-		var cell=Vector2i(floori(enemy.node.position.x/3),floori(enemy.node.position.z/3))
-		if not crowd.has(cell): crowd[cell]=[]
-		crowd[cell].append(enemy)
+	crowd_build()
 	update_garden(delta)
 	for weapon in equipped:
 		if weapon.id=="flowers": continue
@@ -2488,7 +2530,7 @@ func update_combat(delta: float):
 		if shot.life<=0:
 			if shot.kind=="bomb": damage_area(shot.node.position,3.5*stats.bombSize*float(shot.get("area_scale",1)),shot.damage,"explosion",{},str(shot.get("weapon_id","bomb")))
 			continue
-		for enemy in enemies:
+		for enemy in enemies_near(shot_start.lerp(shot.node.position,.5),shot_start.distance_to(shot.node.position)*.5+float(shot.get("hit_radius",.1))+crowd_tall*.85):
 			if enemy.dead or shot.hit.has(enemy.net_id): continue
 			var center=enemy_center(enemy)
 			# Bombs roll along the ground: test them against the enemy's axis at bomb
@@ -2529,7 +2571,7 @@ func update_combat(delta: float):
 		pool.tick=float(pool.get("tick",0.0))-delta
 		var ticking=pool.tick<=0
 		if ticking: pool.tick+=.25
-		for enemy in enemies:
+		for enemy in enemies_near(pool.node.position,float(pool.get("radius",2.5))):
 			if not enemy.dead and pool.node.position.distance_to(melee_contact(enemy,pool.node.position))<pool.get("radius",2.5):
 				if ticking: hurt_enemy(enemy,pool.damage*.25,"gravity" if pool.get("gravity",false) else "poison",str(pool.get("mechanic","gravity")) if pool.get("gravity",false) else str(pool.get("mechanic","")),pool.node.position)
 				# A poison weapon's cloud poisons in step with Damage cards, or most of its
@@ -2597,6 +2639,7 @@ func update_combat(delta: float):
 		if hp>0 and stats.nova>0:
 			damage_area(player.position,7,stats.nova,"explosion");CombatInk.wave(self,player.position,7,Color("af71ff"));sound.effect("nova")
 		nova_clock=6
+	crowd_live=false
 	if (not coop.active or coop.hosting) and xp>=xp_target and mode=="playing": level_up()
 
 # The Storm card's bolts: the four enemies nearest the hero, within STORM_REACH.
@@ -2604,7 +2647,7 @@ func update_combat(delta: float):
 const STORM_REACH=32.0
 func storm_strike():
 	var origin=player.position
-	var near=enemies.filter(func(e):return not e.dead and e.node.position.distance_squared_to(origin)<STORM_REACH*STORM_REACH)
+	var near=enemies_near(origin,STORM_REACH).filter(func(e):return not e.dead and e.node.position.distance_squared_to(origin)<STORM_REACH*STORM_REACH)
 	near.sort_custom(func(a,b):return a.node.position.distance_squared_to(origin)<b.node.position.distance_squared_to(origin))
 	for enemy in near.slice(0,4):
 		if enemy.dead: continue
@@ -2760,7 +2803,7 @@ func _physics_process(delta: float):
 		if not can_afford: affordable_warned=false
 
 func update_aura_visual():
-	var active=hp>0 and stats.auraDamage>0 and enemies.any(func(e):return not e.dead and player.position.distance_squared_to(melee_contact(e,player.position))<16)
+	var active=hp>0 and stats.auraDamage>0 and enemies_near(player.position,4.0).any(func(e):return not e.dead and player.position.distance_squared_to(melee_contact(e,player.position))<16)
 	if not active:
 		if has_meta("aura_node"):
 			var old=get_meta("aura_node")
@@ -3423,17 +3466,18 @@ func update_garden(delta: float):
 		var area=flower.node.get_node_or_null("Area")
 		if area!=null: area.visible=flower.age>=1.5 or flower.bloom>0
 		if flower.age<1.5: continue
-		for enemy in enemies:
+		var flower_near=enemies_near(flower.node.position,FLOWER_REACH)
+		for enemy in flower_near:
 			if enemy.dead or not is_instance_valid(enemy.node): continue
 			if flower.node.position.distance_to(melee_contact(enemy,flower.node.position))<FLOWER_REACH:
 				enemy.slow=maxf(enemy.slow,stats.flowerRoots);set_damage_status(enemy,"poison",stats.flowerPollen*sqrt(maxf(1.0,weapon_power("flowers"))),coop.local_id);enemy.status_time=3
 				achievement_event("ROOTS");achievement_event("POLLEN")
-		if flower.bloom<=0 and enemies.any(func(e): return not e.dead and flower.node.position.distance_to(melee_contact(e,flower.node.position))<FLOWER_REACH):
+		if flower.bloom<=0 and flower_near.any(func(e): return not e.dead and flower.node.position.distance_to(melee_contact(e,flower.node.position))<FLOWER_REACH):
 			var chain=flowers.filter(func(f):return f.age>=1.5 and f.bloom<=0 and f.node.position.distance_to(flower.node.position)<FLOWER_STEP*1.6)
 			if chain.size()>=3: achievement_event("BLOOM_CHAIN")
 			for bloom in chain:
 				bloom.bloom=3.5
-				for enemy in enemies:
+				for enemy in enemies_near(bloom.node.position,FLOWER_REACH):
 					if not enemy.dead and enemy.boss and bloom.node.position.distance_to(melee_contact(enemy,bloom.node.position))<FLOWER_REACH: achievement_event("FLOWER_BOSS")
 				# Current rank, not the rank when the flower was planted: flowers live 22 s,
 				# so a rank-up only showed once the old trail had withered.
