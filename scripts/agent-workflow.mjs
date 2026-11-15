@@ -6,7 +6,16 @@ import {join, resolve} from 'node:path';
 import {fileURLToPath} from 'node:url';
 
 const root = fileURLToPath(new URL('../', import.meta.url));
-const godot = join(root, 'tools/godot/Godot_v4.7.2-stable_win64_console.exe');
+// The bundled Windows console build on the user's PC; the same engine version for
+// Linux on GitHub's machines (WILDFORGE_GODOT names any other location).
+export function godotPath(platform=process.platform, override=process.env.WILDFORGE_GODOT) {
+  if (override) return resolve(override);
+  return join(root, 'tools/godot', platform === 'win32' ? 'Godot_v4.7.2-stable_win64_console.exe' : 'Godot_v4.7.2-stable_linux.x86_64');
+}
+const godot = godotPath();
+// Slower machines (GitHub's runners import every asset from nothing) get the same
+// steps with longer limits; the checks themselves do not change.
+const timeoutScale = Math.max(1, Number(process.env.WILDFORGE_TIMEOUT_SCALE) || 1);
 const stage = join(root, '.build-staging/agent-workflow');
 const fatal = /SCRIPT ERROR:|Parse Error:|Compile Error:/;
 
@@ -61,6 +70,22 @@ export function assessSmoke(output) {
   return {checksPassed: checks.length, metadataFields: Object.keys(fields).length - checks.length};
 }
 
+// A failing run prints one long result line; name the checks that are false so
+// the reason is not cut off with the rest of the output.
+export function failedChecks(output) {
+  const failed=[];
+  for (const line of output.split(/\r?\n/)) {
+    const match=/^[A-Z][A-Z_]+ (\{.*\})\s*$/.exec(line);
+    if (!match) continue;
+    try {
+      const fields=JSON.parse(match[1]);
+      for (const group of [fields, fields.checks]) if (group && typeof group === 'object')
+        for (const [key,value] of Object.entries(group)) if (value === false) failed.push(key);
+    } catch { /* not a result line */ }
+  }
+  return failed.length ? `False checks: ${[...new Set(failed)].join(', ')}. ` : '';
+}
+
 export function assessPng(path, started, minimum=320) {
   const info = statSync(path);
   if (info.mtimeMs < started - 1000) throw new Error('Capture is stale.');
@@ -99,15 +124,17 @@ async function main(action) {
   // Test parties use ports of their own, so they never meet a real game hosting on
   // this PC (a test guest once joined the user's own party).
   env.WILDFORGE_COOP_PORT=process.env.WILDFORGE_COOP_PORT||'39736';
-  for (const dir of [env.APPDATA, env.LOCALAPPDATA, env.TEMP]) mkdirSync(dir,{recursive:true});
+  // Away from Windows Godot keeps user:// under the XDG folders: isolate those too.
+  if (process.platform !== 'win32') Object.assign(env, {XDG_DATA_HOME:join(runDir,'profile/data'), XDG_CONFIG_HOME:join(runDir,'profile/config'), XDG_CACHE_HOME:join(runDir,'profile/cache')});
+  for (const dir of [env.APPDATA, env.LOCALAPPDATA, env.TEMP, env.XDG_DATA_HOME, env.XDG_CONFIG_HOME, env.XDG_CACHE_HOME].filter(Boolean)) mkdirSync(dir,{recursive:true});
   const report = {action, started:new Date(started).toISOString(), head:git('rev-parse','HEAD'),
     diffSha256:await diffFingerprint(root),
     untrackedFiles:git('ls-files','--others','--exclude-standard','-z').split('\0').filter(Boolean).map(path=>({path,sha256:createHash('sha256').update(readFileSync(join(root,path))).digest('hex')})),
     isolatedProfile:env.APPDATA, steps:[], success:false};
   async function step(name, exe, args, timeoutMs) {
-    const result = await runStep(exe,args,{cwd:root,env,timeoutMs,logPath:join(runDir,name+'.log')});
+    const result = await runStep(exe,args,{cwd:root,env,timeoutMs:timeoutMs*timeoutScale,logPath:join(runDir,name+'.log')});
     const {output,...record}=result; report.steps.push(record);
-    if (result.exitCode !== 0 || fatal.test(output)) throw new Error(`${name} failed (exit ${result.exitCode}). ${output.slice(-2400)}`);
+    if (result.exitCode !== 0 || fatal.test(output)) throw new Error(`${name} failed (exit ${result.exitCode}). ${failedChecks(output)}${output.slice(-2400)}`);
     return output;
   }
   try {

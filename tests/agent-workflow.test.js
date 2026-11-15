@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {mkdtempSync, writeFileSync, readFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
-import {runStep, assessSmoke, assessPng, diffFingerprint} from '../scripts/agent-workflow.mjs';
+import {runStep, assessSmoke, assessPng, diffFingerprint, godotPath, failedChecks} from '../scripts/agent-workflow.mjs';
 import {spawnSync} from 'node:child_process';
 import {createHash, randomBytes} from 'node:crypto';
 
@@ -57,4 +57,13 @@ test('build guard rejects staged, unstaged, untracked and renamed build inputs b
   git('-c','user.name=Workflow fixture','-c','user.email=fixture@example.invalid','commit','-m','Metadata');
   git('mv','package.json','README.md');assert.throws(()=>assertCommittedBuild(dir),/package.json/);
   writeFileSync(join(dir,'new art.svg'),'<svg/>');assert.throws(()=>assertCommittedBuild(dir),/new art.svg/);
+});
+test('the engine is the bundled 4.7.2 build for the platform unless one is named', () => {
+  assert.match(godotPath('win32',''),/tools[\\/]godot[\\/]Godot_v4\.7\.2-stable_win64_console\.exe$/);
+  assert.match(godotPath('linux',''),/tools[\\/]godot[\\/]Godot_v4\.7\.2-stable_linux\.x86_64$/);
+  assert.match(godotPath('linux','/opt/engine/godot'),/engine[\\/]godot$/);
+});
+test('a failed step names its false checks', () => {
+  assert.equal(failedChecks('noise\nNATIVE_SMOKE {"a":true,"b":false,"n":3}\nX_CHECK {"passed":false,"checks":{"c":false,"d":true}}\n'),'False checks: b, passed, c. ');
+  assert.equal(failedChecks('NATIVE_SMOKE {"a":true}\nplain text'),'');
 });
