@@ -8,7 +8,10 @@ class_name SkillBook
 #   blackhole    a vortex that pulls a crowd together, then collapses in a blast
 #   thunderstorm a volley of sky lightning across many enemies
 #   inferno      a ring of fire that sweeps outward and sets everything alight
-# Active casts live in g.skills. A spell from a co-op teammate is visual only.
+# Active casts live in g.skills. A spell from a co-op teammate is visual only:
+# its damage arrives as that player's hits. The drag of twisters and black holes
+# is the host's to apply (enemies move on the host), for its own spells and for
+# a teammate's alike; before, a guest's black hole pulled nothing at all.
 const KINDS=["tornado","blackhole","thunderstorm","inferno"]
 const COLORS={"tornado":Color("b8ece0"),"blackhole":Color("a77cff"),"thunderstorm":Color("79c6ff"),"inferno":Color("ffb02e")}
 const SOUNDS={"tornado":"spell_tornado","blackhole":"spell_blackhole","thunderstorm":"spell_thunderstorm","inferno":"spell_inferno"}
@@ -117,7 +120,7 @@ static func tick(g,delta: float):
 					if enemy.dead: continue
 					var offset: Vector3=(p-enemy.node.position)*Vector3(1,0,1)
 					if offset.length()>spell.radius: continue
-					if not spell.visual_only and authority and not enemy.boss and offset.length()>.4: pull(enemy,offset.normalized()*5.0)
+					if authority and not enemy.boss and offset.length()>.4: pull(enemy,offset.normalized()*5.0)
 					if hits: strike(g,spell,enemy,spell.damage*.9,"hit")
 				if hits: SpellSynergy.on_twister(g,spell,p)
 				if fresh:
@@ -132,7 +135,7 @@ static func tick(g,delta: float):
 					if enemy.dead: continue
 					var offset: Vector3=(center-enemy.node.position)*Vector3(1,0,1)
 					if offset.length()>spell.radius*1.6: continue
-					if not spell.visual_only and authority and not enemy.boss and offset.length()>.6: pull(enemy,offset.normalized()*7.5)
+					if authority and not enemy.boss and offset.length()>.6: pull(enemy,offset.normalized()*7.5)
 					if hits and offset.length()<spell.radius: strike(g,spell,enemy,spell.damage*.04,"gravity")
 				if spell.life<=0:
 					var burst=CombatInk.star(g,center+Vector3.UP*1.2,spell.radius*2.0,COLORS.blackhole,10.0,.5)

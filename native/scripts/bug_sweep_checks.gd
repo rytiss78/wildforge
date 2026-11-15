@@ -51,6 +51,18 @@ static func run(game: Node3D) -> Dictionary:
 	checks.sweep_storm_hits_nearest_four=far.hp==5000.0 and struck.size()==4 and near.slice(0,4).all(func(e):return e.hp<5000.0)
 	game.stats.storm=0.0;game.clear_entities()
 
+	# The host drags enemies into a friend's black hole (shown here as a visual
+	# only), and a hit on someone who has left the party is ignored.
+	coop.active=true;coop.hosting=true
+	game.spawn_enemy(12.0);var dragged=game.enemies[-1];dragged.erase("modifier");dragged.speed=0.0;dragged.node.position=here+Vector3(3,0,0);dragged.erase("pull")
+	var hp_before=float(dragged.hp)
+	SkillBook.cast_visual(game,"blackhole",here,here+Vector3(3,0,2),.1);SkillBook.tick(game,.016)
+	var drag: Vector3=dragged.get("pull",Vector3.ZERO)
+	checks.sweep_host_pulls_for_friend_spell=drag.length()>1.0 and drag.z>0 and float(dragged.hp)==hp_before
+	coop.damage_player(77,10.0,here,"hit")
+	checks.sweep_hit_on_departed_player_ignored=not coop.members.has(77)
+	coop.active=false;coop.hosting=false;game.clear_entities()
+
 	# A new run starts without the last run's timers and pushes.
 	game.shield_delay=4.0;game.ghost_time=2.0;game.burrow_time=.4;game.knock_velocity=Vector3(11,0,0);game.walking_gold=.9
 	game.start_run(734);game.set_physics_process(false);game.spawn_clock=99999
