@@ -2331,7 +2331,7 @@ func update_combat(delta: float):
 		if coop.active and not coop.hosting:
 			var previous=enemy.node.position
 			update_status_indicators(enemy)
-			enemy.node.position=enemy.node.position.lerp(enemy.get("target_position",previous),1-exp(-enemy_delta*16))
+			enemy.node.position=CoopSession.replica_step(enemy,previous,enemy_delta,16)
 			var rig=enemy.node.get_meta("rig");rig.set_health(enemy.hp/enemy.maxHp,enemy.boss or enemy.health>=1.8);rig.animate(enemy_delta,(enemy.node.position-previous)/enemy_delta,true);rig.statuses(enemy.fire>0,enemy.poison>0,enemy.freeze>0,enemy.blind>0)
 			# Pulse elite ring
 			if enemy.get("elite",false) and enemy.node.has_meta("elite_ring") and is_instance_valid(enemy.node.get_meta("elite_ring")):

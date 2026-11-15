@@ -48,5 +48,24 @@ static func run(game: Node3D) -> Dictionary:
 	checks.net_big_message_gap_refused=skipped==null
 	checks.net_big_message_bad_piece_refused=game.coop.take_part(99,{"type":"part","serial":8,"index":0,"count":9999,"bytes":PackedByteArray([1])})==null and game.coop.take_part(99,{"type":"part","serial":"x","index":0,"count":2,"bytes":PackedByteArray([1])})==null
 	game.coop.parts_in.erase(99)
+	# Replica motion: an enemy walking at 4 m/s, reported ten times a second and
+	# 50 ms late, drawn at 30 Hz. Chasing only the last report trails by over half
+	# a metre; carrying the reported speed stays within 30 cm, does not run on past
+	# a stop, and takes no speed from a teleport.
+	var replica={};var chased=Vector3.ZERO;var drawn=Vector3.ZERO;var old_error=0.0;var new_error=0.0;var samples=0;var overshoot=0.0
+	for tick in range(150):
+		var now=tick/30.0
+		var truth=func(t: float) -> Vector3: return Vector3(4.0*minf(maxf(t,0.0),3.0),0,0)
+		if tick%3==0:
+			var seen: Vector3=truth.call(now-.05)
+			CoopSession.replica_snapshot(replica,seen);replica.plain=seen
+		chased=chased.lerp(replica.plain,1-exp(-16.0/30.0))
+		drawn=CoopSession.replica_step(replica,drawn,1.0/30.0,16)
+		if now>.5 and now<3.0: old_error+=chased.distance_to(truth.call(now));new_error+=drawn.distance_to(truth.call(now));samples+=1
+		overshoot=maxf(overshoot,drawn.x-12.0)
+	checks.net_replica_keeps_up=new_error/samples<.3 and old_error/samples>.5
+	checks.net_replica_stops=overshoot<.6 and drawn.distance_to(Vector3(12,0,0))<.05
+	CoopSession.replica_snapshot(replica,Vector3(60,0,0))
+	checks.net_replica_no_speed_from_teleport=replica.net_velocity==Vector3.ZERO and replica.target_position==Vector3(60,0,0)
 	game.owned=owned;MutationBook.reset(game);game.clear_entities()
 	return checks
