@@ -38,6 +38,13 @@ export function profileEnv(env, profile, platform=process.platform) {
   return {...env, APPDATA:profile, XDG_DATA_HOME:join(profile,'data'), XDG_CONFIG_HOME:join(profile,'config'), XDG_CACHE_HOME:join(profile,'cache')};
 }
 
+// Why a two-process review was refused, before the tail of its output: the exit
+// code, a missing result line, and the first engine error lines.
+export function reviewFailure(exitCode, output, line) {
+  const errors=output.split(/\r?\n/).filter(x=>/SCRIPT ERROR:|Parse Error:|Compile Error:|ERROR:|ObjectDB instances were leaked/.test(x)).slice(0,6).map(x=>x.slice(0,300));
+  return [exitCode!==0?'exit '+exitCode:'', line?'':'no result line', ...errors].filter(Boolean).join(' | ')+' || ';
+}
+
 export async function runStep(exe, args, {cwd, env, timeoutMs, logPath}) {
   mkdirSync(resolve(logPath, '..'), {recursive: true});
   const log = createWriteStream(logPath);
@@ -378,7 +385,7 @@ async function main(action) {
         const result=await runStep(process.env.WILDFORGE_TEST_EXE||godot,reviewArgs,{cwd:root,env:profileEnv(env,profile),timeoutMs:180000*timeoutScale,logPath:join(runDir,role+'.log')});
         const {output,...record}=result;report.steps.push(record);
         const line=output.split(/\r?\n/).findLast(x=>x.startsWith('SHARED_REVIEW '));
-        if(result.exitCode!==0 || fatal.test(output) || /ERROR:|ObjectDB instances were leaked/.test(output) || !line) throw new Error(role+' shared review failed: '+output.slice(-3000));
+        if(result.exitCode!==0 || fatal.test(output) || /ERROR:|ObjectDB instances were leaked/.test(output) || !line) throw new Error(role+' shared review failed: '+reviewFailure(result.exitCode,output,line)+output.slice(-3000));
         const parsed=JSON.parse(line.slice('SHARED_REVIEW '.length));
         if(Object.values(parsed.checks).some(v=>v===false))throw new Error(role+' assertions failed');
         return parsed;
@@ -480,7 +487,7 @@ async function main(action) {
         const result=await runStep(process.env.WILDFORGE_TEST_EXE||godot,args,{cwd:root,env:profileEnv(env,profile),timeoutMs:120000*timeoutScale,logPath:join(runDir,role+'.log')});
         const {output,...record}=result;report.steps.push(record);
         const line=output.split(/\r?\n/).findLast(x=>x.startsWith('DROPIN_REVIEW '));
-        if(result.exitCode!==0 || fatal.test(output) || /ERROR:|ObjectDB instances were leaked/.test(output) || !line) throw new Error(role+' drop-in review failed: '+output.slice(-3000));
+        if(result.exitCode!==0 || fatal.test(output) || /ERROR:|ObjectDB instances were leaked/.test(output) || !line) throw new Error(role+' drop-in review failed: '+reviewFailure(result.exitCode,output,line)+output.slice(-3000));
         const parsed=JSON.parse(line.slice('DROPIN_REVIEW '.length));
         if(Object.values(parsed.checks).some(v=>v===false))throw new Error(role+' drop-in assertions failed');
         return parsed;

@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {mkdtempSync, writeFileSync, readFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
-import {runStep, assessSmoke, assessPng, diffFingerprint, godotPath, failedChecks, profileEnv} from '../scripts/agent-workflow.mjs';
+import {runStep, assessSmoke, assessPng, diffFingerprint, godotPath, failedChecks, profileEnv, reviewFailure} from '../scripts/agent-workflow.mjs';
 import {spawnSync} from 'node:child_process';
 import {createHash, randomBytes} from 'node:crypto';
 
@@ -73,4 +73,8 @@ test('each extra game process gets its own save folder on every platform', () =>
   assert.equal(linux.XDG_DATA_HOME,join('p','data'));
   assert.equal(linux.XDG_CONFIG_HOME,join('p','config'));
   assert.equal(linux.A,'1');
+});
+test('a refused two-process review says why', () => {
+  assert.equal(reviewFailure(0,'fine\nERROR: socket closed\n   at: poll\nSHARED_REVIEW {}','SHARED_REVIEW {}'),'ERROR: socket closed || ');
+  assert.equal(reviewFailure(3,'nothing',undefined),'exit 3 | no result line || ');
 });
