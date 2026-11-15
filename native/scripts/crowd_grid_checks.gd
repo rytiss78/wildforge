@@ -28,7 +28,7 @@ static func run(game: Node3D) -> Dictionary:
 	checks.grid_keeps_spawn_order=ordered
 	checks.grid_narrows_small_queries=narrowed
 	# An enemy spawned after the grid was built is found in the same tick.
-	game.spawn_enemy(12.0);var late=game.enemies[-1];late.erase("modifier")
+	game.spawn_enemy(12.0);var late=game.enemies[-1];late.erase("modifier");late.maxHp=5000.0;late.hp=5000.0;late.speed=0.0
 	checks.grid_sees_late_spawn=game.enemies_near(late.node.position,1.0).has(late)
 	# Area damage through the grid hurts exactly the enemies in the blast.
 	var blast: Vector3=here+Vector3(4,0,3)
