@@ -2,7 +2,7 @@
 
 Build 33 is a Windows alpha and a fix release on top of [Build 32](build32-release.md): the game's content is the same. `build-info.json` beside the executable records the exact source commit and artifact hashes. **Every player in a party needs Build 33**: co-op refuses any other download, Build 32 included (network protocol `wildforge-shared-world-25`). The main menu shows the build ID (bottom right) to compare.
 
-**Install:** extract the whole ZIP into a folder and run `Wildforge.exe`. Keep `Wildforge.pck` and `godot_wry.dll` beside it. Archive `Wildforge-1.15.1-Windows.zip`, SHA-256 `43dd0e3340541b2be7b33f2206efe10adbb379f68f943b721d274aa08b5692bd`, source commit `460f9db`.
+**Install:** extract the whole ZIP into a folder and run `Wildforge.exe`. Keep `Wildforge.pck` and `godot_wry.dll` beside it. Archive `Wildforge-1.15.1-Windows.zip`, SHA-256 `b1e6b54d4b56d475e7fd1e65a34379b2f6ca0795b7c97ccb70cbcab325685e0a`, source commit `162801d`. A first upload of Build 33 (source `460f9db`, about half an hour on November 15) was replaced by this one; the game is the same, but co-op needs both players on the same upload, so download it again if the build ID at the bottom right of the main menu does not read `162801d`.
 
 ## Co-op
 
@@ -28,9 +28,8 @@ Build 33 is a Windows alpha and a fix release on top of [Build 32](build32-relea
 
 - Still nobody has played the Build 32 run structure, maps and weapons; balance is only measured by automated reviews.
 - Co-op has only run as two copies on one PC. The co-op fixes pass the automated two-copy tests but are not confirmed by a real party.
-- One automated two-copy check (`shared-review`) fails for a reason not yet found; see Verified.
 - The quieter roar and stingers were set by measured loudness and have not been heard in game by a person.
 
 ## Verified
 
-`check`, `smoke`, `integration` (with the new co-op sync regressions), the one-PC two-copy `coop` test and the exported build's smoke run passed on the release commit. `coop-dropin`, `crowd-review` and `crowd-spells` passed on the same game code on November 11. The `shared-review` two-copy check does not pass: its host stalls before the chest handoff. The cause is not yet known and is tracked in [PLAN.md](../../PLAN.md).
+`check`, `smoke`, `integration` (with the new co-op sync regressions), the three one-PC two-copy tests (`coop`, `coop-dropin` and `shared-review`) and the exported build's smoke run all passed on the release commit. `crowd-review` and `crowd-spells` passed on the same game code on November 11.
