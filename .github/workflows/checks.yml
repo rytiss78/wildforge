@@ -15,8 +15,9 @@ permissions:
   contents: read
 
 concurrency:
-  group: checks-${{ github.ref }}
-  cancel-in-progress: true
+  group: checks-${{ github.event_name == 'pull_request' && github.ref || github.run_id }}
+  # A newer push replaces a pull request's run; every commit on main is checked.
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 env:
   GODOT_VERSION: 4.7.2-stable

@@ -76,6 +76,10 @@ static func receive(g,sender: int,message) -> bool:
 	return true
 
 static var last_heard={}
+
+# A new run: nobody is watched and the cheer clock (run time) starts over.
+static func reset():
+	target_id=-1;pan=Vector3.ZERO;last_cheer=-99.0;last_heard={};keys_down.fill(false)
 static func hear(g,from: int,index: int):
 	last_heard={"from":from,"index":index,"time":g.elapsed}
 	var path="res://assets/voices/cheers/cheer_%s.wav" % CHEERS[index]

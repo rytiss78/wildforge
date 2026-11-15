@@ -197,6 +197,68 @@ var coop: CoopSession
 var network_test_role=""
 
 
+# Test and review runs, one per command-line flag. With several flags the first
+# entry in this order runs. A script is started with run(game); a pair of host and
+# client flags passes which side it is; a name is a method of this node.
+const REVIEW_RUNS=[
+	["--shared-review-host",preload("res://scripts/shared_review.gd"),true],
+	["--shared-review-client",preload("res://scripts/shared_review.gd"),false],
+	["--dropin-review-host",preload("res://scripts/dropin_review.gd"),true],
+	["--dropin-review-client",preload("res://scripts/dropin_review.gd"),false],
+	["--run-bot",preload("res://scripts/run_bot.gd")],
+	["--island-review",preload("res://scripts/island_review.gd")],
+	["--block-drop-review",preload("res://scripts/block_drop_review.gd")],
+	["--shorts-review",preload("res://scripts/shorts_review.gd")],
+	["--hero-numbers-review",preload("res://scripts/hero_numbers_review.gd")],
+	["--colossus-review",preload("res://scripts/colossus_review.gd")],
+	["--cartoon-review",preload("res://scripts/cartoon_review.gd")],
+	["--model-review",preload("res://scripts/model_review.gd")],
+	["--weapon-review",preload("res://scripts/weapon_review.gd")],
+	["--weapon-combos",preload("res://scripts/weapon_combo_review.gd")],
+	["--balance-review",preload("res://scripts/balance_review.gd")],
+	["--mutation-balance",preload("res://scripts/mutation_balance.gd")],
+	["--hermes-review",preload("res://scripts/hermes_review.gd")],
+	["--big-update-check",preload("res://scripts/big_update_checks.gd")],
+	["--presentation-check",preload("res://scripts/presentation_checks.gd")],
+	["--hero-check",preload("res://scripts/hero_checks.gd")],
+	["--visual-update-check",preload("res://scripts/visual_update_checks.gd")],
+	["--combat-check",preload("res://scripts/combat_checks.gd")],
+	["--crowd-xp-check",preload("res://scripts/crowd_xp_checks.gd")],
+	["--pickup-check",preload("res://scripts/pickup_checks.gd")],
+	["--melee-check",preload("res://scripts/melee_checks.gd")],
+	["--update-check",preload("res://scripts/update_checks.gd")],
+	["--style-roundtrip","run_style_roundtrip"],
+	["--coop-host-test","run_coop_test"],
+	["--coop-client-test","run_coop_test"],
+	["--coop-feedback",preload("res://scripts/coop_feedback_review.gd")],
+	["--eclipse-review",preload("res://scripts/eclipse_review.gd")],
+	["--feedback-review",preload("res://scripts/feedback_review.gd")],
+	["--controls-review",preload("res://scripts/controls_review.gd")],
+	["--surface-review",preload("res://scripts/surface_review.gd")],
+	["--progression-review",preload("res://scripts/progression_review.gd")],
+	["--field-review",preload("res://scripts/field_review.gd")],
+	["--crowd-review",preload("res://scripts/crowd_review.gd")],
+	["--hunt-review",preload("res://scripts/hunt_review.gd")],
+	["--scenery-review",preload("res://scripts/scenery_review.gd")],
+	["--journey-review",preload("res://scripts/journey_review.gd")],
+	["--ui-review",preload("res://scripts/ui_review.gd")],
+	["--pace-review",preload("res://scripts/pace_review.gd")],
+	["--biome-review",preload("res://scripts/biome_review.gd")],
+	["--playfeel-review",preload("res://scripts/playfeel_review.gd")],
+	["--red-moon-review",preload("res://scripts/red_moon_review.gd")],
+	["--style-review",preload("res://scripts/style_review.gd")],
+	["--fx-review",preload("res://scripts/fx_review.gd")],
+	["--boss-review",preload("res://scripts/boss_review.gd")],
+	["--forge-review",preload("res://scripts/forge_review.gd")],
+	["--combat-review",preload("res://scripts/combat_review.gd")],
+	["--golden-scene","golden_scene"],
+	["--intro-review","review_intro"],
+	["--underside-review",preload("res://scripts/underside_review.gd")],
+	["--crusher-review",preload("res://scripts/crusher_review.gd")],
+]
+# Flags that run on a throwaway test profile and skip the title intro.
+const TEST_PROFILE_FLAGS=["--coop-feedback","--eclipse-review","--feedback-review","--controls-review","--surface-review","--progression-review","--field-review","--smoke","--soak","--art","--style-roundtrip","--update-check","--big-update-check","--presentation-check","--melee-check","--pickup-check","--hero-check","--crowd-xp-check","--combat-check","--visual-update-check","--golden-scene","--ui-review","--journey-review","--scenery-review","--hunt-review","--playfeel-review","--red-moon-review","--biome-review","--style-review","--fx-review","--boss-review","--forge-review","--combat-review","--pace-review","--crowd-review","--coop-host-test","--coop-client-test"]
+
 func _ready():
 	print("BUILD_IDENTITY "+JSON.stringify({"version":ProjectSettings.get_setting("application/config/version"),"build":ProjectSettings.get_setting("application/config/build_number")}))
 	if OS.get_cmdline_user_args().has("--style-check") or OS.get_cmdline_user_args().has("--style-inspect"):
@@ -206,22 +268,11 @@ func _ready():
 	world=WorldScript.new();hud=HudScript.new();sound=SoundScript.new()
 	get_viewport().use_occlusion_culling=true
 	player=CharacterBody3D.new();camera=Camera3D.new();coop=CoopSession.new()
-	profile_crowd=OS.get_cmdline_user_args().has("--crowd-review")
-	smoke = OS.get_cmdline_user_args().has("--coop-feedback") or OS.get_cmdline_user_args().has("--eclipse-review") or OS.get_cmdline_user_args().has("--feedback-review") or OS.get_cmdline_user_args().has("--controls-review") or OS.get_cmdline_user_args().has("--surface-review") or profile_crowd or OS.get_cmdline_user_args().has("--progression-review") or OS.get_cmdline_user_args().has("--field-review") or OS.get_cmdline_user_args().has("--smoke") or OS.get_cmdline_user_args().has("--soak") or OS.get_cmdline_user_args().has("--art") or OS.get_cmdline_user_args().has("--style-roundtrip")
-	smoke=smoke or OS.get_cmdline_user_args().has("--update-check") or OS.get_cmdline_user_args().has("--big-update-check")
-	smoke=smoke or OS.get_cmdline_user_args().has("--presentation-check")
-	smoke=smoke or OS.get_cmdline_user_args().has("--melee-check")
-	smoke=smoke or OS.get_cmdline_user_args().has("--pickup-check")
-	smoke=smoke or OS.get_cmdline_user_args().has("--hero-check")
-	smoke=smoke or OS.get_cmdline_user_args().has("--crowd-xp-check")
-	smoke=smoke or OS.get_cmdline_user_args().has("--combat-check")
-	smoke=smoke or OS.get_cmdline_user_args().has("--visual-update-check")
-	if OS.get_cmdline_user_args().has("--coop-host-test"): network_test_role="host";smoke=true
-	if OS.get_cmdline_user_args().has("--coop-client-test"): network_test_role="client";smoke=true
-	smoke=smoke or OS.get_cmdline_user_args().has("--golden-scene")
-	smoke=smoke or OS.get_cmdline_user_args().has("--ui-review")
-	smoke=smoke or OS.get_cmdline_user_args().has("--journey-review") or OS.get_cmdline_user_args().has("--scenery-review") or OS.get_cmdline_user_args().has("--hunt-review")
-	smoke=smoke or OS.get_cmdline_user_args().has("--playfeel-review") or OS.get_cmdline_user_args().has("--red-moon-review") or OS.get_cmdline_user_args().has("--biome-review") or OS.get_cmdline_user_args().has("--style-review") or OS.get_cmdline_user_args().has("--fx-review") or OS.get_cmdline_user_args().has("--boss-review") or OS.get_cmdline_user_args().has("--forge-review") or OS.get_cmdline_user_args().has("--combat-review") or OS.get_cmdline_user_args().has("--pace-review")
+	var args=OS.get_cmdline_user_args()
+	profile_crowd=args.has("--crowd-review")
+	if args.has("--coop-host-test"): network_test_role="host"
+	if args.has("--coop-client-test"): network_test_role="client"
+	smoke=TEST_PROFILE_FLAGS.any(func(flag): return args.has(flag))
 	camera_locked=OS.get_cmdline_user_args().has("--golden-scene") or OS.get_cmdline_user_args().has("--ui-review")
 	career = ProfileScript.new(rules.data,smoke)
 	if network_test_role!="": career.file="user://coop-test-"+network_test_role+".json"
@@ -310,60 +361,23 @@ func _ready():
 	Input.joy_connection_changed.connect(func(id,connected):
 		if not connected and id == controller_id and mode == "playing": hud.pause_menu(); hud.tell("Controller disconnected")
 	)
-	if OS.get_cmdline_user_args().has("--shared-review-host") or OS.get_cmdline_user_args().has("--shared-review-client"): preload("res://scripts/shared_review.gd").run.call_deferred(self,OS.get_cmdline_user_args().has("--shared-review-host"))
-	elif OS.get_cmdline_user_args().has("--dropin-review-host") or OS.get_cmdline_user_args().has("--dropin-review-client"): preload("res://scripts/dropin_review.gd").run.call_deferred(self,OS.get_cmdline_user_args().has("--dropin-review-host"))
-	elif OS.get_cmdline_user_args().has("--run-bot"): preload("res://scripts/run_bot.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--island-review"): preload("res://scripts/island_review.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--block-drop-review"): preload("res://scripts/block_drop_review.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--shorts-review"): preload("res://scripts/shorts_review.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--hero-numbers-review"): preload("res://scripts/hero_numbers_review.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--colossus-review"): preload("res://scripts/colossus_review.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--cartoon-review"): preload("res://scripts/cartoon_review.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--model-review"): preload("res://scripts/model_review.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--weapon-review"): preload("res://scripts/weapon_review.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--weapon-combos"): preload("res://scripts/weapon_combo_review.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--balance-review"): preload("res://scripts/balance_review.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--mutation-balance"): preload("res://scripts/mutation_balance.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--hermes-review"): preload("res://scripts/hermes_review.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--big-update-check"): preload("res://scripts/big_update_checks.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--presentation-check"): preload("res://scripts/presentation_checks.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--hero-check"): preload("res://scripts/hero_checks.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--visual-update-check"): preload("res://scripts/visual_update_checks.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--combat-check"): preload("res://scripts/combat_checks.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--crowd-xp-check"): preload("res://scripts/crowd_xp_checks.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--pickup-check"): preload("res://scripts/pickup_checks.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--melee-check"): preload("res://scripts/melee_checks.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--update-check"): preload("res://scripts/update_checks.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--style-roundtrip"): call_deferred("run_style_roundtrip")
-	elif network_test_role!="": call_deferred("run_coop_test")
-	elif OS.get_cmdline_user_args().has("--coop-feedback"): preload("res://scripts/coop_feedback_review.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--eclipse-review"): preload("res://scripts/eclipse_review.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--feedback-review"): preload("res://scripts/feedback_review.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--controls-review"): preload("res://scripts/controls_review.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--surface-review"): preload("res://scripts/surface_review.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--progression-review"): preload("res://scripts/progression_review.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--field-review"): preload("res://scripts/field_review.gd").run.call_deferred(self)
-	elif profile_crowd: preload("res://scripts/crowd_review.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--hunt-review"): preload("res://scripts/hunt_review.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--scenery-review"): preload("res://scripts/scenery_review.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--journey-review"): preload("res://scripts/journey_review.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--ui-review"): preload("res://scripts/ui_review.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--pace-review"): preload("res://scripts/pace_review.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--biome-review"): preload("res://scripts/biome_review.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--playfeel-review"): preload("res://scripts/playfeel_review.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--red-moon-review"): preload("res://scripts/red_moon_review.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--style-review"): preload("res://scripts/style_review.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--fx-review"): preload("res://scripts/fx_review.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--boss-review"): preload("res://scripts/boss_review.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--forge-review"): preload("res://scripts/forge_review.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--combat-review"): preload("res://scripts/combat_review.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--golden-scene"): call_deferred("golden_scene")
-	elif OS.get_cmdline_user_args().has("--intro-review"): TitleIntro.play.call_deferred(self,true)
-	elif OS.get_cmdline_user_args().has("--underside-review"): preload("res://scripts/underside_review.gd").run.call_deferred(self)
-	elif OS.get_cmdline_user_args().has("--crusher-review"): preload("res://scripts/crusher_review.gd").run.call_deferred(self)
+	if start_review(args): pass
 	# A normal launch opens with the title intro (TitleIntro), then the menu.
-	elif OS.get_cmdline_user_args().is_empty() and not smoke: TitleIntro.play.call_deferred(self)
-	elif smoke: call_deferred("export_hero_art" if OS.get_cmdline_user_args().has("--art") else "run_soak" if OS.get_cmdline_user_args().has("--soak") else "run_smoke")
+	elif args.is_empty() and not smoke: TitleIntro.play.call_deferred(self)
+	elif smoke: call_deferred("export_hero_art" if args.has("--art") else "run_soak" if args.has("--soak") else "run_smoke")
+
+# Starts the first test or review run named on the command line, if any.
+func start_review(args: PackedStringArray) -> bool:
+	for entry in REVIEW_RUNS:
+		if not args.has(entry[0]): continue
+		if entry[1] is String: call_deferred(entry[1])
+		elif entry.size()>2: entry[1].run.call_deferred(self,entry[2])
+		else: entry[1].run.call_deferred(self)
+		return true
+	return false
+
+func review_intro():
+	TitleIntro.play(self,true)
 
 func configure_inputs():
 	ControlBindings.apply(career.data.settings)
@@ -542,7 +556,7 @@ func start_run(shared_seed: int=-1):
 	first.strength = 1.0
 	first.tier = 0
 	equip_weapon(first)
-	HeroPlay.start(self);WrenchTune.reset();Dropai.reset();ClutchPlay.reset();CarryRescue.reset();ClimbMap.reset();HeroTricks.reset();Spectate.last_cheer=-99.0
+	RunState.reset_all(self)
 	career.bump("runs")
 	career.bump("play_"+hero.id)
 	sound.start(seed_value)

@@ -22,6 +22,13 @@ static func build_id() -> String:
 		if info is Dictionary and str(info.get("source","")).length()>=7: cached_build_id=str(info.source).left(12)
 	return cached_build_id
 # Big fights: only this many XP orbs (nearest any hero) travel in a world packet.
+# One packet's size limit, on sending and on receiving. A bigger message is sent
+# in pieces ("part" messages) and rebuilt by the receiver.
+const MESSAGE_LIMIT=60000
+const PART_BYTES=30000
+const MAX_PARTS=64
+var part_serial=0
+var parts_in={}  # sender id -> {serial: {"count","next","bytes"}}
 const XP_SYNC_LIMIT=200
 # World snapshots carry each enemy as ACTOR_STRIDE floats: id, position(3), hp,
 # maxHp, surface up(3), surface forward(3), ACTOR_STATUS(8), corruption. Static
@@ -353,7 +360,7 @@ func leave():
 
 func close_transport():
 	if peer!=null: peer.close();peer=null
-	active=false;welcomed=false;joined=false
+	active=false;welcomed=false;joined=false;parts_in.clear()
 
 func reset_actor_sync():
 	last_snapshot_seq=-1;actor_info.clear();actor_requested.clear();actor_seq.clear();orb_seq.clear();player_seq.clear();ids_seq.clear()
@@ -393,6 +400,7 @@ func attempt_reconnect():
 	game.hud.tell(status,8)
 
 func remove_member(id: int):
+	parts_in.erase(id)
 	sync_flowers(id,{"flower_realm":game.realm})
 	if hosting and game.run_active and members.has(id):
 		members[id].away_since=float(members[id].get("last_seen",Time.get_ticks_msec()/1000.0))
@@ -409,9 +417,43 @@ func remove_member(id: int):
 	if not hosting and id==owner_id: connection_lost()
 	elif hosting: publish_lobby()
 
+# One message cut into reliable pieces of PART_BYTES each.
+static func split_message(bytes: PackedByteArray,serial: int) -> Array:
+	var count=ceili(bytes.size()/float(PART_BYTES));var parts=[]
+	for i in range(count): parts.append({"type":"part","serial":serial,"index":i,"count":count,"bytes":bytes.slice(i*PART_BYTES,(i+1)*PART_BYTES)})
+	return parts
+
+# Takes one piece from a sender; returns the whole message once its last piece is
+# in, otherwise null. Pieces arrive in order (reliable channel): anything else,
+# or a malformed piece, discards that message.
+func take_part(sender: int,message: Dictionary):
+	var serial=message.get("serial");var index=message.get("index");var count=message.get("count");var bytes=message.get("bytes")
+	if not (serial is int and index is int and count is int and bytes is PackedByteArray): return null
+	if count<2 or count>MAX_PARTS or index<0 or index>=count or bytes.is_empty() or bytes.size()>PART_BYTES: return null
+	if not parts_in.has(sender): parts_in[sender]={}
+	var waiting: Dictionary=parts_in[sender]
+	if index==0:
+		# A sender builds one message at a time; an unfinished older one is gone.
+		waiting.clear();waiting[serial]={"count":count,"next":0,"bytes":PackedByteArray()}
+	var entry=waiting.get(serial)
+	if entry==null or entry.count!=count or entry.next!=index: waiting.erase(serial);return null
+	var joined: PackedByteArray=entry.bytes;joined.append_array(bytes);entry.bytes=joined;entry.next+=1
+	if entry.next<count: return null
+	waiting.erase(serial)
+	var whole=bytes_to_var(entry.bytes)
+	if not whole is Dictionary or whole.get("type","")=="part": return null
+	return whole
+
 func send_to(id: int,message: Dictionary,reliable: bool=true):
 	var bytes=var_to_bytes(message)
-	if bytes.size()>60000: push_warning("Co-op %s message dropped: %d bytes" % [str(message.get("type","")),bytes.size()]);return
+	if bytes.size()>MESSAGE_LIMIT:
+		# Too big for one packet (the receiver ignores anything over the limit): it
+		# travels in pieces on the reliable channel and is put together on arrival.
+		# Before, such a message was dropped here and the two games drifted apart.
+		if message.get("type","")=="part": push_warning("Co-op part too large: %d bytes" % bytes.size());return
+		part_serial+=1
+		for part in split_message(bytes,part_serial): send_to(id,part,true)
+		return
 	if hosting and members.has(id) and members[id].get("disconnected",false): return
 	if transport=="lan" and transport_peer_connected(id):
 		# World snapshots and poses stay unreliable at any size: a newer one supersedes
@@ -524,7 +566,7 @@ func tick(delta: float):
 			local_id=peer.get_unique_id();send_to(owner_id,{"type":"hello","protocol":PROTOCOL,"build":build_id(),"token":str(game.career.data.settings.get("coopToken",""))});joined=true
 		for i in range(mini(128,peer.get_available_packet_count())):
 			var sender=peer.get_packet_peer();var bytes=peer.get_packet()
-			if bytes.size()>60000: push_warning("Co-op packet ignored: %d bytes" % bytes.size())
+			if bytes.size()>MESSAGE_LIMIT: push_warning("Co-op packet ignored: %d bytes" % bytes.size())
 			else:
 				var message=bytes_to_var(bytes)
 				if review_lag_ms>0: review_packet_queue.append({"sender":sender,"message":message,"due":Time.get_ticks_msec()+review_lag_ms})
@@ -751,6 +793,12 @@ func apply_reward_choice(player_id: int,reward_id: String,selected_id: String,se
 
 func receive(sender: int,message):
 	if not message is Dictionary or not message.get("type","") is String: return
+	if message.type=="part":
+		# Only from someone in the party (the host, for a guest).
+		if not (members.has(sender) if hosting else sender==owner_id): return
+		var whole=take_part(sender,message)
+		if whole!=null: receive(sender,whole)
+		return
 	if ExplosiveBarrels.receive(game,sender,message): return
 	if game.update.receive(sender,message): return
 	if Spectate.receive(game,sender,message): return
