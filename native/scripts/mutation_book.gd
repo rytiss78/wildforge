@@ -283,7 +283,7 @@ static func hybrid_heal(g,strain: String):
 		if hybrid.has("heal") and hybrid.heal[0]==strain and has(g,hybrid.id): g.heal(float(hybrid.heal[1]))
 
 static func inside(g,point: Vector3,radius: float) -> Array:
-	return g.enemies.filter(func(e):return not e.dead and point.distance_to(g.melee_contact(e,point))<radius)
+	return g.enemies_near(point,radius).filter(func(e):return not e.dead and point.distance_to(g.melee_contact(e,point))<radius)
 
 static func area(g,strain: String,point: Vector3,radius: float,damage: float,cause: String) -> Array:
 	var hit=inside(g,point,radius)
