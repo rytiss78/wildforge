@@ -103,6 +103,7 @@ var reward_log=[]
 var queued_offers=[]
 var rewards_seen={}
 var review_lag_ms=0
+var avatar_motion: Dictionary={}
 var review_packet_queue=[]
 var reconnecting=false
 var stats_sent={}
@@ -599,7 +600,9 @@ func tick(delta: float):
 		var state=members.get(id,{})
 		if state.has("position"):
 			var node=avatars[id];var target=vector(state.position);var movement=(target-node.position)*8
-			node.position=node.position.lerp(target,1-exp(-delta*12)) if node.position.distance_to(target)<8 else target;node.rotation=Vector3(0,float(state.get("yaw",0)),PI if bool(state.get("under",false)) else 0.0);node.get_meta("rig").animate(delta,movement,true)
+			var motion: Dictionary=avatar_motion.get(id,{})
+			if motion.get("net_seen")!=target: motion.net_seen=target;replica_snapshot(motion,target);avatar_motion[id]=motion
+			node.position=replica_step(motion,node.position,delta,12) if node.position.distance_to(target)<8 else target;node.rotation=Vector3(0,float(state.get("yaw",0)),PI if bool(state.get("under",false)) else 0.0);node.get_meta("rig").animate(delta,movement,true)
 			if state.has("weapons"): node.get_meta("rig").sync_equipment(state.weapons)
 			var is_downed=game.update.downed_ids.has(int(id))
 			if node.has_meta("nameplate"):
@@ -725,6 +728,27 @@ func xp_state() -> PackedFloat32Array:
 		var at: Vector3=p.node.position
 		packed.append_array(PackedFloat32Array([p.net_id,at.x,at.y,at.z,p.value,1.0 if p.get("magnet_heap",false) else 0.0]))
 	return packed
+
+# Replica motion. World updates arrive ten times a second; chasing only the last
+# reported spot made friends and enemies surge after each update, slow down until
+# the next, and trail the truth by a snapshot. A replica now also keeps the speed
+# seen between its last two updates and carries on at it for PROJECT_FOR seconds.
+const PROJECT_FOR=.2
+static func replica_snapshot(replica: Dictionary,at: Vector3):
+	var age=float(replica.get("net_age",0.0));var last=replica.get("net_at")
+	var velocity=Vector3.ZERO
+	# No speed from a first sighting, a long silence or a jump (teleport, respawn).
+	if last is Vector3 and age>.03 and age<.5 and last.distance_to(at)<8.0: velocity=((at-last)/age).limit_length(30.0)
+	replica.net_velocity=velocity;replica.net_at=at;replica.net_age=0.0;replica.target_position=at
+
+static func replica_step(replica: Dictionary,position: Vector3,delta: float,rate: float) -> Vector3:
+	var target=replica.get("target_position")
+	if not target is Vector3: return position
+	replica.net_age=float(replica.get("net_age",0.0))+delta
+	if replica.net_age<PROJECT_FOR:
+		var drift: Vector3=replica.get("net_velocity",Vector3.ZERO)*delta
+		target+=drift;position+=drift;replica.target_position=target
+	return position.lerp(target,1-exp(-delta*rate))
 
 static func array(v: Vector3) -> Array: return [v.x,v.y,v.z]
 static func vector(v) -> Vector3:
@@ -1320,7 +1344,7 @@ func apply_actors(packed,seq: int):
 		if found.is_empty() or found.dead: continue
 		EnemySurface.replicate(found,Vector3(packed[base+6],packed[base+7],packed[base+8]),Vector3(packed[base+9],packed[base+10],packed[base+11]))
 		EclipseCorruption.apply(found,int(packed[base+12+ACTOR_STATUS.size()]))
-		found.hp=packed[base+4];found.maxHp=packed[base+5];found.target_position=Vector3(packed[base+1],packed[base+2],packed[base+3])
+		found.hp=packed[base+4];found.maxHp=packed[base+5];replica_snapshot(found,Vector3(packed[base+1],packed[base+2],packed[base+3]))
 		for i in range(ACTOR_STATUS.size()): found[ACTOR_STATUS[i]]=packed[base+12+i]
 		EliteMods.replicate(found)
 	request_actors(missing)
