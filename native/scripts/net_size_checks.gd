@@ -34,17 +34,17 @@ static func run(game: Node3D) -> Dictionary:
 	var blob=PackedByteArray();blob.resize(150000)
 	for i in range(blob.size()): blob[i]=(i*31+7)%251
 	var big={"type":"test_big","blob":blob,"note":"whole"}
-	var parts=CoopSession.split_message(var_to_bytes(big),7);var rebuilt=null;var early=false;var part_max=0
-	for part in parts:
+	var pieces=CoopSession.split_message(var_to_bytes(big),7);var rebuilt=null;var early=false;var part_max=0
+	for part in pieces:
 		part_max=maxi(part_max,var_to_bytes(part).size())
 		if rebuilt!=null: early=true
 		rebuilt=game.coop.take_part(99,part)
-	checks.net_big_message_parts_fit=parts.size()>=5 and part_max<=CoopSession.MESSAGE_LIMIT
+	checks.net_big_message_parts_fit=pieces.size()>=5 and part_max<=CoopSession.MESSAGE_LIMIT
 	checks.net_big_message_whole=not early and rebuilt is Dictionary and rebuilt.get("note","")=="whole" and rebuilt.get("blob")==blob
 	# A piece out of order, or a missing one, gives nothing rather than a broken message.
 	var skipped=null
 	for i in [0,2,3,4,5]:
-		if i<parts.size(): skipped=game.coop.take_part(99,parts[i])
+		if i<pieces.size(): skipped=game.coop.take_part(99,pieces[i])
 	checks.net_big_message_gap_refused=skipped==null
 	checks.net_big_message_bad_piece_refused=game.coop.take_part(99,{"type":"part","serial":8,"index":0,"count":9999,"bytes":PackedByteArray([1])})==null and game.coop.take_part(99,{"type":"part","serial":"x","index":0,"count":2,"bytes":PackedByteArray([1])})==null
 	game.coop.parts_in.erase(99)
