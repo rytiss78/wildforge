@@ -1343,6 +1343,8 @@ func damage_player(id: int,amount: float,origin: Vector3,sound: String,status: S
 	if id<0: return
 	if id==local_id: game.take_damage(amount,origin,sound)
 	elif hosting:
+		# Someone who has just left the party (a late friendly-fire report names them).
+		if not members.has(id): return
 		if game.update.downed_ids.has(id): return
 		members[id].rescue_hold=false;members[id].rescue_step=0
 		members[id].rescue_interrupt_until=game.elapsed+.4
