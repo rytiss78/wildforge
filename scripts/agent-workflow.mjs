@@ -70,6 +70,22 @@ export function assessSmoke(output) {
   return {checksPassed: checks.length, metadataFields: Object.keys(fields).length - checks.length};
 }
 
+// A failing run prints one long result line; name the checks that are false so
+// the reason is not cut off with the rest of the output.
+export function failedChecks(output) {
+  const failed=[];
+  for (const line of output.split(/\r?\n/)) {
+    const match=/^[A-Z][A-Z_]+ (\{.*\})\s*$/.exec(line);
+    if (!match) continue;
+    try {
+      const fields=JSON.parse(match[1]);
+      for (const group of [fields, fields.checks]) if (group && typeof group === 'object')
+        for (const [key,value] of Object.entries(group)) if (value === false) failed.push(key);
+    } catch { /* not a result line */ }
+  }
+  return failed.length ? `False checks: ${[...new Set(failed)].join(', ')}. ` : '';
+}
+
 export function assessPng(path, started, minimum=320) {
   const info = statSync(path);
   if (info.mtimeMs < started - 1000) throw new Error('Capture is stale.');
@@ -118,7 +134,7 @@ async function main(action) {
   async function step(name, exe, args, timeoutMs) {
     const result = await runStep(exe,args,{cwd:root,env,timeoutMs:timeoutMs*timeoutScale,logPath:join(runDir,name+'.log')});
     const {output,...record}=result; report.steps.push(record);
-    if (result.exitCode !== 0 || fatal.test(output)) throw new Error(`${name} failed (exit ${result.exitCode}). ${output.slice(-2400)}`);
+    if (result.exitCode !== 0 || fatal.test(output)) throw new Error(`${name} failed (exit ${result.exitCode}). ${failedChecks(output)}${output.slice(-2400)}`);
     return output;
   }
   try {
