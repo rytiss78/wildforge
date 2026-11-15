@@ -31,6 +31,28 @@ export async function diffFingerprint(cwd) {
 }
 
 // Keep full evidence on disk and only a bounded tail in memory/chat.
+// A second game process (co-op host and client, bot batches) gets its own save
+// folder: APPDATA on Windows, the XDG folders elsewhere.
+export function profileEnv(env, profile, platform=process.platform) {
+  if (platform === 'win32') return {...env, APPDATA:profile};
+  return {...env, APPDATA:profile, XDG_DATA_HOME:join(profile,'data'), XDG_CONFIG_HOME:join(profile,'config'), XDG_CACHE_HOME:join(profile,'cache')};
+}
+
+// The in-game browser addon (godot_wry) ships a Windows library only. Elsewhere the
+// engine reports that it cannot load it, which says nothing about the game, so
+// those lines are left out before a review's output is searched for errors.
+export function reviewOutput(output, platform=process.platform) {
+  if (platform === 'win32') return output;
+  return output.split(/\r?\n/).filter(x=>!(x.includes('ERROR:') && x.includes('godot_wry/WRY.gdextension'))).join('\n');
+}
+
+// Why a two-process review was refused, before the tail of its output: the exit
+// code, a missing result line, and the first engine error lines.
+export function reviewFailure(exitCode, output, line) {
+  const errors=reviewOutput(output).split(/\r?\n/).filter(x=>/SCRIPT ERROR:|Parse Error:|Compile Error:|ERROR:|ObjectDB instances were leaked/.test(x)).slice(0,6).map(x=>x.slice(0,300));
+  return [exitCode!==0?'exit '+exitCode:'', line?'':'no result line', ...errors].filter(Boolean).join(' | ')+' || ';
+}
+
 export async function runStep(exe, args, {cwd, env, timeoutMs, logPath}) {
   mkdirSync(resolve(logPath, '..'), {recursive: true});
   const log = createWriteStream(logPath);
@@ -368,10 +390,10 @@ async function main(action) {
         const profile=join(runDir,role);mkdirSync(profile,{recursive:true});
         const reviewArgs=['--headless',...(process.env.WILDFORGE_TEST_EXE?[]:['--path',join(root,'native')]),'--','--shared-review-'+role];
         if(action==='shared-review-stress') { reviewArgs.push('--shared-review-lag');if(role==='client')reviewArgs.push('--slow-peer'); }
-        const result=await runStep(process.env.WILDFORGE_TEST_EXE||godot,reviewArgs,{cwd:root,env:{...env,APPDATA:profile},timeoutMs:180000,logPath:join(runDir,role+'.log')});
+        const result=await runStep(process.env.WILDFORGE_TEST_EXE||godot,reviewArgs,{cwd:root,env:profileEnv(env,profile),timeoutMs:180000*timeoutScale,logPath:join(runDir,role+'.log')});
         const {output,...record}=result;report.steps.push(record);
         const line=output.split(/\r?\n/).findLast(x=>x.startsWith('SHARED_REVIEW '));
-        if(result.exitCode!==0 || fatal.test(output) || /ERROR:|ObjectDB instances were leaked/.test(output) || !line) throw new Error(role+' shared review failed: '+output.slice(-3000));
+        if(result.exitCode!==0 || fatal.test(output) || /ERROR:|ObjectDB instances were leaked/.test(reviewOutput(output)) || !line) throw new Error(role+' shared review failed: '+reviewFailure(result.exitCode,output,line)+output.slice(-3000));
         const parsed=JSON.parse(line.slice('SHARED_REVIEW '.length));
         if(Object.values(parsed.checks).some(v=>v===false))throw new Error(role+' assertions failed');
         return parsed;
@@ -453,7 +475,7 @@ async function main(action) {
       const minutes=process.env.BOT_MINUTES||'40';
       const runs=specs.map(async([hero,style,seed])=>{
         const profile=join(runDir,hero+'-'+seed);mkdirSync(profile,{recursive:true});
-        const result=await runStep(godot,['--headless','--path',join(root,'native'),'--','--run-bot','--bot-hero='+hero,'--bot-style='+style,'--bot-seed='+seed,'--bot-minutes='+minutes],{cwd:root,env:{...env,APPDATA:profile},timeoutMs:2400000,logPath:join(runDir,hero+'-'+seed+'.log')});
+        const result=await runStep(godot,['--headless','--path',join(root,'native'),'--','--run-bot','--bot-hero='+hero,'--bot-style='+style,'--bot-seed='+seed,'--bot-minutes='+minutes],{cwd:root,env:profileEnv(env,profile),timeoutMs:2400000,logPath:join(runDir,hero+'-'+seed+'.log')});
         const {output,...record}=result;report.steps.push(record);
         const line=output.split(/\r?\n/).findLast(x=>x.startsWith('RUN_BOT '));
         if(!line || /SCRIPT ERROR/.test(output)) throw new Error(hero+' bot failed: '+output.slice(-2000));
@@ -470,10 +492,10 @@ async function main(action) {
       const runs=['host','client'].map(async(role)=>{
         const profile=join(runDir,role);mkdirSync(profile,{recursive:true});
         const args=['--headless',...(process.env.WILDFORGE_TEST_EXE?[]:['--path',join(root,'native')]),'--','--dropin-review-'+role];
-        const result=await runStep(process.env.WILDFORGE_TEST_EXE||godot,args,{cwd:root,env:{...env,APPDATA:profile},timeoutMs:120000,logPath:join(runDir,role+'.log')});
+        const result=await runStep(process.env.WILDFORGE_TEST_EXE||godot,args,{cwd:root,env:profileEnv(env,profile),timeoutMs:120000*timeoutScale,logPath:join(runDir,role+'.log')});
         const {output,...record}=result;report.steps.push(record);
         const line=output.split(/\r?\n/).findLast(x=>x.startsWith('DROPIN_REVIEW '));
-        if(result.exitCode!==0 || fatal.test(output) || /ERROR:|ObjectDB instances were leaked/.test(output) || !line) throw new Error(role+' drop-in review failed: '+output.slice(-3000));
+        if(result.exitCode!==0 || fatal.test(output) || /ERROR:|ObjectDB instances were leaked/.test(reviewOutput(output)) || !line) throw new Error(role+' drop-in review failed: '+reviewFailure(result.exitCode,output,line)+output.slice(-3000));
         const parsed=JSON.parse(line.slice('DROPIN_REVIEW '.length));
         if(Object.values(parsed.checks).some(v=>v===false))throw new Error(role+' drop-in assertions failed');
         return parsed;

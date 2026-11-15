@@ -2,8 +2,8 @@ name: Checks
 
 # The same checks AGENTS.md asks for after every code change, run by GitHub on
 # every push to main and every pull request: JavaScript tests, a Godot import and
-# script parse, the headless smoke run and the gameplay integration check.
-# Rendered reviews and the two-process co-op tests still run on a Windows PC.
+# script parse, the headless smoke run, the gameplay integration check and the
+# two-process co-op tests. Rendered reviews still run on a Windows PC.
 
 on:
   push:
@@ -53,6 +53,12 @@ jobs:
         run: node scripts/agent-workflow.mjs smoke
       - name: integration (gameplay and data checks)
         run: node scripts/agent-workflow.mjs integration
+      - name: coop (host and guest play a shared run)
+        run: node scripts/agent-workflow.mjs coop
+      - name: shared-review (shared world stays in step)
+        run: node scripts/agent-workflow.mjs shared-review
+      - name: coop-dropin (a guest joins a running game)
+        run: node scripts/agent-workflow.mjs coop-dropin
       - name: Keep the logs
         if: always()
         uses: actions/upload-artifact@v4

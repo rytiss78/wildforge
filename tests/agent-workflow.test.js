@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {mkdtempSync, writeFileSync, readFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
-import {runStep, assessSmoke, assessPng, diffFingerprint, godotPath, failedChecks} from '../scripts/agent-workflow.mjs';
+import {runStep, assessSmoke, assessPng, diffFingerprint, godotPath, failedChecks, profileEnv, reviewFailure, reviewOutput} from '../scripts/agent-workflow.mjs';
 import {spawnSync} from 'node:child_process';
 import {createHash, randomBytes} from 'node:crypto';
 
@@ -66,4 +66,20 @@ test('the engine is the bundled 4.7.2 build for the platform unless one is named
 test('a failed step names its false checks', () => {
   assert.equal(failedChecks('noise\nNATIVE_SMOKE {"a":true,"b":false,"n":3}\nX_CHECK {"passed":false,"checks":{"c":false,"d":true}}\n'),'False checks: b, passed, c. ');
   assert.equal(failedChecks('NATIVE_SMOKE {"a":true}\nplain text'),'');
+});
+test('each extra game process gets its own save folder on every platform', () => {
+  assert.deepEqual(profileEnv({A:'1'},'p','win32'),{A:'1',APPDATA:'p'});
+  const linux=profileEnv({A:'1',XDG_DATA_HOME:'shared'},'p','linux');
+  assert.equal(linux.XDG_DATA_HOME,join('p','data'));
+  assert.equal(linux.XDG_CONFIG_HOME,join('p','config'));
+  assert.equal(linux.A,'1');
+});
+test('a refused two-process review says why', () => {
+  assert.equal(reviewFailure(0,'fine\nERROR: socket closed\n   at: poll\nSHARED_REVIEW {}','SHARED_REVIEW {}'),'ERROR: socket closed || ');
+  assert.equal(reviewFailure(3,'nothing',undefined),'exit 3 | no result line || ');
+});
+test('the Windows-only browser addon failing to load elsewhere is not a game error', () => {
+  const noise="ERROR: GDExtension dynamic library not found: 'res://addons/godot_wry/WRY.gdextension'.\nERROR: real problem\nok";
+  assert.equal(reviewOutput(noise,'linux'),'ERROR: real problem\nok');
+  assert.equal(reviewOutput(noise,'win32'),noise);
 });
