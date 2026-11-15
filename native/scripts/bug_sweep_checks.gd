@@ -68,4 +68,17 @@ static func run(game: Node3D) -> Dictionary:
 	game.start_run(734);game.set_physics_process(false);game.spawn_clock=99999
 	checks.sweep_new_run_clears_timers=game.shield_delay==0.0 and game.ghost_time==0.0 and game.burrow_time==0.0 and game.knock_velocity==Vector3.ZERO and game.walking_gold==0.0
 	game.clear_entities()
+
+	# A late joiner is told about reward chests dropped before they arrived: the
+	# missing one is stood up, the opened one is hidden, junk entries are ignored.
+	var spot: Vector3=game.player.position
+	var before_chests=game.chests.size()
+	game.make_chest(spot+Vector3(5,0,0),true,true)
+	var told=[{"pos":CoopSession.array(spot+Vector3(5.4,0,0)),"opened":false},{"pos":CoopSession.array(spot+Vector3(-7,0,2)),"opened":true},{"pos":[1,2],"opened":true},"junk",{"pos":[INF,0,0]}]
+	coop.apply_event_chests(told,true)
+	var rewards=game.chests.slice(before_chests)
+	checks.sweep_late_joiner_gets_reward_chests=rewards.size()==2 and not rewards[0].opened and rewards[1].opened and not rewards[1].node.visible and rewards[1].event
+	checks.sweep_late_joiner_hunt_not_repaid=game.Hunt.shrine(game)==null or game.Hunt.shrine(game).has_meta("reward_spawned")
+	checks.sweep_host_lists_reward_chests=coop.event_chest_list().size()==2 and coop.event_chest_list()[1].opened==true
+	game.clear_entities()
 	return checks
