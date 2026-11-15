@@ -67,5 +67,21 @@ static func run(game: Node3D) -> Dictionary:
 	checks.net_replica_stops=overshoot<.6 and drawn.distance_to(Vector3(12,0,0))<.05
 	CoopSession.replica_snapshot(replica,Vector3(60,0,0))
 	checks.net_replica_no_speed_from_teleport=replica.net_velocity==Vector3.ZERO and replica.target_position==Vector3(60,0,0)
+	# A guest's pose and stats are kept only when each value has the right type.
+	var session: CoopSession=game.coop
+	var was=[session.active,session.hosting]
+	session.active=true;session.hosting=true;session.members[88]={"mode":"playing","player_name":"Guest","hp":50.0,"weapons":[],"last_seen":0.0}
+	var good=session.pose();good.hp=41;good.yaw=1
+	session.receive(88,good)
+	checks.net_pose_good_values_kept=float(session.members[88].hp)==41.0 and session.members[88].weapons is Array and session.members[88].yaw==1
+	session.receive(88,{"type":"pose","position":good.position,"hp":"lots","yaw":[1],"weapons":["gun"],"under":"yes","gold":NAN,"model":7,"build":[],"name":5})
+	var kept=session.members[88]
+	checks.net_pose_wrong_types_dropped=float(kept.hp)==41.0 and kept.yaw==1 and kept.weapons==good.weapons and kept.under==good.under and kept.model==good.model and kept.build is Dictionary and kept.gold==good.gold
+	session.receive(88,{"type":"stats","changes":{"damage":2.5,"luck":"high",7:1.0,"brandNewStat":3}})
+	checks.net_stats_wrong_types_dropped=float(kept.stats.get("damage",0))==2.5 and not kept.stats.has("luck") and not kept.stats.has(7) and int(kept.stats.get("brandNewStat",0))==3
+	session.receive(88,{"type":"stats","changes":"everything"})
+	checks.net_stats_bad_message_ignored=float(session.members[88].stats.get("damage",0))==2.5
+	if session.avatars.has(88): session.avatars[88].queue_free();session.avatars.erase(88)
+	session.members.erase(88);session.active=was[0];session.hosting=was[1]
 	game.owned=owned;MutationBook.reset(game);game.clear_entities()
 	return checks

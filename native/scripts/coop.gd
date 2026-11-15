@@ -660,6 +660,31 @@ func send_stats(force: bool=false):
 	stats_sent.merge(changes,true)
 	send_to(owner_id,{"type":"stats","changes":changes})
 
+# What a guest reports about itself is kept only if it has the type this game
+# would send for the same field (whole and decimal numbers count as one). The
+# host reads these values every frame; a text where a number belongs, sent by a
+# broken or modified game, stopped the host's own update partway.
+var kinds_of_pose: Dictionary={}
+var kinds_of_stat: Dictionary={}
+func pose_kinds() -> Dictionary:
+	if kinds_of_pose.is_empty():
+		var mine=pose();mine.stats={}
+		for key in mine: kinds_of_pose[key]=typeof(mine[key])
+	return kinds_of_pose
+
+func stat_kinds() -> Dictionary:
+	if kinds_of_stat.is_empty():
+		var mine=effective_stats()
+		for key in mine: kinds_of_stat[key]=typeof(mine[key])
+	return kinds_of_stat
+
+static func guest_value_ok(kinds: Dictionary,key: String,value) -> bool:
+	var got=typeof(value);var want=int(kinds.get(key,TYPE_FLOAT))
+	if want in [TYPE_INT,TYPE_FLOAT]: return got in [TYPE_INT,TYPE_FLOAT] and is_finite(float(value))
+	if got!=want: return false
+	if key=="weapons": return value.size()<=24 and value.all(func(w):return w is Dictionary and w.get("id","") is String)
+	return true
+
 # "run" is the seed of the run this player is in (-1 in the menus): the host ends
 # its wait for a loading player only on a pose from the run it started.
 func pose() -> Dictionary:
@@ -909,7 +934,12 @@ func receive(sender: int,message):
 			send_actor_descriptors(sender,message.get("ids",[]))
 		elif kind=="stats":
 			var known: Dictionary=members[sender].get("stats",{})
-			known.merge(message.get("changes",{}),true);members[sender].stats=known
+			var changes=message.get("changes",{})
+			if not changes is Dictionary: return
+			var mine=stat_kinds()
+			for key in changes:
+				if key is String and key.length()<=48 and (known.has(key) or known.size()<400) and guest_value_ok(mine,key,changes[key]): known[key]=changes[key]
+			members[sender].stats=known
 		elif kind=="pose":
 			# A late pose from a connection that already dropped would rebuild that
 			# player's avatar; after they rejoin under a new id it stays as a ghost copy.
@@ -923,8 +953,8 @@ func receive(sender: int,message):
 			var p=vector(message.get("position",[]))
 			if not p.is_finite() or maxf(absf(p.x),absf(p.z))>RealmWorld.EXTENT+10: return
 			for key in ["position","yaw","under","sneak","carry","lasso","model","name","cosmetic","mode","weapons","build","hp","shield_hp","stats","gold","rescue_hold","rescue_step","pet","mustache","flower_realm","flowers"]:
-				if message.has(key): members[sender][key]=message[key]
-			if message.has("name"): members[sender].name=clean_player_name(message.name)
+				if message.has(key) and guest_value_ok(pose_kinds(),key,message[key]): members[sender][key]=message[key]
+			if message.get("name") is String: members[sender].name=clean_player_name(message.name)
 			if game.run_active: ensure_avatar(sender,members[sender])
 			if game.update.downed_ids.has(sender): members[sender].hp=0
 		elif kind=="force_pulse" and int(message.get("realm",-1))==game.realm and game.run_active and not frozen():
