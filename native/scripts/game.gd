@@ -532,6 +532,8 @@ func start_run(shared_seed: int=-1):
 	if is_instance_valid(hud) and hud.combo: hud.combo.reset()
 	# The pet chosen on the hero screen, grown by the treats it ate in earlier runs.
 	trick_cooldown=0.0;trick_roll={};trick_leap={};trick_boosts.clear()
+	# Timers and pushes the last run may have left running.
+	shield_delay=0.0;ghost_time=0.0;burrow_time=0.0;knock_velocity=Vector3.ZERO;walking_gold=0.0
 	if is_instance_valid(pet): pet.queue_free()
 	var pet_kind=Pet.chosen(career.data.settings);var eaten=Pet.saved_treats(career.data.settings,pet_kind)
 	pet=Pet.create(self,player,pet_kind,Pet.stage_for(eaten));pet.treats=eaten;pet.facing=avatar
@@ -770,17 +772,17 @@ func buy_chest(chest: Dictionary,payer: int=-1):
 		if local_payer: hud.tell("● %d / %d" % [funds,price])
 		else: coop.send_to(payer,{"type":"chest_rejected","realm":realm})
 		return
-	if price > 0 and gold == price: achievement_event("LAST_COIN")
-	if price > 0 and stats.discount > 0: achievement_event("SALE")
-	if chest.free: achievement_event("BOSS_GIFT" if chest.elite else "FREE_KEY")
-	if chest.node.position.y > world.height_at(chest.node.position.x,chest.node.position.z)+1: achievement_event("HIGH_CHEST")
+	# The chest's achievements belong to whoever opened it (they went to the host
+	# for a friend's chest, judged by the host's own gold and discount).
+	var high=chest.node.position.y > world.height_at(chest.node.position.x,chest.node.position.z)+1
 	if local_payer:
+		chest_achievements(price,gold,chest.free,chest.elite,high)
 		gold-=price
 		if price>0: paid_chests+=1
 	else:
 		coop.members[payer].gold=funds-price
 		coop.members[payer].paid_chests=paid+(1 if price>0 else 0)
-		coop.send_to(payer,{"type":"chest_paid","realm":realm,"price":price})
+		coop.send_to(payer,{"type":"chest_paid","realm":realm,"price":price,"free":bool(chest.free),"elite":bool(chest.elite),"high":high})
 	chest.opened = true
 	# A tiny, collectible sneeze bonus; the box is still paid for exactly once.
 	sound.ui_effect("chest_latch")
@@ -816,6 +818,13 @@ func buy_chest(chest: Dictionary,payer: int=-1):
 	vibrate(.25,.55,.2)
 	if reveal_tier == 3: sound.say("legendary",0)
 	else: sound.say("treasure",18)
+
+# funds: the opener's gold before paying.
+func chest_achievements(price: int,funds: int,free: bool,elite: bool,high: bool):
+	if price > 0 and funds == price: achievement_event("LAST_COIN")
+	if price > 0 and stats.discount > 0: achievement_event("SALE")
+	if free: achievement_event("BOSS_GIFT" if elite else "FREE_KEY")
+	if high: achievement_event("HIGH_CHEST")
 
 func level_up():
 	if coop.active and not coop.hosting: return  # Host owns shared levels.
@@ -2025,7 +2034,8 @@ func dash():
 	condition_times.dash=elapsed
 	dash_time = .2
 	dash_cooldown = stats.dashCooldown
-	invulnerable = .3+stats.ghost
+	# Never shorter than protection already running (a new life's 3 s, a map's first moments).
+	invulnerable = maxf(invulnerable,.3+stats.ghost)
 	ghost_time = stats.ghost
 	career.bump("dashes")
 	if stats.ghost>0:
@@ -2115,8 +2125,12 @@ func update_pickups(delta: float):
 			if pickup.settled and not pickup.attracted: pickup.node.position.y=pickup.base_y+pickup.radius+.01
 		var target={"id":coop.local_id,"position":player.position}
 		if pickup.kind=="xp" and coop.active: target=coop.target(pickup.node.position)
-		var collector_alive=(hp>0 and not underside.active()) if target.id==coop.local_id else float(coop.members.get(target.id,{}).get("hp",0))>0
-		var radius=stats.coinRadius if pickup.kind in ["gold","treat"] else stat("pickup") if target.id==coop.local_id else float(coop.members[target.id].get("stats",{}).get("pickup",4))
+		# Nobody to collect it (id -1: the host is under the island or hidden and no
+		# friend is in reach) is not a member either: looking one up by that id was an
+		# error that stopped every pickup on the map for as long as it lasted.
+		var collector: Dictionary=coop.members.get(target.id,{}) if target.id!=coop.local_id else {}
+		var collector_alive=(hp>0 and not underside.active()) if target.id==coop.local_id else float(collector.get("hp",0))>0
+		var radius=stats.coinRadius if pickup.kind in ["gold","treat"] else stat("pickup") if target.id==coop.local_id else float(collector.get("stats",{}).get("pickup",4))
 		var destination=target.position+Vector3.UP*.4
 		# Only drops tagged when the magnet fired fly in, from anywhere on the map.
 		var collecting_at_magnet=pickup.get("magnet_pull",false) and is_instance_valid(update.magnet_node)
@@ -2153,7 +2167,7 @@ func update_pickups(delta: float):
 				if is_instance_valid(pet): pet.feed(roundi(pickup.value))
 				sound.effect("coin")
 			else:
-				var gain=stat("xpGain") if target.id==coop.local_id else float(coop.members[target.id].get("stats",{}).get("xpGain",1))
+				var gain=stat("xpGain") if target.id==coop.local_id else float(collector.get("stats",{}).get("xpGain",1))
 				var gained=roundi(pickup.value*gain)
 				update.run_xp+=gained;xp+=gained
 				if target.id==coop.local_id: sound.xp_tick()
@@ -2577,16 +2591,25 @@ func update_combat(delta: float):
 	storm_clock-=delta
 	nova_clock-=delta
 	if storm_clock<=0:
-		if hp>0 and stats.storm>0:
-			for enemy in enemies.slice(0,mini(enemies.size(),4)):
-				beam(enemy.node.position+Vector3.UP*12,enemy.node.position+Vector3.UP,Color("b9dfef"))
-				hurt_enemy(enemy,stats.storm,"lightning")
+		if hp>0 and stats.storm>0: storm_strike()
 		storm_clock=5
 	if nova_clock<=0:
 		if hp>0 and stats.nova>0:
 			damage_area(player.position,7,stats.nova,"explosion");CombatInk.wave(self,player.position,7,Color("af71ff"));sound.effect("nova")
 		nova_clock=6
 	if (not coop.active or coop.hosting) and xp>=xp_target and mode=="playing": level_up()
+
+# The Storm card's bolts: the four enemies nearest the hero, within STORM_REACH.
+# They used to fall on the four oldest enemies on the map, often far out of sight.
+const STORM_REACH=32.0
+func storm_strike():
+	var origin=player.position
+	var near=enemies.filter(func(e):return not e.dead and e.node.position.distance_squared_to(origin)<STORM_REACH*STORM_REACH)
+	near.sort_custom(func(a,b):return a.node.position.distance_squared_to(origin)<b.node.position.distance_squared_to(origin))
+	for enemy in near.slice(0,4):
+		if enemy.dead: continue
+		beam(enemy.node.position+Vector3.UP*12,enemy.node.position+Vector3.UP,Color("b9dfef"))
+		hurt_enemy(enemy,stats.storm,"lightning")
 
 const EVENT_SCHEDULE=[[80,"warn_one","boss"],[110,"boss_one","spawn"],[140,"warn_swarm","swarm"],[170,"swarm_one","rush"],[220,"warn_swarm_two","swarm"],[250,"swarm_two","rush"],[270,"warn_two","boss"],[300,"boss_two","spawn"]]
 
