@@ -18,6 +18,7 @@ These instructions apply to this repository. Start here when working as Hermes o
 - Prefer an existing helper and a small targeted edit over rewriting a large script. Read callers, data shapes and lifecycle/cleanup paths before replacing code.
 - Do not invent Godot properties. Verify the owning class and API against the bundled engine or official documentation; then exercise the changed path at runtime.
 - Preserve saves, artwork, old builds and logs. Use isolated profiles for automated gameplay. The workflow wrapper creates these automatically.
+- Enemy fields are spell-checked: every field touched through a variable named `enemy` must be listed in `tests/enemy-fields.json` (`npm test` names a misspelt or unlisted one). Name the loop variable `enemy` so new code is covered, and add a new field to that list when you introduce it on purpose.
 - Never kill every Godot/Node process. Stop only a process started by the current task, using its recorded process/session identity.
 - Do not reset, discard, stage or commit someone else's work. When committing a completed step, include only the intended changes; inspect the staged diff first. If the index already mixes unrelated changes, leave it intact and report the state.
 - Keep local export and publishing separate. Make local builds when needed; publish only within the user's requested scope.
