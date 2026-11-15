@@ -855,7 +855,7 @@ func receive(sender: int,message):
 				status="A player reconnected · %d / 4." % (members.size()+1)
 				# Everything one-off broadcasts changed while the member was away.
 				var opened=game.chests.filter(func(c):return c is Dictionary and c.get("opened",false) and is_instance_valid(c.get("node"))).map(func(c):return array(c.node.position))
-				send_to(sender,{"type":"welcome","reconnected":true,"realm":game.realm,"opened_chests":opened})
+				send_to(sender,{"type":"welcome","reconnected":true,"realm":game.realm,"opened_chests":opened,"event_chests":event_chest_list(),"hunt_rewarded":hunt_rewarded()})
 				# Level-ups and chests shared while the player was away; their game
 				# skips any it already opened.
 				for entry in reward_log:
@@ -866,7 +866,7 @@ func receive(sender: int,message):
 				# the world pauses ("loading") until they are in.
 				members[sender]={"mode":"loading","player_name":"Player","token":token,"last_seen":Time.get_ticks_msec()/1000.0,"drop_in":true}
 				var opened=game.chests.filter(func(c):return c is Dictionary and c.get("opened",false) and is_instance_valid(c.get("node"))).map(func(c):return array(c.node.position))
-				send_to(sender,{"type":"welcome","reconnected":false,"drop_in":true,"seed":game.seed_value,"realm":game.realm,"opened_chests":opened})
+				send_to(sender,{"type":"welcome","reconnected":false,"drop_in":true,"seed":game.seed_value,"realm":game.realm,"opened_chests":opened,"event_chests":event_chest_list(),"hunt_rewarded":hunt_rewarded()})
 				status="A player is joining the run · %d / 4." % (members.size()+1);game.hud.tell("A friend is joining…",3)
 			else:
 				members[sender]={"mode":"loading","player_name":"Player","token":token,"last_seen":Time.get_ticks_msec()/1000.0};status="%d / 4" % (members.size()+1)
@@ -1011,6 +1011,7 @@ func receive(sender: int,message):
 			if bool(message.get("reconnected",false)):
 				var host_realm=int(message.get("realm",game.realm))
 				if host_realm!=game.realm: game.enter_realm(host_realm)
+				apply_event_chests(message.get("event_chests",[]),message.get("hunt_rewarded",false)==true)
 				for position in message.get("opened_chests",[]): apply_chest_hide(position)
 				reconnecting=false;paused=false;game.mode=mode_before_drop;game.career.bump("coop_reconnects");status="Rejoined the active run.";game.hud.tell(status,5)
 				sync_local_nameplate()
@@ -1020,6 +1021,7 @@ func receive(sender: int,message):
 				reset_actor_sync();game.start_run(int(message.seed))
 				var host_realm=int(message.get("realm",0))
 				if host_realm!=game.realm: game.enter_realm(host_realm)
+				apply_event_chests(message.get("event_chests",[]),message.get("hunt_rewarded",false)==true)
 				for position in message.get("opened_chests",[]): apply_chest_hide(position)
 				game.hud.close();sync_local_nameplate()
 				status="Joined the run in progress.";game.hud.tell(status,5)
@@ -1174,6 +1176,28 @@ func apply_chest_hide(position):
 	if chest.is_empty(): return
 	chest.opened=true
 	chest.node.visible=false
+
+# Reward chests appear during a run (a warden's, the hunt's) and each machine
+# makes its own when it sees the kill or the hunt end. A player who joins or
+# returns afterwards saw neither, so the host's welcome lists them: missing ones
+# are stood up, opened ones hidden, and a paid-out hunt is not paid out again.
+func event_chest_list() -> Array:
+	return game.chests.filter(func(c):return c is Dictionary and c.get("event",false) and is_instance_valid(c.get("node"))).map(func(c):return {"pos":array(c.node.position),"opened":c.get("opened",false)==true})
+
+func hunt_rewarded() -> bool:
+	var shrine=game.Hunt.shrine(game)
+	return shrine!=null and shrine.has_meta("reward_spawned")
+
+func apply_event_chests(list,hunt_paid: bool):
+	var shrine=game.Hunt.shrine(game)
+	if hunt_paid and shrine!=null: shrine.set_meta("reward_spawned",true)
+	if not list is Array: return
+	for entry in list.slice(0,32):
+		if not entry is Dictionary: continue
+		var pos=entry.get("pos",[])
+		if not pos is Array or pos.size()!=3 or not vector(pos).is_finite() or vector(pos).length()>4000: continue
+		if chest_near(vector(pos),false).is_empty(): game.make_chest(vector(pos),true,true)
+		if entry.get("opened",false)==true: apply_chest_hide(pos)
 
 # The chest another machine means by a position: the nearest one within CHEST_MATCH
 # metres. Whole-metre and 10 cm comparisons failed whenever the two machines had

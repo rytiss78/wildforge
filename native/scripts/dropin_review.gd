@@ -35,6 +35,11 @@ static func run(g,host: bool):
 		checks.chest_opened=not chest.is_empty()
 		var opened_at=Vector3.ZERO
 		if checks.chest_opened: chest[0].opened=true;opened_at=chest[0].node.position
+		# Two reward chests dropped before the guest arrives: one waiting, one opened.
+		var here: Vector3=g.player.position
+		g.make_chest(here+Vector3(6,0,0),true,true);g.make_chest(here+Vector3(-6,0,0),true,true);g.chests[-1].opened=true
+		var shrine=g.Hunt.shrine(g)
+		if shrine!=null: shrine.set_meta("reward_spawned",true)
 		checks.guest_joined=await wait_for(g,func():return not g.coop.members.is_empty())
 		var guest_id=g.coop.members.keys()[0] if checks.guest_joined else -1
 		checks.guest_playing=checks.guest_joined and await wait_for(g,func():return str(g.coop.members.get(guest_id,{}).get("mode",""))=="playing")
@@ -44,6 +49,9 @@ static func run(g,host: bool):
 		var report=g.coop.test_messages.get("dropin",{})
 		checks.same_run=int(report.get("seed",-1))==g.seed_value and int(report.get("realm",-1))==g.realm
 		checks.chest_hidden_for_guest=bool(report.get("chest_hidden",false))
+		checks.reward_chest_waits_for_guest=int(report.get("reward_waiting",0))==1
+		checks.opened_reward_hidden_for_guest=int(report.get("reward_hidden",0))==1
+		checks.hunt_not_paid_twice=shrine==null or bool(report.get("hunt_paid",false))
 		checks.guest_sees_host=bool(report.get("host_avatar",false))
 		var plate=g.coop.avatars[guest_id].get_meta("nameplate").text if checks.guest_avatar else ""
 		checks.guest_nameplate=plate.begins_with("Drop Guest")
@@ -69,7 +77,9 @@ static func run(g,host: bool):
 		checks.joined_run=await wait_for(g,func():return g.coop.welcomed and g.run_active and g.mode=="playing")
 		checks.host_avatar=checks.joined_run and await wait_for(g,func():return g.coop.avatars.has(g.coop.owner_id))
 		var opened=g.chests.filter(func(c):return c is Dictionary and is_instance_valid(c.get("node")) and not c.node.visible)
-		var report={"seed":g.seed_value,"realm":g.realm,"host_avatar":checks.host_avatar,"chest_hidden":not opened.is_empty()}
+		var rewards=g.chests.filter(func(c):return c is Dictionary and c.get("event",false) and is_instance_valid(c.get("node")))
+		var guest_shrine=g.Hunt.shrine(g)
+		var report={"seed":g.seed_value,"realm":g.realm,"host_avatar":checks.host_avatar,"chest_hidden":not opened.is_empty(),"reward_waiting":rewards.filter(func(c):return not c.opened and c.node.visible).size(),"reward_hidden":rewards.filter(func(c):return c.opened and not c.node.visible).size(),"hunt_paid":guest_shrine!=null and guest_shrine.has_meta("reward_spawned")}
 		g.coop.send_to(g.coop.owner_id,{"type":"test_shared","phase":"dropin","data":report})
 		checks.combo_target=await wait_for(g,func():return g.coop.test_messages.has("combo_target"))
 		var target_id=int(g.coop.test_messages.get("combo_target",{}).get("id",-1))
