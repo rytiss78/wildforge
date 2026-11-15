@@ -53,6 +53,17 @@ export function reviewFailure(exitCode, output, line) {
   return [exitCode!==0?'exit '+exitCode:'', line?'':'no result line', ...errors].filter(Boolean).join(' | ')+' || ';
 }
 
+// The three balance rates PLAN.md tracks (target about 70 / 25 / 10): cleared the
+// first map, reached the Red Moon arena (realm 7, after the seven maps), and
+// beat the final boss there.
+export const ARENA_REALM = 7;
+export function botSummary(bots) {
+  const n=bots.length||1;
+  const rate=test=>Math.round(bots.filter(test).length/n*1000)/1000;
+  return {runs:bots.length, cleared_first_realm:rate(b=>b.reached_realm>=1), reached_final_boss:rate(b=>b.reached_realm>=ARENA_REALM), final_boss_defeated:rate(b=>b.baron_defeated),
+    median_minutes:bots.map(b=>b.minutes).sort((a,b)=>a-b)[Math.floor(bots.length/2)]||0};
+}
+
 export async function runStep(exe, args, {cwd, env, timeoutMs, logPath}) {
   mkdirSync(resolve(logPath, '..'), {recursive: true});
   const log = createWriteStream(logPath);
@@ -472,10 +483,10 @@ async function main(action) {
     if (action === 'bot-playtest') {
       // Full-run bots in parallel, each in its own profile. BOT_RUNS="hero:style:seed,..."
       const specs=(process.env.BOT_RUNS||'duck:balanced:101,grandma:offense:102,broccoli:defense:103,wrench:balanced:104,florist:balanced:105,ninja:offense:106').split(',').map(x=>x.split(':'));
-      const minutes=process.env.BOT_MINUTES||'40';
+      const minutes=process.env.BOT_MINUTES||'60';
       const runs=specs.map(async([hero,style,seed])=>{
         const profile=join(runDir,hero+'-'+seed);mkdirSync(profile,{recursive:true});
-        const result=await runStep(godot,['--headless','--path',join(root,'native'),'--','--run-bot','--bot-hero='+hero,'--bot-style='+style,'--bot-seed='+seed,'--bot-minutes='+minutes],{cwd:root,env:profileEnv(env,profile),timeoutMs:2400000,logPath:join(runDir,hero+'-'+seed+'.log')});
+        const result=await runStep(godot,['--headless','--path',join(root,'native'),'--','--run-bot','--bot-hero='+hero,'--bot-style='+style,'--bot-seed='+seed,'--bot-minutes='+minutes],{cwd:root,env:profileEnv(env,profile),timeoutMs:2400000*timeoutScale,logPath:join(runDir,hero+'-'+seed+'.log')});
         const {output,...record}=result;report.steps.push(record);
         const line=output.split(/\r?\n/).findLast(x=>x.startsWith('RUN_BOT '));
         if(!line || /SCRIPT ERROR/.test(output)) throw new Error(hero+' bot failed: '+output.slice(-2000));
@@ -483,8 +494,7 @@ async function main(action) {
       });
       const results=await Promise.allSettled(runs);
       report.bots=results.filter(r=>r.status==='fulfilled').map(r=>r.value);
-      const n=report.bots.length||1;
-      report.summary={runs:report.bots.length,cleared_first_realm:report.bots.filter(b=>b.reached_realm>=1).length/n,reached_baron:report.bots.filter(b=>b.reached_realm>=3).length/n,baron_defeated:report.bots.filter(b=>b.baron_defeated).length/n,median_minutes:report.bots.map(b=>b.minutes).sort((a,b)=>a-b)[Math.floor(report.bots.length/2)]||0};
+      report.summary=botSummary(report.bots);
       const failed=results.filter(r=>r.status==='rejected');if(failed.length)throw new Error(failed.map(r=>r.reason.message).join('\n'));
     }
     if (action === 'coop-dropin') {
