@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {mkdtempSync, writeFileSync, readFileSync} from 'node:fs';
 import {tmpdir} from 'node:os';
 import {join} from 'node:path';
-import {runStep, assessSmoke, assessPng, diffFingerprint, godotPath, failedChecks, profileEnv, reviewFailure, reviewOutput} from '../scripts/agent-workflow.mjs';
+import {runStep, assessSmoke, assessPng, diffFingerprint, godotPath, failedChecks, profileEnv, reviewFailure, reviewOutput, botSummary} from '../scripts/agent-workflow.mjs';
 import {spawnSync} from 'node:child_process';
 import {createHash, randomBytes} from 'node:crypto';
 
@@ -82,4 +82,9 @@ test('the Windows-only browser addon failing to load elsewhere is not a game err
   const noise="ERROR: GDExtension dynamic library not found: 'res://addons/godot_wry/WRY.gdextension'.\nERROR: real problem\nok";
   assert.equal(reviewOutput(noise,'linux'),'ERROR: real problem\nok');
   assert.equal(reviewOutput(noise,'win32'),noise);
+});
+test('bot batches report the three balance rates for the seven-map run', () => {
+  const bots=[{reached_realm:0,minutes:3},{reached_realm:2,minutes:14},{reached_realm:7,minutes:47},{reached_realm:7,minutes:52,baron_defeated:true}];
+  assert.deepEqual(botSummary(bots),{runs:4,cleared_first_realm:0.75,reached_final_boss:0.5,final_boss_defeated:0.25,median_minutes:47});
+  assert.equal(botSummary([]).runs,0);
 });
