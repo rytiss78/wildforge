@@ -45,6 +45,12 @@ node scripts/native.mjs
 
 This normal launcher uses the player's regular save profile. Automated tests should use the wrapper instead.
 
+## Checks on GitHub
+
+Every push to `main` and every pull request runs `check`, `smoke` and `integration` on GitHub (`.github/workflows/checks.yml`, Godot 4.7.2 for Linux, headless). The logs and each `result.json` are kept on the run as the `check-logs` artifact, and a failed step names the checks that came out false. Rendered reviews, the two-process co-op tests and `build` still need the Windows PC.
+
+The first run on November 15 failed `smoke` once and passed on the next two runs with no game change; the false check was cut off in that log. If it happens again the run now names it.
+
 ## Choose the relevant checks
 
 Prefix every action below with `node scripts/agent-workflow.mjs`.

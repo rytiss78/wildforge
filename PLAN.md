@@ -13,6 +13,7 @@ Rules: [AGENTS.md](AGENTS.md) and the [Godot workflow](native/docs/godot-workflo
 - **Co-op:** up to four players over LAN or the internet (UPnP invite codes, or a tunnel). Drop-in, reconnect with replayed rewards, rescue codes, party combos. Exact build match required; protocol `wildforge-shared-world-25`.
 - **Presentation:** 60 fps cap, show-don't-tell HUD (symbols, details in tooltips), own title intro instead of the engine splash, calmer audio with an enemy sound budget, own window and exe icon.
 - **Waiting:** Block Drop in the pause menu and co-op waiting overlay, with TikTok or YouTube Shorts beside it.
+- **Checks on GitHub:** every push and pull request runs `check`, `smoke` and `integration` on Linux (`.github/workflows/checks.yml`, since November 15).
 - **Tooling:** `node scripts/agent-workflow.mjs` (check, smoke, integration, about 50 rendered and two-process reviews, `bot-playtest`, `build`, `test-build`); `scripts/package-release.ps1` packs a release.
 
 ## In Build 32: big update MB (user, November 2)
