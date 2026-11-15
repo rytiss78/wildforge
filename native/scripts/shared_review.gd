@@ -13,7 +13,10 @@ static func send(g,phase: String,data: Dictionary={}):
 # A teammate's nameplate is their name, optionally followed by " · <ping> ms".
 static func named(text: String,name: String) -> bool:
 	return text==name or text.begins_with(name+" · ") and text.ends_with(" ms")
+# Picks the first card as a player would: a level-up's cards spin like a slot
+# machine first, and a press on a card that is still spinning is ignored.
 static func choose(g):
+	await wait_for(g,func():return g.mode!="offer" or (not g.hud.cards.is_empty() and not g.hud.card_rolling(0)),8)
 	if g.mode=="offer" and not g.hud.cards.is_empty(): g.hud.cards[0].pressed.emit()
 
 static func run(g,host: bool):
@@ -114,7 +117,7 @@ static func run(g,host: bool):
 		var client_state=g.party_seen.get(str(g.coop.members.keys()[0]),{})
 		checks.client_options=data.get("reward_id","")==g.party_reward_id and client_options.size()==g.offers.size() and client_state.get("options",[]).size()==g.offers.size()
 		checks.client_progress=data.get("level",0)==2 and data.get("xp",0)==10 and data.get("xp_gain",1)>1.7 and data.get("no_private_xp",false)
-		await wait_for(g,func():return g.mode=="offer");choose(g)
+		await wait_for(g,func():return g.mode=="offer");await choose(g)
 		var client_id=g.coop.members.keys()[0]
 		checks.client_choice_highlight=await wait_for(g,func():return str(g.party_seen.get(str(client_id),{}).get("selected_id",""))!="")
 		await wait_for(g,func():return not g.coop.frozen() and g.mode=="playing")
@@ -123,7 +126,7 @@ static func run(g,host: bool):
 		send(g,"chest",{"position":CoopSession.array(chest.node.position)})
 		checks.opened=await wait_for(g,func():return chest.opened)
 		if g.mode=="reveal": g.finish_reveal()
-		var pool=g.offers.map(func(o):return o.id);choose(g)
+		var pool=g.offers.map(func(o):return o.id);await choose(g)
 		checks.client_chest=await wait_for(g,func():return g.coop.test_messages.has("chest_done"))
 		data=g.coop.test_messages.get("chest_done",{})
 		checks.one_payment=data.get("gold",-1)==70 and data.get("paid",-1)==1 and g.gold==100
@@ -160,13 +163,13 @@ static func run(g,host: bool):
 			var free=g.chests.filter(func(c):return not c.opened)[0];free.mimic=false;free.free=true;free.rolled_free=true
 			g.buy_chest(free)
 			if g.mode=="reveal": g.finish_reveal()
-			choose(g);return free
-		free_chest.call()
+			await choose(g);return free
+		await free_chest.call()
 		checks.pre_drop_offer=await wait_for(g,func():return g.coop.test_messages.has("pre_drop_offer"))
 		g.coop.test_messages.erase("reconnected");send(g,"reconnect_force",{"hold":1.5})
 		checks.drop1_dropped=await wait_for(g,func():return g.coop.members.values().any(func(m):return m.get("disconnected",false)))
 		checks.host_runs_while_away=not g.coop.frozen()
-		var away_chest=free_chest.call()
+		var away_chest=await free_chest.call()
 		checks.drop1_rejoined=await wait_for(g,func():return g.coop.test_messages.has("reconnected"),42)
 		send(g,"away_chest",{"position":CoopSession.array(away_chest.node.position)})
 		checks.drop1_client=await wait_for(g,func():return g.coop.test_messages.has("drop1_done"),15) and g.coop.test_messages.drop1_done.values().all(func(v):return v)
@@ -176,7 +179,7 @@ static func run(g,host: bool):
 		checks.drop2_dropped=await wait_for(g,func():return g.coop.members.values().any(func(m):return m.get("disconnected",false)))
 		# A chest opened on this island while the guest is away, then the host moves on:
 		# the guest must still get it after rejoining on the next island.
-		free_chest.call()
+		await free_chest.call()
 		g.enter_realm(1)
 		checks.drop2_rejoined=await wait_for(g,func():return g.coop.test_messages.has("reconnected"),42)
 		var away_restored=g.coop.members.values().filter(func(member):return str(member.get("token",""))==away_token and not member.get("disconnected",false))
@@ -239,7 +242,7 @@ static func run(g,host: bool):
 		checks.no_private_xp=g.pickups.size()==before
 		var option_state=g.party_seen.get(str(g.coop.local_id),{})
 		send(g,"level",{"level":g.level,"xp":g.xp,"xp_gain":g.stat("xpGain"),"pool":g.offers.map(func(o):return o.id),"no_private_xp":checks.no_private_xp,"options":option_state.get("options",[]),"reward_id":option_state.get("reward_id","")})
-		choose(g)
+		await choose(g)
 		checks.host_choice_highlight=await wait_for(g,func():return str(g.party_seen.get(str(g.coop.owner_id),{}).get("selected_id",""))!="")
 		# A stale/duplicate client XP credit is never trusted by the host.
 		g.coop.send_to(g.coop.owner_id,{"type":"credit","pickup_id":"xp_0","xp":999})
@@ -253,7 +256,7 @@ static func run(g,host: bool):
 		await g.get_tree().create_timer(.3).timeout
 		option_state=g.party_seen.get(str(g.coop.local_id),{})
 		send(g,"chest_done",{"gold":g.gold,"paid":g.paid_chests,"pool":g.offers.map(func(o):return o.id),"hidden":chest.opened and not chest.node.visible,"options":option_state.get("options",[]),"reward_id":option_state.get("reward_id","")})
-		choose(g)
+		await choose(g)
 		checks.host_chest_choice_highlight=await wait_for(g,func():return str(g.party_seen.get(str(g.coop.owner_id),{}).get("selected_id",""))!="")
 		checks.defenses_replicated=g.enemies.filter(func(e):return e.get("magnet_guard",false)).size()==3
 		checks.guard_instruction=await wait_for(g,func():return g.coop.test_messages.has("guard"))
@@ -278,12 +281,12 @@ static func run(g,host: bool):
 		drop1.rejoined=await wait_for(g,func():return g.coop.test_messages.has("reconnected"),42)
 		drop1.offer_kept=g.mode=="offer" and g.hud.modal.visible and not g.offers.is_empty()
 		var kept_reward=g.party_reward_id
-		choose(g)
+		await choose(g)
 		# The chest the host opened while this guest was away follows once the kept
 		# choice is made (it used to be lost), and is offered only once.
 		drop1.away_offer=await wait_for(g,func():return g.mode=="offer" and g.offer_source=="chest" and g.party_reward_id!=kept_reward,6)
 		var away_reward=g.party_reward_id
-		choose(g)
+		await choose(g)
 		drop1.away_offer_once=g.party_reward_id==away_reward and g.coop.queued_offers.is_empty()
 		drop1.offer_chosen=await wait_for(g,func():return g.mode=="playing",4)
 		await g.get_tree().create_timer(.5).timeout
@@ -302,7 +305,7 @@ static func run(g,host: bool):
 		# The host may still be streaming the new realm; require snapshots to resume.
 		drop2.snapshots=await wait_for(g,func():return g.coop.snapshots_received-rejoin_start>=5,5)
 		drop2.earlier_island_chest=await wait_for(g,func():return g.mode=="offer" and g.offer_source=="chest",8)
-		choose(g)
+		await choose(g)
 		drop2.mode=await wait_for(g,func():return g.mode=="playing",4)
 		trace.append({"phase":"rejoin_client","snapshots":g.coop.snapshots_received-rejoin_start,"last_seq":g.coop.last_snapshot_seq,"realm":g.realm,"run_active":g.run_active,"since_snapshot":Time.get_ticks_msec()/1000.0-g.coop.last_snapshot})
 		checks.drop2=drop2.values().all(func(v):return v)
