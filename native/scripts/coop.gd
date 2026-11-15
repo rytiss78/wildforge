@@ -1100,7 +1100,9 @@ func receive(sender: int,message):
 				game.xp_target=int(message.get("xp_target",game.xp_target))
 			shared_offer(message.get("offers",[]),str(message.get("kind","skill")),bool(message.get("elite",false)),"level",str(message.get("reward_id","")))
 		elif kind=="chest_paid" and int(message.get("realm",-1))==game.realm:
-			game.pending_chest=false;var price=int(message.get("price",0));game.gold=maxi(0,game.gold-price)
+			game.pending_chest=false;var price=int(message.get("price",0))
+			game.chest_achievements(price,game.gold,message.get("free",false)==true,message.get("elite",false)==true,message.get("high",false)==true)
+			game.gold=maxi(0,game.gold-price)
 			if price>0: game.paid_chests+=1
 			game.run_chests+=1;game.career.bump("chests");game.heal(game.stats.chestHeal)
 		elif kind=="chest_rejected": game.pending_chest=false;game.hud.tell("Chest unavailable or not enough coins")
