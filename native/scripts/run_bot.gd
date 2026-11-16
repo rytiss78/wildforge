@@ -5,7 +5,9 @@ extends RefCounted
 # uses, on the game's own physics and combat code. It kites crowds and attack
 # warnings, collects XP and gold, opens affordable chests, follows the portal
 # objective through all three realms and fights the Baron. A "competent but
-# not perfect" player: it reacts every 0.1 s and dashes only when cornered.
+# not perfect" player: it reacts every 0.1 s, keeps out of touching range (a
+# touch hurts at once), slides along rocks that block it and dashes when an
+# enemy is about to touch it or it is cornered.
 #
 # Arguments: --bot-hero=<id> --bot-seed=<n> --bot-style=balanced|offense|defense
 #            --bot-minutes=<cap on simulated minutes>
@@ -34,6 +36,7 @@ static func run(g):
 	var timeline=[];var next_sample=0.0;var last_hit={};var hits=[]
 	var shots=Array(arg("bot-shots","").split("-",false));var last_shot=-1
 	var trail=[]
+	var detour=Vector3.ZERO;var detour_clock=0.0;var detour_side=1.0
 	while g.elapsed<cap:
 		steps+=1
 		if steps%20==0: await g.get_tree().process_frame
@@ -68,8 +71,22 @@ static func run(g):
 				if g.player.position.distance_to(stuck_from)<2 and wish.length()>.5: wander=Vector3.RIGHT.rotated(Vector3.UP,randf()*TAU)*1.5
 				else: wander=Vector3.ZERO
 				stuck_from=g.player.position;stuck_clock=0
+			# Pressed against a rock or cliff while trying to move: go along it for a
+			# moment (and hop), instead of standing there while the crowd arrives.
+			detour_clock-=THINK
+			if detour_clock<=0: detour=Vector3.ZERO
+			if detour==Vector3.ZERO and wish.length()>.5 and Vector2(g.player.velocity.x,g.player.velocity.z).length()<g.stat("speed")*.45:
+				var normal=world_normal(g)
+				if normal!=Vector3.ZERO:
+					var tangent=Vector3(-normal.z,0,normal.x)
+					if absf(tangent.dot(wish.normalized()))<.2: detour_side=-detour_side;tangent*=detour_side
+					elif tangent.dot(wish)<0: tangent=-tangent
+					detour=tangent*1.6+normal*.4;detour_clock=.6
+					g.try_jump()
+			if detour!=Vector3.ZERO: wish=detour+wish*.25
 			if goal!=Vector3.INF and g.player.position.distance_to(goal)<3.2: g.interact()
-			if cornered(g) and g.dash_cooldown<=0: g.dash()
+			if (cornered(g) or pressed(g)) and g.dash_cooldown<=0:
+				drive(g,wish);g.dash()
 			tend_turrets(g)
 		drive(g,wish)
 		g._physics_process(STEP);g._process(STEP)
@@ -130,6 +147,17 @@ static func steer(g,goal: Vector3,wander: Vector3) -> Vector3:
 		if d<reach and d>.01:
 			var weight=(reach-d)/reach*(3.0 if enemy.boss else 1.0)
 			push+=away/d*weight;danger+=weight
+	# Touching range is the enemy's radius plus .85 m. Inside a few metres of that the
+	# bot gives way hard and stops walking toward its goal.
+	var close=false
+	for enemy in g.enemies:
+		if enemy.dead: continue
+		var away: Vector3=(p-enemy.node.position)*Vector3(1,0,1);var d=away.length()
+		var gap=d-float(enemy.get("radius",.6))-.85
+		var keep=4.0 if enemy.boss else 2.6
+		if gap<keep and d>.01 and absf(p.y-enemy.node.position.y)<3.0:
+			var hard=(keep-maxf(gap,0.0))/keep*5.0
+			push+=away/d*hard;danger+=hard;close=true
 	var urgent=false
 	for hazard in g.hazards:
 		if hazard.get("friendly",false) or not is_instance_valid(hazard.get("node")): continue
@@ -147,7 +175,7 @@ static func steer(g,goal: Vector3,wander: Vector3) -> Vector3:
 	var toward=Vector3.ZERO
 	var edge=RealmWorld.coast_radius(atan2(p.z,p.x),g.seed_value,g.realm)
 	var from_centre=Vector2(p.x,p.z).length()
-	if goal!=Vector3.INF: toward=((goal-p)*Vector3(1,0,1)).normalized()*(1.5 if danger<2 else .6)
+	if goal!=Vector3.INF: toward=((goal-p)*Vector3(1,0,1)).normalized()*(.25 if close else 1.5 if danger<2 else .6)
 	elif danger<.2 and from_centre>edge*.5: toward=-Vector3(p.x,0,p.z).normalized()*.4
 	var inward=Vector3.ZERO
 	var margin=minf(18.0,edge*.2)
@@ -162,6 +190,24 @@ static func blockers(g) -> Array:
 		var kind="world" if other is StaticBody3D else "enemy" if other is CharacterBody3D and int(other.collision_layer)==4 else str(other.get_class()) if other!=null else "none"
 		if not kind in found: found.append(kind)
 	return found
+
+# The flat direction out of the rock or cliff the hero's last move slid against.
+static func world_normal(g) -> Vector3:
+	for i in range(g.player.get_slide_collision_count()):
+		var hit=g.player.get_slide_collision(i)
+		if hit.get_collider() is StaticBody3D:
+			var normal: Vector3=hit.get_normal()*Vector3(1,0,1)
+			if normal.length()>.3: return normal.normalized()
+	return Vector3.ZERO
+
+# An enemy is about to touch the hero (no protection running).
+static func pressed(g) -> bool:
+	if g.invulnerable>0: return false
+	for enemy in g.enemies:
+		if enemy.dead or enemy.get("freeze",0)>0: continue
+		var offset: Vector3=g.player.position-enemy.node.position
+		if Vector2(offset.x,offset.z).length()<float(enemy.get("radius",.6))+.85+.7 and absf(offset.y)<2.2: return true
+	return false
 
 static func cornered(g) -> bool:
 	if g.get_meta("bot_trapped",false): return true
