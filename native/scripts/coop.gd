@@ -92,6 +92,9 @@ var party_combos_seen=0
 var test_finished_peers={}
 var joined=false
 var saw_pause=false
+# Each hunt state the host's snapshots showed, in order. A state can come and go
+# between two looks at game.events, so tests read this instead of sampling.
+var hunt_states_seen: Array=[]
 var saw_realm=false
 var turret_models={}
 var last_remote_reward_level=1
@@ -1286,6 +1289,8 @@ func apply_world(message: Dictionary):
 	game.update.apply_state(message.get("big_update",{}))
 	game.events=message.get("journey",game.events).duplicate(true);game.realm_bosses=int(message.get("wardens",game.realm_bosses))
 	snapshots_received+=1;paused=bool(message.pause);saw_pause=saw_pause or paused
+	var hunt_state=str(game.events.get("hunt_state","idle"))
+	if (hunt_states_seen.is_empty() or hunt_states_seen[-1]!=hunt_state) and hunt_states_seen.size()<16: hunt_states_seen.append(hunt_state)
 	# Smooth time sync: lerp client time toward host to prevent jumps
 	var target_time=float(message.seconds)
 	if game.realm_time>0:
