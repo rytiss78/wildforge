@@ -110,7 +110,7 @@ static func run(g):
 	report.minutes=snappedf(g.elapsed/60.0,.01);report.level=g.level;report.kills=g.kills;report.reached_realm=g.realm
 	report.damage_taken=roundi(hits_taken);report.wall_seconds=snappedf((Time.get_ticks_msec()-started)/1000.0,.1)
 	report.weapons=g.equipped.map(func(w):return str(w.id)+":"+str(w.rank)+("*" if w.get("evolved",false) else ""));report.evolutions=g.equipped.filter(func(w):return w.get("evolved",false)).map(func(w):return {"name":str(w.name),"minute":snappedf(float(w.get("evolved_at",0))/60.0,.1)});report.mutations=g.mutations.size()
-	report.capped=g.elapsed>=cap;report.timeline=timeline;report.last_hits=hits
+	report.capped=g.elapsed>=cap;report.wardens=g.realm_bosses;report.journey=g.Journey.state(g) if g.realm<RealmWorld.ARENA else "arena";report.eclipse_stage=int(g.events.get("eclipse_stage",0)) if g.events.get("eclipse",false) else 0;report.max_hp=roundi(g.stats.maxHp);report.timeline=timeline;report.last_hits=hits
 	print("RUN_BOT "+JSON.stringify(report))
 	g.get_tree().quit(0)
 
@@ -175,7 +175,18 @@ static func steer(g,goal: Vector3,wander: Vector3) -> Vector3:
 	var toward=Vector3.ZERO
 	var edge=RealmWorld.coast_radius(atan2(p.z,p.x),g.seed_value,g.realm)
 	var from_centre=Vector2(p.x,p.z).length()
-	if goal!=Vector3.INF: toward=((goal-p)*Vector3(1,0,1)).normalized()*(.25 if close else 1.5 if danger<2 else .6)
+	# A warden or the portal guardian has to die for the map to open, so the bot
+	# stays in weapon range of it (and circles) instead of wandering off after loot.
+	var quarry=Vector3.INF;var quarry_d=60.0
+	for enemy in g.enemies:
+		if enemy.dead or not enemy.boss: continue
+		var d=Vector2(enemy.node.position.x-p.x,enemy.node.position.z-p.z).length()
+		if d<quarry_d: quarry=enemy.node.position;quarry_d=d
+	if quarry!=Vector3.INF and (goal==Vector3.INF or g.Journey.state(g) in ["sealed","fighting"]):
+		var out: Vector3=((quarry-p)*Vector3(1,0,1)).normalized()
+		if quarry_d>10.0: toward=out*(.25 if close else 1.2)
+		elif not close: toward=Vector3(-out.z,0,out.x)*.8
+	elif goal!=Vector3.INF: toward=((goal-p)*Vector3(1,0,1)).normalized()*(.25 if close else 1.5 if danger<2 else .6)
 	elif danger<.2 and from_centre>edge*.5: toward=-Vector3(p.x,0,p.z).normalized()*.4
 	var inward=Vector3.ZERO
 	var margin=minf(18.0,edge*.2)
@@ -249,7 +260,7 @@ static func pick(g,style: String) -> int:
 			var offense={"offense":3.0,"defense":1.5,"balanced":2.5}[style];var defense={"offense":1.0,"defense":3.0,"balanced":2.2}[style]
 			score+=offense if key in OFFENSE else defense if key in DEFENSE else 1.0
 			# Keep some survivability: defence gains value when health lags behind level.
-			if key in DEFENSE: score+=clampf((100.0+g.level*5.0-float(g.stats.maxHp))/60.0,0,1.5)
+			if key in DEFENSE: score+=clampf((100.0+g.level*10.0-float(g.stats.maxHp))/60.0,0,2.5)
 			if not UpgradeFit.describe(g,item).get("useful",true): score-=3.0
 		if score>best_score: best=i;best_score=score
 	return best
