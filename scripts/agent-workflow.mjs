@@ -482,7 +482,7 @@ async function main(action) {
     }
     if (action === 'bot-playtest') {
       // Full-run bots in parallel, each in its own profile. BOT_RUNS="hero:style:seed,..."
-      const specs=(process.env.BOT_RUNS||'duck:balanced:101,grandma:offense:102,broccoli:defense:103,wrench:balanced:104,florist:balanced:105,ninja:offense:106').split(',').map(x=>x.split(':'));
+      const specs=(process.env.BOT_RUNS||'duck:balanced:101,grandma:offense:102,goblin:defense:103,wrench:balanced:104,florist:balanced:105,ninja:offense:106').split(',').map(x=>x.split(':'));
       const minutes=process.env.BOT_MINUTES||'60';
       const runs=specs.map(async([hero,style,seed])=>{
         const profile=join(runDir,hero+'-'+seed);mkdirSync(profile,{recursive:true});
