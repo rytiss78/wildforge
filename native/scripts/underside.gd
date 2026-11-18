@@ -175,7 +175,7 @@ func slam(game: Node3D) -> bool:
 # A slam onto the belly: the same blast as on top, with a shower of dirt.
 func slam_land(game: Node3D,at: Vector3):
 	slamming=false;slams+=1
-	game.damage_area(at,4*game.stats.slamRadius,game.stat("damage")*2*game.stats.slamPower,"slam")
+	game.damage_area(at,4*game.stats.slamRadius,game.stat("damage")*game.SLAM_MULTIPLIER*game.stats.slamPower,"slam")
 	for i in range(3): game.burst(at-Vector3.UP*.3,Color("7a5a3a") if i<2 else Color("c79a5a"),10)
 	game.hit_shake=maxf(game.hit_shake,.45);game.sound.effect("slam",at);game.vibrate(.5,.75,.2)
 	game.heal(game.stats.slamHeal)

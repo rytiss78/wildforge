@@ -7,7 +7,7 @@ static func run(g):
 	g.start_run(1616);g.enter_realm(RealmWorld.ARENA);g.set_process(false);g.set_physics_process(false)
 	g.invulnerable=100000;g.spawn_clock=100000;g.xp_target=100000
 	var boss=g.enemies[0];var rows=[];var checks={}
-	for build in ["weapons","turrets","status","slam","flowers"]:
+	for build in ["weapons","turrets","fire","poison","slam","flowers"]:
 		for tier in range(3):
 			for list in [g.projectiles,g.effects,g.flowers,g.pools,g.hazards]:
 				for item in list:
@@ -21,7 +21,10 @@ static func run(g):
 			var weapons=["gun","shotgun","rail"]
 			match build:
 				"turrets": keys=["damage","turretDamage","turretRate"];weapons=["turret","fire-turret","rocket-turret"]
-				"status": keys=["damage","rate","burn","poison"];weapons=["flame","poison","lightning"]
+				# Fire, poison and slam are measured alone with the same card budget so
+				# the three can be compared head to head.
+				"fire": keys=["damage","rate","burn"];weapons=["flame"]
+				"poison": keys=["damage","rate","poison"];weapons=["poison"]
 				"slam": keys=["damage","slamPower","slamRecovery"];weapons=[]
 				"flowers": keys=["damage","flowerPower","flowerSeeds"];weapons=["flowers"]
 			for i in range(12*(tier+1)):

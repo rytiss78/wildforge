@@ -21,7 +21,7 @@ add('gold-glove','Gold','goldGain',.3,'multiply');add('cheap-chest','Sale','disc
 
 const weapons=[
 
- ['flowers','Flowers','Garden',1,1,18],['gun','Gun','Shots',1,1,24],['shotgun','Shotgun','Shots',.6,.65,17],['flame','Flamethrower','Fire',.65,1.3,8],['poison','Poison Flask','Poison',.7,1,20],['ice','Ice Gun','Ice',.7,1,24],['rail','Sniper Rail','Shots',2.6,.45,40],['lightning','Storm Rod','Lightning',1.1,.8,22],['saw','Saw','Thorns',1.6,1,8],['rocket','Homing Rockets','Boom',1.6,.55,30],['ghost','Blink Ghost','Ghost',.9,.8,22],['turret','Turret','Engineering',1,1.5,25],['fire-turret','Fire Turret','Fire',.8,1.4,18],['pulse-turret','Thumper Turret','Engineering',.5,.4,6],['heal-turret','Mender Turret','Recovery',0,.55,7],['lightning-turret','Storm Turret','Electric',1.2,.9,26],['rocket-turret','Rocket Turret','Explosives',2.3,.5,30]
+ ['flowers','Flowers','Garden',1,1,18],['gun','Gun','Shots',1,1,24],['shotgun','Shotgun','Shots',.6,.65,17],['flame','Flamethrower','Fire',1.6,1.3,8],['poison','Poison Flask','Poison',.7,1,20],['ice','Ice Gun','Ice',.7,1,24],['rail','Sniper Rail','Shots',2.6,.45,40],['lightning','Storm Rod','Lightning',1.1,.8,22],['saw','Saw','Thorns',1.6,1,8],['rocket','Homing Rockets','Boom',1.6,.55,30],['ghost','Blink Ghost','Ghost',.9,.8,22],['turret','Turret','Engineering',1,1.5,25],['fire-turret','Fire Turret','Fire',.8,1.4,18],['pulse-turret','Thumper Turret','Engineering',.5,.4,6],['heal-turret','Mender Turret','Recovery',0,.55,7],['lightning-turret','Storm Turret','Electric',1.2,.9,26],['rocket-turret','Rocket Turret','Explosives',2.3,.5,30]
 
 ].map(([id,name,family,damage,rate,range])=>({id,name,family,damage,rate,range,turret:id.includes('turret')}));
 
@@ -146,7 +146,7 @@ for(const h of heroes){const [height,radius,speed,jump]=physiques[h.id];Object.a
 
 for(const [id,name,key,amount] of [['bloom','Big Bloom','flowerPower',.35],['roots','Roots','flowerRoots',.2],['pollen','Pollen','flowerPollen',5],['nectar','Nectar','flowerHeal',2],['seed','Seeds','flowerSeeds',1]]) for(const kind of ['item','skill']) loot.push({id:id+'-'+kind,name,title:name,family:'Garden',kind,effects:[{key,amount,mode:key==='flowerPower'?'multiply':'add'}]});
 
-for(const [id,name,key,amount,mode] of [['jump-boots','Jump Boots','jumpHeight',.2,'multiply'],['extra-hop','Extra Hop','airJumps',1,'add'],['feather-soles','Feather Soles','fallGuard',.2,'add'],['slam-stone','Slam Stone','slamPower',.3,'multiply'],['wide-slam','Wide Slam','slamRadius',.2,'multiply'],['bounce-pad','Bounce Pad','bounceJump',.25,'add']]) for(const kind of ['item','skill']) loot.push({id:id+'-'+kind,name,title:name,family:'Mobility',kind,effects:[{key,amount,mode}]});
+for(const [id,name,key,amount,mode] of [['jump-boots','Jump Boots','jumpHeight',.2,'multiply'],['extra-hop','Extra Hop','airJumps',1,'add'],['feather-soles','Feather Soles','fallGuard',.2,'add'],['slam-stone','Slam Stone','slamPower',.5,'add'],['wide-slam','Wide Slam','slamRadius',.2,'multiply'],['bounce-pad','Bounce Pad','bounceJump',.25,'add']]) for(const kind of ['item','skill']) loot.push({id:id+'-'+kind,name,title:name,family:'Mobility',kind,effects:[{key,amount,mode}]});
 
 Object.assign(labels,{jumpHeight:'Jump Boots',airJumps:'Extra Hop',fallGuard:'Feather Soles',slamPower:'Slam Stone',slamRadius:'Wide Slam',bounceJump:'Bounce Pad',flowerPower:'Big Bloom',flowerRoots:'Roots',flowerPollen:'Pollen',flowerHeal:'Nectar',flowerSeeds:'Seeds'});
 

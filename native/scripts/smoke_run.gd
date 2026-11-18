@@ -258,7 +258,7 @@ static func run(g):
 	g.spawn_enemy(8)
 	var slam_target=g.enemies[0];g.plain_enemy(slam_target);slam_target.node.position=Vector3(2.5,g.world.height_at(2.5,0),0);slam_target.hp=1000;slam_target.maxHp=1000;slam_target.freeze=3
 	g.player.position=Vector3(0,8,0);g.player.velocity=Vector3(0,-24,0);g.player.reset_physics_interpolation();g.peak_height=8;g.landing_ready=true;g.slamming=true;g.invulnerable=1000
-	var slam_expected=g.stat("damage")*2*g.stats.slamPower
+	var slam_expected=g.stat("damage")*g.SLAM_MULTIPLIER*g.stats.slamPower
 	await g.get_tree().create_timer(.65).timeout
 	checks.real_ground_slam=is_equal_approx(1000-slam_target.hp,slam_expected) and not g.slamming and g.player.is_on_floor()
 	var before_level=g.level;g.mode="playing";g.xp=g.xp_target;g.level_up()
@@ -272,7 +272,7 @@ static func run(g):
 	var stomp_target=g.enemies[0];g.plain_enemy(stomp_target);stomp_target.node.position=Vector3.ZERO;stomp_target.hp=10000
 	g.slam_cooldown=0;g.slamming=false
 	g.player.position=Vector3(0,stomp_target.height-.05,0);g.check_stomp(Vector3(0,stomp_target.height+.7,0),-8)
-	checks.head_stomp=not stomp_target.dead and is_equal_approx(10000-stomp_target.hp,g.stat("damage")*2*g.stat("slamPower")) and g.player.velocity.y>0 and g.slam_cooldown>0
+	checks.head_stomp=not stomp_target.dead and is_equal_approx(10000-stomp_target.hp,g.stat("damage")*g.SLAM_MULTIPLIER*g.stat("slamPower")) and g.player.velocity.y>0 and g.slam_cooldown>0
 	g.mode="playing";g.invulnerable=0;g.stats.dodge=0;g.stats.armor=0;g.hp=1000
 	g.take_damage(10,Vector3(1,1,0),"shell_bump")
 	checks.hit_bump=g.knock_velocity.x<0 and g.hit_shake>0 and g.avatar.hurt>0
