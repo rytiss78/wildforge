@@ -290,7 +290,7 @@ func describe(effect: Dictionary) -> String:
 	if effect.key=="dashCooldown": return "Dash cooldown −%s s" % snappedf(absf(amount),.01)
 	if effect.key in ["jumpHeight","airJumps","fallGuard","slamPower","slamRadius","bounceJump"]:
 		name={"jumpHeight":"Jump height","airJumps":"Extra air jumps","fallGuard":"Fall damage reduction","slamPower":"Slam damage","slamRadius":"Slam radius","bounceJump":"Landing jump boost"}[effect.key]
-	var percent=effect.get("mode","add")=="multiply" or effect.key in ["crit","dodge","lifesteal","discount","freeze","blind","slow","stun","execute","salvage","fallGuard","bounceJump","interest","chestBonus","banana","berserk"]
+	var percent=effect.get("mode","add")=="multiply" or effect.key in ["crit","dodge","lifesteal","discount","freeze","blind","slow","stun","execute","salvage","fallGuard","bounceJump","interest","chestBonus","banana","berserk","slamPower"]
 	if effect.key=="keyPower": return "Free chest chance +%s%%" % snappedf(amount*100,.01)
 	if effect.key=="ghost": return "Ghost dash +%s s" % snappedf(amount,.01)
 	# Hero drawbacks are negative (Tank Potato moves 18% slower): show the real sign.

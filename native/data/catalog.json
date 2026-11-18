@@ -681,7 +681,7 @@
       "id": "flame",
       "name": "Flamethrower",
       "family": "Fire",
-      "damage": 0.65,
+      "damage": 0.9,
       "rate": 1.3,
       "range": 8,
       "turret": false,
@@ -1208,7 +1208,7 @@
       "id": "venom-candle",
       "name": "Venom Candle",
       "family": "Fire",
-      "damage": 0.5850000000000001,
+      "damage": 0.81,
       "rate": 1.4300000000000002,
       "range": 8,
       "turret": false,
@@ -1227,7 +1227,7 @@
       "id": "steam-iron",
       "name": "Steam Iron",
       "family": "Fire",
-      "damage": 0.7280000000000001,
+      "damage": 1.0080000000000002,
       "rate": 1.1440000000000001,
       "range": 8,
       "turret": false,
@@ -5633,8 +5633,8 @@
       "effects": [
         {
           "key": "slamPower",
-          "amount": 0.3,
-          "mode": "multiply"
+          "amount": 0.5,
+          "mode": "add"
         }
       ]
     },
@@ -5647,8 +5647,8 @@
       "effects": [
         {
           "key": "slamPower",
-          "amount": 0.3,
-          "mode": "multiply"
+          "amount": 0.5,
+          "mode": "add"
         }
       ]
     },

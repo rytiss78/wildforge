@@ -1022,7 +1022,7 @@ func receive(sender: int,message):
 					var stats=members[sender].get("stats",{})
 					members[sender].stomp_ready=now+4.5/(1+clampf(float(stats.get("slamRecovery",0)),0,5))
 					enemy.hit_owner=sender
-					game.hurt_enemy(enemy,float(stats.get("damage",15))*2*float(stats.get("slamPower",1)),"stomp")
+					game.hurt_enemy(enemy,float(stats.get("damage",15))*game.SLAM_MULTIPLIER*float(stats.get("slamPower",1)),"stomp")
 					enemy.erase("hit_owner")
 				return
 		elif kind=="hit" and game.mode=="playing" and not frozen():

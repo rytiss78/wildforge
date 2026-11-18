@@ -7,7 +7,8 @@ const REFERENCE_DPS=300.0
 # 7.5 (October 24): after the weapon-damage fixes half the bots that reached him
 # still won; the target is about 40%.
 # 37.5 (October 24, user request): five times the Colossus's health.
-const HEALTH_MULTIPLIER=37.5
+# 22.5 (November 18, user request "cut hp"): 40% less, like the other bosses.
+const HEALTH_MULTIPLIER=22.5
 const INTRO_SECONDS=3.6
 # The final boss is The Grand Noggin, a giant floating head (ColossusFight,
 # ColossusRig): three phases.

@@ -1226,7 +1226,8 @@ func spawn_enemy(radius: float = 22.0, boss: bool = false,anchor: Vector3=Vector
 	max_health *= 1+RealmWorld.BIOME_TIER[biome]*.18
 	if not boss: max_health*=species.health*pow(body_scale,1.5)*(.60 if species.behavior=="spit" else 1.0)*ENEMY_HEALTH_SCALE
 	# x20 (October 24, user request): five times the earlier x4 for every boss.
-	if boss: max_health*=20
+	# x12 (November 18, user request "cut hp"): 40% less.
+	if boss: max_health*=12
 	if elite: max_health*=2.5
 	var enemy = {"biome":biome,"elite":elite,"node":node,"hp":max_health,"maxHp":max_health,"speed":(2.9+tier*.35+randf()*0.6)*ENEMY_SPEED_SCALE,"boss":boss,"fire":0.0,"poison":0.0,"status_time":0.0,"freeze":0.0,"blind":0.0,"slow":0.0,"attack":2.5*realm_difficulty*randf_range(.6,1.6),"telegraph":0.0,"dead":false,"contact":0.0,"phase":1,"startDamage":health_damage,"formation_id":formation_id}
 	enemy.guardian=guardian
@@ -1266,10 +1267,16 @@ func boss_speed(enemy: Dictionary,distance: float) -> float:
 	if distance<=BOSS_CLOSE: return float(enemy.speed)
 	var hero_speed=float(stats.get("speed",8.0))
 	return maxf(float(enemy.speed),hero_speed*lerpf(.85,1.25,clampf((distance-BOSS_CLOSE)/48.0,0.0,1.0)))
+# Slam and head-stomp damage = Damage x this x Slam damage. 5.5 (November 18,
+# user request "balance fire, slam, poison"; was 2): slam cards now add +50%
+# each instead of compounding x1.3, so slam is no longer the weakest build early
+# and no longer runs away late.
+const SLAM_MULTIPLIER=5.5
 const ENEMY_SPEED_SCALE=1.21  # 1.1, then 10% faster again (user request, November 1)
 # Dangerous, not tanky (user request, October 25): ordinary enemies have 35% less
 # health and hit 50% harder, in contact and with ranged marks. Bosses keep theirs.
-const ENEMY_HEALTH_SCALE=.65
+# .45 (November 18, user request "cut hp"): about 30% less than .65.
+const ENEMY_HEALTH_SCALE=.45
 const ENEMY_DAMAGE_SCALE=1.5
 
 # Levels the current XP already pays for, still to be chosen.
@@ -1658,8 +1665,11 @@ func hit_enemy(enemy: Dictionary, shot: Dictionary,cause: String="hit"):
 		# A fire or poison weapon's own burn grows with its power (square root, like
 		# spells), so ranking it up raises the burn too; it was a flat 10 / 9.
 		var element=sqrt(maxf(1.0,float(weapon_power(str(shot.get("weapon_id",kind))))))
-		set_damage_status(enemy,"fire",stats.burn + (10.0*element if kind.contains("fire") or kind=="flame" else 0.0),coop.local_id)
-		set_damage_status(enemy,"poison",stats.poison + (9.0*element if kind.contains("poison") else 0.0),coop.local_id)
+		# Burn and poison on hit also grow with Damage (November 18), as poison clouds
+		# already did; before, fire builds fell far behind the others late in a run.
+		var hit_scale=stat("damage")/float(rules.data.stats.damage)
+		set_damage_status(enemy,"fire",(stats.burn + (10.0*element if kind.contains("fire") or kind=="flame" else 0.0))*hit_scale,coop.local_id)
+		set_damage_status(enemy,"poison",(stats.poison + (9.0*element if kind.contains("poison") else 0.0))*hit_scale,coop.local_id)
 		enemy.slow = maxf(enemy.slow,stats.slow + (.35 if kind.contains("ice") else 0.0))
 		if rules.rng.randf()<stats.freeze or kind.contains("ice") and rules.rng.randf()<.3:
 			enemy.freeze = .35 if enemy.boss else 1.6
@@ -3172,7 +3182,7 @@ func check_stomp(previous: Vector3,falling_speed: float):
 		var planar=Vector2(player.position.x-enemy.node.position.x,player.position.z-enemy.node.position.z).length()
 		if planar<enemy.get("radius",.53)+.27 and previous.y>=top-.25 and player.position.y<=top+.16:
 			if coop.active and not coop.hosting: coop.stomp(enemy)
-			else: hurt_enemy(enemy,stat("damage")*2*stat("slamPower"),"stomp")
+			else: hurt_enemy(enemy,stat("damage")*SLAM_MULTIPLIER*stat("slamPower"),"stomp")
 			slam_cooldown=slam_recovery();condition_times.slam=elapsed
 			player.position.y=top+.15;player.velocity.y=6.5;air_jumps=0;slamming=false;peak_height=player.position.y;landing_ready=true
 			sound.effect("squish",enemy.node.position);burst(enemy.node.position+Vector3.UP,Color("f1d39c"),9);vibrate(.22,.45,.1)
@@ -3219,7 +3229,7 @@ func check_landing(was_grounded: bool):
 		if slamming:
 			condition_times.slam=elapsed
 			slam_wave()
-			damage_area(player.position,4*stats.slamRadius,stat("damage")*2*stats.slamPower,"slam")
+			damage_area(player.position,4*stats.slamRadius,stat("damage")*SLAM_MULTIPLIER*stats.slamPower,"slam")
 			burst(player.position+Vector3.UP*.1,Color("dfbb8d"),20)
 			vibrate(.5,.75,.2)
 			heal(stats.slamHeal)
