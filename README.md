@@ -4,11 +4,18 @@
 
 A cartoon survival roguelite where a duck, a white sports car and a pickle are perfectly reasonable heroes. Drop onto floating islands full of weird creatures, grab unpredictable upgrades and become outrageously overpowered before the monsters catch you. Solo or with up to three friends.
 
-**[Download Build 33 for Windows](https://github.com/rytiss78/wildforge/releases/tag/build-33)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
+**[Download Build 34 for Windows](https://github.com/rytiss78/wildforge/releases/tag/build-34)** · [Play with friends](native/docs/coop.md) · [Share an idea or report a bug](https://github.com/rytiss78/wildforge/issues)
 
 ![A cartoon fight on the first island](docs/screenshots/build27/fight.jpg)
 
-## New in Build 33
+## New in Build 34
+
+- **Less health:** ordinary creatures about 31% less, bosses, wardens and the Grand Noggin 40% less.
+- **Fire, poison and slam evened out:** the Flamethrower and burn hit harder, and slam is no longer weak early and runaway late.
+
+Build 34 needs Build 34 on every PC in the party; it does not connect to Build 33. [Full Build 34 notes](native/docs/build34-release.md)
+
+## Build 33
 
 - **Co-op fixes:** the host waits for a guest who is still loading, warden chests stand in the same spot for everyone, and level-up cards and portal rewards are no longer lost.
 - **Smoother big fights:** status effects are drawn on the nearest 24 enemies only.
@@ -113,7 +120,7 @@ node scripts/agent-workflow.mjs test-build
 ./scripts/package-release.ps1 -BuildNumber 33 -BuildDirectory <staged build directory>
 ```
 
-Published downloads use sequential build numbers. The current release is `Wildforge 1.15.1 — Build 33`, tag `build-33`, archive `Wildforge-1.15.1-Windows.zip` (with `godot_wry.dll` and its license, needed beside the executable for the video panel). Each package includes `build-info.json` with the source commit and artifact hashes, and a SHA-256 checksum file.
+Published downloads use sequential build numbers. The current release is `Wildforge 1.15.2 — Build 34`, tag `build-34`, archive `Wildforge-1.15.2-Windows.zip` (with `godot_wry.dll` and its license, needed beside the executable for the video panel). Each package includes `build-info.json` with the source commit and artifact hashes, and a SHA-256 checksum file.
 
 **Controls:** WASD / left stick moves; mouse / right stick looks; Space / A jumps; Shift / RT dashes; V / LT hero trick; C / L3 rope; Ctrl / B slams; E / X interacts; B / Y opens your build; Escape / Menu pauses. Weapons attack automatically. Walk over an island's edge to go underneath.
 
