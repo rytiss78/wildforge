@@ -38,12 +38,16 @@ class WildforgeTrainer {
 
     static int Apply(bool verbose) {
         var regions = Regions();
-        byte[] needle = Encoding.UTF32.GetBytes("airJumps\0");
+        return Boost(regions, "airJumps", TARGET, verbose) + Boost(regions, "jumpHeight", 2, verbose);
+    }
+
+    static int Boost(List<KeyValuePair<long, byte[]>> regions, string key, int TARGET, bool verbose) {
+        byte[] needle = Encoding.UTF32.GetBytes(key + "\0");
         var strings = new HashSet<long>();
         foreach (var r in regions) {
             byte[] b = r.Value;
             for (int i = 0; i <= b.Length - needle.Length; i += 4) {
-                if (b[i] != (byte)'a' || b[i + 4] != (byte)'i') continue;
+                if (b[i] != needle[0] || b[i + 4] != needle[4]) continue;
                 bool ok = true;
                 for (int k = 0; k < needle.Length; k++) if (b[i + k] != needle[k]) { ok = false; break; }
                 if (ok) strings.Add(r.Key + i);
@@ -61,16 +65,18 @@ class WildforgeTrainer {
                     double d = BitConverter.ToDouble(b, v + 8);
                     if (d < 0 || d >= 9 || double.IsNaN(d)) continue;
                     seen++;
+                    if (verbose) Console.WriteLine("    " + key + " @" + (r.Key + i).ToString("X") + " = " + d);
                     if (d < TARGET) { var data = BitConverter.GetBytes((double)TARGET); if (WriteProcessMemory(proc, new IntPtr(at), data, new IntPtr(8), out w)) changed++; }
                 } else if (type == INT) {
                     long n = BitConverter.ToInt64(b, v + 8);
                     if (n < 0 || n >= 9) continue;
                     seen++;
+                    if (verbose) Console.WriteLine("    " + key + " @" + (r.Key + i).ToString("X") + " = " + n + " (int)");
                     if (n < TARGET) { var data = BitConverter.GetBytes((long)TARGET); if (WriteProcessMemory(proc, new IntPtr(at), data, new IntPtr(8), out w)) changed++; }
                 }
             }
         }
-        if (verbose) Console.WriteLine("  \"airJumps\" strings: " + strings.Count + ", stat entries: " + seen + ", raised to " + TARGET + " now: " + changed);
+        if (verbose) Console.WriteLine("  \"" + key + "\" strings: " + strings.Count + ", stat entries: " + seen + ", raised to " + TARGET + " now: " + changed);
         return seen;
     }
 
@@ -81,10 +87,10 @@ class WildforgeTrainer {
         if (ps.Length == 0) { Console.WriteLine("Wildforge is not running. Start your run first."); Console.ReadLine(); return; }
         proc = OpenProcess(0x0010 | 0x0020 | 0x0008 | 0x0400, false, ps[0].Id);
         if (proc == IntPtr.Zero) { Console.WriteLine("Could not open the game (try Run as administrator)."); Console.ReadLine(); return; }
-        Console.WriteLine("Attached to " + ps[0].ProcessName + " (pid " + ps[0].Id + "). Giving the hero 8 extra air jumps...");
+        Console.WriteLine("Attached to " + ps[0].ProcessName + " (pid " + ps[0].Id + "). Giving the hero 8 extra air jumps and 2x jump height...");
         int found = Apply(true);
         if (found == 0) Console.WriteLine("Found no jump stat. The trainer could not hook this build.");
-        else Console.WriteLine("Extra jumps ON (9 jumps in a row, enough to climb out of the pit). Keep this window open; close it to stop.");
+        else Console.WriteLine("Extra jumps ON: each jump is about 3 m high, 9 jumps in a row. Keep this window open; close it to stop.");
         while (!ps[0].HasExited) { Thread.Sleep(5000); Apply(false); }
     }
 }
