@@ -69,13 +69,16 @@ static func plan(seed_value: int,realm: int) -> Dictionary:
 		if rng.randf()<VOLATILITY: step=1 if rng.randf()<.5 else -1
 		if level[cur]!=target and rng.randf()<BIAS: step=signi(target-level[cur])
 		level[nxt]=clampi(level[cur]+step,0,LEVELS-1)
+		# The start: open flat ground on the ground floor. Set while the tree
+		# grows (not afterwards), so the tiles leading out of it are walked
+		# from floor 0 and always ramp or open onto it. Flattening the start
+		# after the walk left it ringed by cliffs on some seeds (November 19:
+		# hero spawned in a sealed pit on Moon Craters, map 3).
+		if at.length()<START_CLEAR: level[nxt]=0
 		# A change of floor along the tree: this tile is a ramp from its parent.
-		if level[nxt]!=level[cur]:
+		elif level[nxt]!=level[cur]:
 			if slope[cur]>=0: level[nxt]=level[cur]  # no ramp straight off a ramp
 			else: slope[nxt]=cur
-	# The start: open flat ground on the ground floor.
-	for c in inside:
-		if Vector2(origin+(c%n+.5)*TILE,origin+(c/n+.5)*TILE).length()<START_CLEAR: level[c]=0;slope[c]=-1
 	return {"terraces":true,"n":n,"origin":origin,"level":level,"slope":slope}
 
 static func tile_at(lab: Dictionary,x: float,z: float) -> Vector2i:
